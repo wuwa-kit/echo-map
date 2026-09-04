@@ -1,0 +1,31 @@
+{
+  "wikiEchoCount": 199,
+  "includedEchoCount": 138,
+  "excludedEchoCount": 61,
+  "sonataCount": 34,
+  "exactMatchedEchoCount": 122,
+  "aliasMatchedEchoCount": 3,
+  "unmatchedEchoNames": [
+    "不熄猎手",
+    "颤栗战士",
+    "瓷庭候",
+    "封庭械囿",
+    "金庭候",
+    "石庭候",
+    "莳植熊蜂",
+    "心傀·悲",
+    "心傀·恐",
+    "心傀·怒",
+    "心傀·思",
+    "心傀·喜",
+    "心傀·忧"
+  ],
+  "provisionalEchoLocationCount": 6811,
+  "routeEligibleEchoLocationCount": 4,
+  "navigationPointCount": 600,
+  "navigationPointGroupCount": 52,
+  "bossNavigationPointCount": 43,
+  "challengeNavigationPointCount": 65,
+  "navigationIconFetchFailureCount": 0,
+  "routeEligibleNavigationPointCount": 1
+}

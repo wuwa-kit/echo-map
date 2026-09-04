@@ -1,0 +1,32 @@
+@import './styles/openlayers.css';
+
+:root {
+  color: #eaf4ef;
+  background: #07100f;
+  font-family: Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --panel: rgba(9, 20, 18, 0.96);
+  --line: rgba(169, 207, 192, 0.14);
+  --muted: #8fa69d;
+  --accent: #65f1c2;
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}

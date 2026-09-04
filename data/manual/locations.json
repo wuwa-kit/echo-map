@@ -1,0 +1,71 @@
+{
+  "echoLocations": [
+    {
+      "id": "example-echo-001",
+      "echoName": "先锋幼岩",
+      "officialLocationId": "1283885014041911296",
+      "stateId": 8,
+      "countryId": 1,
+      "levelId": null,
+      "x": -497,
+      "y": 449,
+      "z": 18,
+      "quality": "example",
+      "note": "示例 XYZ，仅用于验证路线功能，不代表精确实测值"
+    },
+    {
+      "id": "example-echo-002",
+      "echoName": "先锋幼岩",
+      "officialLocationId": "1283885140595671040",
+      "stateId": 8,
+      "countryId": 1,
+      "levelId": null,
+      "x": -496,
+      "y": 445,
+      "z": 21,
+      "quality": "example",
+      "note": "示例 XYZ，仅用于验证路线功能，不代表精确实测值"
+    },
+    {
+      "id": "example-echo-003",
+      "echoName": "裂变幼岩",
+      "officialLocationId": "1284591865628069888",
+      "stateId": 8,
+      "countryId": 1,
+      "levelId": null,
+      "x": -312,
+      "y": 575,
+      "z": 11,
+      "quality": "example",
+      "note": "示例 XYZ，仅用于验证路线功能，不代表精确实测值"
+    },
+    {
+      "id": "example-echo-004",
+      "echoName": "裂变幼岩",
+      "officialLocationId": "1284592142977921024",
+      "stateId": 8,
+      "countryId": 1,
+      "levelId": null,
+      "x": -328,
+      "y": 571,
+      "z": 14,
+      "quality": "example",
+      "note": "示例 XYZ，仅用于验证路线功能，不代表精确实测值"
+    }
+  ],
+  "navigationPoints": [
+    {
+      "id": "example-teleport-001",
+      "officialLocationId": "1253326841135009792",
+      "stateId": 8,
+      "countryId": 1,
+      "levelId": null,
+      "x": 279,
+      "y": 787,
+      "z": 15,
+      "quality": "example",
+      "note": "示例 XYZ，仅用于验证路线功能，不代表精确实测值"
+    }
+  ],
+  "connectors": []
+}

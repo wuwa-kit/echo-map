@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.vite/
+coverage/
+public/vendor/kuro-map/
+data/cache/
+*.log

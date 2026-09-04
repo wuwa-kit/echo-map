@@ -1,0 +1,47 @@
+{
+  "name": "echo-map",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "pnpm data:validate && pnpm typecheck && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "pnpm test && pnpm build",
+    "data:sync": "node scripts/sync-all.ts",
+    "data:sync:wiki": "node scripts/sync-wiki.ts",
+    "data:sync:map": "node scripts/sync-map.ts",
+    "data:validate": "node scripts/validate-data.ts"
+  },
+  "dependencies": {
+    "@types/node": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vueuse/core": "catalog:",
+    "@vueuse/router": "catalog:",
+    "immer": "catalog:",
+    "ol": "catalog:",
+    "pinia": "catalog:",
+    "typescript": "catalog:",
+    "unocss": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:",
+    "vue-tsc": "catalog:",
+    "zod": "catalog:"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "26.6.0",
+      "onFail": "warn"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.24.0",
+      "onFail": "error"
+    }
+  }
+}

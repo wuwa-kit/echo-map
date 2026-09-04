@@ -1,0 +1,61 @@
+import { useRouteQuery } from '@vueuse/router'
+import {
+  createExplorerQueryValues,
+  DEFAULT_ROUTE_Z_WEIGHT,
+  DEFAULT_STATE_ID,
+  parseExplorerQueryValues,
+} from '../url/explorer-url.ts'
+import type { ExplorerUrlSnapshot, ExplorerUrlState } from '../url/explorer-url.ts'
+
+export function useExplorerRouteQuery(): {
+  read: () => ExplorerUrlState
+  write: (state: ExplorerUrlSnapshot) => void
+} {
+  const mapQuery = useRouteQuery<string | undefined>('map', String(DEFAULT_STATE_ID))
+  const regionQuery = useRouteQuery('region')
+  const floorQuery = useRouteQuery('floor')
+  const echoesQuery = useRouteQuery('echoes')
+  const sonatasQuery = useRouteQuery('sonatas')
+  const hiddenTypesQuery = useRouteQuery('hiddenTypes')
+  const provisionalQuery = useRouteQuery<string | undefined>('provisional', '1')
+  const panelQuery = useRouteQuery<string | undefined>('panel', '0')
+  const heightQuery = useRouteQuery<string | undefined>('height', String(DEFAULT_ROUTE_Z_WEIGHT))
+  const xQuery = useRouteQuery('x')
+  const yQuery = useRouteQuery('y')
+  const zoomQuery = useRouteQuery('zoom')
+
+  function read(): ExplorerUrlState {
+    return parseExplorerQueryValues({
+      map: mapQuery.value,
+      region: regionQuery.value,
+      floor: floorQuery.value,
+      echoes: echoesQuery.value,
+      sonatas: sonatasQuery.value,
+      hiddenTypes: hiddenTypesQuery.value,
+      provisional: provisionalQuery.value,
+      panel: panelQuery.value,
+      height: heightQuery.value,
+      x: xQuery.value,
+      y: yQuery.value,
+      zoom: zoomQuery.value,
+    })
+  }
+
+  function write(state: ExplorerUrlSnapshot): void {
+    const values = createExplorerQueryValues(state)
+    mapQuery.value = values.map
+    regionQuery.value = values.region
+    floorQuery.value = values.floor
+    echoesQuery.value = values.echoes
+    sonatasQuery.value = values.sonatas
+    hiddenTypesQuery.value = values.hiddenTypes
+    provisionalQuery.value = values.provisional
+    panelQuery.value = values.panel
+    heightQuery.value = values.height
+    xQuery.value = values.x
+    yQuery.value = values.y
+    zoomQuery.value = values.zoom
+  }
+
+  return { read, write }
+}

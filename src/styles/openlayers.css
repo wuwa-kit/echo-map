@@ -1,0 +1,26 @@
+.ol-viewport {
+  background: #0c1715;
+}
+
+.ol-control {
+  border: 1px solid var(--line) !important;
+  border-radius: 7px !important;
+  background: rgba(8, 19, 17, 0.82) !important;
+  backdrop-filter: blur(10px);
+}
+
+.ol-control button {
+  color: #cfe0d8 !important;
+  background: transparent !important;
+}
+
+.ol-attribution {
+  right: 12px !important;
+  bottom: 12px !important;
+  color: #7b9088;
+  font-size: 9px;
+}
+
+.ol-attribution a {
+  color: #8db7a7;
+}

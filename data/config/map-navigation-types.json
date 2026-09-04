@@ -1,0 +1,130 @@
+{
+  "includeTableNames": {
+    "大地图-副本挑战": {
+      "mode": "fast-travel",
+      "kind": "challenge"
+    },
+    "大地图-BOSS": {
+      "mode": "fast-travel",
+      "kind": "boss"
+    },
+    "大地图-NPC": {
+      "mode": "landmark",
+      "kind": "service"
+    }
+  },
+  "types": {
+    "CS_01": {
+      "mode": "fast-travel",
+      "kind": "nexus"
+    },
+    "CS_02": {
+      "mode": "fast-travel",
+      "kind": "beacon"
+    },
+    "IconMap_WYQ": {
+      "mode": "fast-travel",
+      "kind": "tacet-field"
+    },
+    "Play_01": {
+      "mode": "fast-travel",
+      "kind": "training-ground"
+    },
+    "Play_10": {
+      "mode": "fast-travel",
+      "kind": "hologram"
+    },
+    "Play_06": {
+      "mode": "fast-travel",
+      "kind": "endgame"
+    },
+    "380002": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "380003": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "380004": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "380006": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "380007": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390054": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390055": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390056": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390057": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390058": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390066": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390067": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390068": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390069": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390070": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "390071": {
+      "mode": "fast-travel",
+      "kind": "domain"
+    },
+    "FCRK": {
+      "mode": "entrance",
+      "kind": "entrance"
+    },
+    "YMRK": {
+      "mode": "entrance",
+      "kind": "entrance"
+    },
+    "MT": {
+      "mode": "local-transit",
+      "kind": "local-transit"
+    },
+    "GDLZT": {
+      "mode": "local-transit",
+      "kind": "local-transit"
+    },
+    "FFZB": {
+      "mode": "local-transit",
+      "kind": "local-transit"
+    },
+    "48": {
+      "mode": "local-transit",
+      "kind": "local-transit"
+    }
+  }
+}
