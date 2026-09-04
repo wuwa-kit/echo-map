@@ -23,7 +23,7 @@ import Stroke from 'ol/style/Stroke.js'
 import Style from 'ol/style/Style.js'
 import Text from 'ol/style/Text.js'
 import { useExplorerStore } from '../stores/explorer.ts'
-import { layeredTileExtent } from '../map/projection.ts'
+import { layeredTileExtent, mapToGameCoordinate } from '../map/projection.ts'
 import { createOfficialTileLayer, layeredTileUrl } from '../map/official-source.ts'
 import { echoLocationMinZoom, isPointVisibleAtZoom, navigationPointMinZoom } from '../map/point-visibility.ts'
 import type { EchoLocation, NavigationPoint, PointLocationBase } from '../domain/types.ts'
@@ -44,9 +44,12 @@ const mapTarget = useTemplateRef<HTMLElement>('mapTargetRef')
 const pointerCoordinate = shallowRef<[number, number] | null>(null)
 const pointerCoordinateText = computed(() => {
   const coordinate = pointerCoordinate.value
-  return coordinate
-    ? `X ${Math.round(coordinate[0])} · Y ${Math.round(coordinate[1])}`
-    : 'X — · Y —'
+  const tileWidth = dataset.value?.source.tileWidth
+  if (!coordinate || tileWidth === undefined) {
+    return null
+  }
+  const [x, y] = mapToGameCoordinate(coordinate[0], coordinate[1], tileWidth)
+  return `X ${Math.round(x)} · Y ${Math.round(y)}`
 })
 const echoSource = new VectorSource()
 const navigationSource = new VectorSource()
@@ -275,7 +278,7 @@ function rebuildFloorLayers(): void {
   }
   const combinedExtent = createEmpty()
   floorLayers = floor.tiles.flatMap((tilePath) => {
-    const imageExtent = layeredTileExtent(tilePath)
+    const imageExtent = layeredTileExtent(tilePath, manifest.tileWidth)
     if (!imageExtent) {
       return []
     }
@@ -389,6 +392,7 @@ onBeforeUnmount(() => {
       @mouseleave="clearPointerCoordinate"
     />
     <div
+      v-if="pointerCoordinateText"
       aria-hidden="true"
       class="pointer-events-none absolute bottom-4 left-4 z-70 select-none rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-10px text-[var(--text-muted)] tabular-nums shadow-lg backdrop-blur-8px"
     >

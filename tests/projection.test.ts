@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { calculateTileExtent, layeredTileExtent, officialToMapCoordinate } from '../src/map/projection.ts'
+import {
+  calculateTileExtent,
+  layeredTileExtent,
+  mapToGameCoordinate,
+  officialToMapCoordinate,
+} from '../src/map/projection.ts'
 
 describe('official map projection', () => {
   it('matches the official map frontend conversion', () => {
@@ -26,5 +31,18 @@ describe('official map projection', () => {
 
   it('places layered image tiles in the same coordinate space', () => {
     expect(layeredTileExtent('/1/-1/3_-3.png')).toEqual([3072, -4096, 4096, -3072])
+  })
+
+  it('uses the top-right corner of theoretical tile 0,0 as the game-coordinate origin', () => {
+    expect(mapToGameCoordinate(1024, 0)).toEqual([0, 0])
+    expect(mapToGameCoordinate(2048, 0)).toEqual([850, 0])
+    expect(mapToGameCoordinate(1024, -1024)).toEqual([0, 850])
+    expect(mapToGameCoordinate(1024, 1024)).toEqual([0, -850])
+  })
+
+  it('derives coordinates without requiring tile 0,0 to exist', () => {
+    const extent = calculateTileExtent(['903_-2_2', '903_-1_2'])
+    expect(extent.extent).toEqual([-2048, 1024, 0, 2048])
+    expect(mapToGameCoordinate(extent.extent[0], extent.extent[3])).toEqual([-2550, -1700])
   })
 })

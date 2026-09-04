@@ -24,6 +24,12 @@ export function gameToMapCoordinate(x: number, y: number, tileWidth = TILE_WIDTH
   return [converted.mapX, converted.mapY]
 }
 
+export function mapToGameCoordinate(mapX: number, mapY: number, tileWidth = TILE_WIDTH): [number, number] {
+  const gameX = ((mapX - tileWidth) / tileWidth) * OFFICIAL_SCALE_BASE
+  const gameY = (-mapY / tileWidth) * OFFICIAL_SCALE_BASE
+  return [gameX === 0 ? 0 : gameX, gameY === 0 ? 0 : gameY]
+}
+
 export function parseTileId(tileId: string): { x: number; y: number } | null {
   const match = tileId.match(/^\d+_(-?\d+)_(-?\d+)$/)
   if (!match?.[1] || !match[2]) {
