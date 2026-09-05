@@ -27,6 +27,7 @@ import Text from 'ol/style/Text.js'
 import { useExplorerStore } from '../stores/explorer.ts'
 import { layeredTileExtent, mapToGameCoordinate } from '../map/projection.ts'
 import { createOfficialTileLayer, layeredTileUrl } from '../map/official-source.ts'
+import { createBossMarkerStyles } from '../map/boss-marker.ts'
 import { echoLocationMinZoom, isPointVisibleAtZoom, navigationPointMinZoom } from '../map/point-visibility.ts'
 import type { EchoLocation, NavigationPoint, PointLocationBase } from '../domain/types.ts'
 import type { MapViewportState } from '../url/explorer-url.ts'
@@ -63,6 +64,7 @@ const labelSource = new VectorSource()
 const routeSource = new VectorSource()
 const echoStyleCache = new globalThis.Map<string, Style>()
 const navigationStyleCache = new globalThis.Map<string, Style[]>()
+const bossMarkerStyles = createBossMarkerStyles(() => navigationLayer.changed())
 
 const projection = new Projection({
   code: 'KURO:CRS-SIMPLE',
@@ -158,6 +160,10 @@ function echoStyle(feature: FeatureLike): Style {
 }
 
 function navigationStyle(location: NavigationPoint): Style[] {
+  const bossStyles = bossMarkerStyles.getStyle(location)
+  if (bossStyles) {
+    return bossStyles
+  }
   const key = `${location.typeId}:${location.mode}:${location.iconUrl}`
   const cached = navigationStyleCache.get(key)
   if (cached) {
@@ -169,7 +175,7 @@ function navigationStyle(location: NavigationPoint): Style[] {
       ? new Icon({
         src: location.iconUrl,
         crossOrigin: 'anonymous',
-        scale: location.kind === 'boss' ? 0.14 : 0.28,
+        scale: 0.28,
         opacity: isFastTravel ? 1 : 0.48,
       })
       : new CircleStyle({
@@ -435,6 +441,7 @@ watch(() => props.padding, () => {
 }, { flush: 'post' })
 
 onBeforeUnmount(() => {
+  bossMarkerStyles.dispose()
   map?.un('moveend', publishMapViewport)
   map?.un('pointermove', updatePointerCoordinate)
   map?.un('singleclick', updatePointerCoordinate)
