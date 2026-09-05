@@ -1,5 +1,4 @@
 import Feature from 'ol/Feature.js'
-import type { FeatureLike } from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
@@ -9,17 +8,18 @@ import Icon from 'ol/style/Icon.js'
 import Stroke from 'ol/style/Stroke.js'
 import Style from 'ol/style/Style.js'
 import Text from 'ol/style/Text.js'
-import { createBossMarkerStyles } from './boss-marker.ts'
-import type { EchoLocation, NavigationPoint, PointLocationBase, RegionLabel } from '../domain/types.ts'
+import { bossMarkerShape, createPortraitMarkerStyles, PORTRAIT_MARKER_SIZES } from './boss-marker.ts'
+import type { EchoDefinition, EchoLocation, NavigationPoint, PointLocationBase, RegionLabel } from '../domain/types.ts'
 import { echoLocationMinZoom, isPointVisibleAtZoom, navigationPointMinZoom } from './point-visibility.ts'
 
 export function createPointLayers(zoomForResolution: (resolution: number) => number) {
   const echoSource = new VectorSource()
   const navigationSource = new VectorSource()
   const labelSource = new VectorSource()
-  const echoStyleCache = new globalThis.Map<string, Style>()
+  const echoCosts = new globalThis.Map<string, EchoDefinition['cost']>()
   const navigationStyleCache = new globalThis.Map<string, Style[]>()
-  const bossMarkerStyles = createBossMarkerStyles(() => navigationLayer.changed())
+  const echoMarkerStyles = createPortraitMarkerStyles(() => echoLayer.changed())
+  const bossMarkerStyles = createPortraitMarkerStyles(() => navigationLayer.changed())
 
   const echoLayer = new VectorLayer({
     source: echoSource,
@@ -28,7 +28,7 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
     style(feature, resolution) {
       const location = feature.get('location') as EchoLocation
       return isPointVisibleAtZoom(echoLocationMinZoom(location), zoomForResolution(resolution))
-        ? echoStyle(feature)
+        ? echoStyle(location)
         : undefined
     },
   })
@@ -51,35 +51,31 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
     })
   }
 
-  function echoStyle(feature: FeatureLike): Style {
-    const location = feature.get('location') as PointLocationBase
-    const key = `${location.typeId}:${location.quality}`
-    const cached = echoStyleCache.get(key)
-    if (cached) {
-      return cached
+  function echoStyle(location: EchoLocation): Style[] | undefined {
+    const cost = echoCosts.get(location.echoId)
+    if (cost === undefined) {
+      return undefined
     }
-    const verified = location.gameCoordinate !== null
-    const style = new Style({
-      image: location.iconUrl
-        ? new Icon({
-          src: location.iconUrl,
-          crossOrigin: 'anonymous',
-          scale: 0.14,
-          opacity: verified ? 1 : 0.82,
-        })
-        : new CircleStyle({
-          radius: 6,
-          fill: new Fill({ color: verified ? '#65f1c2' : 'rgba(151, 169, 162, 0.48)' }),
-        }),
-    })
-    echoStyleCache.set(key, style)
-    return style
+    return echoMarkerStyles.getStyle({
+      shape: 'diamond',
+      size: PORTRAIT_MARKER_SIZES[cost],
+      iconUrl: location.iconUrl,
+      opacity: location.gameCoordinate !== null ? 1 : 0.82,
+    }) ?? undefined
   }
 
   function navigationStyle(location: NavigationPoint): Style[] {
-    const bossStyles = bossMarkerStyles.getStyle(location)
-    if (bossStyles) {
-      return bossStyles
+    const shape = bossMarkerShape(location)
+    if (shape) {
+      const bossStyles = bossMarkerStyles.getStyle({
+        shape,
+        size: PORTRAIT_MARKER_SIZES[4],
+        iconUrl: location.iconUrl,
+        opacity: location.mode === 'fast-travel' ? 1 : 0.48,
+      })
+      if (bossStyles) {
+        return bossStyles
+      }
     }
     const key = `${location.typeId}:${location.mode}:${location.iconUrl}`
     const cached = navigationStyleCache.get(key)
@@ -104,7 +100,16 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
     return styles
   }
 
-  function update(echoLocations: readonly EchoLocation[], navigationPoints: readonly NavigationPoint[], regionLabels: readonly RegionLabel[]): void {
+  function update(
+    echoLocations: readonly EchoLocation[],
+    navigationPoints: readonly NavigationPoint[],
+    regionLabels: readonly RegionLabel[],
+    echoes: readonly EchoDefinition[],
+  ): void {
+    echoCosts.clear()
+    for (const echo of echoes) {
+      echoCosts.set(echo.id, echo.cost)
+    }
     echoSource.clear(true)
     navigationSource.clear(true)
     labelSource.clear(true)
@@ -131,8 +136,9 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
   }
 
   function dispose(): void {
+    echoMarkerStyles.dispose()
     bossMarkerStyles.dispose()
-    echoStyleCache.clear()
+    echoCosts.clear()
     navigationStyleCache.clear()
     for (const source of [echoSource, navigationSource, labelSource]) {
       source.clear(true)

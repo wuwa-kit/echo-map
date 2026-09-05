@@ -2,9 +2,11 @@ import Icon from 'ol/style/Icon.js'
 import Style from 'ol/style/Style.js'
 import type { NavigationPoint } from '../domain/types.ts'
 
-type BossMarkerShape = 'diamond' | 'cut-diamond'
+type PortraitMarkerShape = 'diamond' | 'cut-diamond'
 
-const MARKER_SIZE = 44
+export const PORTRAIT_MARKER_SIZES = { 1: 28, 3: 31, 4: 44 }
+
+const MARKER_SIZE = PORTRAIT_MARKER_SIZES[4]
 const CANVAS_SIZE = MARKER_SIZE + 2
 const CENTER = CANVAS_SIZE / 2
 const OUTER_BORDER = 1.5
@@ -12,14 +14,14 @@ const WHITE_BORDER = 2.5
 const PORTRAIT_INSET = OUTER_BORDER + WHITE_BORDER + 1
 const CUT_HALF_WIDTH = 5
 
-export function bossMarkerShape(point: Pick<NavigationPoint, 'kind' | 'typeName'>): BossMarkerShape | null {
+export function bossMarkerShape(point: Pick<NavigationPoint, 'kind' | 'typeName'>): PortraitMarkerShape | null {
   if (point.kind !== 'boss') {
     return null
   }
   return /^.{4}之.$/u.test(point.typeName) ? 'cut-diamond' : 'diamond'
 }
 
-function markerPath(shape: BossMarkerShape, inset: number): Path2D {
+function markerPath(shape: PortraitMarkerShape, inset: number): Path2D {
   const radius = MARKER_SIZE / 2 - inset * Math.SQRT2
   const path = new Path2D()
   if (shape === 'diamond') {
@@ -43,7 +45,7 @@ function markerPath(shape: BossMarkerShape, inset: number): Path2D {
   return path
 }
 
-function drawMarker(context: CanvasRenderingContext2D, shape: BossMarkerShape, portrait?: HTMLImageElement): void {
+function drawMarker(context: CanvasRenderingContext2D, shape: PortraitMarkerShape, portrait?: HTMLImageElement): void {
   context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
   context.fillStyle = '#000'
   context.fill(markerPath(shape, 0))
@@ -65,18 +67,18 @@ function drawMarker(context: CanvasRenderingContext2D, shape: BossMarkerShape, p
   context.restore()
 }
 
-export function createBossMarkerStyles(onChange: () => void) {
+export function createPortraitMarkerStyles(onChange: () => void) {
   const pixelRatio = Math.max(2, Math.ceil(window.devicePixelRatio || 1))
   const styles = new Map<string, Style[]>()
   const pendingImages = new Set<HTMLImageElement>()
 
-  function getStyle(point: Pick<NavigationPoint, 'kind' | 'typeName' | 'iconUrl' | 'mode'>): Style[] | null {
-    const shape = bossMarkerShape(point)
-    if (!shape) {
-      return null
-    }
-    const opacity = point.mode === 'fast-travel' ? 1 : 0.48
-    const key = JSON.stringify([shape, point.iconUrl, opacity])
+  function getStyle({ shape, size, iconUrl, opacity }: {
+    shape: PortraitMarkerShape
+    size: number
+    iconUrl: string
+    opacity: number
+  }): Style[] | null {
+    const key = JSON.stringify([shape, size, iconUrl, opacity])
     const cached = styles.get(key)
     if (cached) {
       return cached
@@ -91,10 +93,10 @@ export function createBossMarkerStyles(onChange: () => void) {
     context.scale(pixelRatio, pixelRatio)
     context.imageSmoothingQuality = 'high'
     drawMarker(context, shape)
-    const result = [new Style({ image: new Icon({ img: canvas, scale: 1 / pixelRatio, opacity }) })]
+    const result = [new Style({ image: new Icon({ img: canvas, scale: size / MARKER_SIZE / pixelRatio, opacity }) })]
     styles.set(key, result)
 
-    if (point.iconUrl) {
+    if (iconUrl) {
       const portrait = new Image()
       pendingImages.add(portrait)
       const finish = () => {
@@ -109,7 +111,7 @@ export function createBossMarkerStyles(onChange: () => void) {
         onChange()
       }
       portrait.onerror = finish
-      portrait.src = point.iconUrl
+      portrait.src = iconUrl
     }
     return result
   }

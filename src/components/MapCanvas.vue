@@ -65,7 +65,7 @@ useResizeObserver(mapTarget, () => {
 })
 
 function rebuildPointLayers(): void {
-  points.update(visibleEchoLocations.value, visibleNavigationPoints.value, visibleRegionLabels.value)
+  points.update(visibleEchoLocations.value, visibleNavigationPoints.value, visibleRegionLabels.value, dataset.value?.echoes ?? [])
 }
 
 function rebuildRoute(): void {
