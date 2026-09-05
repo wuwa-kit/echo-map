@@ -8,7 +8,9 @@ import Map from 'ol/Map.js'
 import type MapBrowserEvent from 'ol/MapBrowserEvent.js'
 import View from 'ol/View.js'
 import { defaults as defaultControls } from 'ol/control/defaults.js'
+import { defaults as defaultInteractions } from 'ol/interaction/defaults.js'
 import { createEmpty, extend, getCenter, isEmpty } from 'ol/extent.js'
+import type { Extent } from 'ol/extent.js'
 import Point from 'ol/geom/Point.js'
 import LineString from 'ol/geom/LineString.js'
 import ImageLayer from 'ol/layer/Image.js'
@@ -28,6 +30,10 @@ import { createOfficialTileLayer, layeredTileUrl } from '../map/official-source.
 import { echoLocationMinZoom, isPointVisibleAtZoom, navigationPointMinZoom } from '../map/point-visibility.ts'
 import type { EchoLocation, NavigationPoint, PointLocationBase } from '../domain/types.ts'
 import type { MapViewportState } from '../url/explorer-url.ts'
+import { fitMapPadding } from '../map/viewport-padding.ts'
+import type { MapPadding } from '../map/viewport-padding.ts'
+
+const props = defineProps<{ padding: MapPadding }>()
 
 const store = useExplorerStore()
 const {
@@ -88,10 +94,32 @@ const labelLayer = new VectorLayer({ source: labelSource, declutter: true, zInde
 const routeLayer = new VectorLayer({ source: routeSource, zIndex: 60 })
 let map: Map | null = null
 let defaultViewport: MapViewportState | null = null
+let baseViewport: MapViewportState | null = null
 let baseLayer: ReturnType<typeof createOfficialTileLayer> | null = null
 let floorLayers: ImageLayer<ImageStatic>[] = []
+let floorExtent: Extent | null = null
+let routeViewport: MapViewportState | null = null
 
-useResizeObserver(mapTarget, () => map?.updateSize())
+useResizeObserver(mapTarget, () => {
+  map?.updateSize()
+  fitFloorViewport()
+  fitRouteViewport()
+})
+
+function fitFloorViewport(): void {
+  if (!map || !floorExtent || mapViewport.value !== null) {
+    return
+  }
+  const [width = 0, height = 0] = map.getSize() ?? []
+  if (width <= 0 || height <= 0) {
+    return
+  }
+  map.getView().fit(floorExtent, {
+    padding: fitMapPadding(width, height, props.padding),
+    minResolution: 0.5,
+  })
+  defaultViewport = currentMapViewport()
+}
 
 function zoomForResolution(resolution: number): number {
   return map?.getView().getZoomForResolution(resolution) ?? Number.POSITIVE_INFINITY
@@ -181,6 +209,7 @@ function rebuildPointLayers(): void {
 
 function rebuildRoute(): void {
   routeSource.clear(true)
+  routeViewport = null
   if (!route.value || route.value.points.length === 0) {
     return
   }
@@ -213,6 +242,26 @@ function rebuildRoute(): void {
     }))
     routeSource.addFeature(marker)
   })
+  fitRouteViewport()
+}
+
+function fitRouteViewport(): void {
+  const extent = routeSource.getExtent()
+  const current = currentMapViewport()
+  if (!map || !extent || isEmpty(extent) || !current) {
+    return
+  }
+  // Refit around changing panels until the user deliberately moves the map.
+  if (routeViewport && !matchesViewport(current, routeViewport)) {
+    return
+  }
+  const [width = 0, height = 0] = map.getSize() ?? []
+  map.getView().fit(extent, {
+    padding: fitMapPadding(width, height, props.padding),
+    minResolution: 0.5,
+  })
+  routeViewport = currentMapViewport()
+  publishMapViewport()
 }
 
 function currentMapViewport(): MapViewportState | null {
@@ -229,11 +278,11 @@ function currentMapViewport(): MapViewportState | null {
   return { center: [x, y], zoom }
 }
 
-function isDefaultViewport(viewport: MapViewportState): boolean {
-  return defaultViewport !== null
-    && Math.abs(viewport.center[0] - defaultViewport.center[0]) < 0.01
-    && Math.abs(viewport.center[1] - defaultViewport.center[1]) < 0.01
-    && Math.abs(viewport.zoom - defaultViewport.zoom) < 0.0001
+function matchesViewport(viewport: MapViewportState, reference: MapViewportState | null): boolean {
+  return reference !== null
+    && Math.abs(viewport.center[0] - reference.center[0]) < 0.01
+    && Math.abs(viewport.center[1] - reference.center[1]) < 0.01
+    && Math.abs(viewport.zoom - reference.zoom) < 0.0001
 }
 
 function publishMapViewport(): void {
@@ -241,10 +290,13 @@ function publishMapViewport(): void {
   if (!viewport) {
     return
   }
-  store.setMapViewport(isDefaultViewport(viewport) ? null : viewport)
+  store.setMapViewport(matchesViewport(viewport, defaultViewport) ? null : viewport)
 }
 
 function updatePointerCoordinate(event: MapBrowserEvent): void {
+  if (event.dragging) {
+    return
+  }
   const x = event.coordinate[0]
   const y = event.coordinate[1]
   if (x === undefined || y === undefined) {
@@ -258,6 +310,7 @@ function clearPointerCoordinate(): void {
 }
 
 function clearFloorLayers(): void {
+  floorExtent = null
   if (!map) {
     return
   }
@@ -269,7 +322,15 @@ function rebuildFloorLayers(): void {
   clearFloorLayers()
   const state = activeState.value
   const manifest = dataset.value?.source
-  if (!map || !state || !manifest || selectedLevelId.value === null) {
+  if (!map || !state || !manifest) {
+    return
+  }
+  if (selectedLevelId.value === null) {
+    if (mapViewport.value === null && baseViewport) {
+      defaultViewport = baseViewport
+      map.getView().setCenter([...baseViewport.center])
+      map.getView().setZoom(baseViewport.zoom)
+    }
     return
   }
   const floor = state.layeredMaps.flatMap(({ floors }) => floors).find(({ id }) => id === selectedLevelId.value)
@@ -295,19 +356,9 @@ function rebuildFloorLayers(): void {
     })]
   })
   floorLayers.forEach((layer) => map?.addLayer(layer))
-  if (!isEmpty(combinedExtent) && mapViewport.value === null) {
-    map.getView().fit(combinedExtent, {
-      duration: 250,
-      padding: [96, 360, 96, 96],
-      minResolution: 0.5,
-      callback(completed) {
-        const viewport = currentMapViewport()
-        if (completed && viewport) {
-          defaultViewport = viewport
-          store.setMapViewport(null)
-        }
-      },
-    })
+  if (!isEmpty(combinedExtent)) {
+    floorExtent = combinedExtent
+    fitFloorViewport()
   }
 }
 
@@ -328,6 +379,7 @@ function rebuildBaseLayer(): void {
   )
   const view = new View({
     projection,
+    enableRotation: false,
     center: getCenter(state.tileExtent.extent),
     extent: state.tileExtent.extent,
     resolution: Math.max(1, size / 1300),
@@ -342,6 +394,7 @@ function rebuildBaseLayer(): void {
   defaultViewport = defaultX !== undefined && defaultY !== undefined && defaultZoom !== undefined
     ? { center: [defaultX, defaultY], zoom: defaultZoom }
     : null
+  baseViewport = defaultViewport
   if (mapViewport.value) {
     view.setCenter([...mapViewport.value.center])
     view.setZoom(mapViewport.value.zoom)
@@ -360,11 +413,13 @@ onMounted(() => {
   map = new Map({
     target: mapTarget.value,
     controls: defaultControls({ rotate: false }),
+    interactions: defaultInteractions({ pinchRotate: false, altShiftDragRotate: false }),
     layers: [labelLayer, echoLayer, navigationLayer, routeLayer],
-    view: new View({ projection, center: [0, 0], resolution: 4 }),
+    view: new View({ projection, enableRotation: false, center: [0, 0], resolution: 4 }),
   })
   map.on('moveend', publishMapViewport)
   map.on('pointermove', updatePointerCoordinate)
+  map.on('singleclick', updatePointerCoordinate)
   rebuildBaseLayer()
   rebuildPointLayers()
   rebuildRoute()
@@ -373,11 +428,16 @@ onMounted(() => {
 watch(activeState, rebuildBaseLayer)
 watch(selectedLevelId, rebuildFloorLayers)
 watch([visibleEchoLocations, visibleNavigationPoints, visibleRegionLabels], rebuildPointLayers)
-watch(route, rebuildRoute)
+watch(route, rebuildRoute, { flush: 'post' })
+watch(() => props.padding, () => {
+  fitFloorViewport()
+  fitRouteViewport()
+}, { flush: 'post' })
 
 onBeforeUnmount(() => {
   map?.un('moveend', publishMapViewport)
   map?.un('pointermove', updatePointerCoordinate)
+  map?.un('singleclick', updatePointerCoordinate)
   map?.setTarget(undefined)
   map = null
 })
@@ -394,7 +454,7 @@ onBeforeUnmount(() => {
     <div
       v-if="pointerCoordinateText"
       aria-hidden="true"
-      class="pointer-events-none absolute bottom-4 left-4 z-70 select-none rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-10px text-[var(--text-muted)] tabular-nums shadow-lg backdrop-blur-8px"
+      class="pointer-events-none absolute bottom-[calc(var(--mobile-bar-height)+12px)] left-[max(12px,env(safe-area-inset-left))] z-70 select-none rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-12px text-[var(--muted)] tabular-nums shadow-lg min-[1024px]:bottom-16px"
     >
       {{ pointerCoordinateText }}
     </div>

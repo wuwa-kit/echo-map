@@ -17,6 +17,7 @@ describe('explorer query state', () => {
       hiddenPointGroupIds: [],
       showProvisional: true,
       controlPanelCollapsed: false,
+      mobileSheet: null,
       routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: null,
     })
@@ -39,6 +40,7 @@ describe('explorer query state', () => {
       hiddenPointGroupIds: ['IconMap_WYQ', 'CS_02'],
       showProvisional: true,
       controlPanelCollapsed: false,
+      mobileSheet: null,
       routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: { center: [3072, -1536], zoom: 1.3785 },
     })
@@ -54,10 +56,37 @@ describe('explorer query state', () => {
       hiddenPointGroupIds: ['IconMap_WYQ', 'CS_02'],
       showProvisional: true,
       controlPanelCollapsed: false,
+      mobileSheet: null,
       routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: null,
     })
 
     expect(values.hiddenTypes).toBe('CS_02,IconMap_WYQ')
+  })
+
+  it.each(['filters', 'route'] as const)('round-trips the %s sheet without changing the desktop panel preference', (mobileSheet) => {
+    const query = createExplorerQueryValues({
+      stateId: DEFAULT_STATE_ID,
+      countryId: null,
+      levelId: null,
+      echoIds: [],
+      sonataIds: [],
+      hiddenPointGroupIds: [],
+      showProvisional: true,
+      controlPanelCollapsed: true,
+      mobileSheet,
+      routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
+      viewport: null,
+    })
+    expect(query.sheet).toBe(mobileSheet)
+    expect(query.panel).toBe('1')
+    expect(parseExplorerQueryValues(query)).toMatchObject({ mobileSheet, controlPanelCollapsed: true })
+  })
+
+  it.each([undefined, null, '', 'unknown', '1'])('ignores invalid or missing sheet values: %s', (sheet) => {
+    expect(parseExplorerQueryValues({ sheet, panel: '1' })).toMatchObject({
+      mobileSheet: null,
+      controlPanelCollapsed: true,
+    })
   })
 })

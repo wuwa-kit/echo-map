@@ -1,6 +1,8 @@
 export const DEFAULT_STATE_ID = 8
 export const DEFAULT_ROUTE_Z_WEIGHT = 1.35
 
+export type MobileSheet = 'filters' | 'route' | null
+
 export interface MapViewportState {
   center: [number, number]
   zoom: number
@@ -15,6 +17,7 @@ export interface ExplorerUrlState {
   hiddenPointGroupIds?: string[]
   showProvisional?: boolean
   controlPanelCollapsed?: boolean
+  mobileSheet?: MobileSheet
   routeZWeight?: number
   viewport?: MapViewportState
 }
@@ -28,6 +31,7 @@ export interface ExplorerUrlSnapshot {
   hiddenPointGroupIds: readonly string[]
   showProvisional: boolean
   controlPanelCollapsed: boolean
+  mobileSheet: MobileSheet
   routeZWeight: number
   viewport: MapViewportState | null
 }
@@ -43,6 +47,7 @@ export interface ExplorerQueryValues {
   hiddenTypes?: ExplorerQueryValue
   provisional?: ExplorerQueryValue
   panel?: ExplorerQueryValue
+  sheet?: ExplorerQueryValue
   height?: ExplorerQueryValue
   x?: ExplorerQueryValue
   y?: ExplorerQueryValue
@@ -94,6 +99,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
   const x = finiteNumber(values.x)
   const y = finiteNumber(values.y)
   const zoom = finiteNumber(values.zoom)
+  const sheet = single(values.sheet)
   return {
     stateId: integer(values.map),
     countryId: integer(values.region),
@@ -103,6 +109,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
     hiddenPointGroupIds: idList(values.hiddenTypes),
     showProvisional: booleanFlag(values.provisional),
     controlPanelCollapsed: booleanFlag(values.panel),
+    mobileSheet: sheet === 'filters' || sheet === 'route' ? sheet : null,
     routeZWeight: finiteNumber(values.height),
     viewport: x !== undefined && y !== undefined && zoom !== undefined
       ? { center: [x, y], zoom }
@@ -122,6 +129,7 @@ export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerS
       : undefined,
     provisional: state.showProvisional ? undefined : '0',
     panel: state.controlPanelCollapsed ? '1' : undefined,
+    sheet: state.mobileSheet ?? undefined,
     height: state.routeZWeight === DEFAULT_ROUTE_Z_WEIGHT
       ? undefined
       : compactNumber(state.routeZWeight, 2),

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, shallowRef, useAttrs, useId, useTemplateRef } from 'vue'
+import { computed, nextTick, shallowRef, useAttrs, useId, useTemplateRef, watch } from 'vue'
 import { produce } from 'immer'
 import WuScrollArea from './WuScrollArea.vue'
 import WuSvg from './WuSvg.vue'
@@ -12,10 +12,12 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   invalid?: boolean
   placeholder?: string
+  native?: boolean
 }>(), {
   disabled: false,
   invalid: false,
   placeholder: '请选择',
+  native: false,
 })
 
 const model = defineModel<WuSelectValue>({ required: true })
@@ -30,6 +32,16 @@ const popover = useTemplateRef<HTMLDivElement>('popoverRef')
 const options = shallowRef<readonly WuSelectOptionRecord[]>([])
 const activeOptionId = shallowRef<string>()
 const isOpen = shallowRef(false)
+const useNative = computed(() => props.native
+  || !('showPopover' in HTMLElement.prototype)
+  || !CSS.supports('position-area', 'block-end')
+  || !CSS.supports('inline-size', 'anchor-size(width)'))
+
+watch(useNative, (native) => {
+  if (native && popover.value?.matches(':popover-open')) {
+    popover.value.hidePopover()
+  }
+})
 
 const selectedOption = computed(() => options.value.find(({ value }) => Object.is(value, model.value)))
 const selectedLabel = computed(() => selectedOption.value?.label || props.placeholder)
@@ -115,7 +127,7 @@ function focusInitialOption(): void {
 }
 
 function showPopover(): void {
-  if (props.disabled || popover.value?.matches(':popover-open')) {
+  if (props.disabled || useNative.value || popover.value?.matches(':popover-open')) {
     return
   }
   popover.value?.showPopover()
@@ -126,10 +138,23 @@ function chooseOption(option: WuSelectOptionRecord): void {
     return
   }
   model.value = option.value
-  popover.value?.hidePopover()
+  if (!useNative.value) {
+    popover.value?.hidePopover()
+  }
   void nextTick(() => {
     trigger.value?.focus()
   })
+}
+
+function onNativeChange(event: Event): void {
+  if (!(event.target instanceof HTMLSelectElement)) {
+    return
+  }
+  const value = event.target.value
+  const option = options.value.find(({ id }) => id === value)
+  if (option) {
+    chooseOption(option)
+  }
 }
 
 function moveActiveOption(offset: -1 | 1): void {
@@ -216,7 +241,21 @@ useProvideWuSelectContext({
 
 <template>
   <div class="group relative grid w-full min-w-0">
+    <select
+      v-if="useNative"
+      v-bind="attrs"
+      :id="triggerId"
+      :value="selectedOption?.id ?? ''"
+      :disabled="disabled"
+      :aria-invalid="invalid || undefined"
+      class="h-44px w-full min-w-0 appearance-none rounded-7px border border-[var(--line)] bg-[#152b24] pl-11px pr-34px text-16px text-[#dce9e3] font-inherit outline-none focus-visible:border-[var(--accent)] disabled:opacity-50"
+      @change="onNativeChange"
+    >
+      <option v-if="!selectedOption" value="" disabled>{{ placeholder }}</option>
+      <option v-for="option in options" :key="option.id" :value="option.id" :disabled="option.disabled">{{ option.label }}</option>
+    </select>
     <button
+      v-else
       v-bind="attrs"
       :id="triggerId"
       ref="triggerRef"
@@ -242,6 +281,7 @@ useProvideWuSelectContext({
       :class="isOpen ? 'rotate-180 text-[var(--accent)]' : ''"
     />
     <div
+      v-show="!useNative"
       :id="popoverId"
       ref="popoverRef"
       popover="auto"

@@ -9,10 +9,12 @@ const props = withDefaults(defineProps<{
   minThumbSize?: number
   size?: 'md' | 'sm'
   viewportClass?: string
+  unbounded?: boolean
 }>(), {
   contentClass: '',
   size: 'md',
   viewportClass: '',
+  unbounded: false,
 })
 
 const viewport = useTemplateRef<HTMLElement>('viewportRef')
@@ -29,7 +31,7 @@ let dragState: {
   startScrollTop: number
 } | null = null
 
-const canScroll = computed(() => scrollHeight.value > clientHeight.value + 1)
+const canScroll = computed(() => !props.unbounded && scrollHeight.value > clientHeight.value + 1)
 const scrollRange = computed(() => Math.max(0, scrollHeight.value - clientHeight.value))
 const actualMinThumbSize = computed(() => props.minThumbSize ?? (props.size === 'sm' ? 20 : 28))
 const trackSizeClass = computed(() => props.size === 'sm'
@@ -146,12 +148,13 @@ onMounted(() => {
 <template>
   <div
     v-bind="$attrs"
-    class="relative min-h-0 min-w-0 flex flex-col overflow-hidden"
+    class="relative min-h-0 min-w-0 flex flex-col"
+    :class="unbounded ? 'overflow-visible' : 'overflow-hidden'"
   >
     <div
       ref="viewportRef"
-      class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
-      :class="viewportClass"
+      class="min-h-0 min-w-0"
+      :class="[viewportClass, unbounded ? 'overflow-visible' : 'flex-1 overflow-x-hidden overflow-y-auto overscroll-contain']"
     >
       <div ref="contentRef" class="min-w-0" :class="contentClass">
         <slot />

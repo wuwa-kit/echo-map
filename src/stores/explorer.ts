@@ -1,8 +1,9 @@
-import { computed, shallowReadonly, shallowRef } from 'vue'
+import { computed, onScopeDispose, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
 import { DEFAULT_ROUTE_Z_WEIGHT, DEFAULT_STATE_ID } from '../url/explorer-url.ts'
-import type { ExplorerUrlState, MapViewportState } from '../url/explorer-url.ts'
+import type { ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
+import { planRouteInWorker } from '../route/worker-client.ts'
 import type {
   EchoDefinition,
   EchoLocation,
@@ -11,6 +12,8 @@ import type {
   MapStateDefinition,
   NavigationPoint,
   RegionLabel,
+  PointLocationBase,
+  RoutePoint,
   RouteResult,
 } from '../domain/types.ts'
 
@@ -40,9 +43,15 @@ export const useExplorerStore = defineStore('explorer', () => {
   const hiddenPointGroupIds = shallowRef<string[]>(immutableSnapshot([]))
   const showProvisional = shallowRef(true)
   const controlPanelCollapsed = shallowRef(false)
+  const mobileSheet = shallowRef<MobileSheet>(null)
   const routeZWeight = shallowRef(DEFAULT_ROUTE_Z_WEIGHT)
   const mapViewport = shallowRef<MapViewportState | null>(null)
   const route = shallowRef<RouteResult | null>(null)
+  const planning = shallowRef(false)
+  const routeError = shallowRef('')
+  let activePlan: AbortController | null = null
+
+  onScopeDispose(() => activePlan?.abort())
 
   const states = computed(() => dataset.value?.states ?? [])
   const activeState = computed<MapStateDefinition | null>(() => (
@@ -121,6 +130,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   )))
 
   function setDataset(value: MapDataset): void {
+    clearRoute()
     dataset.value = immutableSnapshot(value)
     const preferredState = value.states.find(({ id }) => id === DEFAULT_STATE_ID) ?? value.states[0]
     if (preferredState) {
@@ -170,6 +180,9 @@ export const useExplorerStore = defineStore('explorer', () => {
     }))])
     showProvisional.value = state.showProvisional ?? true
     controlPanelCollapsed.value = state.controlPanelCollapsed ?? false
+    mobileSheet.value = state.mobileSheet === 'filters' || state.mobileSheet === 'route'
+      ? state.mobileSheet
+      : null
     routeZWeight.value = state.routeZWeight !== undefined
       && state.routeZWeight >= 0.1
       && state.routeZWeight <= 10
@@ -179,7 +192,7 @@ export const useExplorerStore = defineStore('explorer', () => {
       ? immutableSnapshot({ center: [...state.viewport.center], zoom: state.viewport.zoom })
       : null
     echoSearch.value = ''
-    route.value = null
+    clearRoute()
   }
 
   function selectState(id: number): void {
@@ -187,33 +200,33 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectedCountryId.value = null
     selectedLevelId.value = null
     mapViewport.value = null
-    route.value = null
+    clearRoute()
   }
 
   function selectCountry(id: number | null): void {
     selectedCountryId.value = id
-    route.value = null
+    clearRoute()
   }
 
   function selectLevel(id: string | null): void {
     selectedLevelId.value = id
     mapViewport.value = null
-    route.value = null
+    clearRoute()
   }
 
   function toggleEcho(id: string): void {
     selectedEchoIds.value = toggleId(selectedEchoIds.value, id)
-    route.value = null
+    clearRoute()
   }
 
   function toggleSonata(id: string): void {
     selectedSonataIds.value = toggleId(selectedSonataIds.value, id)
-    route.value = null
+    clearRoute()
   }
 
   function clearSonataFilters(): void {
     selectedSonataIds.value = immutableSnapshot([])
-    route.value = null
+    clearRoute()
   }
 
   function setEchoSearch(value: string): void {
@@ -249,10 +262,15 @@ export const useExplorerStore = defineStore('explorer', () => {
 
   function setProvisionalVisible(value: boolean): void {
     showProvisional.value = value
+    clearRoute()
   }
 
   function toggleControlPanel(): void {
     controlPanelCollapsed.value = !controlPanelCollapsed.value
+  }
+
+  function setMobileSheet(value: MobileSheet): void {
+    mobileSheet.value = value
   }
 
   function setRouteZWeight(value: number): void {
@@ -260,7 +278,7 @@ export const useExplorerStore = defineStore('explorer', () => {
       return
     }
     routeZWeight.value = value
-    route.value = null
+    clearRoute()
   }
 
   function setMapViewport(value: MapViewportState | null): void {
@@ -274,14 +292,64 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   function clearRoute(): void {
+    activePlan?.abort()
+    activePlan = null
+    planning.value = false
+    routeError.value = ''
     route.value = null
+  }
+
+  async function planRoute(): Promise<void> {
+    if (planning.value || routeEligibleLocations.value.length === 0) {
+      return
+    }
+    const controller = new AbortController()
+    activePlan = controller
+    planning.value = true
+    routeError.value = ''
+    const names = new Map(dataset.value?.echoes.map(({ id, name }) => [id, name]))
+    function toRoutePoint(location: PointLocationBase, echoId: string | null): RoutePoint {
+      if (!location.gameCoordinate) {
+        throw new Error(`点位 ${location.id} 缺少 XYZ`)
+      }
+      return {
+        id: location.id,
+        name: echoId === null ? location.typeName : names.get(echoId) ?? location.typeName,
+        echoId,
+        stateId: location.stateId,
+        levelId: location.levelId,
+        coordinate: location.gameCoordinate,
+        mapCoordinate: [location.coordinate.mapX, location.coordinate.mapY],
+      }
+    }
+    try {
+      const result = await planRouteInWorker({
+        points: routeEligibleLocations.value.map((location) => toRoutePoint(location, location.echoId)),
+        startPoints: routeEligibleNavigationPoints.value.map((location) => toRoutePoint(location, null)),
+        connectors: (dataset.value?.connectors ?? []).filter(({ stateId }) => stateId === selectedStateId.value),
+        zWeight: routeZWeight.value,
+      }, controller.signal)
+      if (activePlan === controller) {
+        setRoute(result)
+      }
+    } catch (error) {
+      if (activePlan === controller) {
+        route.value = null
+        routeError.value = error instanceof Error ? error.message : String(error)
+      }
+    } finally {
+      if (activePlan === controller) {
+        activePlan = null
+        planning.value = false
+      }
+    }
   }
 
   function clearFilters(): void {
     selectedEchoIds.value = immutableSnapshot([])
     selectedSonataIds.value = immutableSnapshot([])
     echoSearch.value = ''
-    route.value = null
+    clearRoute()
   }
 
   return {
@@ -295,9 +363,12 @@ export const useExplorerStore = defineStore('explorer', () => {
     hiddenPointGroupIds: shallowReadonly(hiddenPointGroupIds),
     showProvisional: shallowReadonly(showProvisional),
     controlPanelCollapsed: shallowReadonly(controlPanelCollapsed),
+    mobileSheet: shallowReadonly(mobileSheet),
     routeZWeight: shallowReadonly(routeZWeight),
     mapViewport: shallowReadonly(mapViewport),
     route: shallowReadonly(route),
+    planning: shallowReadonly(planning),
+    routeError: shallowReadonly(routeError),
     states,
     activeState,
     floors,
@@ -322,6 +393,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     hidePointGroups,
     setProvisionalVisible,
     toggleControlPanel,
+    setMobileSheet,
+    planRoute,
     setRouteZWeight,
     setMapViewport,
     setRoute,

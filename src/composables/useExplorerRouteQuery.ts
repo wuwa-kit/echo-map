@@ -19,6 +19,7 @@ export function useExplorerRouteQuery(): {
   const hiddenTypesQuery = useRouteQuery('hiddenTypes')
   const provisionalQuery = useRouteQuery<string | undefined>('provisional', '1')
   const panelQuery = useRouteQuery<string | undefined>('panel', '0')
+  const sheetQuery = useRouteQuery<string | undefined>('sheet', undefined, { mode: 'replace' })
   const heightQuery = useRouteQuery<string | undefined>('height', String(DEFAULT_ROUTE_Z_WEIGHT))
   const xQuery = useRouteQuery('x')
   const yQuery = useRouteQuery('y')
@@ -34,6 +35,7 @@ export function useExplorerRouteQuery(): {
       hiddenTypes: hiddenTypesQuery.value,
       provisional: provisionalQuery.value,
       panel: panelQuery.value,
+      sheet: sheetQuery.value,
       height: heightQuery.value,
       x: xQuery.value,
       y: yQuery.value,
@@ -51,6 +53,7 @@ export function useExplorerRouteQuery(): {
     hiddenTypesQuery.value = values.hiddenTypes
     provisionalQuery.value = values.provisional
     panelQuery.value = values.panel
+    sheetQuery.value = values.sheet
     heightQuery.value = values.height
     xQuery.value = values.x
     yQuery.value = values.y

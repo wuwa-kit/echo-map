@@ -24,3 +24,23 @@
 .ol-attribution a {
   color: #8db7a7;
 }
+
+.ol-zoom {
+  top: max(8px, env(safe-area-inset-top)) !important;
+  left: max(8px, env(safe-area-inset-left)) !important;
+}
+
+@media (max-width: 1023px), (pointer: coarse) {
+  .ol-control button {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .ol-attribution {
+    bottom: calc(var(--mobile-bar-height) + 12px) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+  }
+}
