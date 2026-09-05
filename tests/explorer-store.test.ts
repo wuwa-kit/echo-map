@@ -81,4 +81,43 @@ describe('explorer point group visibility', () => {
 
     expect(store.hiddenPointGroupIds).toEqual([point.groupId])
   })
+
+  it('keeps explicit echo selection independent of sonata and search results', async () => {
+    const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(datasetUrl, 'utf8'))) as MapDataset
+    const location = dataset.echoLocations.find(({ stateId, levelId }) => stateId === 8 && levelId === null)
+    if (!location) throw new Error('测试数据缺少声骸点')
+    const store = useExplorerStore()
+    store.setDataset(dataset)
+    store.toggleEcho(location.echoId)
+    const locations = store.visibleEchoLocations
+    store.toggleSonata('unmatched-sonata')
+    store.setEchoSearch('不存在的声骸名称')
+    expect(store.echoesMatchingSonata).toEqual([])
+    expect(store.visibleEchoLocations).toEqual(locations)
+  })
+
+  it('validates restored scope and IDs while preserving valid selections', async () => {
+    const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(datasetUrl, 'utf8'))) as MapDataset
+    const echo = dataset.echoes[0]
+    const point = dataset.navigationPoints[0]
+    if (!echo || !point) throw new Error('测试数据缺少声骸或定位点')
+    const store = useExplorerStore()
+    store.setDataset(dataset)
+    store.restoreUrlState({
+      stateId: -999,
+      countryId: -999,
+      levelId: 'unknown-floor',
+      echoIds: ['unknown-echo', echo.id],
+      sonataIds: ['unknown-sonata', echo.sonataIds[0]],
+      hiddenPointGroupIds: ['unknown-group', point.typeId, point.groupId],
+      routeZWeight: Number.NaN,
+    })
+    expect(store.selectedStateId).toBe(8)
+    expect(store.selectedCountryId).toBeNull()
+    expect(store.selectedLevelId).toBeNull()
+    expect(store.selectedEchoIds).toEqual([echo.id])
+    expect(store.selectedSonataIds).toEqual([echo.sonataIds[0]])
+    expect(store.hiddenPointGroupIds).toEqual([point.groupId])
+    expect(store.routeZWeight).toBe(1.35)
+  })
 })

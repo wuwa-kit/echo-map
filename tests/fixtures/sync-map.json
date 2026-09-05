@@ -1,0 +1,469 @@
+{
+  "version": 3,
+  "source": {
+    "generatedAt": "2026-01-02T00:00:00.000Z",
+    "wikiFetchedAt": "2026-01-01T00:00:00.000Z",
+    "mapFetchedAt": "2026-01-02T00:00:00.000Z",
+    "mapResourceHash": "test-resource-hash",
+    "tileWidth": 1024,
+    "coordinateRate": 100,
+    "coordinateScaleBase": 850,
+    "sourceUrls": {
+      "echoCatalogue": "https://wiki.kurobbs.com/mc/catalogue/list?fid=1099&sid=1107",
+      "sonataCatalogue": "https://wiki.kurobbs.com/mc/catalogue/list?fid=1099&sid=1219",
+      "officialMap": "https://www.kurobbs.com/mc/map/"
+    }
+  },
+  "report": {
+    "wikiEchoCount": 4,
+    "includedEchoCount": 3,
+    "excludedEchoCount": 1,
+    "sonataCount": 1,
+    "exactMatchedEchoCount": 1,
+    "aliasMatchedEchoCount": 1,
+    "unmatchedEchoNames": [
+      "丙"
+    ],
+    "provisionalEchoLocationCount": 1,
+    "routeEligibleEchoLocationCount": 3,
+    "navigationPointCount": 5,
+    "navigationPointGroupCount": 4,
+    "bossNavigationPointCount": 1,
+    "challengeNavigationPointCount": 1,
+    "navigationIconFetchFailureCount": 1,
+    "routeEligibleNavigationPointCount": 1
+  },
+  "sonatas": [
+    {
+      "id": "sonata",
+      "name": "合鸣",
+      "iconUrl": "",
+      "sourceId": 1
+    }
+  ],
+  "echoes": [
+    {
+      "id": "echo-0",
+      "name": "甲",
+      "iconUrl": "",
+      "sonataIds": [
+        "sonata"
+      ],
+      "cost": 1,
+      "sourceId": 0
+    },
+    {
+      "id": "echo-1",
+      "name": "乙",
+      "iconUrl": "",
+      "sonataIds": [
+        "sonata"
+      ],
+      "cost": 1,
+      "sourceId": 1
+    },
+    {
+      "id": "echo-2",
+      "name": "丙",
+      "iconUrl": "",
+      "sonataIds": [
+        "sonata"
+      ],
+      "cost": 1,
+      "sourceId": 2
+    }
+  ],
+  "states": [
+    {
+      "id": 8,
+      "name": "地图",
+      "tileIds": [
+        "8_0_1"
+      ],
+      "tileExtent": {
+        "minTileX": 0,
+        "minTileY": 1,
+        "maxTileX": 0,
+        "maxTileY": 1,
+        "extent": [
+          0,
+          0,
+          1024,
+          1024
+        ]
+      },
+      "layeredMaps": [
+        {
+          "id": "layer",
+          "name": "分层地图",
+          "floors": [
+            {
+              "id": "floor-1",
+              "name": "一层",
+              "layeredMapId": "layer",
+              "tiles": [
+                "8/0_1.png"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "空地图",
+      "tileIds": [],
+      "tileExtent": {
+        "minTileX": -1,
+        "minTileY": 0,
+        "maxTileX": 0,
+        "maxTileY": 1,
+        "extent": [
+          -1024,
+          -1024,
+          1024,
+          1024
+        ]
+      },
+      "layeredMaps": []
+    }
+  ],
+  "regionLabels": [
+    {
+      "id": "1:8:0:地区",
+      "name": "地区",
+      "stateId": 8,
+      "countryId": 1,
+      "level": 1,
+      "coordinate": {
+        "rawX": 100,
+        "rawY": 200,
+        "mapX": 1025.204705882353,
+        "mapY": -2.409411764705882
+      }
+    },
+    {
+      "id": "1:8:0.0:地名",
+      "name": "地名",
+      "stateId": 8,
+      "countryId": 1,
+      "level": 2,
+      "coordinate": {
+        "rawX": 300,
+        "rawY": 400,
+        "mapX": 1027.6141176470587,
+        "mapY": -4.818823529411764
+      }
+    }
+  ],
+  "echoLocations": [
+    {
+      "id": "echo-official",
+      "typeId": "1",
+      "typeName": "  甲  ",
+      "iconUrl": "https://web-static.kurobbs.com/echo.png",
+      "stateId": 8,
+      "countryId": 1,
+      "layeredMapId": null,
+      "levelId": null,
+      "coordinate": {
+        "rawX": 100,
+        "rawY": 200,
+        "mapX": 1025.204705882353,
+        "mapY": -2.409411764705882
+      },
+      "gameCoordinate": {
+        "x": 11,
+        "y": 22,
+        "z": 33
+      },
+      "quality": "manual-verified",
+      "echoId": "echo-0"
+    },
+    {
+      "id": "echo-alias",
+      "typeId": "2",
+      "typeName": "官方别名",
+      "iconUrl": "",
+      "stateId": 8,
+      "countryId": 1,
+      "layeredMapId": "layer",
+      "levelId": "floor-1",
+      "coordinate": {
+        "rawX": 100,
+        "rawY": 200,
+        "mapX": 1025.204705882353,
+        "mapY": -2.409411764705882
+      },
+      "gameCoordinate": null,
+      "quality": "official-provisional",
+      "echoId": "echo-1"
+    },
+    {
+      "id": "manual-independent",
+      "typeId": "manual:echo-0",
+      "typeName": "甲",
+      "iconUrl": "",
+      "stateId": 8,
+      "countryId": 1,
+      "layeredMapId": null,
+      "levelId": null,
+      "coordinate": {
+        "rawX": 1100,
+        "rawY": 2200,
+        "mapX": 1037.2517647058824,
+        "mapY": -26.503529411764703
+      },
+      "gameCoordinate": {
+        "x": 11,
+        "y": 22,
+        "z": 33
+      },
+      "quality": "manual-verified",
+      "echoId": "echo-0"
+    },
+    {
+      "id": "manual-orphan",
+      "typeId": "manual:echo-1",
+      "typeName": "乙",
+      "iconUrl": "",
+      "stateId": 8,
+      "countryId": 1,
+      "layeredMapId": null,
+      "levelId": null,
+      "coordinate": {
+        "rawX": 1100,
+        "rawY": 2200,
+        "mapX": 1037.2517647058824,
+        "mapY": -26.503529411764703
+      },
+      "gameCoordinate": {
+        "x": 11,
+        "y": 22,
+        "z": 33
+      },
+      "quality": "manual-verified",
+      "echoId": "echo-1"
+    }
+  ],
+  "navigationPointGroups": [
+    {
+      "id": "type:12",
+      "name": "入口",
+      "iconUrl": "https://web-static.kurobbs.com/failed.png",
+      "iconHash": null,
+      "typeIds": [
+        "12"
+      ],
+      "typeNames": [
+        "入口"
+      ],
+      "modes": [
+        "entrance"
+      ],
+      "kinds": [
+        "entrance"
+      ]
+    },
+    {
+      "id": "type:21",
+      "name": "挑战",
+      "iconUrl": "",
+      "iconHash": null,
+      "typeIds": [
+        "21"
+      ],
+      "typeNames": [
+        "挑战"
+      ],
+      "modes": [
+        "fast-travel"
+      ],
+      "kinds": [
+        "challenge"
+      ]
+    },
+    {
+      "id": "icon:039058c6f2c0cb49",
+      "name": "相同图标",
+      "iconUrl": "https://web-static.kurobbs.com/same-b.png",
+      "iconHash": "039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
+      "typeIds": [
+        "11",
+        "10"
+      ],
+      "typeNames": [
+        "服务",
+        "信标"
+      ],
+      "modes": [
+        "landmark",
+        "fast-travel"
+      ],
+      "kinds": [
+        "service",
+        "beacon"
+      ]
+    },
+    {
+      "id": "kind:boss",
+      "name": "BOSS",
+      "iconUrl": "https://web-static.kurobbs.com/boss.png",
+      "iconHash": null,
+      "typeIds": [
+        "20"
+      ],
+      "typeNames": [
+        "BOSS"
+      ],
+      "modes": [
+        "fast-travel"
+      ],
+      "kinds": [
+        "boss"
+      ]
+    }
+  ],
+  "navigationPoints": [
+    {
+      "id": "nav-1",
+      "typeId": "10",
+      "typeName": "信标",
+      "iconUrl": "https://web-static.kurobbs.com/same-a.png",
+      "stateId": 8,
+      "countryId": 1,
+      "layeredMapId": null,
+      "levelId": null,
+      "coordinate": {
+        "rawX": 100,
+        "rawY": 200,
+        "mapX": 1025.204705882353,
+        "mapY": -2.409411764705882
+      },
+      "gameCoordinate": {
+        "x": 11,
+        "y": 22,
+        "z": 33
+      },
+      "quality": "manual-verified",
+      "catalogCategoryId": "configured",
+      "catalogCategoryName": "配置定位点",
+      "mode": "fast-travel",
+      "kind": "beacon",
+      "groupId": "icon:039058c6f2c0cb49"
+    },
+    {
+      "id": "nav-2",
+      "typeId": "11",
+      "typeName": "服务",
+      "iconUrl": "https://web-static.kurobbs.com/same-b.png",
+      "stateId": 8,
+      "countryId": 1,
+      "layeredMapId": null,
+      "levelId": null,
+      "coordinate": {
+        "rawX": 100,
+        "rawY": 200,
+        "mapX": 1025.204705882353,
+        "mapY": -2.409411764705882
+      },
+      "gameCoordinate": null,
+      "quality": "official-provisional",
+      "catalogCategoryId": "configured",
+      "catalogCategoryName": "配置定位点",
+      "mode": "landmark",
+      "kind": "service",
+      "groupId": "icon:039058c6f2c0cb49"
+    },
+    {
+      "id": "nav-3",
+      "typeId": "12",
+      "typeName": "入口",
+      "iconUrl": "https://web-static.kurobbs.com/failed.png",
+      "stateId": 8,
+      "countryId": 1,
+      "layeredMapId": null,
+      "levelId": null,
+      "coordinate": {
+        "rawX": 100,
+        "rawY": 200,
+        "mapX": 1025.204705882353,
+        "mapY": -2.409411764705882
+      },
+      "gameCoordinate": null,
+      "quality": "official-provisional",
+      "catalogCategoryId": "configured",
+      "catalogCategoryName": "配置定位点",
+      "mode": "entrance",
+      "kind": "entrance",
+      "groupId": "type:12"
+    },
+    {
+      "id": "boss",
+      "typeId": "20",
+      "typeName": "BOSS",
+      "iconUrl": "https://web-static.kurobbs.com/boss.png",
+      "stateId": 8,
+      "countryId": 1,
+      "layeredMapId": null,
+      "levelId": null,
+      "coordinate": {
+        "rawX": 100,
+        "rawY": 200,
+        "mapX": 1025.204705882353,
+        "mapY": -2.409411764705882
+      },
+      "gameCoordinate": null,
+      "quality": "official-provisional",
+      "catalogCategoryId": "configured",
+      "catalogCategoryName": "配置定位点",
+      "mode": "fast-travel",
+      "kind": "boss",
+      "groupId": "kind:boss"
+    },
+    {
+      "id": "challenge",
+      "typeId": "21",
+      "typeName": "挑战",
+      "iconUrl": "",
+      "stateId": 8,
+      "countryId": 1,
+      "layeredMapId": null,
+      "levelId": null,
+      "coordinate": {
+        "rawX": 100,
+        "rawY": 200,
+        "mapX": 1025.204705882353,
+        "mapY": -2.409411764705882
+      },
+      "gameCoordinate": null,
+      "quality": "official-provisional",
+      "catalogCategoryId": "category",
+      "catalogCategoryName": "挑战",
+      "mode": "fast-travel",
+      "kind": "challenge",
+      "groupId": "type:21"
+    }
+  ],
+  "connectors": [
+    {
+      "id": "stairs",
+      "name": "楼梯",
+      "stateId": 8,
+      "fromLevelId": "floor-1",
+      "toLevelId": "floor-2",
+      "from": {
+        "x": 1,
+        "y": 2,
+        "z": 3
+      },
+      "to": {
+        "x": 4,
+        "y": 5,
+        "z": 6
+      },
+      "traversalCost": 5,
+      "isExample": false
+    }
+  ]
+}

@@ -4,18 +4,19 @@ import { freeze, produce } from 'immer'
 import { DEFAULT_ROUTE_Z_WEIGHT, DEFAULT_STATE_ID } from '../url/explorer-url.ts'
 import type { ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
 import { planRouteInWorker } from '../route/worker-client.ts'
-import type {
-  EchoDefinition,
-  EchoLocation,
-  MapDataset,
-  MapFloorDefinition,
-  MapStateDefinition,
-  NavigationPoint,
-  RegionLabel,
-  PointLocationBase,
-  RoutePoint,
-  RouteResult,
-} from '../domain/types.ts'
+import type { MapDataset, MapFloorDefinition, MapStateDefinition, RouteResult } from '../domain/types.ts'
+import {
+  hasGameCoordinate,
+  isRouteStart,
+  matchesMapScope,
+  selectActiveEchoIds,
+  selectEchoDefinitions,
+  selectEchoLocations,
+  selectRegionLabels,
+  selectRegions,
+} from '../domain/explorer-selectors.ts'
+import { resolveExplorerState } from '../url/resolve-explorer-state.ts'
+import { createRoutePlanInput } from '../route/plan-input.ts'
 
 function toggleId(values: string[], id: string): string[] {
   return produce(values, (draft) => {
@@ -60,74 +61,30 @@ export const useExplorerStore = defineStore('explorer', () => {
   const floors = computed<MapFloorDefinition[]>(() => (
     activeState.value?.layeredMaps.flatMap(({ floors: mapFloors }) => mapFloors) ?? []
   ))
-  const regions = computed<RegionLabel[]>(() => {
-    const seen = new Set<number>()
-    return (dataset.value?.regionLabels ?? []).filter((label) => {
-      if (label.level !== 1 || label.stateId !== selectedStateId.value || seen.has(label.countryId)) {
-        return false
-      }
-      seen.add(label.countryId)
-      return true
-    })
-  })
-  const echoesMatchingSonata = computed<EchoDefinition[]>(() => {
-    const selectedSet = new Set(selectedSonataIds.value)
-    const search = echoSearch.value.trim().toLocaleLowerCase('zh-CN')
-    return (dataset.value?.echoes ?? []).filter((echo) => {
-      const matchesSonata = selectedSet.size === 0 || echo.sonataIds.some((id) => selectedSet.has(id))
-      return matchesSonata && (search.length === 0 || echo.name.toLocaleLowerCase('zh-CN').includes(search))
-    })
-  })
-  const activeEchoIds = computed<Set<string>>(() => {
-    const explicit = new Set(selectedEchoIds.value)
-    if (explicit.size > 0) {
-      return explicit
-    }
-
-    const sonataIds = new Set(selectedSonataIds.value)
-    if (sonataIds.size > 0) {
-      return new Set((dataset.value?.echoes ?? [])
-        .filter((echo) => echo.sonataIds.some((id) => sonataIds.has(id)))
-        .map(({ id }) => id))
-    }
-
-    return new Set()
-  })
-
-  function matchesMapScope(location: {
-    stateId: number
-    countryId: number | null
-    levelId: string | null
-  }): boolean {
-    return location.stateId === selectedStateId.value
-      && (selectedCountryId.value === null || location.countryId === selectedCountryId.value)
-      && location.levelId === selectedLevelId.value
-  }
-
-  const visibleEchoLocations = computed<EchoLocation[]>(() => (
-    (dataset.value?.echoLocations ?? []).filter((location) => (
-      matchesMapScope(location)
-      && activeEchoIds.value.has(location.echoId)
-      && (showProvisional.value || location.gameCoordinate !== null)
-    ))
+  const regions = computed(() => selectRegions(dataset.value?.regionLabels ?? [], selectedStateId.value))
+  const echoesMatchingSonata = computed(() => selectEchoDefinitions(
+    dataset.value?.echoes ?? [], selectedSonataIds.value, echoSearch.value,
   ))
-  const scopedNavigationPoints = computed<NavigationPoint[]>(() => (
-    (dataset.value?.navigationPoints ?? []).filter(matchesMapScope)
+  const activeEchoIds = computed(() => selectActiveEchoIds(
+    dataset.value?.echoes ?? [], selectedEchoIds.value, selectedSonataIds.value,
   ))
-  const visibleNavigationPoints = computed<NavigationPoint[]>(() => (
+  const mapScope = computed(() => ({
+    stateId: selectedStateId.value,
+    countryId: selectedCountryId.value,
+    levelId: selectedLevelId.value,
+  }))
+  const visibleEchoLocations = computed(() => selectEchoLocations(
+    dataset.value?.echoLocations ?? [], mapScope.value, activeEchoIds.value, showProvisional.value,
+  ))
+  const scopedNavigationPoints = computed(() => (
+    (dataset.value?.navigationPoints ?? []).filter((location) => matchesMapScope(location, mapScope.value))
+  ))
+  const visibleNavigationPoints = computed(() => (
     scopedNavigationPoints.value.filter(({ groupId }) => !hiddenPointGroupIds.value.includes(groupId))
   ))
-  const visibleRegionLabels = computed<RegionLabel[]>(() => (
-    (dataset.value?.regionLabels ?? []).filter((label) => (
-      label.stateId === selectedStateId.value
-      && label.level >= 2
-      && (selectedCountryId.value === null || label.countryId === selectedCountryId.value)
-    ))
-  ))
-  const routeEligibleLocations = computed(() => visibleEchoLocations.value.filter(({ gameCoordinate }) => gameCoordinate !== null))
-  const routeEligibleNavigationPoints = computed(() => scopedNavigationPoints.value.filter(({ mode, gameCoordinate }) => (
-    mode === 'fast-travel' && gameCoordinate !== null
-  )))
+  const visibleRegionLabels = computed(() => selectRegionLabels(dataset.value?.regionLabels ?? [], mapScope.value))
+  const routeEligibleLocations = computed(() => visibleEchoLocations.value.filter(hasGameCoordinate))
+  const routeEligibleNavigationPoints = computed(() => scopedNavigationPoints.value.filter(isRouteStart))
 
   function setDataset(value: MapDataset): void {
     clearRoute()
@@ -144,53 +101,18 @@ export const useExplorerStore = defineStore('explorer', () => {
       return
     }
 
-    const restoredState = state.stateId === undefined
-      ? undefined
-      : currentDataset.states.find(({ id }) => id === state.stateId)
-    const nextState = restoredState
-      ?? currentDataset.states.find(({ id }) => id === DEFAULT_STATE_ID)
-      ?? currentDataset.states[0]
-    if (nextState) {
-      selectedStateId.value = nextState.id
-    }
-
-    const countryIds = new Set(currentDataset.regionLabels
-      .filter(({ level, stateId }) => level === 1 && stateId === selectedStateId.value)
-      .map(({ countryId }) => countryId))
-    selectedCountryId.value = state.countryId !== undefined && countryIds.has(state.countryId)
-      ? state.countryId
-      : null
-
-    const floorIds = new Set(nextState?.layeredMaps.flatMap(({ floors }) => floors.map(({ id }) => id)) ?? [])
-    selectedLevelId.value = state.levelId !== undefined && floorIds.has(state.levelId) ? state.levelId : null
-
-    const echoIds = new Set(currentDataset.echoes.map(({ id }) => id))
-    selectedEchoIds.value = immutableSnapshot((state.echoIds ?? []).filter((id) => echoIds.has(id)))
-    const sonataIds = new Set(currentDataset.sonatas.map(({ id }) => id))
-    selectedSonataIds.value = immutableSnapshot((state.sonataIds ?? []).filter((id) => sonataIds.has(id)))
-
-    const pointGroupIds = new Set(currentDataset.navigationPointGroups.map(({ id }) => id))
-    const pointGroupIdByTypeId = new Map(currentDataset.navigationPoints.map(({ typeId, groupId }) => [typeId, groupId]))
-    hiddenPointGroupIds.value = immutableSnapshot([...new Set((state.hiddenPointGroupIds ?? []).flatMap((id) => {
-      if (pointGroupIds.has(id)) {
-        return [id]
-      }
-      const legacyGroupId = pointGroupIdByTypeId.get(id)
-      return legacyGroupId ? [legacyGroupId] : []
-    }))])
-    showProvisional.value = state.showProvisional ?? true
-    controlPanelCollapsed.value = state.controlPanelCollapsed ?? false
-    mobileSheet.value = state.mobileSheet === 'filters' || state.mobileSheet === 'route'
-      ? state.mobileSheet
-      : null
-    routeZWeight.value = state.routeZWeight !== undefined
-      && state.routeZWeight >= 0.1
-      && state.routeZWeight <= 10
-      ? state.routeZWeight
-      : DEFAULT_ROUTE_Z_WEIGHT
-    mapViewport.value = state.viewport
-      ? immutableSnapshot({ center: [...state.viewport.center], zoom: state.viewport.zoom })
-      : null
+    const resolved = resolveExplorerState(currentDataset, state, selectedStateId.value)
+    selectedStateId.value = resolved.stateId
+    selectedCountryId.value = resolved.countryId
+    selectedLevelId.value = resolved.levelId
+    selectedEchoIds.value = immutableSnapshot([...resolved.echoIds])
+    selectedSonataIds.value = immutableSnapshot([...resolved.sonataIds])
+    hiddenPointGroupIds.value = immutableSnapshot([...resolved.hiddenPointGroupIds])
+    showProvisional.value = resolved.showProvisional
+    controlPanelCollapsed.value = resolved.controlPanelCollapsed
+    mobileSheet.value = resolved.mobileSheet
+    routeZWeight.value = resolved.routeZWeight
+    mapViewport.value = immutableSnapshot(resolved.viewport)
     echoSearch.value = ''
     clearRoute()
   }
@@ -307,28 +229,12 @@ export const useExplorerStore = defineStore('explorer', () => {
     activePlan = controller
     planning.value = true
     routeError.value = ''
-    const names = new Map(dataset.value?.echoes.map(({ id, name }) => [id, name]))
-    function toRoutePoint(location: PointLocationBase, echoId: string | null): RoutePoint {
-      if (!location.gameCoordinate) {
-        throw new Error(`点位 ${location.id} 缺少 XYZ`)
-      }
-      return {
-        id: location.id,
-        name: echoId === null ? location.typeName : names.get(echoId) ?? location.typeName,
-        echoId,
-        stateId: location.stateId,
-        levelId: location.levelId,
-        coordinate: location.gameCoordinate,
-        mapCoordinate: [location.coordinate.mapX, location.coordinate.mapY],
-      }
-    }
     try {
-      const result = await planRouteInWorker({
-        points: routeEligibleLocations.value.map((location) => toRoutePoint(location, location.echoId)),
-        startPoints: routeEligibleNavigationPoints.value.map((location) => toRoutePoint(location, null)),
-        connectors: (dataset.value?.connectors ?? []).filter(({ stateId }) => stateId === selectedStateId.value),
-        zWeight: routeZWeight.value,
-      }, controller.signal)
+      const input = createRoutePlanInput(
+        dataset.value, routeEligibleLocations.value, routeEligibleNavigationPoints.value,
+        selectedStateId.value, routeZWeight.value,
+      )
+      const result = await planRouteInWorker(input, controller.signal)
       if (activePlan === controller) {
         setRoute(result)
       }
