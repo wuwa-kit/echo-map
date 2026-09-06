@@ -1,4 +1,6 @@
-import { mapDatasetSchema } from '../src/domain/schema.ts'
+import { mapDatasetSchema, mapZoomRangeSchema, officialAssetSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
+import { buildOfficialAssets } from '../src/domain/official-assets.ts'
+import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
 import type { MapDataset } from '../src/domain/types.ts'
 import { projectPath, readJson } from './lib/files.ts'
 import { parsePointLibrary } from '../src/domain/point-library.ts'
@@ -6,11 +8,30 @@ import { readOfficialPointLibrary } from './lib/official-point-library.ts'
 
 const rawDataset = await readJson<unknown>(projectPath('public', 'data', 'app-data.json'))
 const dataset = mapDatasetSchema.parse(rawDataset) as MapDataset
+wikiCatalogueSchema.parse(await readJson<unknown>(projectPath('data', 'generated', 'wiki.json')))
+const assets = buildOfficialAssets(dataset)
+const assetIds = new Set<string>()
+for (const asset of assets) {
+  officialAssetSchema.parse(asset)
+  if (assetIds.has(asset.id)) throw new Error(`重复资产 ID：${asset.id}`)
+  assetIds.add(asset.id)
+  if (asset.stateIds.some((id) => !dataset.states.some((state) => state.id === id))) {
+    throw new Error(`资产 ${asset.name} 引用了不存在的地图`)
+  }
+}
 const pointLibrary = parsePointLibrary(await readJson<unknown>(projectPath('data', 'manual', 'points.json')), dataset, 'manual')
 const officialLibrary = await readOfficialPointLibrary(projectPath('data', 'generated', 'official-points.json'), dataset)
 const echoIds = new Set(dataset.echoes.map(({ id }) => id))
 const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []
+
+for (const range of Object.values(MAP_POINT_ZOOM_RANGES)) mapZoomRangeSchema.parse(range)
+for (const label of dataset.regionLabels) {
+  mapZoomRangeSchema.parse(mapPointZoomRange({ category: 'region-name', location: label }))
+  if (!dataset.states.some(({ id }) => id === label.stateId)) {
+    errors.push(`文字定位点 ${label.name} 引用了不存在的地图 ${label.stateId}`)
+  }
+}
 
 for (const echo of dataset.echoes) {
   if (echo.cost !== 1 && echo.cost !== 3) {
@@ -58,7 +79,7 @@ for (const location of dataset.echoLocations) {
   }
 }
 
-for (const collection of [dataset.echoLocations, dataset.navigationPoints]) {
+for (const collection of [dataset.echoLocations, dataset.navigationPoints, dataset.regionLabels]) {
   const ids = new Set<string>()
   for (const location of collection) {
     if (ids.has(location.id)) {
@@ -93,12 +114,15 @@ if (errors.length > 0) {
 
 console.log([
   '数据校验通过',
+  `官方资产 ${assets.length}`,
+  `地图导航 ${dataset.mapNavigation.length} 个大区 / ${dataset.mapNavigation.reduce((sum, country) => sum + country.groups.length, 0)} 个分组`,
   `人工点位 ${pointLibrary.points.length}`,
   `官方录入格式 ${officialLibrary.points.length}`,
   `声骸 ${dataset.echoes.length}`,
   `合鸣效果 ${dataset.sonatas.length}`,
   `声骸点位 ${dataset.echoLocations.length}`,
   `定位点 ${dataset.navigationPoints.length}`,
+  `文字定位点 ${dataset.regionLabels.length}`,
   `图标分组 ${dataset.navigationPointGroups.length}`,
   `BOSS ${dataset.report.bossNavigationPointCount}`,
   `挑战 ${dataset.report.challengeNavigationPointCount}`,

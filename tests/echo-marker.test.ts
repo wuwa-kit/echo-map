@@ -121,34 +121,34 @@ describe('echo marker appearance', () => {
   })
 
   it('composes visible cluster targets and preserves the individual point selection', () => {
-    let zoom = 3
-    const points = createPointLayers(() => zoom)
+    let resolution = 4
+    const points = createPointLayers()
     const { echoLocations } = libraryLocations({ version: 1, points: [mixedPoint('first'), mixedPoint('second')] }, referenceDataset)
     const cluster = new Feature({
       geometry: new Point([0, 0]),
-      features: echoLocations.map((location) => new Feature({ geometry: new Point([0, 0]), location })),
+      features: echoLocations.map((location) => new Feature({ geometry: new Point([0, 0]), mapPoint: { category: 'echo', location } })),
     })
     points.update(echoLocations, [], [], referenceDataset.echoes)
     const render = points.layers[1]?.getStyleFunction()
-    const mixed = render?.(cluster, 1)
+    const mixed = render?.(cluster, resolution)
     expect(Array.isArray(mixed) ? mixed[0]?.getImage()?.getScale() : undefined).toBe(54 / 44 / 2)
     expect(Array.isArray(mixed) && mixed.every((style) => style.getText() === null)).toBe(true)
     expect(portraits.map(({ src }) => src).sort()).toEqual([smallEcho.iconUrl, eliteEcho.iconUrl].sort())
     expect(cluster.get('locations')).toEqual(echoLocations)
 
     points.update(echoLocations, [], [], referenceDataset.echoes, new Set([smallEcho.id]))
-    const filtered = render?.(cluster, 1)
+    const filtered = render?.(cluster, resolution)
     expect(Array.isArray(filtered) ? filtered[0]?.getImage()?.getScale() : undefined).toBe(PORTRAIT_MARKER_SIZES[1] / 44 / 2)
     expect(Array.isArray(filtered) && filtered.every((style) => style.getText() === null)).toBe(true)
     expect(cluster.get('locations')).toEqual(echoLocations)
 
     cluster.set('features', cluster.get('features').slice(0, 1))
-    const single = render?.(cluster, 1)
+    const single = render?.(cluster, resolution)
     expect(Array.isArray(single) ? single.length : undefined).toBe(1)
     expect(Array.isArray(single) && single.every((style) => style.getText() === null)).toBe(true)
 
-    zoom = 2
-    expect(render?.(cluster, 1)).toBeUndefined()
+    resolution = 8
+    expect(render?.(cluster, resolution)).toBeUndefined()
     expect(cluster.get('locations')).toEqual([])
     points.dispose()
   })

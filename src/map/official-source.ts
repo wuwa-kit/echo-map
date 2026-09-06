@@ -2,8 +2,7 @@ import TileLayer from 'ol/layer/Tile.js'
 import TileImage from 'ol/source/TileImage.js'
 import TileGrid from 'ol/tilegrid/TileGrid.js'
 import type { MapStateDefinition, SourceManifest } from '../domain/types.ts'
-
-const STATIC_ROOT = 'https://web-static.kurobbs.com'
+import { officialFloorTileUrl, officialTileUrl, tilePreviewUrl } from '../data/official-asset-urls.ts'
 
 export function createOfficialTileLayer(state: MapStateDefinition, sourceManifest: SourceManifest): TileLayer<TileImage> {
   const { tileExtent } = state
@@ -35,7 +34,7 @@ export function createOfficialTileLayer(state: MapStateDefinition, sourceManifes
       if (!availableTiles.has(tileId)) {
         return undefined
       }
-      return `${STATIC_ROOT}/mcmap/tiles/${sourceManifest.mapResourceHash}/${state.id}/${tileId}.png?x-oss-process=image/format,webp/resize,w_${sourceManifest.tileWidth},h_${sourceManifest.tileWidth}`
+      return tilePreviewUrl(officialTileUrl(sourceManifest.mapResourceHash, state.id, tileId), sourceManifest.tileWidth)
     },
   })
 
@@ -47,5 +46,5 @@ export function createOfficialTileLayer(state: MapStateDefinition, sourceManifes
 }
 
 export function layeredTileUrl(resourceHash: string, stateId: number, tilePath: string): string {
-  return `${STATIC_ROOT}/mcmap/tiles/${resourceHash}/${stateId}${tilePath}?x-oss-process=image/format,webp/resize,w_1024,h_1024`
+  return tilePreviewUrl(officialFloorTileUrl(resourceHash, stateId, tilePath), 1024)
 }

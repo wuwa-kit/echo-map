@@ -3,6 +3,7 @@ import { computed, nextTick, shallowRef, useAttrs, useId, useTemplateRef, watch 
 import { produce } from 'immer'
 import WuScrollArea from './WuScrollArea.vue'
 import WuSvg from './WuSvg.vue'
+import WuPopover from './WuPopover.vue'
 import { useProvideWuSelectContext } from './select-context.ts'
 import type { WuSelectOptionRecord, WuSelectValue } from './select-context.ts'
 
@@ -28,19 +29,15 @@ const triggerId = typeof attrs.id === 'string' && attrs.id.length > 0
   : `wu-select-trigger-${componentId}`
 const popoverId = `wu-select-popover-${componentId}`
 const trigger = useTemplateRef<HTMLButtonElement>('triggerRef')
-const popover = useTemplateRef<HTMLDivElement>('popoverRef')
+const popover = useTemplateRef<InstanceType<typeof WuPopover>>('popoverRef')
 const options = shallowRef<readonly WuSelectOptionRecord[]>([])
 const activeOptionId = shallowRef<string>()
 const isOpen = shallowRef(false)
 const useNative = computed(() => props.native
-  || !('showPopover' in HTMLElement.prototype)
-  || !CSS.supports('position-area', 'block-end')
-  || !CSS.supports('inline-size', 'anchor-size(width)'))
+  || !('showPopover' in HTMLElement.prototype))
 
 watch(useNative, (native) => {
-  if (native && popover.value?.matches(':popover-open')) {
-    popover.value.hidePopover()
-  }
+  if (native) popover.value?.hide()
 })
 
 const selectedOption = computed(() => options.value.find(({ value }) => Object.is(value, model.value)))
@@ -127,10 +124,10 @@ function focusInitialOption(): void {
 }
 
 function showPopover(): void {
-  if (props.disabled || useNative.value || popover.value?.matches(':popover-open')) {
+  if (props.disabled || useNative.value) {
     return
   }
-  popover.value?.showPopover()
+  popover.value?.show()
 }
 
 function chooseOption(option: WuSelectOptionRecord): void {
@@ -139,7 +136,7 @@ function chooseOption(option: WuSelectOptionRecord): void {
   }
   model.value = option.value
   if (!useNative.value) {
-    popover.value?.hidePopover()
+    popover.value?.hide()
   }
   void nextTick(() => {
     trigger.value?.focus()
@@ -219,13 +216,16 @@ function onPopoverKeydown(event: KeyboardEvent): void {
   }
 }
 
-function onPopoverToggle(): void {
-  isOpen.value = popover.value?.matches(':popover-open') ?? false
-  if (isOpen.value) {
-    focusInitialOption()
-  } else {
-    activeOptionId.value = undefined
-  }
+function onPopoverOpened(): void {
+  isOpen.value = true
+  const active = enabledOptions().find(({ id }) => id === activeOptionId.value)
+  if (active) focusOption(active.id)
+  else focusInitialOption()
+}
+
+function onPopoverClosed(): void {
+  isOpen.value = false
+  activeOptionId.value = undefined
 }
 
 useProvideWuSelectContext({
@@ -267,7 +267,7 @@ useProvideWuSelectContext({
       :class="invalid
         ? 'border-[#ff8d7e] focus-visible:border-[#ffad9f] focus-visible:shadow-[0_0_0_2px_rgba(255,141,126,0.13)]'
         : 'border-[var(--line)] hover:border-[rgba(101,241,194,0.36)] focus-visible:border-[rgba(101,241,194,0.68)] focus-visible:shadow-[0_0_0_2px_rgba(101,241,194,0.1)]'"
-      class="h-38px w-full min-w-0 cursor-pointer flex items-center rounded-7px border bg-[linear-gradient(180deg,rgba(25,47,41,0.96),rgba(15,31,27,0.96))] pl-11px pr-34px text-left text-11px text-[#dce9e3] font-inherit shadow-[inset_0_1px_rgba(255,255,255,0.025),0_5px_16px_rgba(0,0,0,0.1)] outline-none transition-[border-color,box-shadow,background-color] duration-180 disabled:cursor-not-allowed disabled:border-[rgba(169,207,192,0.1)] disabled:bg-[#101c19] disabled:text-[#60746d]"
+      class="h-38px w-full min-w-0 cursor-pointer flex items-center rounded-7px border bg-[#152b24] pl-11px pr-34px text-left text-11px text-[#dce9e3] font-inherit shadow-[inset_0_1px_rgba(255,255,255,0.025),0_5px_16px_rgba(0,0,0,0.1)] outline-none transition-[border-color,box-shadow,background-color] duration-180 disabled:cursor-not-allowed disabled:border-[rgba(169,207,192,0.1)] disabled:bg-[#101c19] disabled:text-[#60746d]"
       :disabled="disabled"
       :aria-invalid="invalid || undefined"
       :popovertarget="popoverId"
@@ -280,53 +280,25 @@ useProvideWuSelectContext({
       class="pointer-events-none absolute right-10px top-1/2 [--wu-svg-h:15px] translate-y-[-50%] text-[#78998d] transition-[color,transform] duration-180 group-focus-within:text-[var(--accent)] group-hover:text-[#a9cfc0]"
       :class="isOpen ? 'rotate-180 text-[var(--accent)]' : ''"
     />
-    <div
+    <WuPopover
       v-show="!useNative"
       :id="popoverId"
       ref="popoverRef"
-      popover="auto"
+      :anchor="trigger"
+      :disabled="disabled || useNative"
+      width="trigger"
+      :max-height="320"
+      :gap="6"
       role="listbox"
       :aria-labelledby="triggerId"
-      class="m-0 max-h-[min(320px,calc(100vh-32px))] overflow-hidden border border-[rgba(169,207,192,0.18)] rounded-9px bg-[rgba(8,20,17,0.98)] p-4px text-[#dce9e3] shadow-[0_18px_48px_rgba(0,0,0,0.42),inset_0_1px_rgba(255,255,255,0.035)]"
+      class="border border-[rgba(169,207,192,0.18)] rounded-9px bg-[rgba(8,20,17,0.98)] p-4px text-[#dce9e3] shadow-[0_18px_48px_rgba(0,0,0,0.42),inset_0_1px_rgba(255,255,255,0.035)]"
       @keydown="onPopoverKeydown"
-      @toggle="onPopoverToggle"
+      @opened="onPopoverOpened"
+      @closed="onPopoverClosed"
     >
       <WuScrollArea size="sm">
         <slot />
       </WuScrollArea>
-    </div>
+    </WuPopover>
   </div>
 </template>
-
-<style scoped>
-[popover] {
-  position-area: block-end;
-  position-try-fallbacks: flip-block;
-  inline-size: anchor-size(width);
-  margin-block: 6px;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-4px) scale(0.985);
-  transform-origin: top center;
-  transition:
-    opacity 140ms ease,
-    transform 140ms ease,
-    overlay 140ms allow-discrete,
-    display 140ms allow-discrete;
-}
-
-[popover]:popover-open {
-  display: flex;
-  flex-direction: column;
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0) scale(1);
-}
-
-@starting-style {
-  [popover]:popover-open {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.985);
-  }
-}
-</style>

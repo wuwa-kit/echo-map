@@ -1,7 +1,25 @@
 import { z } from 'zod'
+import type { RefinementCtx } from 'zod'
+import type { MapDataset } from './types.ts'
 
 const finiteNumber = z.number().finite()
 const nullableString = z.string().nullable()
+
+export const officialAssetCategorySchema = z.enum(['echo', 'sonata', 'map-echo', 'navigation', 'tile', 'floor'])
+const assetUrlSchema = z.string().url().startsWith('https://')
+export const officialAssetSchema = z.object({
+  id: z.string().min(1),
+  category: officialAssetCategorySchema,
+  name: z.string().min(1),
+  url: assetUrlSchema,
+  previewUrl: assetUrlSchema,
+  sourceUrl: assetUrlSchema,
+  fetchedAt: z.string().min(1),
+  stateIds: z.array(z.number().int()),
+  referenceIds: z.array(z.string().min(1)).min(1),
+  tags: z.array(z.string().min(1)),
+  recordCount: z.number().int().positive(),
+})
 
 export const navigationKindSchema = z.enum([
   'nexus', 'beacon', 'tacet-field', 'training-ground', 'hologram', 'boss', 'domain',
@@ -83,18 +101,124 @@ const officialCoordinateSchema = z.object({
   mapY: finiteNumber,
 })
 
-const pointBaseShape = {
+const mapLocationBaseShape = {
   id: z.string().min(1),
+  stateId: z.number().int(),
+  countryId: z.number().int().nullable(),
+  coordinate: officialCoordinateSchema,
+}
+
+export const regionLabelSchema = z.object({
+  ...mapLocationBaseShape,
+  name: z.string().min(1),
+  countryId: z.number().int(),
+  level: z.number().int().positive(),
+  coordinate: officialCoordinateSchema.strict(),
+}).strict()
+
+export const mapZoomRangeSchema = z.object({
+  minZoom: finiteNumber.nonnegative(),
+  maxZoom: finiteNumber.nullable(),
+}).strict().refine(({ minZoom, maxZoom }) => maxZoom === null || maxZoom > minZoom, {
+  message: '缩放范围上限必须大于下限，或以 null 表示无上限',
+})
+
+const pointBaseShape = {
+  ...mapLocationBaseShape,
   typeId: z.string().min(1),
   typeName: z.string().min(1),
   iconUrl: z.string(),
-  stateId: z.number().int(),
-  countryId: z.number().int().nullable(),
   layeredMapId: nullableString,
   levelId: nullableString,
-  coordinate: officialCoordinateSchema,
   gameCoordinate: gameCoordinateSchema.nullable(),
   quality: z.enum(['official-provisional', 'manual-verified', 'example']),
+}
+
+const sonataEchoIdsSchema = z.array(z.string().min(1)).refine(
+  (ids) => new Set(ids).size === ids.length,
+  { message: '套装声骸 ID 列表不能重复' },
+)
+
+const wikiCatalogueShape = {
+  sonatas: z.array(z.object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    iconUrl: z.string(),
+    sourceId: z.number().int(),
+    c1EchoIds: sonataEchoIdsSchema,
+    c3EchoIds: sonataEchoIdsSchema,
+  })).min(1),
+  echoes: z.array(z.object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    iconUrl: z.string(),
+    sonataIds: z.tuple([z.string().min(1)]).rest(z.string().min(1)),
+    cost: z.union([z.literal(1), z.literal(3)]),
+    sourceId: z.number().int(),
+  })).min(1),
+}
+
+function validateSonataEchoIds({ sonatas, echoes }: Pick<MapDataset, 'sonatas' | 'echoes'>, context: RefinementCtx): void {
+  const echoById = new Map(echoes.map((echo) => [echo.id, echo]))
+  const sonataById = new Map(sonatas.map((sonata) => [sonata.id, sonata]))
+  sonatas.forEach((sonata, index) => {
+    for (const [field, cost] of [['c1EchoIds', 1], ['c3EchoIds', 3]] as const) {
+      sonata[field].forEach((echoId, memberIndex) => {
+        const echo = echoById.get(echoId)
+        if (!echo || echo.cost !== cost || !echo.sonataIds.includes(sonata.id)) {
+          context.addIssue({
+            code: 'custom', path: ['sonatas', index, field, memberIndex],
+            message: `${sonata.name} 的 ${field} 引用了不存在、COST 不符或不属于该套装的声骸 ${echoId}`,
+          })
+        }
+      })
+    }
+  })
+  echoes.forEach((echo, index) => {
+    for (const sonataId of echo.sonataIds) {
+      const sonata = sonataById.get(sonataId)
+      const field = echo.cost === 1 ? 'c1EchoIds' : 'c3EchoIds'
+      if (!sonata || !sonata[field].includes(echo.id)) {
+        context.addIssue({
+          code: 'custom', path: ['echoes', index, 'sonataIds'],
+          message: `${echo.name} 引用的套装 ${sonataId} 不存在或 ${field} 遗漏了该声骸`,
+        })
+      }
+    }
+  })
+}
+
+export const wikiCatalogueSchema = z.object(wikiCatalogueShape).superRefine(validateSonataEchoIds)
+
+const navigationRegionIdsSchema = z.array(z.string().min(1)).refine(
+  (ids) => new Set(ids).size === ids.length, { message: '地图导航目的地不能重复' },
+)
+
+function validateMapNavigation(dataset: Pick<MapDataset, 'mapNavigation' | 'regionLabels' | 'states'>, context: RefinementCtx): void {
+  const regionById = new Map(dataset.regionLabels.map((region) => [region.id, region]))
+  const states = new Set(dataset.states.map(({ id }) => id))
+  const countries = new Set<number>()
+  dataset.mapNavigation.forEach((country, index) => {
+    const issue = (message: string) => context.addIssue({ code: 'custom', path: ['mapNavigation', index], message })
+    if (countries.has(country.id)) issue('地图导航大区 ID 重复')
+    countries.add(country.id)
+    const regionIds = new Set(country.regionIds)
+    for (const id of regionIds) {
+      const region = regionById.get(id)
+      if (!region || region.countryId !== country.id || !states.has(region.stateId)) issue(`无效地图导航目的地：${id}`)
+    }
+    const groupIds = new Set<string>()
+    const groupedRegionIds = new Set<string>()
+    for (const group of country.groups) {
+      if (groupIds.has(group.id)) issue('地图导航分组 ID 重复')
+      groupIds.add(group.id)
+      for (const id of group.regionIds) {
+        if (!regionIds.has(id) || groupedRegionIds.has(id)) issue(`地图分组目的地不存在或重复：${id}`)
+        groupedRegionIds.add(id)
+      }
+    }
+    if (country.groups.length && groupedRegionIds.size !== regionIds.size) issue('地图分组遗漏了大区目的地')
+  })
 }
 
 export const mapDatasetSchema = z.object({
@@ -130,20 +254,7 @@ export const mapDatasetSchema = z.object({
     navigationIconFetchFailureCount: z.number().int().nonnegative(),
     routeEligibleNavigationPointCount: z.number().int().nonnegative(),
   }),
-  sonatas: z.array(z.object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    iconUrl: z.string(),
-    sourceId: z.number().int(),
-  })).min(1),
-  echoes: z.array(z.object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    iconUrl: z.string(),
-    sonataIds: z.tuple([z.string().min(1)]).rest(z.string().min(1)),
-    cost: z.union([z.literal(1), z.literal(3)]),
-    sourceId: z.number().int(),
-  })).min(1),
+  ...wikiCatalogueShape,
   states: z.array(z.object({
     id: z.number().int(),
     name: z.string().min(1),
@@ -166,14 +277,17 @@ export const mapDatasetSchema = z.object({
       })),
     })),
   })).min(1),
-  regionLabels: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    stateId: z.number().int(),
-    countryId: z.number().int(),
-    level: z.number().int(),
-    coordinate: officialCoordinateSchema,
+  mapNavigation: z.array(z.object({
+    id: z.number().int(),
+    name: z.string().min(1),
+    regionIds: navigationRegionIdsSchema,
+    groups: z.array(z.object({
+      id: z.string().min(1),
+      name: z.string().min(1),
+      regionIds: navigationRegionIdsSchema.min(1),
+    })),
   })),
+  regionLabels: z.array(regionLabelSchema),
   echoLocations: z.array(z.object({
     ...pointBaseShape,
     echoId: z.string().min(1),
@@ -237,4 +351,4 @@ export const mapDatasetSchema = z.object({
     traversalCost: z.number().nonnegative(),
     isExample: z.boolean(),
   })),
-})
+}).superRefine(validateSonataEchoIds).superRefine(validateMapNavigation)

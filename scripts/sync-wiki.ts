@@ -3,6 +3,8 @@ import { isMainModule, projectPath, writeJson } from './lib/files.ts'
 import { asArray, asNumber, asRecord, asString, nested } from './lib/raw.ts'
 import type { UnknownRecord } from './lib/raw.ts'
 import type { WikiSnapshot } from './lib/wiki.ts'
+import { withSonataEchoIds } from './lib/wiki.ts'
+import { wikiCatalogueSchema } from '../src/domain/schema.ts'
 import type { EchoDefinition, NonEmptyArray, SonataEffect } from '../src/domain/types.ts'
 
 const WIKI_PAGE_API = 'https://api.kurobbs.com/wiki/core/catalogue/item/getPage'
@@ -73,7 +75,7 @@ function contentIcon(record: UnknownRecord): string {
   return asString(contentOf(record).contentUrl)
 }
 
-function normalizeSonatas(records: UnknownRecord[]): SonataEffect[] {
+function normalizeSonatas(records: UnknownRecord[]): Omit<SonataEffect, 'c1EchoIds' | 'c3EchoIds'>[] {
   return records.map((record) => ({
     id: `wiki-sonata-${asString(record.id)}`,
     name: asString(record.name).trim(),
@@ -139,10 +141,11 @@ export async function syncWiki(): Promise<WikiSnapshot> {
     fetchedAt: new Date().toISOString(),
     totalEchoCount: echoCatalogue.records.length,
     excludedEchoNames: excludedEchoNames.sort((left, right) => left.localeCompare(right, 'zh-CN')),
-    sonatas: sonatas.sort((left, right) => left.name.localeCompare(right.name, 'zh-CN')),
+    sonatas: withSonataEchoIds(sonatas, echoes).sort((left, right) => left.name.localeCompare(right.name, 'zh-CN')),
     echoes: echoes.sort((left, right) => left.name.localeCompare(right.name, 'zh-CN')),
   }
 
+  wikiCatalogueSchema.parse(snapshot)
   await writeJson(projectPath('data', 'generated', 'wiki.json'), snapshot)
   console.log(`Wiki 同步完成：${snapshot.echoes.length}/${snapshot.totalEchoCount} 个声骸保留，${snapshot.sonatas.length} 个合鸣效果`)
   return snapshot

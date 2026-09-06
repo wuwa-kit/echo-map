@@ -3,7 +3,7 @@ import type { MapDataset, MapStateDefinition } from '../src/domain/types.ts'
 import { calculateTileExtent } from '../src/map/projection.ts'
 import { isMainModule, projectPath, readJson, writeJson } from './lib/files.ts'
 import type { WikiSnapshot } from './lib/wiki.ts'
-import { flattenRegions, normalizeLayers } from './lib/map/normalize.ts'
+import { flattenRegions, normalizeLayers, normalizeMapNavigation } from './lib/map/normalize.ts'
 import { normalizeLocations } from './lib/map/locations.ts'
 import { groupNavigationPoints } from './lib/map/navigation-groups.ts'
 import { fetchCountryData, fetchMapConfiguration, fetchNavigationIconHashes, fetchStatePayloads } from './lib/map/source.ts'
@@ -80,6 +80,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
     sonatas: wiki.sonatas,
     echoes: wiki.echoes,
     states,
+    mapNavigation: normalizeMapNavigation(countryData),
     regionLabels: flattenRegions(countryData),
     echoLocations: normalizedEchoLocations,
     navigationPointGroups: navigationGrouping.groups,

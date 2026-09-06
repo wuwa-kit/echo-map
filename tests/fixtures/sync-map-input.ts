@@ -5,7 +5,7 @@ export const iconBytes = new Uint8Array([1, 2, 3])
 export const iconHash = createHash('sha256').update(iconBytes).digest('hex')
 export const wiki: WikiSnapshot = {
   fetchedAt: '2026-01-01T00:00:00.000Z', totalEchoCount: 4, excludedEchoNames: ['排除的 BOSS'],
-  sonatas: [{ id: 'sonata', name: '合鸣', iconUrl: '', sourceId: 1 }],
+  sonatas: [{ id: 'sonata', name: '合鸣', iconUrl: '', sourceId: 1, c1EchoIds: ['echo-0', 'echo-1', 'echo-2'], c3EchoIds: [] }],
   echoes: ['甲', '乙', '丙'].map((name, index) => ({
     id: `echo-${index}`, name, iconUrl: '', sonataIds: ['sonata'], cost: 1, sourceId: index,
   })),

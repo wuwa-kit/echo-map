@@ -54,6 +54,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const mobileSheet = shallowRef<MobileSheet>(null)
   const routeZWeight = shallowRef(DEFAULT_ROUTE_Z_WEIGHT)
   const mapViewport = shallowRef<MapViewportState | null>(null)
+  const mapNavigationRequest = shallowRef<{ regionId: string } | null>(null)
   const route = shallowRef<RouteResult | null>(null)
   const planning = shallowRef(false)
   const routeError = shallowRef('')
@@ -69,6 +70,16 @@ export const useExplorerStore = defineStore('explorer', () => {
     activeState.value?.layeredMaps.flatMap(({ floors: mapFloors }) => mapFloors) ?? []
   ))
   const regions = computed(() => selectRegions(dataset.value?.regionLabels ?? [], selectedStateId.value))
+  const activeMapName = computed(() => {
+    const state = activeState.value
+    if (!state) return ''
+    const labels = new Map(dataset.value?.regionLabels.map((label) => [label.id, label]))
+    const matchingGroups = dataset.value?.mapNavigation.flatMap((country) => country.groups.filter((group) => (
+      group.regionIds.length > 0 && group.regionIds.every((id) => labels.get(id)?.stateId === state.id)
+    ))) ?? []
+    return matchingGroups.length === 1 ? matchingGroups[0]?.name ?? state.name
+      : state.id === DEFAULT_STATE_ID ? '地表地图' : state.name
+  })
   const echoesMatchingSonata = computed(() => selectEchoDefinitions(
     dataset.value?.echoes ?? [], selectedSonataIds.value, echoSearch.value,
   ))
@@ -105,6 +116,7 @@ export const useExplorerStore = defineStore('explorer', () => {
 
   function setDataset(value: MapDataset): void {
     clearRoute()
+    mapNavigationRequest.value = null
     dataset.value = immutableSnapshot(value)
     const preferredState = value.states.find(({ id }) => id === DEFAULT_STATE_ID) ?? value.states[0]
     if (preferredState) {
@@ -157,6 +169,28 @@ export const useExplorerStore = defineStore('explorer', () => {
   function toggleEcho(id: string): void {
     selectedEchoIds.value = toggleId(selectedEchoIds.value, id)
     clearRoute()
+  }
+
+  function navigateToRegion(id: string): void {
+    const currentDataset = dataset.value
+    const destination = currentDataset?.regionLabels.find((region) => region.id === id)
+    if (!destination || !currentDataset?.mapNavigation.some((country) => country.regionIds.includes(id))) return
+    if (selectedStateId.value !== destination.stateId || selectedCountryId.value !== null || selectedLevelId.value !== null) clearRoute()
+    else {
+      selectedPointId.value = null
+      candidateIds.value = immutableSnapshot([])
+    }
+    selectedStateId.value = destination.stateId
+    // A destination moves the map; it does not restrict which countries' points are visible.
+    selectedCountryId.value = null
+    selectedLevelId.value = null
+    mapViewport.value = null
+    mapNavigationRequest.value = immutableSnapshot({ regionId: id })
+    mobileSheet.value = null
+  }
+
+  function completeMapNavigation(): void {
+    mapNavigationRequest.value = null
   }
 
   function toggleSonata(id: string): void {
@@ -316,6 +350,10 @@ export const useExplorerStore = defineStore('explorer', () => {
     mobileSheet: shallowReadonly(mobileSheet),
     routeZWeight: shallowReadonly(routeZWeight),
     mapViewport: shallowReadonly(mapViewport),
+    mapNavigationRequest: shallowReadonly(mapNavigationRequest),
+    activeMapName,
+    navigateToRegion,
+    completeMapNavigation,
     route: shallowReadonly(route),
     planning: shallowReadonly(planning),
     routeError: shallowReadonly(routeError),

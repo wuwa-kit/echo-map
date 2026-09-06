@@ -1,4 +1,4 @@
-import type { LayeredMapDefinition, RegionLabel } from '../../../src/domain/types.ts'
+import type { LayeredMapDefinition, MapNavigationCountry, RegionLabel } from '../../../src/domain/types.ts'
 import { officialToMapCoordinate } from '../../../src/map/projection.ts'
 import { asArray, asNumber, asRecord, asString } from '../raw.ts'
 import type { CatalogTypeInfo } from './types.ts'
@@ -82,6 +82,32 @@ export function flattenRegions(value: unknown): RegionLabel[] {
     visit(country, asNumber(record.countryId), asNumber(record.stateId, 8), 1, String(index))
   })
   return labels
+}
+
+export function normalizeMapNavigation(value: unknown): MapNavigationCountry[] {
+  if (!Array.isArray(value)) return []
+
+  // Reuse label IDs and coordinates so navigation and map labels share a destination.
+  const labels = flattenRegions(value)
+  return value.map((rawCountry, countryIndex) => {
+    const country = asRecord(rawCountry, 'navigation country')
+    const countryId = asNumber(country.countryId)
+    const children = Array.isArray(country.countrys) ? country.countrys
+      : Array.isArray(country.children) ? country.children : []
+    const regions = children.map((rawRegion, regionIndex) => {
+      const region = asRecord(rawRegion, 'navigation region')
+      const id = `${asNumber(region.countryId, countryId)}:${asNumber(region.stateId, asNumber(country.stateId, 8))}:${countryIndex}.${regionIndex}:${asString(region.name).trim()}`
+      return { id, groupId: asString(region.mapState).trim() }
+    }).filter(({ id }) => labels.some((label) => label.id === id))
+    const groupIds = asString(country.mapStateId).split(',').map((id) => id.trim())
+    const groupNames = asString(country.mapStateName).split(',').map((name) => name.trim())
+    const groups = groupIds.flatMap((id, index) => {
+      const name = groupNames[index]
+      const regionIds = regions.filter((region) => region.groupId === id).map((region) => region.id)
+      return id && name && regionIds.length ? [{ id, name, regionIds }] : []
+    })
+    return { id: countryId, name: asString(country.name).trim(), regionIds: regions.map(({ id }) => id), groups }
+  })
 }
 
 export function indexCatalogTypes(value: unknown): Map<string, CatalogTypeInfo> {

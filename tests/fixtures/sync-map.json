@@ -38,7 +38,13 @@
       "id": "sonata",
       "name": "合鸣",
       "iconUrl": "",
-      "sourceId": 1
+      "sourceId": 1,
+      "c1EchoIds": [
+        "echo-0",
+        "echo-1",
+        "echo-2"
+      ],
+      "c3EchoIds": []
     }
   ],
   "echoes": [
@@ -126,6 +132,16 @@
         ]
       },
       "layeredMaps": []
+    }
+  ],
+  "mapNavigation": [
+    {
+      "id": 1,
+      "name": "地区",
+      "regionIds": [
+        "1:8:0.0:地名"
+      ],
+      "groups": []
     }
   ],
   "regionLabels": [

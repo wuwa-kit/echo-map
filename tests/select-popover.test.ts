@@ -2,19 +2,20 @@ import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 
 const selectSourceUrl = new URL('../src/components/base/WuSelect.vue', import.meta.url)
+const popoverSourceUrl = new URL('../src/components/base/WuPopover.vue', import.meta.url)
 const scrollAreaSourceUrl = new URL('../src/components/base/WuScrollArea.vue', import.meta.url)
 
 function hasUnconditionalPopoverDisplayClass(source: string): boolean {
   const popoverTag = source.match(/<div(?=[^>]*\bpopover="auto")[^>]*>/s)?.[0]
   if (!popoverTag) {
-    throw new Error('未找到 WuSelect Popover 容器')
+    throw new Error('未找到原生 Popover 容器')
   }
   const classNames = popoverTag.match(/\bclass="([^"]*)"/)?.[1] ?? ''
   return /(?:^|\s)(?:block|flex|grid|inline|inline-block|inline-flex|inline-grid)(?:\s|$)/.test(classNames)
 }
 
 function usesCompactSelectList(source: string): boolean {
-  const popoverTag = source.match(/<div(?=[^>]*\bpopover="auto")[^>]*>/s)?.[0] ?? ''
+  const popoverTag = source.match(/<WuPopover\b[^>]*>/s)?.[0] ?? ''
   const scrollAreaTag = source.match(/<WuScrollArea\b[^>]*>/s)?.[0] ?? ''
   return popoverTag.includes('p-4px')
     && scrollAreaTag.includes('size="sm"')
@@ -30,14 +31,14 @@ function hasCompactScrollbarVariant(source: string): boolean {
 describe('WuSelect Popover', () => {
   it('只在打开状态声明布局，避免关闭的透明列表拦截点击', async () => {
     expect(hasUnconditionalPopoverDisplayClass('<div popover="auto" class="grid" />')).toBe(true)
-    expect(hasUnconditionalPopoverDisplayClass(await readFile(selectSourceUrl, 'utf8'))).toBe(false)
+    expect(hasUnconditionalPopoverDisplayClass(await readFile(popoverSourceUrl, 'utf8'))).toBe(false)
   })
 
   it('紧凑选项列表不叠加额外水平边距', async () => {
-    expect(usesCompactSelectList('<div popover="auto" class="p-4px"><WuScrollArea size="sm">')).toBe(true)
+    expect(usesCompactSelectList('<WuPopover class="p-4px"><WuScrollArea size="sm">')).toBe(true)
     expect(
       usesCompactSelectList(
-        '<div popover="auto" class="p-4px"><WuScrollArea size="sm" viewport-class="px-6px">',
+        '<WuPopover class="p-4px"><WuScrollArea size="sm" viewport-class="px-6px">',
       ),
     ).toBe(false)
     expect(usesCompactSelectList(await readFile(selectSourceUrl, 'utf8'))).toBe(true)

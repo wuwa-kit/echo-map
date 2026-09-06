@@ -1,11 +1,21 @@
 import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
-import { mapDatasetSchema } from '../src/domain/schema.ts'
+import { mapDatasetSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import type { MapDataset } from '../src/domain/types.ts'
 
 const datasetUrl = new URL('../public/data/app-data.json', import.meta.url)
 
 describe('generated application data', () => {
+  it.each(['../data/generated/wiki.json', '../public/data/app-data.json'])('stores complete C1/C3 lists in %s', async (path) => {
+    const catalogue = wikiCatalogueSchema.parse(JSON.parse(await readFile(new URL(path, import.meta.url), 'utf8')))
+    for (const sonata of catalogue.sonatas) {
+      for (const [field, cost] of [['c1EchoIds', 1], ['c3EchoIds', 3]] as const) {
+        const expected = catalogue.echoes.filter((echo) => echo.cost === cost && echo.sonataIds.includes(sonata.id)).map(({ id }) => id).sort()
+        expect(sonata[field]).toEqual(expected)
+      }
+    }
+  })
+
   it('contains only C1/C3 echoes with at least one valid sonata', async () => {
     const parsed = mapDatasetSchema.parse(JSON.parse(await readFile(datasetUrl, 'utf8'))) as MapDataset
     const echoIds = new Set(parsed.echoes.map(({ id }) => id))

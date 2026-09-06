@@ -61,9 +61,9 @@ export function selectEchoLocations(
 }
 
 export function selectRegionLabels(labels: readonly RegionLabel[], scope: MapScope): RegionLabel[] {
+  if (scope.levelId !== null) return []
   return labels.filter((label) => (
     label.stateId === scope.stateId
-    && label.level >= 2
     && (scope.countryId === null || label.countryId === scope.countryId)
   ))
 }

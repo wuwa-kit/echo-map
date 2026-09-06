@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useAsyncState, useEventListener, useMediaQuery, useResizeObserver, useWindowSize } from '@vueuse/core'
 import ControlPanel from '../components/ControlPanel.vue'
 import MapCanvas from '../components/MapCanvas.vue'
+import MapNavigationCascader from '../components/MapNavigationCascader.vue'
 import RoutePanel from '../components/RoutePanel.vue'
 import WuSvg from '../components/base/WuSvg.vue'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
@@ -16,7 +17,7 @@ import type { ExplorerUrlSnapshot, MobileSheet } from '../url/explorer-url.ts'
 
 const store = useExplorerStore()
 onBeforeUnmount(store.clearRoute)
-const { controlPanelCollapsed, dataset, mobileSheet, route, planning, selectedEchoIds, selectedSonataIds } = storeToRefs(store)
+const { controlPanelCollapsed, dataset, mobileSheet, route, planning, selectedEchoIds, selectedSonataIds, activeMapName } = storeToRefs(store)
 const compact = useMediaQuery('(max-width: 1023px)')
 const shortLandscape = useMediaQuery('(min-width: 500px) and (max-height: 500px)')
 const { height: viewportHeight } = useWindowSize({ type: 'visual' })
@@ -168,6 +169,10 @@ const loadError = computed(() => {
       class="relative h-full w-full min-h-0 min-w-0 overflow-hidden bg-[#101c1a] [--control-panel-width:340px] [--mobile-bar-height:calc(72px+env(safe-area-inset-bottom))] [--safe-top:env(safe-area-inset-top)] [--safe-right:env(safe-area-inset-right)] [--safe-bottom:env(safe-area-inset-bottom)] [--safe-left:env(safe-area-inset-left)]"
     >
       <MapCanvas :padding="mapPadding" />
+      <div v-if="!compact" class="absolute left-70px top-14px z-90 flex flex-col items-start gap-7px">
+        <MapNavigationCascader id="map-navigation-trigger" />
+        <span class="rounded-5px bg-[#07100fe6] px-8px py-5px text-12px text-[#a5c0b2]">当前底图 · {{ activeMapName }}</span>
+      </div>
       <div v-if="!compact" class="absolute bottom-14px right-[calc(var(--control-panel-width)+18px)] flex max-w-560px flex-wrap items-center gap-12px rounded-7px border border-[var(--line)] bg-[#07100fe6] px-11px py-8px text-11px text-[#9bada6]" :class="controlPanelCollapsed ? 'translate-x-[var(--control-panel-width)]' : ''">
         <span>实测 XYZ 可规划</span>
         <span>临时 XY 仅定位</span>
@@ -218,10 +223,11 @@ const loadError = computed(() => {
       <div
         v-if="compact"
         ref="mobileBarRef"
-        class="absolute inset-x-0 bottom-0 z-90 grid h-[var(--mobile-bar-height)] grid-cols-2 items-start gap-10px border-t border-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-10px"
+        class="absolute inset-x-0 bottom-0 z-90 grid h-[var(--mobile-bar-height)] grid-cols-3 items-start gap-10px border-t border-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-10px"
         role="group"
         aria-label="地图工具"
       >
+        <MapNavigationCascader id="map-navigation-trigger" class="[--wu-cascader-height:50px] [--wu-cascader-gap:4px] [--wu-cascader-padding:6px]" />
         <button ref="filtersButtonRef" type="button" class="min-h-50px min-w-0 cursor-pointer rounded-9px border border-[var(--line)] px-10px text-14px text-[#eaf4ef]" :class="mobileSheet === 'filters' ? 'bg-[#245442]' : 'bg-[#152b24]'" :aria-expanded="mobileSheet === 'filters'" aria-controls="control-panel" @click="openSheet('filters')">
           筛选<span v-if="selectedEchoIds.length + selectedSonataIds.length" class="ml-6px text-[var(--accent)]">{{ selectedEchoIds.length + selectedSonataIds.length }}</span>
         </button>

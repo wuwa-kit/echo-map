@@ -50,205 +50,634 @@
       "id": "wiki-sonata-19923",
       "name": "斑驳粉饰之沫",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/7a80b303e3f94b01b6aebc2db3a21f4520260204.png",
-      "sourceId": 19923
+      "sourceId": 19923,
+      "c1EchoIds": [
+        "wiki-echo-19425",
+        "wiki-echo-19428",
+        "wiki-echo-19909"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-19418",
+        "wiki-echo-19423",
+        "wiki-echo-19912",
+        "wiki-echo-19913"
+      ]
     },
     {
       "id": "wiki-sonata-16970",
       "name": "奔狼燎原之焰",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/d69b07483937453a8e1025c6611e934f20250606.png",
-      "sourceId": 16970
+      "sourceId": 16970,
+      "c1EchoIds": [
+        "wiki-echo-16364",
+        "wiki-echo-16365",
+        "wiki-echo-16368",
+        "wiki-echo-16369",
+        "wiki-echo-16996",
+        "wiki-echo-16997",
+        "wiki-echo-16998",
+        "wiki-echo-16999"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-17000",
+        "wiki-echo-17001",
+        "wiki-echo-17643"
+      ]
     },
     {
       "id": "wiki-sonata-11953",
       "name": "不绝余音",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/7f6ad32b34cf4ab38841ccd72beb1a8820250805.png",
-      "sourceId": 11953
+      "sourceId": 11953,
+      "c1EchoIds": [
+        "wiki-echo-11105",
+        "wiki-echo-11122",
+        "wiki-echo-11124",
+        "wiki-echo-11126",
+        "wiki-echo-11136",
+        "wiki-echo-11141",
+        "wiki-echo-11211",
+        "wiki-echo-11768",
+        "wiki-echo-14261"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-11115",
+        "wiki-echo-11131",
+        "wiki-echo-11233"
+      ]
     },
     {
       "id": "wiki-sonata-11952",
       "name": "彻空冥雷",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/6f8fd468d45c4ad3a30c85669ddaa80020250805.png",
-      "sourceId": 11952
+      "sourceId": 11952,
+      "c1EchoIds": [
+        "wiki-echo-11119",
+        "wiki-echo-11127",
+        "wiki-echo-11136",
+        "wiki-echo-11137",
+        "wiki-echo-11138",
+        "wiki-echo-11140",
+        "wiki-echo-11142",
+        "wiki-echo-11234",
+        "wiki-echo-11768"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-11134",
+        "wiki-echo-11233",
+        "wiki-echo-14259"
+      ]
     },
     {
       "id": "wiki-sonata-11950",
       "name": "沉日劫明",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/4c28a3dbb5e44771bf30b1f0c387c9b020250805.png",
-      "sourceId": 11950
+      "sourceId": 11950,
+      "c1EchoIds": [
+        "wiki-echo-11111",
+        "wiki-echo-11112",
+        "wiki-echo-11123",
+        "wiki-echo-11125",
+        "wiki-echo-11127",
+        "wiki-echo-11139",
+        "wiki-echo-11211"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-11109",
+        "wiki-echo-11110",
+        "wiki-echo-11232"
+      ]
     },
     {
       "id": "wiki-sonata-15754",
       "name": "此间永驻之光",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/e920443c7f0c47c1a0066114ee644ea920241231.png",
-      "sourceId": 15754
+      "sourceId": 15754,
+      "c1EchoIds": [
+        "wiki-echo-15651",
+        "wiki-echo-15654",
+        "wiki-echo-15673",
+        "wiki-echo-15689",
+        "wiki-echo-16080",
+        "wiki-echo-16081",
+        "wiki-echo-16368"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-15666",
+        "wiki-echo-15670",
+        "wiki-echo-15684",
+        "wiki-echo-16078",
+        "wiki-echo-17519"
+      ]
     },
     {
       "id": "wiki-sonata-17977",
       "name": "焚羽猎魔之影",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/8072762a6ede463897cc0e9e42475c1320250930.png",
-      "sourceId": 17977
+      "sourceId": 17977,
+      "c1EchoIds": [
+        "wiki-echo-15650",
+        "wiki-echo-17975",
+        "wiki-echo-17976"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-17001",
+        "wiki-echo-17643",
+        "wiki-echo-17974"
+      ]
     },
     {
       "id": "wiki-sonata-11949",
       "name": "浮星祛暗",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/4526a8b54d074fbaa42e5e6b438958b920250805.png",
-      "sourceId": 11949
+      "sourceId": 11949,
+      "c1EchoIds": [
+        "wiki-echo-11105",
+        "wiki-echo-11114",
+        "wiki-echo-11120",
+        "wiki-echo-11127",
+        "wiki-echo-11135",
+        "wiki-echo-11138",
+        "wiki-echo-11139",
+        "wiki-echo-11235",
+        "wiki-echo-14260"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-11130",
+        "wiki-echo-11132",
+        "wiki-echo-11231",
+        "wiki-echo-14257"
+      ]
     },
     {
       "id": "wiki-sonata-15753",
       "name": "高天共奏之曲",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/8e5cadd7441d4accb43fc895975f65b420241231.png",
-      "sourceId": 15753
+      "sourceId": 15753,
+      "c1EchoIds": [
+        "wiki-echo-15650",
+        "wiki-echo-15664",
+        "wiki-echo-15672",
+        "wiki-echo-15690",
+        "wiki-echo-15691",
+        "wiki-echo-16082"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-15668",
+        "wiki-echo-15669",
+        "wiki-echo-15685",
+        "wiki-echo-17519"
+      ]
     },
     {
       "id": "wiki-sonata-21262",
       "name": "剪心辑梦之影",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/b83d2157776d4d359dba2ac0ce4fa0b520260428.png",
-      "sourceId": 21262
+      "sourceId": 21262,
+      "c1EchoIds": [
+        "wiki-echo-19430",
+        "wiki-echo-19431",
+        "wiki-echo-19910"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-19420",
+        "wiki-echo-19424",
+        "wiki-echo-21261"
+      ]
     },
     {
       "id": "wiki-sonata-15699",
       "name": "凌冽决断之心",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/5cc455a00a704942b51c8ae5e4748d4120241231.png",
-      "sourceId": 15699
+      "sourceId": 15699,
+      "c1EchoIds": [
+        "wiki-echo-15652",
+        "wiki-echo-15653",
+        "wiki-echo-15664",
+        "wiki-echo-15672",
+        "wiki-echo-15674",
+        "wiki-echo-15691",
+        "wiki-echo-16081"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-15666",
+        "wiki-echo-15668",
+        "wiki-echo-15671",
+        "wiki-echo-15683"
+      ]
     },
     {
       "id": "wiki-sonata-19449",
       "name": "流金溯真之式",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/bad6c709d99548c5b9b4c8c33fce136120251225.png",
-      "sourceId": 19449
+      "sourceId": 19449,
+      "c1EchoIds": [
+        "wiki-echo-19428",
+        "wiki-echo-19430",
+        "wiki-echo-19431"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-19417",
+        "wiki-echo-19418",
+        "wiki-echo-19420",
+        "wiki-echo-19426"
+      ]
     },
     {
       "id": "wiki-sonata-16356",
       "name": "流云逝尽之空",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/5664bfdc829c4051932ab83775515c7220250324.png",
-      "sourceId": 16356
+      "sourceId": 16356,
+      "c1EchoIds": [
+        "wiki-echo-16364",
+        "wiki-echo-16365",
+        "wiki-echo-16366",
+        "wiki-echo-16367",
+        "wiki-echo-16368",
+        "wiki-echo-16369",
+        "wiki-echo-16999"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-15684",
+        "wiki-echo-16078",
+        "wiki-echo-16079"
+      ]
     },
     {
       "id": "wiki-sonata-22795",
       "name": "冥途夜行之灯",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/d586e197a6934f99a5027de87960fad020260709.png",
-      "sourceId": 22795
+      "sourceId": 22795,
+      "c1EchoIds": [
+        "wiki-echo-22804",
+        "wiki-echo-22805",
+        "wiki-echo-22811",
+        "wiki-echo-22812"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-22800",
+        "wiki-echo-22813"
+      ]
     },
     {
       "id": "wiki-sonata-18442",
       "name": "命理崩毁之弦",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/62bd1b3ecbf04044b054edad2c98d56220251114.png",
-      "sourceId": 18442
+      "sourceId": 18442,
+      "c1EchoIds": [
+        "wiki-echo-16998",
+        "wiki-echo-18440",
+        "wiki-echo-18441"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-15667",
+        "wiki-echo-18439"
+      ]
     },
     {
       "id": "wiki-sonata-19450",
       "name": "逆光跃彩之约",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/d359a111a9c245c980e3e1e59aa3a53c20251225.png",
-      "sourceId": 19450
+      "sourceId": 19450,
+      "c1EchoIds": [
+        "wiki-echo-19428",
+        "wiki-echo-19429",
+        "wiki-echo-19431"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-19419",
+        "wiki-echo-19421",
+        "wiki-echo-19422",
+        "wiki-echo-19424"
+      ]
     },
     {
       "id": "wiki-sonata-11947",
       "name": "凝夜白霜",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/a404ec7f1d6149c6a08b6751eb4cc9e120250805.png",
-      "sourceId": 11947
+      "sourceId": 11947,
+      "c1EchoIds": [
+        "wiki-echo-11112",
+        "wiki-echo-11114",
+        "wiki-echo-11120",
+        "wiki-echo-11125",
+        "wiki-echo-11126",
+        "wiki-echo-11135",
+        "wiki-echo-11236",
+        "wiki-echo-14260"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-11110",
+        "wiki-echo-11231",
+        "wiki-echo-11232",
+        "wiki-echo-14258",
+        "wiki-echo-14259"
+      ]
     },
     {
       "id": "wiki-sonata-11954",
       "name": "轻云出月",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/864ca506d1f647a1a101ed0a1182af9220250805.png",
-      "sourceId": 11954
+      "sourceId": 11954,
+      "c1EchoIds": [
+        "wiki-echo-11105",
+        "wiki-echo-11118",
+        "wiki-echo-11124",
+        "wiki-echo-11125",
+        "wiki-echo-11142",
+        "wiki-echo-11235",
+        "wiki-echo-11236"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-11108",
+        "wiki-echo-11115",
+        "wiki-echo-11116",
+        "wiki-echo-11129",
+        "wiki-echo-14258"
+      ]
     },
     {
       "id": "wiki-sonata-22796",
       "name": "清邪荡煞之心",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/db5496417dd4410990e432dae5c4ed4a20260709.png",
-      "sourceId": 22796
+      "sourceId": 22796,
+      "c1EchoIds": [
+        "wiki-echo-22806",
+        "wiki-echo-22807",
+        "wiki-echo-22808",
+        "wiki-echo-22810"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-22800",
+        "wiki-echo-22813"
+      ]
     },
     {
       "id": "wiki-sonata-17621",
       "name": "荣斗铸锋之冠",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/285868f42ce94100873fad37fb3a6b2f20250826.png",
-      "sourceId": 17621
+      "sourceId": 17621,
+      "c1EchoIds": [
+        "wiki-echo-16082",
+        "wiki-echo-17650",
+        "wiki-echo-17651"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-16079",
+        "wiki-echo-17646"
+      ]
     },
     {
       "id": "wiki-sonata-11948",
       "name": "熔山裂谷",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/a476cb0b3ae24f9b981c3fce668ca26420250805.png",
-      "sourceId": 11948
+      "sourceId": 11948,
+      "c1EchoIds": [
+        "wiki-echo-11117",
+        "wiki-echo-11119",
+        "wiki-echo-11122",
+        "wiki-echo-11126",
+        "wiki-echo-11136",
+        "wiki-echo-11137",
+        "wiki-echo-11138",
+        "wiki-echo-11234",
+        "wiki-echo-14261"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-11109",
+        "wiki-echo-11129",
+        "wiki-echo-11134"
+      ]
     },
     {
       "id": "wiki-sonata-17407",
       "name": "失序彼岸之梦",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/0a4d971448404cf69ed994ddb81ac80c20250719.png",
-      "sourceId": 17407
+      "sourceId": 17407,
+      "c1EchoIds": [
+        "wiki-echo-15651",
+        "wiki-echo-17411",
+        "wiki-echo-17412"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-15685",
+        "wiki-echo-17410"
+      ]
     },
     {
       "id": "wiki-sonata-22147",
       "name": "碎梦亡鬼之魇",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/9c22a69bdbca4ce8b102916e490276b820260607.png",
-      "sourceId": 22147
+      "sourceId": 22147,
+      "c1EchoIds": [],
+      "c3EchoIds": []
     },
     {
       "id": "wiki-sonata-19924",
       "name": "听唤语义之愿",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/14e48c4fa3804ea1912288568586be2120260204.png",
-      "sourceId": 19924
+      "sourceId": 19924,
+      "c1EchoIds": [
+        "wiki-echo-19428",
+        "wiki-echo-19430",
+        "wiki-echo-19431"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-19417",
+        "wiki-echo-19421",
+        "wiki-echo-19422",
+        "wiki-echo-19423"
+      ]
     },
     {
       "id": "wiki-sonata-15756",
       "name": "无惧浪涛之勇",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/bc82acbb0643413ca3e95de63cda4f5920241231.png",
-      "sourceId": 15756
+      "sourceId": 15756,
+      "c1EchoIds": [
+        "wiki-echo-15652",
+        "wiki-echo-15653",
+        "wiki-echo-15654",
+        "wiki-echo-15673",
+        "wiki-echo-15674",
+        "wiki-echo-16080",
+        "wiki-echo-16082",
+        "wiki-echo-16364"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-15667",
+        "wiki-echo-15670",
+        "wiki-echo-15685",
+        "wiki-echo-16079"
+      ]
     },
     {
       "id": "wiki-sonata-17622",
       "name": "息界同调之律",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/3757c6635ee04f28a2b03dd419de129320250826.png",
-      "sourceId": 17622
+      "sourceId": 17622,
+      "c1EchoIds": [
+        "wiki-echo-16081",
+        "wiki-echo-17648",
+        "wiki-echo-17649"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-16078",
+        "wiki-echo-17647"
+      ]
     },
     {
       "id": "wiki-sonata-11951",
       "name": "啸谷长风",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/0232c50bb2894439a54b96bd994c1d4f20250805.png",
-      "sourceId": 11951
+      "sourceId": 11951,
+      "c1EchoIds": [
+        "wiki-echo-11111",
+        "wiki-echo-11118",
+        "wiki-echo-11123",
+        "wiki-echo-11137",
+        "wiki-echo-11140",
+        "wiki-echo-11141",
+        "wiki-echo-11234",
+        "wiki-echo-11236",
+        "wiki-echo-14262"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-11108",
+        "wiki-echo-11132",
+        "wiki-echo-11133"
+      ]
     },
     {
       "id": "wiki-sonata-19451",
       "name": "星构寻辉之环",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/6f02c51dac094edc9321c07cce9d6bf420251225.png",
-      "sourceId": 19451
+      "sourceId": 19451,
+      "c1EchoIds": [
+        "wiki-echo-19425",
+        "wiki-echo-19429",
+        "wiki-echo-19430"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-19421",
+        "wiki-echo-19422",
+        "wiki-echo-19423",
+        "wiki-echo-19424",
+        "wiki-echo-19427"
+      ]
     },
     {
       "id": "wiki-sonata-21263",
       "name": "雪落无声之愿",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/5bb0253301a44d52860159d3b85c7ff220260428.png",
-      "sourceId": 21263
+      "sourceId": 21263,
+      "c1EchoIds": [
+        "wiki-echo-19425",
+        "wiki-echo-19909",
+        "wiki-echo-19910"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-19424",
+        "wiki-echo-19426",
+        "wiki-echo-19427",
+        "wiki-echo-19911"
+      ]
     },
     {
       "id": "wiki-sonata-11955",
       "name": "隐世回光",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/3326e00c899b471182670d8e04db4d0c20250805.png",
-      "sourceId": 11955
+      "sourceId": 11955,
+      "c1EchoIds": [
+        "wiki-echo-11117",
+        "wiki-echo-11118",
+        "wiki-echo-11122",
+        "wiki-echo-11142",
+        "wiki-echo-11211",
+        "wiki-echo-11235",
+        "wiki-echo-11768",
+        "wiki-echo-14262"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-11116",
+        "wiki-echo-11130",
+        "wiki-echo-11131",
+        "wiki-echo-11133"
+      ]
     },
     {
       "id": "wiki-sonata-15755",
       "name": "幽夜隐匿之帷",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/f4090a19bcb743ab97c195882e67593920241231.png",
-      "sourceId": 15755
+      "sourceId": 15755,
+      "c1EchoIds": [
+        "wiki-echo-15650",
+        "wiki-echo-15651",
+        "wiki-echo-15672",
+        "wiki-echo-15689",
+        "wiki-echo-15690",
+        "wiki-echo-16365",
+        "wiki-echo-16369"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-15667",
+        "wiki-echo-15669",
+        "wiki-echo-15671",
+        "wiki-echo-15683"
+      ]
     },
     {
       "id": "wiki-sonata-22797",
       "name": "羽落空尘之歌",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/4ff244840b27404199490f23f5d474cd20260709.png",
-      "sourceId": 22797
+      "sourceId": 22797,
+      "c1EchoIds": [
+        "wiki-echo-22798",
+        "wiki-echo-22801",
+        "wiki-echo-22802",
+        "wiki-echo-22803",
+        "wiki-echo-22809"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-22800",
+        "wiki-echo-22813"
+      ]
     },
     {
       "id": "wiki-sonata-16971",
       "name": "愿戴荣光之旅",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/ca525fb4117242e2ba2a812a301eefc320250606.png",
-      "sourceId": 16971
+      "sourceId": 16971,
+      "c1EchoIds": [
+        "wiki-echo-16366",
+        "wiki-echo-16367",
+        "wiki-echo-16996",
+        "wiki-echo-16997",
+        "wiki-echo-16998",
+        "wiki-echo-16999"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-15684",
+        "wiki-echo-17000",
+        "wiki-echo-17001"
+      ]
     },
     {
       "id": "wiki-sonata-19922",
       "name": "长路启航之星",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/50ee3702c6ca40deb804c8201ee6920c20260204.png",
-      "sourceId": 19922
+      "sourceId": 19922,
+      "c1EchoIds": [
+        "wiki-echo-19429",
+        "wiki-echo-19909",
+        "wiki-echo-19910"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-19417",
+        "wiki-echo-19911",
+        "wiki-echo-19912",
+        "wiki-echo-19913"
+      ]
     }
   ],
   "echoes": [
@@ -3721,6 +4150,180 @@
         ]
       },
       "layeredMaps": []
+    }
+  ],
+  "mapNavigation": [
+    {
+      "id": 4,
+      "name": "罗伊冰原",
+      "regionIds": [
+        "4:8:0.0:冰原运输港",
+        "4:8:0.1:加拉尔冠阶",
+        "4:8:0.2:盲望之塌",
+        "4:8:0.3:元林遗址",
+        "4:8:0.4:覆海原",
+        "4:906:0.5:蚀刻平原",
+        "4:909:0.6:落日堤屿",
+        "4:906:0.7:星炬学院",
+        "4:909:0.8:封存地",
+        "4:906:0.9:联运椎骨",
+        "4:909:0.10:寂静断崖",
+        "4:906:0.11:牙列石壑",
+        "4:909:0.12:恒黯之原",
+        "4:906:0.13:浮光林",
+        "4:906:0.14:陷足流川",
+        "4:906:0.15:复生丘原",
+        "4:906:0.16:隐喙深腹",
+        "4:906:0.17:巨目远野"
+      ],
+      "groups": [
+        {
+          "id": "5",
+          "name": "拉海洛",
+          "regionIds": [
+            "4:906:0.5:蚀刻平原",
+            "4:906:0.7:星炬学院",
+            "4:906:0.9:联运椎骨",
+            "4:906:0.11:牙列石壑",
+            "4:906:0.13:浮光林",
+            "4:906:0.14:陷足流川",
+            "4:906:0.15:复生丘原",
+            "4:906:0.16:隐喙深腹",
+            "4:906:0.17:巨目远野"
+          ]
+        },
+        {
+          "id": "6",
+          "name": "冰原地表",
+          "regionIds": [
+            "4:8:0.0:冰原运输港",
+            "4:8:0.1:加拉尔冠阶",
+            "4:8:0.2:盲望之塌",
+            "4:8:0.3:元林遗址",
+            "4:8:0.4:覆海原"
+          ]
+        },
+        {
+          "id": "7",
+          "name": "黯原",
+          "regionIds": [
+            "4:909:0.6:落日堤屿",
+            "4:909:0.8:封存地",
+            "4:909:0.10:寂静断崖",
+            "4:909:0.12:恒黯之原"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "黎那汐塔",
+      "regionIds": [
+        "3:8:1.0:拉古那城",
+        "3:8:1.1:埃弗拉德金库",
+        "3:8:1.2:悲叹墓岛",
+        "3:8:1.3:赞悼圣迹",
+        "3:8:1.4:拂风水畔",
+        "3:8:1.5:氤柔水境",
+        "3:8:1.6:槲生半岛",
+        "3:8:1.7:狄萨莱海脊",
+        "3:902:1.8:下层金库",
+        "3:8:1.9:黎乔利群岛",
+        "3:903:1.10:阿维纽林",
+        "3:8:1.11:贝奥海域",
+        "3:8:1.12:七丘",
+        "3:905:1.13:隐海试验场",
+        "3:8:1.14:桑古伊斯狩原"
+      ],
+      "groups": [
+        {
+          "id": "3",
+          "name": "拉古那",
+          "regionIds": [
+            "3:8:1.0:拉古那城",
+            "3:8:1.1:埃弗拉德金库",
+            "3:8:1.2:悲叹墓岛",
+            "3:8:1.3:赞悼圣迹",
+            "3:8:1.4:拂风水畔",
+            "3:8:1.5:氤柔水境",
+            "3:8:1.6:槲生半岛",
+            "3:8:1.7:狄萨莱海脊",
+            "3:902:1.8:下层金库",
+            "3:8:1.9:黎乔利群岛",
+            "3:903:1.10:阿维纽林",
+            "3:8:1.11:贝奥海域",
+            "3:905:1.13:隐海试验场"
+          ]
+        },
+        {
+          "id": "4",
+          "name": "七丘",
+          "regionIds": [
+            "3:8:1.12:七丘",
+            "3:8:1.14:桑古伊斯狩原"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 900,
+      "name": "黑海岸",
+      "regionIds": [
+        "900:8:2.0:黑海岸群岛",
+        "900:900:2.1:泰缇斯之底",
+        "900:910:2.2:时隙废都"
+      ],
+      "groups": []
+    },
+    {
+      "id": 1,
+      "name": "瑝珑",
+      "regionIds": [
+        "1:8:3.0:云陵谷",
+        "1:8:3.1:今州城",
+        "1:8:3.2:中曲台地",
+        "1:8:3.3:荒石高地",
+        "1:8:3.4:虎口山脉",
+        "1:8:3.5:怨鸟泽",
+        "1:8:3.6:无光之森",
+        "1:8:3.7:归墟港市",
+        "1:8:3.8:无明湾",
+        "1:8:3.9:北落野",
+        "1:8:3.10:乘霄山",
+        "1:8:3.11:玄方城",
+        "1:8:3.12:方擎西峰",
+        "1:8:3.13:落渊南丘",
+        "1:8:3.14:玄幽东岳"
+      ],
+      "groups": [
+        {
+          "id": "1",
+          "name": "今州",
+          "regionIds": [
+            "1:8:3.0:云陵谷",
+            "1:8:3.1:今州城",
+            "1:8:3.2:中曲台地",
+            "1:8:3.3:荒石高地",
+            "1:8:3.4:虎口山脉",
+            "1:8:3.5:怨鸟泽",
+            "1:8:3.6:无光之森",
+            "1:8:3.7:归墟港市",
+            "1:8:3.8:无明湾",
+            "1:8:3.9:北落野",
+            "1:8:3.10:乘霄山"
+          ]
+        },
+        {
+          "id": "8",
+          "name": "梦州",
+          "regionIds": [
+            "1:8:3.11:玄方城",
+            "1:8:3.12:方擎西峰",
+            "1:8:3.13:落渊南丘",
+            "1:8:3.14:玄幽东岳"
+          ]
+        }
+      ]
     }
   ],
   "regionLabels": [

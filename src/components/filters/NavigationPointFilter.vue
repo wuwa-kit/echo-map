@@ -4,8 +4,8 @@ import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../../stores/explorer.ts'
 import WuCheckBox from '../base/WuCheckBox.vue'
 import WuScrollArea from '../base/WuScrollArea.vue'
-import { navigationPointMinZoom } from '../../map/point-visibility.ts'
-import type { NavigationPoint } from '../../domain/types.ts'
+import { mapZoomRangeLabel, navigationPointZoomRange } from '../../map/point-visibility.ts'
+import type { MapZoomRange, NavigationPoint } from '../../domain/types.ts'
 
 defineProps<{ compact: boolean }>()
 
@@ -17,7 +17,7 @@ interface PointGroupOption {
   name: string
   iconUrl: string
   modes: readonly NavigationPoint['mode'][]
-  minZooms: number[]
+  zoomRanges: Readonly<MapZoomRange>[]
   count: number
   typeCount: number
   typeNames: readonly string[]
@@ -38,7 +38,10 @@ const pointGroupOptions = computed<PointGroupOption[]>(() => {
       name: group.name,
       iconUrl: group.iconUrl,
       modes: group.modes,
-      minZooms: [...new Set(groupPoints.map(navigationPointMinZoom))].sort((left, right) => left - right),
+      zoomRanges: [...new Map(groupPoints.map((point) => {
+        const range = navigationPointZoomRange(point)
+        return [`${range.minZoom}:${range.maxZoom}`, range] as const
+      })).values()],
       count: groupPoints.length,
       typeCount: new Set(groupPoints.map(({ typeId }) => typeId)).size,
       typeNames: [...new Set(groupPoints.map(({ typeName }) => typeName))],
@@ -76,11 +79,8 @@ function pointModeOpacityClass(modes: readonly NavigationPoint['mode'][]): strin
   return modes.includes('fast-travel') ? 'opacity-100' : 'opacity-48'
 }
 
-function pointZoomLabel(minZooms: number[]): string {
-  if (minZooms.length !== 1) {
-    return '分级显示'
-  }
-  return minZooms[0] === 0 ? '全局显示' : `缩放 ${minZooms[0]}+`
+function pointZoomLabel(ranges: readonly Readonly<MapZoomRange>[]): string {
+  return ranges.length === 1 && ranges[0] ? mapZoomRangeLabel(ranges[0]) : '分级显示'
 }
 </script>
 
@@ -97,7 +97,7 @@ function pointZoomLabel(minZooms: number[]): string {
       <button class="min-h-44px min-[1024px]:min-h-0 cursor-pointer border border-[var(--line)] rounded-5px bg-transparent px-7px py-4px text-12px min-[1024px]:text-9px text-[#9db1a9] font-inherit hover:border-[rgba(101,241,194,0.4)] hover:text-[var(--accent)]" type="button" @click="store.showAllPointGroups">全部显示</button>
       <button class="min-h-44px min-[1024px]:min-h-0 cursor-pointer border border-[var(--line)] rounded-5px bg-transparent px-7px py-4px text-12px min-[1024px]:text-9px text-[#9db1a9] font-inherit hover:border-[rgba(101,241,194,0.4)] hover:text-[var(--accent)]" type="button" @click="hideAllCurrentPointGroups">全部隐藏</button>
     </div>
-    <div class="mb-8px text-12px min-[1024px]:text-8px text-[#6f877e] leading-[1.5]">勾选表示允许显示；地图缩小时仍会按点位优先级自动隐藏。</div>
+    <div class="mb-8px text-12px min-[1024px]:text-8px text-[#6f877e] leading-[1.5]">勾选表示允许显示；放大地图后，会逐步显示小型信标、挑战、交通和服务点。</div>
     <WuScrollArea :unbounded="compact" class="min-[1024px]:max-h-230px" content-class="flex flex-col gap-4px pr-2px">
       <WuCheckBox
         v-for="pointGroup in pointGroupOptions"
@@ -113,7 +113,7 @@ function pointZoomLabel(minZooms: number[]): string {
         </span>
         <span class="min-w-0">
           <span class="block overflow-hidden text-ellipsis whitespace-nowrap text-14px min-[1024px]:text-10px text-[#d5e3dd]">{{ pointGroup.name }}</span>
-          <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#6f877e]">{{ pointModeLabel(pointGroup.modes) }} · {{ pointZoomLabel(pointGroup.minZooms) }} · {{ pointGroup.typeCount }} 类</span>
+          <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#6f877e]">{{ pointModeLabel(pointGroup.modes) }} · {{ pointZoomLabel(pointGroup.zoomRanges) }} · {{ pointGroup.typeCount }} 类</span>
         </span>
         <span class="text-12px min-[1024px]:text-9px text-[#82988f]">{{ pointGroup.count }}</span>
       </WuCheckBox>

@@ -75,7 +75,10 @@ function scrollToSection(id: string): void {
         </div>
         <div v-if="pointSource !== 'manual'" class="mt-8px text-12px text-[#e5bd7c]">官方点 Z=0、数量为初始值；路线使用这些占位坐标。</div>
         <div v-else-if="allEchoLocations.length === 0" class="mt-8px text-12px text-[#95afa2]">人工点位库为空，录入并核验后即可在这里筛选。</div>
-        <RouterLink v-if="canEdit" to="/editor" class="mt-8px inline-flex min-h-40px items-center text-13px text-[var(--accent)]">打开点位录入 →</RouterLink>
+        <div class="mt-8px flex flex-wrap gap-x-16px">
+          <RouterLink to="/assets" class="inline-flex min-h-40px items-center text-13px text-[var(--accent)]">浏览官方资产 →</RouterLink>
+          <RouterLink v-if="canEdit" to="/editor" class="inline-flex min-h-40px items-center text-13px text-[var(--accent)]">打开点位录入 →</RouterLink>
+        </div>
       </div>
       <MapScopeFilter :compact="compact" />
 

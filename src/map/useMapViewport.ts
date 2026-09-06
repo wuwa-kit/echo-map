@@ -105,6 +105,18 @@ export function useMapViewport(options: MapViewportOptions) {
     routeViewport = null
   }
 
+  function locate(center: [number, number]): void {
+    const map = options.getMap()
+    const [width = 0, height = 0] = map?.getSize() ?? []
+    if (!map || width <= 0 || height <= 0) return
+    const [top, right, bottom, left] = fitMapPadding(width, height, options.getPadding())
+    const view = map.getView()
+    view.cancelAnimations()
+    view.setResolution(2.3)
+    view.centerOn(center, [width, height], [(left + width - right) / 2, (top + height - bottom) / 2])
+    publish()
+  }
+
   function fitRoute(extent: Extent | null | undefined): void {
     const map = options.getMap()
     const viewport = current()
@@ -124,5 +136,5 @@ export function useMapViewport(options: MapViewportOptions) {
     publish()
   }
 
-  return { configureBaseView, restoreBaseViewport, fitFloor, fitRoute, resetRoute, publish }
+  return { configureBaseView, restoreBaseViewport, fitFloor, fitRoute, resetRoute, publish, locate }
 }

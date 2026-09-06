@@ -11,12 +11,11 @@ import Projection from 'ol/proj/Projection.js'
 import { useExplorerStore } from '../stores/explorer.ts'
 import { mapToGameCoordinate } from '../map/projection.ts'
 import { createOfficialTileLayer } from '../map/official-source.ts'
-import { createPointLayers } from '../map/point-layers.ts'
+import { createPointLayers, mapFeaturePointIds } from '../map/point-layers.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
 import { useMapViewport } from '../map/useMapViewport.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
-import type { EchoMapLocation, NavigationPoint } from '../domain/types.ts'
 import PointDetails from './PointDetails.vue'
 
 const props = defineProps<{ padding: MapPadding }>()
@@ -28,6 +27,7 @@ const {
   activeEchoIds,
   allNavigationPoints,
   mapViewport,
+  mapNavigationRequest,
   route,
   selectedLevelId,
   visibleEchoLocations,
@@ -48,7 +48,7 @@ const pointerCoordinateText = computed(() => {
 let map: Map | null = null
 let baseLayer: ReturnType<typeof createOfficialTileLayer> | null = null
 const projection = new Projection({ code: 'KURO:CRS-SIMPLE', units: 'pixels' })
-const points = createPointLayers((resolution) => map?.getView().getZoomForResolution(resolution) ?? Number.POSITIVE_INFINITY)
+const points = createPointLayers()
 const floors = createFloorLayers(projection)
 const routeLayer = createRouteLayer()
 const viewport = useMapViewport({
@@ -126,18 +126,21 @@ function updatePointerCoordinate(event: MapBrowserEvent): void {
   pointerCoordinate.value = [x, y]
 }
 
+function applyMapNavigation(): void {
+  const request = mapNavigationRequest.value
+  if (!request || !map) return
+  const region = dataset.value?.regionLabels.find(({ id }) => id === request.regionId)
+  if (region) viewport.locate([region.coordinate.mapX, region.coordinate.mapY])
+  store.completeMapNavigation()
+}
+
 function clearPointerCoordinate(): void {
   pointerCoordinate.value = null
 }
 
 function selectMapPoint(event: MapBrowserEvent): void {
   updatePointerCoordinate(event)
-  const found = map?.forEachFeatureAtPixel(event.pixel, (feature) => {
-    const locations = feature.get('locations') as EchoMapLocation[] | undefined
-    if (locations?.length) return locations.map(({ id }) => id)
-    const location = feature.get('location') as NavigationPoint | undefined
-    return location ? [location.id] : undefined
-  }, { hitTolerance: 6 })
+  const found = map?.forEachFeatureAtPixel(event.pixel, mapFeaturePointIds, { hitTolerance: 6 })
   if (found && found.length > 1) store.selectPointCandidates(found)
   else store.selectPoint(found?.[0] ?? null)
 }
@@ -159,6 +162,7 @@ onMounted(() => {
   rebuildBaseLayer()
   rebuildPointLayers()
   rebuildRoute()
+  applyMapNavigation()
 })
 
 watch(activeState, rebuildBaseLayer)
@@ -166,6 +170,7 @@ watch(selectedLevelId, rebuildFloorLayers)
 watch([visibleEchoLocations, visibleNavigationPoints, visibleRegionLabels, activeEchoIds], rebuildPointLayers)
 watch(route, rebuildRoute, { flush: 'post' })
 watch(() => props.padding, fitViewport, { flush: 'post' })
+watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 
 onBeforeUnmount(() => {
   map?.un('moveend', viewport.publish)

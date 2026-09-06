@@ -1,4 +1,5 @@
 import Feature from 'ol/Feature.js'
+import type { FeatureLike } from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
@@ -10,18 +11,26 @@ import Stroke from 'ol/style/Stroke.js'
 import Style from 'ol/style/Style.js'
 import Text from 'ol/style/Text.js'
 import { bossMarkerShape, createPortraitMarkerStyles, PORTRAIT_MARKER_SIZES } from './boss-marker.ts'
-import type { EchoDefinition, EchoMapLocation, NavigationPoint, PointLocationBase, RegionLabel } from '../domain/types.ts'
+import type { EchoDefinition, EchoMapLocation, MapDisplayPoint, NavigationPoint, RegionLabel } from '../domain/types.ts'
 import { echoMembers, NAVIGATION_NAMES } from '../domain/point-library.ts'
 import { createEchoMarkerStyles } from './echo-marker.ts'
-import { echoLocationMinZoom, isPointVisibleAtZoom, navigationPointMinZoom } from './point-visibility.ts'
+import { isMapPointVisibleAtZoom, mapZoomForResolution } from './point-visibility.ts'
 
-export function createPointLayers(zoomForResolution: (resolution: number) => number) {
+export function mapFeaturePointIds(feature: FeatureLike): string[] | undefined {
+  const locations = feature.get('locations') as EchoMapLocation[] | undefined
+  if (locations?.length) return locations.map(({ id }) => id)
+  const point = feature.get('mapPoint') as MapDisplayPoint | undefined
+  return point && point.category !== 'region-name' ? [point.location.id] : undefined
+}
+
+export function createPointLayers() {
   const echoSource = new VectorSource()
   const clusters = new Cluster({ source: echoSource, distance: 64, minDistance: 32 })
   const navigationSource = new VectorSource()
   const labelSource = new VectorSource()
   const echoCosts = new globalThis.Map<string, EchoDefinition['cost']>()
   const navigationStyleCache = new globalThis.Map<string, Style[]>()
+  const labelStyleCache = new globalThis.Map<string, Style>()
   const echoMarkerStyles = createPortraitMarkerStyles(() => echoLayer.changed())
   const groupMarkerStyles = createEchoMarkerStyles(() => echoLayer.changed())
   let echoDefinitions: readonly EchoDefinition[] = []
@@ -33,8 +42,11 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
     zIndex: 40,
     style(feature, resolution) {
       const members = feature.get('features') as Feature<Point>[]
-      const locations = members.map((member) => member.get('location') as EchoMapLocation)
-        .filter((location) => isPointVisibleAtZoom(echoLocationMinZoom(location), zoomForResolution(resolution)))
+      const zoom = mapZoomForResolution(resolution)
+      const locations = members.flatMap((member) => {
+        const point = member.get('mapPoint') as MapDisplayPoint
+        return point.category === 'echo' && isMapPointVisibleAtZoom(point, zoom) ? [point.location] : []
+      })
       if (feature instanceof Feature) feature.set('locations', locations, true)
       if (locations.length === 0) return undefined
       if (locations.length === 1) return echoStyle(locations[0] as EchoMapLocation)
@@ -46,20 +58,40 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
   const navigationLayer = new VectorLayer({
     source: navigationSource,
     zIndex: 50,
-    style(feature, resolution) {
-      const location = feature.get('location') as NavigationPoint
-      return isPointVisibleAtZoom(navigationPointMinZoom(location), zoomForResolution(resolution))
-        ? navigationStyle(location)
-        : undefined
-    },
+    style: pointStyle,
   })
-  const labelLayer = new VectorLayer({ source: labelSource, declutter: true, zIndex: 20 })
+  const labelLayer = new VectorLayer({ source: labelSource, declutter: true, zIndex: 20, style: pointStyle })
 
-  function pointFeature(location: PointLocationBase): Feature<Point> {
+  function pointFeature(point: MapDisplayPoint): Feature<Point> {
     return new Feature({
-      geometry: new Point([location.coordinate.mapX, location.coordinate.mapY]),
-      location,
+      geometry: new Point([point.location.coordinate.mapX, point.location.coordinate.mapY]),
+      mapPoint: point,
     })
+  }
+
+  function pointStyle(feature: FeatureLike, resolution: number): Style | Style[] | undefined {
+    const point = feature.get('mapPoint') as MapDisplayPoint
+    if (!isMapPointVisibleAtZoom(point, mapZoomForResolution(resolution))) return undefined
+    switch (point.category) {
+      case 'echo': return echoStyle(point.location)
+      case 'navigation': return navigationStyle(point.location)
+      case 'region-name': return labelStyle(point.location)
+    }
+  }
+
+  function labelStyle(label: RegionLabel): Style {
+    const cached = labelStyleCache.get(label.id)
+    if (cached) return cached
+    const style = new Style({
+      text: new Text({
+        text: label.name,
+        font: label.level === 1 ? '900 20px "Map FangXinShu", sans-serif'
+          : label.level === 2 ? '900 16px "Map FangXinShu", sans-serif' : '900 13px "Map FangXinShu", sans-serif',
+        fill: new Fill({ color: '#ffffff' }),
+      }),
+    })
+    labelStyleCache.set(label.id, style)
+    return style
   }
 
   function echoStyle(location: EchoMapLocation): Style[] | undefined {
@@ -129,25 +161,15 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
     echoSource.clear(true)
     navigationSource.clear(true)
     labelSource.clear(true)
+    labelStyleCache.clear()
 
-    const echoFeatures = echoLocations.map(pointFeature)
+    const echoFeatures = echoLocations.map((location) => pointFeature({ category: 'echo', location }))
     echoSource.addFeatures(echoFeatures)
 
-    const navigationFeatures = navigationPoints.map(pointFeature)
+    const navigationFeatures = navigationPoints.map((location) => pointFeature({ category: 'navigation', location }))
     navigationSource.addFeatures(navigationFeatures)
 
-    const labels = regionLabels.map((label) => {
-      const feature = new Feature({ geometry: new Point([label.coordinate.mapX, label.coordinate.mapY]) })
-      feature.setStyle(new Style({
-        text: new Text({
-          text: label.name,
-          font: label.level === 2 ? '600 13px sans-serif' : '500 11px sans-serif',
-          fill: new Fill({ color: label.level === 2 ? 'rgba(239, 246, 240, .78)' : 'rgba(214, 226, 219, .58)' }),
-          stroke: new Stroke({ color: 'rgba(4, 10, 9, .9)', width: 3 }),
-        }),
-      }))
-      return feature
-    })
+    const labels = regionLabels.map((location) => pointFeature({ category: 'region-name', location }))
     labelSource.addFeatures(labels)
   }
 
@@ -159,6 +181,7 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
     bossMarkerStyles.dispose()
     echoCosts.clear()
     navigationStyleCache.clear()
+    labelStyleCache.clear()
     for (const source of [echoSource, navigationSource, labelSource]) {
       source.clear(true)
       source.dispose()

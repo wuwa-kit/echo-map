@@ -1,5 +1,13 @@
 @import './styles/openlayers.css';
 
+@font-face {
+  font-family: 'Map FangXinShu';
+  src: url('./assets/fonts/ar-fangxinshu-heavy.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
+
 :root {
   color: #eaf4ef;
   background: #07100f;

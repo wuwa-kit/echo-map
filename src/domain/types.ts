@@ -7,6 +7,8 @@ export interface SonataEffect {
   name: string
   iconUrl: string
   sourceId: number
+  c1EchoIds: string[]
+  c3EchoIds: string[]
 }
 
 export interface EchoDefinition {
@@ -60,25 +62,37 @@ export interface MapStateDefinition {
   layeredMaps: LayeredMapDefinition[]
 }
 
-export interface RegionLabel {
+export interface MapLocationBase {
   id: string
-  name: string
   stateId: number
-  countryId: number
-  level: number
+  countryId: number | null
   coordinate: OfficialCoordinate
 }
 
-export interface PointLocationBase {
-  id: string
+// Text-only navigation anchors do not carry game height or route eligibility.
+export interface RegionLabel extends MapLocationBase {
+  name: string
+  countryId: number
+  level: number
+}
+
+export interface MapNavigationCountry {
+  id: number
+  name: string
+  regionIds: string[]
+  groups: {
+    id: string
+    name: string
+    regionIds: string[]
+  }[]
+}
+
+export interface PointLocationBase extends MapLocationBase {
   typeId: string
   typeName: string
   iconUrl: string
-  stateId: number
-  countryId: number | null
   layeredMapId: string | null
   levelId: string | null
-  coordinate: OfficialCoordinate
   gameCoordinate: GameCoordinate | null
   quality: PointQuality
 }
@@ -164,6 +178,17 @@ export interface NavigationPoint extends PointLocationBase {
   kind: NavigationKind
 }
 
+export type MapDisplayPoint =
+  | { category: 'echo', location: EchoMapLocation }
+  | { category: 'navigation', location: NavigationPoint }
+  | { category: 'region-name', location: RegionLabel }
+
+// Inclusive minimum, exclusive maximum; null keeps a point visible when zooming in.
+export interface MapZoomRange {
+  minZoom: number
+  maxZoom: number | null
+}
+
 export interface NavigationPointGroup {
   id: string
   name: string
@@ -227,11 +252,28 @@ export interface MapDataset {
   sonatas: SonataEffect[]
   echoes: EchoDefinition[]
   states: MapStateDefinition[]
+  mapNavigation: MapNavigationCountry[]
   regionLabels: RegionLabel[]
   echoLocations: EchoLocation[]
   navigationPointGroups: NavigationPointGroup[]
   navigationPoints: NavigationPoint[]
   connectors: RouteConnector[]
+}
+
+export type OfficialAssetCategory = 'echo' | 'sonata' | 'map-echo' | 'navigation' | 'tile' | 'floor'
+
+export interface OfficialAsset {
+  id: string
+  category: OfficialAssetCategory
+  name: string
+  url: string
+  previewUrl: string
+  sourceUrl: string
+  fetchedAt: string
+  stateIds: number[]
+  referenceIds: string[]
+  tags: string[]
+  recordCount: number
 }
 
 export interface RoutePoint {
