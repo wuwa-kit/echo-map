@@ -2,10 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { syncMap } from '../scripts/sync-map.ts'
 import { fetchBytes, fetchJson, fetchOptionalJson, postFormJson } from '../scripts/lib/http.ts'
 import { readJson, writeJson } from '../scripts/lib/files.ts'
+import { splitMapDataset } from '../scripts/lib/map-data.ts'
 import { groupNavigationPoints } from '../scripts/lib/map/navigation-groups.ts'
 import { catalog, countries, iconBytes, iconHash, layers, manual, navigationConfig, positions, wiki } from './fixtures/sync-map-input.ts'
 
 vi.mock('../scripts/lib/http.ts')
+vi.mock('../scripts/lib/official-point-library.ts', () => ({
+  readOfficialPointLibrary: vi.fn(async () => ({ version: 1, points: [] })),
+}))
 vi.mock('../scripts/lib/files.ts', () => ({
   isMainModule: () => false,
   projectPath: (...parts: string[]) => parts.join('/'),
@@ -20,6 +24,7 @@ beforeEach(() => {
   vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
   vi.mocked(readJson).mockImplementation(async (path) => {
+    if (path === 'data/manual/points.json') return { version: 1, points: [] }
     if (path.endsWith('wiki.json')) return wiki
     if (path.endsWith('locations.json')) return manual
     if (path.endsWith('map-echo-aliases.json')) return { byTypeId: { '2': '乙' } }
@@ -74,12 +79,26 @@ describe('map synchronization', () => {
     await expect(syncMap(wiki)).rejects.toThrow('重力资源不可用')
     expect(writeJson).not.toHaveBeenCalled()
   })
-  it('preserves the pre-refactor dataset, ordering, manual coordinates and failure report', async () => {
+  it('preserves ordering, manual coordinates and the failure report', async () => {
     const dataset = await syncMap()
     await expect(`${JSON.stringify(dataset, null, 2)}\n`).toMatchFileSnapshot('./fixtures/sync-map.json')
-    expect(writeJson).toHaveBeenCalledWith('public/data/app-data.json', dataset)
+    const { map, catalog, locations } = splitMapDataset(dataset)
+    expect(writeJson).toHaveBeenCalledWith('public/data/map-data.json', map, { compact: true })
+    expect(writeJson).toHaveBeenCalledWith('public/data/catalog-data.json', catalog, { compact: true })
+    expect(writeJson).toHaveBeenCalledWith('data/generated/official-locations.json', locations, { compact: true })
+    expect(writeJson).toHaveBeenCalledWith('public/data/official-points.json', { locations, library: { version: 1, points: [] } }, { compact: true, skipUnchanged: true })
+    expect(writeJson).toHaveBeenCalledWith('public/data/custom-points.json', { version: 1, points: [] }, { compact: true, skipUnchanged: true })
     expect(writeJson).toHaveBeenCalledWith('data/generated/sync-report.json', dataset.report)
     expect(fetchBytes).not.toHaveBeenCalledWith(expect.stringContaining('boss.png'))
+  })
+
+  it('matches Chinese names and aliases to catalogue portraits without requiring map icons', async () => {
+    const catalogue = { ...wiki, echoes: wiki.echoes.map((echo) => ({ ...echo, iconUrl: `https://example.test/wiki/${echo.id}.png` })) }
+    const dataset = await syncMap(catalogue)
+    expect(dataset.echoLocations.find(({ id }) => id === 'echo-official')).toMatchObject({ echoId: 'echo-0', iconUrl: 'https://example.test/wiki/echo-0.png' })
+    expect(dataset.echoLocations.find(({ id }) => id === 'echo-alias')).toMatchObject({ echoId: 'echo-1', iconUrl: 'https://example.test/wiki/echo-1.png' })
+    expect(dataset.echoes).toEqual(catalogue.echoes)
+    expect(dataset.echoLocations.every((point) => point.iconUrl === catalogue.echoes.find(({ id }) => id === point.echoId)?.iconUrl)).toBe(true)
   })
 
   it('stops before writing when required resource discovery fails', async () => {

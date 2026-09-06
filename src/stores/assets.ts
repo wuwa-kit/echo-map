@@ -45,7 +45,7 @@ export const useAssetsStore = defineStore('assets', () => {
     loading.value = true
     error.value = ''
     pendingLoad = loadMapDataset()
-      .then(setDataset)
+      .then(({ dataset }) => setDataset(dataset))
       .catch((failure: unknown) => { error.value = failure instanceof Error ? failure.message : '官方资产数据加载失败' })
       .finally(() => {
         loading.value = false

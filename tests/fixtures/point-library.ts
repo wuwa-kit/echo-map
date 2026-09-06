@@ -1,8 +1,7 @@
-import { readFile } from 'node:fs/promises'
-import { mapDatasetSchema } from '../../src/domain/schema.ts'
+import { readMapDataset } from '../../scripts/lib/map-data.ts'
 import type { AuthoredEchoPoint } from '../../src/domain/types.ts'
 
-export const referenceDataset = mapDatasetSchema.parse(JSON.parse(await readFile(new URL('../../public/data/app-data.json', import.meta.url), 'utf8')))
+export const referenceDataset = await readMapDataset()
 const small = referenceDataset.echoes.find(({ cost }) => cost === 1)
 const elite = referenceDataset.echoes.find(({ cost }) => cost === 3)
 if (!small || !elite) throw new Error('测试数据缺少 C1/C3')

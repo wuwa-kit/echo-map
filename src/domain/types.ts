@@ -266,7 +266,36 @@ export interface MapDataset {
   connectors: RouteConnector[]
 }
 
-export type OfficialAssetCategory = 'echo' | 'sonata' | 'map-echo' | 'navigation' | 'tile' | 'floor' | 'gravity'
+export interface PointIconDefinition extends Pick<PointLocationBase, 'typeId' | 'typeName' | 'iconUrl'> {
+  id: string
+}
+
+export type PointWithIconReference<T> = Omit<T, 'typeId' | 'typeName' | 'iconUrl'> & { iconId: string }
+
+export interface MapPointLocations {
+  echoLocations: Omit<EchoLocation, 'iconUrl'>[]
+  navigationPoints: PointWithIconReference<NavigationPoint>[]
+}
+
+export interface MapData extends Pick<MapDataset, 'version' | 'states' | 'mapNavigation' | 'regionLabels' | 'connectors'> {
+  source: Omit<SourceManifest, 'wikiFetchedAt' | 'sourceUrls'> & {
+    sourceUrls: Pick<SourceManifest['sourceUrls'], 'officialMap'>
+  }
+}
+
+export interface MapCatalogData extends Pick<MapDataset, 'report' | 'sonatas' | 'echoes' | 'navigationPointGroups'> {
+  source: Pick<SourceManifest, 'wikiFetchedAt'> & {
+    sourceUrls: Pick<SourceManifest['sourceUrls'], 'echoCatalogue' | 'sonataCatalogue'>
+  }
+  pointIcons: PointIconDefinition[]
+}
+
+export interface OfficialPointData {
+  locations: MapPointLocations
+  library: PointLibrary
+}
+
+export type OfficialAssetCategory = 'echo' | 'sonata' | 'navigation' | 'tile' | 'floor' | 'gravity'
 
 export interface OfficialAsset {
   id: string

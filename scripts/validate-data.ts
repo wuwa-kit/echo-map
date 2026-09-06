@@ -1,13 +1,11 @@
-import { mapDatasetSchema, mapZoomRangeSchema, officialAssetSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
+import { mapZoomRangeSchema, officialAssetSchema, officialPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
-import type { MapDataset } from '../src/domain/types.ts'
 import { projectPath, readJson } from './lib/files.ts'
 import { parsePointLibrary } from '../src/domain/point-library.ts'
-import { readOfficialPointLibrary } from './lib/official-point-library.ts'
+import { readMapDataset, readOfficialPointData } from './lib/map-data.ts'
 
-const rawDataset = await readJson<unknown>(projectPath('public', 'data', 'app-data.json'))
-const dataset = mapDatasetSchema.parse(rawDataset) as MapDataset
+const dataset = await readMapDataset()
 wikiCatalogueSchema.parse(await readJson<unknown>(projectPath('data', 'generated', 'wiki.json')))
 const assets = buildOfficialAssets(dataset)
 const assetIds = new Set<string>()
@@ -20,7 +18,7 @@ for (const asset of assets) {
   }
 }
 const pointLibrary = parsePointLibrary(await readJson<unknown>(projectPath('data', 'manual', 'points.json')), dataset, 'manual')
-const officialLibrary = await readOfficialPointLibrary(projectPath('data', 'generated', 'official-points.json'), dataset)
+const { library: officialLibrary } = officialPointDataSchema.parse(await readOfficialPointData(dataset))
 const echoIds = new Set(dataset.echoes.map(({ id }) => id))
 const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []
@@ -83,6 +81,9 @@ for (const group of dataset.navigationPointGroups) {
 for (const location of dataset.echoLocations) {
   if (!echoIds.has(location.echoId)) {
     errors.push(`点位 ${location.id} 引用了白名单外声骸 ${location.echoId}`)
+  }
+  if (location.iconUrl !== dataset.echoes.find(({ id }) => id === location.echoId)?.iconUrl) {
+    errors.push(`声骸点位 ${location.id} 必须使用图鉴头像`)
   }
 }
 

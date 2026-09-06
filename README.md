@@ -59,7 +59,7 @@ pnpm check             # 完整检查
 
 小于 1024px 的窗口默认以地图为主，底部提供“切换地图”“筛选”和“路线”入口，筛选与路线每次只打开一个面板。竖屏面板最多占视口高度的 70%；宽度至少 500px、高度不超过 500px 的紧凑窗口使用侧面板。面板会随可视视口高度调整，避让软键盘和屏幕安全区。
 
-地图切换通过通用 `WuCascader` 动作入口，按官方 `country.json` 的“大区 → 地区分组 → 区域”路径导航；黑海岸直接进入区域列表。桌面使用多列级联菜单，窄屏逐级展开并提供路径和返回按钮。仅浏览或关闭菜单不会改变地图，点击区域后切换所需底图并定位，同一区域可重复定位，共享底图内的导航不会按大区隐藏点位。菜单路径不写入 URL，定位结果通过地图、楼层和视口恢复。`public/data/app-data.json` 的 `mapNavigation` 保存目录和地区标签引用，`pnpm data:sync:map` 同步生成；`mapStateId` 只作为分组 ID，实际地图取目标地区的 `stateId`。
+地图切换通过通用 `WuCascader` 动作入口，按官方 `country.json` 的“大区 → 地区分组 → 区域”路径导航；黑海岸直接进入区域列表。桌面使用多列级联菜单，窄屏逐级展开并提供路径和返回按钮。仅浏览或关闭菜单不会改变地图，点击区域后切换所需底图并定位，同一区域可重复定位，共享底图内的导航不会按大区隐藏点位。菜单路径不写入 URL，定位结果通过地图、楼层和视口恢复。`public/data/map-data.json` 的 `mapNavigation` 保存目录和地区标签引用，`pnpm data:sync:map` 同步生成；`mapStateId` 只作为分组 ID，实际地图取目标地区的 `stateId`。
 
 `src/components/base/WuCascader.vue` 接收 `options` 树（`value`、`label`、可选的 `children`、`description`、`disabled`），仅在选择末级节点时发出 `select(value, path)`，按钮始终显示 `placeholder`，再次打开从根目录开始。方向键可移动和进入/返回层级，Enter/空格确认，Escape 或点击外部关闭，Tab 遵循原生焦点顺序。`MapNavigationCascader.vue` 负责将地图数据转换为选项并调用 Store 定位 action，基础组件不依赖地图状态。
 
@@ -78,14 +78,16 @@ pnpm check             # 完整检查
 - 声骸与合鸣效果：库街区 Wiki 公开目录接口。
 - 地图瓦片、分层、图标和临时 XY：库街区官方地图公开静态资源。
 - 人工点位与精确 XYZ：`data/manual/points.json`，由录入系统维护。
-- 官方点位：`data/generated/official-points.json`，Z=0，占位数量为每种 1 只。
+- 官方点位：`data/generated/official-points.json`，Z=0，占位数量为每种 1 只。原始点位与图标 ID 引用由地图同步写入紧凑的 `data/generated/official-locations.json`，与官方转换点位合并生成 `public/data/official-points.json`。
+- 纯地图数据：`public/data/map-data.json`，只包含地图结构、地表与分层瓦片、地区导航、文字标签、楼层连接及地图来源信息。
+- 图鉴与图标：`public/data/catalog-data.json`，包含声骸、合鸣套装、定位点图标分组、定位点类型与图标定义，以及目录来源和同步统计。声骸按中文名称匹配完整 Wiki 图鉴（兼容已配置别名），点位通过 `echoId` 直接复用图鉴头像，不保存官方地图的声骸图标。传送点、BOSS 等定位点通过 `iconId` 引用此处的 `pointIcons`。
 - 地图类型别名：`data/config/map-echo-aliases.json` 人工审阅。
 - 定位点收录和传送能力：`data/config/map-navigation-types.json` 人工审阅。
 - 重复定位点图标的分组名称：`data/config/map-navigation-icon-groups.json` 人工审阅。
 
 同步脚本使用 Wiki“套装”和“COST”标签组构建 C1/C3 声骸白名单，并按下载后图标内容的 SHA-256 指纹合并定位点显示分组。无法与白名单精确匹配或无法通过显式别名匹配的官方怪物会被拒绝，不会进入声骸数据。
 
-`data/generated/wiki.json` 与 `public/data/app-data.json` 的每个合鸣套装包含 `c1EchoIds`、`c3EchoIds`，分别列出该套装的 C1、C3 声骸 ID（如 `wiki-echo-11231`）；没有对应声骸时为空数组。这两个列表由声骸的 `sonataIds` 和 `cost` 自动反向生成、去重并按 ID 排序，数据校验要求双向归属一致，不手工维护列表。
+`data/generated/wiki.json` 与 `public/data/catalog-data.json` 的 `sonatas` 数组保留[官方 Wiki 合鸣效果目录](https://wiki.kurobbs.com/mc/catalogue/list?fid=1099&sid=1219)接口的显示顺序，地图筛选和资产库沿用此顺序。每个合鸣套装包含 `c1EchoIds`、`c3EchoIds`，分别列出该套装的 C1、C3 声骸 ID（如 `wiki-echo-11231`）；没有对应声骸时为空数组。这两个列表由声骸的 `sonataIds` 和 `cost` 自动反向生成、去重并按 ID 排序，数据校验要求双向归属一致，不手工维护列表。
 
 当前官方资源 hash 会在每次同步时动态获取。底图瓦片运行时直接读取官方 WebP 静态资源；`public/vendor/kuro-map/` 已预留为可选本地缓存目录并被 Git 忽略。
 
@@ -93,7 +95,7 @@ pnpm check             # 完整检查
 
 通过 `/assets` 或地图筛选面板中的“浏览官方资产”打开资产库。开发服务与正式构建均提供此页面，部署时需将前端路由回退到 `index.html`。
 
-资产库读取现有 `public/data/app-data.json`，展示声骸图鉴、合鸣效果、声骸点位图标、定位点图标、地表瓦片和分层瓦片。同一分类按资源 URL 去重，保留不同 URL 的图标变体，详情提供原图、来源页面、抓取时间、引用数量及来源 ID。图片来自官方 CDN，瓦片以缩略图分页懒加载；可下载当前数据快照。
+资产库读取 `/data/map-data.json`、`/data/catalog-data.json` 与 `/data/official-points.json`，展示声骸图鉴、合鸣效果、定位点图标、地表瓦片和分层瓦片。同一分类按资源 URL 去重，保留不同 URL 的图标变体，详情提供原图、来源页面、抓取时间、引用数量及来源 ID。图片来自官方 CDN，瓦片以缩略图分页懒加载；可分别下载纯地图、声骸套装与图标、官方点位和人工点位快照。
 
 支持名称、套装、类型 ID、资源路径搜索，以及分类和关联地图筛选。地图关联来自快照点位，不代表游戏中的完整分布。分类、地图、分页与选中资产通过 URL 恢复，默认状态为 `/assets`；搜索词仅保留在当前页面。此页不触发重新抓取，更新快照仍使用现有同步命令。
 
@@ -119,7 +121,7 @@ pnpm check             # 完整检查
 
 地图上的声骸点位只显示菱形头像，单点与缩小后的聚合点均不显示数量文字。头像按当前筛选命中的声骸种类合成，同种去重，最多展示 4 种；录入与详情预览在超过 4 种时显示 3 个头像及其余种类数。点击聚合图标先列出各点位，再查看完整怪物清单，筛选命中的怪物高亮标注“目标”。人工清单尚未补齐时显示“已录入 2种 · 4只”和“可继续补录”，补齐后显示“共 2种 · 4只”；总数统计整份清单，每种怪物单独显示数量。官方测试点在列表和详情中均显示“数量待核验”，不展示占位数量。数量以“只”计，路线以“处”为一站，同处混合 C1/C3 不会重复编号。
 
-`pnpm data:validate` 同时校验两份点位文件。`pnpm build` 分别生成 `dist/data/points.json`（人工已核验记录）和 `dist/data/official-points.json`。录入接口、导入导出和历史恢复只写人工库；官方转换命令只写官方库。前端继续复用现有底图、楼层与声骸图鉴素材。
+`pnpm data:validate` 同时校验两份点位文件。`public/data/` 实际保存四个无缩进、无换行的 JSON：`map-data.json`（纯地图结构与瓦片），`catalog-data.json`（声骸、套装及各类点位图标），`official-points.json`（`locations` 保存官方原始点位信息，`library` 保存官方转换点位），`custom-points.json`（人工已核验记录）。地图同步、官方转换、开发服务启动和构建前都会更新公开点位快照；录入保存成功后也同步更新，内容未变化时不重写文件。`pnpm build` 将这四个文件复制到 `dist/data/`。开发服务提供相同路径和结构；地图、图鉴图标与官方数据并行读取，每个文件只请求一次。录入接口、导入导出和历史恢复只写人工库；官方转换命令只写官方库。前端继续复用现有底图、楼层与声骸图鉴素材。
 
 ## 官方测试点与旧 XYZ 示例
 

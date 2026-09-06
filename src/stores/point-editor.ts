@@ -7,7 +7,7 @@ import type { AuthoredPoint, MapDataset, PointLibrary } from '../domain/types.ts
 import type { NavigationKind, NavigationMode } from '../domain/types.ts'
 import { appendObservation, combinePointLibraries, findNearbyPoints } from '../domain/point-matching.ts'
 import { readEditorLibrary, readEditorVersion, readEditorVersions, saveEditorLibrary } from '../data/editor-client.ts'
-import { loadMapDataset, loadOfficialPointLibrary } from '../data/load.ts'
+import { loadMapDataset } from '../data/load.ts'
 import { hasGravityMap } from '../domain/gravity.ts'
 import type { GravityType } from '../domain/types.ts'
 
@@ -207,10 +207,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     busy.value = true
     error.value = ''
     try {
-      const [reference, snapshot] = await Promise.all([loadMapDataset(), readEditorLibrary()])
+      const [{ dataset: reference, officialLibrary: official }, snapshot] = await Promise.all([loadMapDataset(), readEditorLibrary()])
       dataset.value = freeze(reference, true)
       library.value = freeze(parsePointLibrary(snapshot.library, reference), true)
-      officialLibrary.value = freeze(await loadOfficialPointLibrary(reference), true)
+      officialLibrary.value = freeze(official, true)
       revision.value = snapshot.revision
       if (!draft.value) {
         try {

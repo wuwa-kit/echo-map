@@ -6,7 +6,7 @@ const finiteNumber = z.number().finite()
 const nullableString = z.string().nullable()
 export const gravityTypeSchema = z.union([z.literal(1), z.literal(2)])
 
-export const officialAssetCategorySchema = z.enum(['echo', 'sonata', 'map-echo', 'navigation', 'tile', 'floor', 'gravity'])
+export const officialAssetCategorySchema = z.enum(['echo', 'sonata', 'navigation', 'tile', 'floor', 'gravity'])
 const assetUrlSchema = z.string().url().startsWith('https://')
 export const officialAssetSchema = z.object({
   id: z.string().min(1),
@@ -242,7 +242,7 @@ function validateMapGravity(dataset: Pick<MapDataset, 'states' | 'echoLocations'
   }
 }
 
-export const mapDatasetSchema = z.object({
+const mapDatasetObjectSchema = z.object({
   version: z.literal(3),
   source: z.object({
     generatedAt: z.string(),
@@ -375,4 +375,45 @@ export const mapDatasetSchema = z.object({
     traversalCost: z.number().nonnegative(),
     isExample: z.boolean(),
   })),
-}).superRefine(validateSonataEchoIds).superRefine(validateMapNavigation).superRefine(validateMapGravity)
+})
+
+export const mapDatasetSchema = mapDatasetObjectSchema
+  .superRefine(validateSonataEchoIds).superRefine(validateMapNavigation).superRefine(validateMapGravity)
+
+const sourceSchema = mapDatasetObjectSchema.shape.source
+
+export const mapDataSchema = mapDatasetObjectSchema.pick({
+  version: true, states: true, mapNavigation: true, regionLabels: true, connectors: true,
+}).extend({
+  source: sourceSchema.omit({ wikiFetchedAt: true, sourceUrls: true }).extend({
+    sourceUrls: sourceSchema.shape.sourceUrls.pick({ officialMap: true }).strict(),
+  }).strict(),
+}).strict().superRefine(validateMapNavigation).superRefine((map, context) => {
+  validateMapGravity({ ...map, echoLocations: [], navigationPoints: [] }, context)
+})
+
+export const mapCatalogDataSchema = mapDatasetObjectSchema.pick({
+  report: true, sonatas: true, echoes: true, navigationPointGroups: true,
+}).extend({
+  source: sourceSchema.pick({ wikiFetchedAt: true }).extend({
+    sourceUrls: sourceSchema.shape.sourceUrls.pick({ echoCatalogue: true, sonataCatalogue: true }).strict(),
+  }).strict(),
+  pointIcons: z.array(z.object({
+    id: z.string().min(1),
+    typeId: pointBaseShape.typeId,
+    typeName: pointBaseShape.typeName,
+    iconUrl: pointBaseShape.iconUrl,
+  }).strict()).refine((icons) => new Set(icons.map(({ id }) => id)).size === icons.length, { message: '点位图标 ID 不能重复' }),
+}).strict().superRefine(validateSonataEchoIds)
+
+export const mapPointLocationsSchema = z.object({
+  echoLocations: z.array(mapDatasetObjectSchema.shape.echoLocations.element
+    .omit({ iconUrl: true }).strict()),
+  navigationPoints: z.array(mapDatasetObjectSchema.shape.navigationPoints.element
+    .omit({ typeId: true, typeName: true, iconUrl: true }).extend({ iconId: z.string().min(1) }).strict()),
+}).strict()
+
+export const officialPointDataSchema = z.object({
+  locations: mapPointLocationsSchema,
+  library: pointLibrarySchema,
+}).strict()

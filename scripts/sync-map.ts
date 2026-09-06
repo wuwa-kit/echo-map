@@ -2,6 +2,7 @@ import { mapDatasetSchema } from '../src/domain/schema.ts'
 import type { MapDataset, MapStateDefinition } from '../src/domain/types.ts'
 import { calculateTileExtent } from '../src/map/projection.ts'
 import { isMainModule, projectPath, readJson, writeJson } from './lib/files.ts'
+import { writeMapDataset } from './lib/map-data.ts'
 import type { WikiSnapshot } from './lib/wiki.ts'
 import { flattenRegions, normalizeLayers, normalizeMapNavigation, normalizeGravityTiles } from './lib/map/normalize.ts'
 import { normalizeLocations } from './lib/map/locations.ts'
@@ -91,7 +92,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
 
   mapDatasetSchema.parse(dataset)
   await Promise.all([
-    writeJson(projectPath('public', 'data', 'app-data.json'), dataset),
+    writeMapDataset(dataset),
     writeJson(projectPath('data', 'generated', 'sync-report.json'), report),
   ])
   console.log(`地图同步完成：${dataset.states.length} 张地图，${dataset.echoLocations.length} 个声骸点，${dataset.navigationPoints.length} 个定位点`)

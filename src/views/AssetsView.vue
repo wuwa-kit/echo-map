@@ -28,6 +28,12 @@ const summary = computed(() => [
   { label: '地图范围', count: dataset.value?.states.length ?? 0 },
   { label: '分层楼层', count: dataset.value?.states.reduce((sum, state) => sum + state.layeredMaps.reduce((count, layer) => count + layer.floors.length, 0), 0) ?? 0 },
 ])
+const dataDownloads = [
+  { file: 'map-data.json', label: '地图数据' },
+  { file: 'catalog-data.json', label: '声骸套装与图标' },
+  { file: 'official-points.json', label: '官方点位' },
+  { file: 'custom-points.json', label: '人工点位' },
+]
 
 function categoryName(category: OfficialAssetCategory): string {
   return assetCategories.find(({ id }) => id === category)?.name ?? category
@@ -92,7 +98,9 @@ async function selectPage(value: number): Promise<void> {
             <div role="heading" aria-level="1" class="text-28px font-600 tracking-[0.03em] sm:text-34px">官方资产库</div>
             <div class="mt-10px max-w-660px text-13px text-[var(--muted)] leading-6">浏览已从库街区 Wiki 与官方地图抓取的资源清单。按分类和 URL 整理，每份素材保留来源与关联信息。</div>
           </div>
-          <a href="/data/app-data.json" download="app-data.json" class="min-h-42px inline-flex items-center rounded-7px border border-[var(--line)] bg-[#13271f] px-16px text-13px text-[#d5e8df] no-underline hover:border-[var(--accent)]">下载数据快照 ↗</a>
+          <div class="flex flex-wrap gap-8px" role="group" aria-label="下载数据快照">
+            <a v-for="item in dataDownloads" :key="item.file" :href="`/data/${item.file}`" :download="item.file" class="min-h-42px inline-flex items-center rounded-7px border border-[var(--line)] bg-[#13271f] px-16px text-13px text-[#d5e8df] no-underline hover:border-[var(--accent)]">{{ item.label }} ↗</a>
+          </div>
         </div>
 
         <div class="mb-28px grid grid-cols-2 gap-10px lg:grid-cols-4">

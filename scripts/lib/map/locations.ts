@@ -49,6 +49,7 @@ function locationBase(
   type: UnknownRecord,
   fallbackStateId: number,
   manual: ManualPoint | undefined,
+  pointIconUrl: string,
 ) {
   const rawX = asNumber(location.x)
   const rawY = asNumber(location.y)
@@ -57,7 +58,7 @@ function locationBase(
     gravityType: manual?.gravityType ?? normalizeGravity(location.gravityType),
     typeId: asString(type.id),
     typeName: asString(type.name),
-    iconUrl: iconUrl(type.icon),
+    iconUrl: pointIconUrl,
     stateId: asNumber(location.stateId, fallbackStateId),
     countryId: location.countryId === '' || location.countryId === null || location.countryId === undefined
       ? null
@@ -111,14 +112,14 @@ export function normalizeLocations(
         const locationId = asString(location.id)
         if (echo && !echoLocations.has(locationId)) {
           echoLocations.set(locationId, {
-            ...locationBase(location, type, state.id, manualEchoByLocation.get(locationId)),
+            ...locationBase(location, type, state.id, manualEchoByLocation.get(locationId), echo.iconUrl),
             echoId: echo.id,
           })
         }
 
         if (navigation && !navigationPoints.has(locationId)) {
           navigationPoints.set(locationId, {
-            ...locationBase(location, type, state.id, manualNavigationByLocation.get(locationId)),
+            ...locationBase(location, type, state.id, manualNavigationByLocation.get(locationId), iconUrl(type.icon)),
             catalogCategoryId: navigation.categoryId,
             catalogCategoryName: navigation.categoryName,
             mode: navigation.mode,

@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { usePointEditorStore } from '../src/stores/point-editor.ts'
-import { loadMapDataset, loadOfficialPointLibrary } from '../src/data/load.ts'
+import { loadMapDataset } from '../src/data/load.ts'
 import { readEditorLibrary, readEditorVersions, saveEditorLibrary } from '../src/data/editor-client.ts'
 import { referenceDataset, mixedPoint, smallEcho, eliteEcho } from './fixtures/point-library.ts'
 import type { PointLibrary } from '../src/domain/types.ts'
@@ -19,8 +19,7 @@ beforeEach(() => {
   vi.stubGlobal('localStorage', { getItem: (key: string) => cache.get(key) ?? null, setItem: (key: string, value: string) => cache.set(key, value), removeItem: (key: string) => cache.delete(key) })
   disk = { version: 1, points: [] }
   revision = 1
-  vi.mocked(loadMapDataset).mockResolvedValue(referenceDataset)
-  vi.mocked(loadOfficialPointLibrary).mockResolvedValue({ version: 1, points: [] })
+  vi.mocked(loadMapDataset).mockResolvedValue({ dataset: referenceDataset, officialLibrary: { version: 1, points: [] } })
   vi.mocked(readEditorLibrary).mockImplementation(async () => ({ library: disk, revision: String(revision) }))
   vi.mocked(readEditorVersions).mockResolvedValue([])
   vi.mocked(saveEditorLibrary).mockImplementation(async (library) => {
@@ -76,7 +75,7 @@ describe('point editor actions', () => {
 
   it('promotes an official candidate into the manual file at observed XYZ and replaces its display', async () => {
     const official = { ...mixedPoint('official:one'), status: 'imported' as const, officialIds: ['one'], coordinate: { x: -497, y: 449, z: 0 } }
-    vi.mocked(loadOfficialPointLibrary).mockResolvedValue({ version: 1, points: [official] })
+    vi.mocked(loadMapDataset).mockResolvedValue({ dataset: referenceDataset, officialLibrary: { version: 1, points: [official] } })
     const store = usePointEditorStore()
     await store.load()
     store.setTrackingEcho(smallEcho.id)

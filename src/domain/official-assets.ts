@@ -4,7 +4,6 @@ import type { MapDataset, OfficialAsset, OfficialAssetCategory } from './types.t
 export const assetCategories: { id: OfficialAssetCategory; name: string; description: string }[] = [
   { id: 'echo', name: '声骸图鉴', description: '官方 Wiki · C1 / C3 声骸' },
   { id: 'sonata', name: '合鸣效果', description: '官方 Wiki · 套装图标' },
-  { id: 'map-echo', name: '声骸点位图标', description: '官方地图 · 怪物标记' },
   { id: 'navigation', name: '定位点图标', description: '官方地图 · 传送与功能地标' },
   { id: 'tile', name: '地表瓦片', description: '官方地图 · 地表底图' },
   { id: 'floor', name: '分层瓦片', description: '官方地图 · 楼层底图' },
@@ -59,9 +58,6 @@ export function buildOfficialAssets(dataset: MapDataset): OfficialAsset[] {
     const states = dataset.echoes.filter(({ sonataIds }) => sonataIds.includes(sonata.id))
       .flatMap(({ id }) => [...echoStates.get(id) ?? []])
     add('sonata', sonata.name, sonata.iconUrl, String(sonata.sourceId), states, [sonata.id])
-  }
-  for (const point of dataset.echoLocations) {
-    add('map-echo', point.typeName, point.iconUrl, point.typeId, [point.stateId], [point.echoId])
   }
   for (const point of dataset.navigationPoints) {
     add('navigation', point.typeName, point.iconUrl, point.typeId, [point.stateId], [

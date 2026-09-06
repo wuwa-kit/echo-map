@@ -12,7 +12,7 @@ vi.mock('../scripts/lib/files.ts', () => ({
 
 afterEach(() => { vi.restoreAllMocks() })
 
-it('writes per-COST sonata memberships after applying the echo whitelist', async () => {
+it('preserves Wiki display order while writing whitelisted per-COST sonata memberships', async () => {
   vi.spyOn(console, 'log').mockImplementation(() => {})
   const tag = (id: string, name: string) => ({ id, name, children: [] })
   const record = (id: number, name: string, relateTagIds: string[] = []) => ({ id, name, content: { contentUrl: '', relateTagIds } })
@@ -24,7 +24,7 @@ it('writes per-COST sonata memberships after applying the echo whitelist', async
           record(12, '精英声骸', ['c3', 'set-a']),
           record(13, 'BOSS', ['c4', 'set-a']),
           record(14, '无套装声骸', ['c1']),
-        ] : [record(1, '甲套装'), record(2, '乙套装'), record(3, '空套装')],
+        ] : [record(2, '乙套装'), record(3, '空套装'), record(1, '甲套装')],
       },
       tagTree: [
         { id: 'sets', name: '套装', children: [tag('set-a', '甲套装'), tag('set-b', '乙套装'), tag('set-empty', '空套装')] },
@@ -36,6 +36,7 @@ it('writes per-COST sonata memberships after applying the echo whitelist', async
   const snapshot = await syncWiki()
   expect(snapshot.echoes).toHaveLength(2)
   expect(snapshot.excludedEchoNames).toEqual(expect.arrayContaining(['BOSS', '无套装声骸']))
+  expect(snapshot.sonatas.map(({ id }) => id)).toEqual(['wiki-sonata-2', 'wiki-sonata-3', 'wiki-sonata-1'])
   expect(snapshot.sonatas).toEqual(expect.arrayContaining([
     expect.objectContaining({ id: 'wiki-sonata-1', c1EchoIds: ['wiki-echo-11'], c3EchoIds: ['wiki-echo-12'] }),
     expect.objectContaining({ id: 'wiki-sonata-2', c1EchoIds: ['wiki-echo-11'], c3EchoIds: [] }),

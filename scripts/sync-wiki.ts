@@ -141,7 +141,7 @@ export async function syncWiki(): Promise<WikiSnapshot> {
     fetchedAt: new Date().toISOString(),
     totalEchoCount: echoCatalogue.records.length,
     excludedEchoNames: excludedEchoNames.sort((left, right) => left.localeCompare(right, 'zh-CN')),
-    sonatas: withSonataEchoIds(sonatas, echoes).sort((left, right) => left.name.localeCompare(right.name, 'zh-CN')),
+    sonatas: withSonataEchoIds(sonatas, echoes),
     echoes: echoes.sort((left, right) => left.name.localeCompare(right.name, 'zh-CN')),
   }
 

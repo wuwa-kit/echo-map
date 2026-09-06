@@ -1,15 +1,14 @@
 import { convertOfficialPoints } from '../scripts/lib/official-point-library.ts'
-import { readFile } from 'node:fs/promises'
+import { readMapDataset } from '../scripts/lib/map-data.ts'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mapDatasetSchema } from '../src/domain/schema.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import { planRouteInWorker } from '../src/route/worker-client.ts'
-import type { MapDataset, RouteResult } from '../src/domain/types.ts'
+import type { RouteResult } from '../src/domain/types.ts'
 
 vi.mock('../src/route/worker-client.ts')
 const planner = vi.mocked(planRouteInWorker)
-const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(new URL('../public/data/app-data.json', import.meta.url), 'utf8'))) as MapDataset
+const dataset = await readMapDataset()
 const result: RouteResult = { points: [], totalCost: 12, algorithm: 'exact', startPointId: null }
 
 function createStore() {

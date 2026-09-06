@@ -1,11 +1,9 @@
-import { readFile } from 'node:fs/promises'
 import type { IncomingMessage } from 'node:http'
 import { z } from 'zod'
 import type { Plugin } from 'vite'
-import { mapDatasetSchema } from '../src/domain/schema.ts'
 import { createPointRepository, PointRepositoryError } from './lib/point-repository.ts'
 import { projectPath } from './lib/files.ts'
-import { readOfficialPointLibrary } from './lib/official-point-library.ts'
+import { readMapDataset, writePublicPointData } from './lib/map-data.ts'
 
 export function isLocalEditorRequest(request: Pick<IncomingMessage, 'headers'> & { socket: { remoteAddress?: string } }): boolean {
   if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.socket.remoteAddress ?? '')) return false
@@ -32,28 +30,32 @@ async function requestBody(request: IncomingMessage): Promise<unknown> {
 }
 
 export function pointEditorPlugin(): Plugin {
-  const getDataset = async () => mapDatasetSchema.parse(JSON.parse(await readFile(projectPath('public', 'data', 'app-data.json'), 'utf8')))
+  const getDataset = readMapDataset
   const repository = createPointRepository(projectPath('data', 'manual', 'points.json'), projectPath('data', 'cache', 'point-history'), getDataset)
-  const officialLibrary = async () => readOfficialPointLibrary(projectPath('data', 'generated', 'official-points.json'), await getDataset())
   return {
     name: 'point-editor',
-    configureServer(server) {
+    async buildStart() {
+      await writePublicPointData()
+    },
+    async configureServer(server) {
+      await writePublicPointData()
       server.middlewares.use((request, response, next) => {
         const path = request.url?.split('?')[0] ?? ''
-        if (!['/data/points.json', '/data/official-points.json'].includes(path) && !path.startsWith('/api/editor/')) return next()
+        if (!['/data/custom-points.json', '/data/official-points.json'].includes(path) && !path.startsWith('/api/editor/')) return next()
         response.setHeader('Content-Type', 'application/json; charset=utf-8')
         response.setHeader('Cache-Control', 'no-store')
         const run = async () => {
-          if (path === '/data/official-points.json' && request.method === 'GET') return officialLibrary()
-          if (path === '/data/points.json' && request.method === 'GET') {
-            const { library } = await repository.read()
-            return { ...library, points: library.points.filter(({ status }) => status === 'verified') }
+          if (['/data/custom-points.json', '/data/official-points.json'].includes(path) && request.method === 'GET') {
+            const data = await writePublicPointData()
+            return path === '/data/custom-points.json' ? data.manual : data.official
           }
           if (!isLocalEditorRequest(request)) throw new PointRepositoryError('录入系统仅允许通过本机 localhost 访问', 403)
           if (path === '/api/editor/library' && request.method === 'GET') return repository.read()
           if (path === '/api/editor/library' && request.method === 'PUT') {
             const body = z.object({ library: z.unknown(), revision: z.string().regex(/^[a-f0-9]{64}$/u) }).strict().parse(await requestBody(request))
-            return repository.save(body.library, body.revision)
+            const snapshot = await repository.save(body.library, body.revision)
+            await writePublicPointData()
+            return snapshot
           }
           if (path === '/api/editor/versions' && request.method === 'GET') return repository.versions()
           if (path.startsWith('/api/editor/versions/') && request.method === 'GET') return repository.version(path.slice('/api/editor/versions/'.length))
@@ -64,11 +66,6 @@ export function pointEditorPlugin(): Plugin {
           response.end(JSON.stringify({ error: error instanceof Error ? error.message : '点位操作失败' }))
         })
       })
-    },
-    async generateBundle() {
-      const { library } = await repository.read()
-      this.emitFile({ type: 'asset', fileName: 'data/points.json', source: JSON.stringify({ ...library, points: library.points.filter(({ status }) => status === 'verified') }) })
-      this.emitFile({ type: 'asset', fileName: 'data/official-points.json', source: JSON.stringify(await officialLibrary()) })
     },
   }
 }

@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises'
+import { readMapDataset } from '../scripts/lib/map-data.ts'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { normalizeMapNavigation, flattenRegions } from '../scripts/lib/map/normalize.ts'
@@ -7,7 +7,7 @@ import { useExplorerStore } from '../src/stores/explorer.ts'
 import { mapNavigationOptions } from '../src/components/map-navigation-options.ts'
 import { cascaderColumns, resolveCascaderChoice } from '../src/components/base/cascader.ts'
 
-const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(new URL('../public/data/app-data.json', import.meta.url), 'utf8')))
+const dataset = await readMapDataset()
 const destination = (name: string) => {
   const region = dataset.regionLabels.find((region) => region.name === name && region.level === 2)
   if (!region) throw new Error(`缺少地区 ${name}`)

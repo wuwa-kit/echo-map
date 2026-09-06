@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { buildOfficialAssets, filterOfficialAssets } from '../src/domain/official-assets.ts'
+import { assetCategories, buildOfficialAssets, filterOfficialAssets } from '../src/domain/official-assets.ts'
 import { officialAssetSchema } from '../src/domain/schema.ts'
 import { officialFloorTileUrl, officialTileUrl, tilePreviewUrl } from '../src/data/official-asset-urls.ts'
 import { ASSET_PAGE_SIZE, useAssetsStore } from '../src/stores/assets.ts'
 import { referenceDataset } from './fixtures/point-library.ts'
+import { splitMapDataset } from '../scripts/lib/map-data.ts'
 
 const assets = buildOfficialAssets(referenceDataset)
+const { map, catalog, locations } = splitMapDataset(referenceDataset)
+const officialData = { locations, library: { version: 1, points: [] } }
 
 beforeEach(() => { setActivePinia(createPinia()) })
 
@@ -16,7 +19,7 @@ describe('official asset catalogue', () => {
     expect(new Set(assets.map(({ id }) => id)).size).toBe(assets.length)
     const categories = [
       ['echo', referenceDataset.echoes], ['sonata', referenceDataset.sonatas],
-      ['map-echo', referenceDataset.echoLocations], ['navigation', referenceDataset.navigationPoints],
+      ['navigation', referenceDataset.navigationPoints],
     ] as const
     for (const [category, records] of categories) {
       const urls = new Set(records.map(({ iconUrl }) => iconUrl).filter(Boolean))
@@ -26,6 +29,20 @@ describe('official asset catalogue', () => {
     expect(assets.filter(({ category }) => category === 'tile')).toHaveLength(referenceDataset.states.reduce((sum, state) => sum + state.tileIds.length, 0))
     const floorUrls = referenceDataset.states.flatMap((state) => state.layeredMaps.flatMap((layer) => layer.floors.flatMap((floor) => floor.tiles.map((path) => officialFloorTileUrl(referenceDataset.source.mapResourceHash, state.id, path)))))
     expect(new Set(assets.filter(({ category }) => category === 'floor').map(({ url }) => url))).toEqual(new Set(floorUrls))
+  })
+
+  it('finds every catalogue echo by its Chinese name even without official map locations', () => {
+    const catalogueAssets = buildOfficialAssets({ ...referenceDataset, echoLocations: [] })
+    expect(assetCategories.map(({ id }) => id)).toEqual(['echo', 'sonata', 'navigation', 'tile', 'floor', 'gravity'])
+    const echoAssets = catalogueAssets.filter(({ category }) => category === 'echo')
+    expect(echoAssets).toHaveLength(new Set(referenceDataset.echoes.map(({ iconUrl }) => iconUrl)).size)
+    expect(echoAssets.reduce((sum, asset) => sum + asset.recordCount, 0)).toBe(referenceDataset.echoes.length)
+    for (const echo of referenceDataset.echoes) {
+      expect(filterOfficialAssets(catalogueAssets, 'echo', null, echo.name)).toContainEqual(expect.objectContaining({
+        url: echo.iconUrl, sourceUrl: referenceDataset.source.sourceUrls.echoCatalogue,
+        referenceIds: expect.arrayContaining([String(echo.sourceId)]),
+      }))
+    }
   })
 
   it('merges shared URLs while preserving map associations, source IDs and distinct variants', () => {
@@ -86,6 +103,9 @@ describe('asset browser state', () => {
     store.restoreQuery({ category: 'echo', page: '0', asset: assets[0]!.id })
     expect(store.page).toBe(1)
     expect(store.selectedAsset?.id).toBe(assets[0]!.id)
+    store.restoreQuery({ category: 'map-echo', asset: 'map-echo:old-icon' })
+    expect(store.filters.category).toBe('all')
+    expect(store.selectedAsset).toBeNull()
   })
 
   it('resets pages when filtering, clears incompatible selection and preserves immutable snapshots', () => {
@@ -116,7 +136,11 @@ describe('asset browser state', () => {
   it('reports data load errors and can retry successfully', async () => {
     const fetchMock = vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(null, { status: 503, statusText: 'Unavailable' }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(referenceDataset)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(officialData)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(map)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(officialData)))
     vi.stubGlobal('fetch', fetchMock)
     try {
       const store = useAssetsStore()
@@ -133,14 +157,17 @@ describe('asset browser state', () => {
 
   it('shares an in-flight load when the page is reopened before the first request finishes', async () => {
     const response = Promise.withResolvers<Response>()
-    const fetchMock = vi.fn<typeof fetch>().mockReturnValue(response.promise)
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockReturnValueOnce(response.promise)
+      .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(officialData)))
     vi.stubGlobal('fetch', fetchMock)
     try {
       const store = useAssetsStore()
       const firstLoad = store.load()
       const secondLoad = store.load()
-      expect(fetchMock).toHaveBeenCalledTimes(1)
-      response.resolve(new Response(JSON.stringify(referenceDataset)))
+      expect(fetchMock).toHaveBeenCalledTimes(3)
+      response.resolve(new Response(JSON.stringify(map)))
       await Promise.all([firstLoad, secondLoad])
       expect(store.loading).toBe(false)
       expect(store.assets).toHaveLength(assets.length)

@@ -1,19 +1,16 @@
 import { convertOfficialPoints } from '../scripts/lib/official-point-library.ts'
-import { readFile } from 'node:fs/promises'
+import { readMapDataset } from '../scripts/lib/map-data.ts'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { mapDatasetSchema } from '../src/domain/schema.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import { echoMembers } from '../src/domain/point-library.ts'
-import type { MapDataset } from '../src/domain/types.ts'
 
-const datasetUrl = new URL('../public/data/app-data.json', import.meta.url)
 
 describe('explorer point group visibility', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
   it('shows no echo locations until an echo or sonata is selected', async () => {
-    const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(datasetUrl, 'utf8'))) as MapDataset
+    const dataset = await readMapDataset()
     const location = dataset.echoLocations.find(({ stateId, levelId }) => stateId === 8 && levelId === null)
     if (!location) {
       throw new Error('测试数据缺少默认地图声骸点')
@@ -46,7 +43,7 @@ describe('explorer point group visibility', () => {
   })
 
   it('hides every point in an icon group without changing route eligibility', async () => {
-    const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(datasetUrl, 'utf8'))) as MapDataset
+    const dataset = await readMapDataset()
     const store = useExplorerStore()
     store.setDataset(dataset)
     store.setOfficialPointLibrary(convertOfficialPoints(dataset))
@@ -75,7 +72,7 @@ describe('explorer point group visibility', () => {
   })
 
   it('restores a legacy hidden type id as its icon group', async () => {
-    const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(datasetUrl, 'utf8'))) as MapDataset
+    const dataset = await readMapDataset()
     const point = dataset.navigationPoints.find(({ stateId }) => stateId === 8)
     if (!point) {
       throw new Error('测试数据缺少默认地图定位点')
@@ -91,7 +88,7 @@ describe('explorer point group visibility', () => {
   })
 
   it('keeps explicit echo selection independent of sonata and search results', async () => {
-    const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(datasetUrl, 'utf8'))) as MapDataset
+    const dataset = await readMapDataset()
     const location = dataset.echoLocations.find(({ stateId, levelId }) => stateId === 8 && levelId === null)
     if (!location) throw new Error('测试数据缺少声骸点')
     const store = useExplorerStore()
@@ -107,7 +104,7 @@ describe('explorer point group visibility', () => {
   })
 
   it('validates restored scope and IDs while preserving valid selections', async () => {
-    const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(datasetUrl, 'utf8'))) as MapDataset
+    const dataset = await readMapDataset()
     const echo = dataset.echoes[0]
     const point = dataset.navigationPoints[0]
     if (!echo || !point) throw new Error('测试数据缺少声骸或定位点')
