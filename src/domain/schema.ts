@@ -4,8 +4,9 @@ import type { MapDataset } from './types.ts'
 
 const finiteNumber = z.number().finite()
 const nullableString = z.string().nullable()
+export const gravityTypeSchema = z.union([z.literal(1), z.literal(2)])
 
-export const officialAssetCategorySchema = z.enum(['echo', 'sonata', 'map-echo', 'navigation', 'tile', 'floor'])
+export const officialAssetCategorySchema = z.enum(['echo', 'sonata', 'map-echo', 'navigation', 'tile', 'floor', 'gravity'])
 const assetUrlSchema = z.string().url().startsWith('https://')
 export const officialAssetSchema = z.object({
   id: z.string().min(1),
@@ -28,6 +29,7 @@ export const navigationKindSchema = z.enum([
 export const navigationModeSchema = z.enum(['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown'])
 
 const authoredPointBase = {
+  gravityType: gravityTypeSchema.nullable().default(null),
   id: z.string().min(1).max(100),
   status: z.enum(['draft', 'verified', 'imported']),
   officialIds: z.array(z.string().min(1).max(100)).min(1).optional(),
@@ -124,6 +126,7 @@ export const mapZoomRangeSchema = z.object({
 })
 
 const pointBaseShape = {
+  gravityType: gravityTypeSchema.nullable().default(null),
   ...mapLocationBaseShape,
   typeId: z.string().min(1),
   typeName: z.string().min(1),
@@ -221,6 +224,24 @@ function validateMapNavigation(dataset: Pick<MapDataset, 'mapNavigation' | 'regi
   })
 }
 
+function validateMapGravity(dataset: Pick<MapDataset, 'states' | 'echoLocations' | 'navigationPoints'>, context: RefinementCtx): void {
+  dataset.states.forEach((state, index) => {
+    const tiles = new Set(state.tileIds)
+    state.gravityTiles.forEach((path, tileIndex) => {
+      if (!tiles.has(`${state.id}_${path.slice(3, -4)}`)) context.addIssue({
+        code: 'custom', path: ['states', index, 'gravityTiles', tileIndex], message: '反重力瓦片超出当前地图网格',
+      })
+    })
+  })
+  for (const key of ['echoLocations', 'navigationPoints'] as const) {
+    dataset[key].forEach((point, index) => {
+      if (point.gravityType === 2 && !dataset.states.some((state) => state.id === point.stateId && state.gravityTiles.length > 0)) context.addIssue({
+        code: 'custom', path: [key, index, 'gravityType'], message: '反重力点位缺少对应底图资源',
+      })
+    })
+  }
+}
+
 export const mapDatasetSchema = z.object({
   version: z.literal(3),
   source: z.object({
@@ -259,6 +280,9 @@ export const mapDatasetSchema = z.object({
     id: z.number().int(),
     name: z.string().min(1),
     tileIds: z.array(z.string()),
+    gravityTiles: z.array(z.string().regex(/^\/2\/-?\d+_-?\d+\.png$/u)).default([]).refine(
+      (tiles) => new Set(tiles).size === tiles.length, { message: '反重力瓦片不能重复' },
+    ),
     tileExtent: z.object({
       minTileX: z.number().int(),
       minTileY: z.number().int(),
@@ -351,4 +375,4 @@ export const mapDatasetSchema = z.object({
     traversalCost: z.number().nonnegative(),
     isExample: z.boolean(),
   })),
-}).superRefine(validateSonataEchoIds).superRefine(validateMapNavigation)
+}).superRefine(validateSonataEchoIds).superRefine(validateMapNavigation).superRefine(validateMapGravity)

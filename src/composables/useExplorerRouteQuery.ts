@@ -15,6 +15,7 @@ export function useExplorerRouteQuery(): {
   const mapQuery = useRouteQuery<string | undefined>('map', String(DEFAULT_STATE_ID))
   const regionQuery = useRouteQuery('region')
   const floorQuery = useRouteQuery('floor')
+  const gravityQuery = useRouteQuery<string | undefined>('gravity', undefined, { mode: 'replace' })
   const echoesQuery = useRouteQuery('echoes')
   const sonatasQuery = useRouteQuery('sonatas')
   const hiddenTypesQuery = useRouteQuery('hiddenTypes')
@@ -32,6 +33,7 @@ export function useExplorerRouteQuery(): {
       map: mapQuery.value,
       region: regionQuery.value,
       floor: floorQuery.value,
+      gravity: gravityQuery.value,
       echoes: echoesQuery.value,
       sonatas: sonatasQuery.value,
       hiddenTypes: hiddenTypesQuery.value,
@@ -51,6 +53,7 @@ export function useExplorerRouteQuery(): {
     mapQuery.value = values.map
     regionQuery.value = values.region
     floorQuery.value = values.floor
+    gravityQuery.value = values.gravity
     echoesQuery.value = values.echoes
     sonatasQuery.value = values.sonatas
     hiddenTypesQuery.value = values.hiddenTypes

@@ -1,12 +1,13 @@
 import TileLayer from 'ol/layer/Tile.js'
 import TileImage from 'ol/source/TileImage.js'
 import TileGrid from 'ol/tilegrid/TileGrid.js'
-import type { MapStateDefinition, SourceManifest } from '../domain/types.ts'
+import type { GravityType, MapStateDefinition, SourceManifest } from '../domain/types.ts'
 import { officialFloorTileUrl, officialTileUrl, tilePreviewUrl } from '../data/official-asset-urls.ts'
 
-export function createOfficialTileLayer(state: MapStateDefinition, sourceManifest: SourceManifest): TileLayer<TileImage> {
+export function createOfficialTileLayer(state: MapStateDefinition, sourceManifest: SourceManifest, gravity: GravityType = 1): TileLayer<TileImage> {
   const { tileExtent } = state
   const availableTiles = new Set(state.tileIds)
+  const gravityTiles = new Set(state.gravityTiles)
   const tileGrid = new TileGrid({
     extent: tileExtent.extent,
     origin: [tileExtent.extent[0], tileExtent.extent[3]],
@@ -31,6 +32,10 @@ export function createOfficialTileLayer(state: MapStateDefinition, sourceManifes
       const officialX = tileExtent.minTileX + tileX
       const officialY = tileExtent.maxTileY - tileY
       const tileId = `${state.id}_${officialX}_${officialY}`
+      if (gravity === 2) {
+        const path = `/2/${officialX}_${officialY}.png`
+        return gravityTiles.has(path) ? tilePreviewUrl(officialFloorTileUrl(sourceManifest.mapResourceHash, state.id, path), sourceManifest.tileWidth) : undefined
+      }
       if (!availableTiles.has(tileId)) {
         return undefined
       }

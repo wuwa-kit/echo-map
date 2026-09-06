@@ -1,4 +1,4 @@
-import type { PointSource } from '../domain/types.ts'
+import type { GravityType, PointSource } from '../domain/types.ts'
 
 export const DEFAULT_STATE_ID = 8
 export const DEFAULT_ROUTE_Z_WEIGHT = 1.35
@@ -11,6 +11,7 @@ export interface MapViewportState {
 }
 
 export interface ExplorerUrlState {
+  gravityType?: GravityType
   pointSource?: PointSource
   stateId?: number
   countryId?: number
@@ -26,6 +27,7 @@ export interface ExplorerUrlState {
 }
 
 export interface ExplorerUrlSnapshot {
+  gravityType?: GravityType
   pointSource?: PointSource
   stateId: number
   countryId: number | null
@@ -43,6 +45,7 @@ export interface ExplorerUrlSnapshot {
 export type ExplorerQueryValue = string | string[] | null | undefined
 
 export interface ExplorerQueryValues {
+  gravity?: ExplorerQueryValue
   source?: ExplorerQueryValue
   map?: ExplorerQueryValue
   region?: ExplorerQueryValue
@@ -108,6 +111,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
   return {
     pointSource: single(values.source) === 'manual' ? 'manual' : ['test', 'official'].includes(single(values.source) ?? '') ? 'official' : 'all',
     stateId: integer(values.map),
+    gravityType: single(values.gravity) === '2' ? 2 : 1,
     countryId: integer(values.region),
     levelId: single(values.floor),
     echoIds: idList(values.echoes),
@@ -127,6 +131,7 @@ export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerS
   return {
     source: state.pointSource && state.pointSource !== 'all' ? state.pointSource : undefined,
     map: state.stateId === DEFAULT_STATE_ID ? undefined : String(state.stateId),
+    gravity: state.gravityType === 2 ? '2' : undefined,
     region: state.countryId === null ? undefined : String(state.countryId),
     floor: state.levelId ?? undefined,
     echoes: state.echoIds.length > 0 ? state.echoIds.join(',') : undefined,

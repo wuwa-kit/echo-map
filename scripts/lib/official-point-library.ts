@@ -11,6 +11,7 @@ export function convertOfficialPoints(dataset: MapDataset): PointLibrary {
       status: 'imported' as const,
       officialIds: [point.id],
       stateId: point.stateId,
+      gravityType: point.gravityType,
       countryId: dataset.regionLabels.some((label) => label.stateId === point.stateId && label.level === 1 && label.countryId === point.countryId) ? point.countryId : null,
       levelId: point.levelId,
       coordinate: { x: Math.round(point.coordinate.rawX / 100), y: Math.round(point.coordinate.rawY / 100), z: 0 },
@@ -20,7 +21,7 @@ export function convertOfficialPoints(dataset: MapDataset): PointLibrary {
   for (const location of [...dataset.echoLocations].sort((left, right) => left.id.localeCompare(right.id))) {
     const base = makeBase(location)
     // Only identical source positions are combined; nearby positions remain independent.
-    const key = JSON.stringify([location.stateId, location.levelId, location.coordinate.rawX, location.coordinate.rawY])
+    const key = JSON.stringify([location.stateId, location.levelId, location.gravityType, location.coordinate.rawX, location.coordinate.rawY])
     const existing = groups.get(key)
     if (existing) {
       existing.officialIds?.push(location.id)

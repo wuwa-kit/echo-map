@@ -1,7 +1,8 @@
-import type { EchoDefinition, EchoMapLocation, NavigationPoint, PointLocationBase, RegionLabel } from './types.ts'
+import type { EchoDefinition, EchoMapLocation, GravityType, NavigationPoint, PointLocationBase, RegionLabel } from './types.ts'
+import { matchesGravity } from './gravity.ts'
 import { echoMembers } from './point-library.ts'
 
-type MapScope = Pick<PointLocationBase, 'stateId' | 'countryId' | 'levelId'>
+type MapScope = Pick<PointLocationBase, 'stateId' | 'countryId' | 'levelId'> & { gravityType?: GravityType | null }
 
 export function selectRegions(labels: readonly RegionLabel[], stateId: number): RegionLabel[] {
   const seen = new Set<number>()
@@ -45,6 +46,7 @@ export function matchesMapScope(location: MapScope, scope: MapScope): boolean {
   return location.stateId === scope.stateId
     && (scope.countryId === null || location.countryId === scope.countryId)
     && location.levelId === scope.levelId
+    && matchesGravity(location.gravityType, scope.gravityType)
 }
 
 export function selectEchoLocations(

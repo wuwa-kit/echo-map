@@ -8,6 +8,8 @@ import type { NavigationKind, NavigationMode } from '../domain/types.ts'
 import { appendObservation, combinePointLibraries, findNearbyPoints } from '../domain/point-matching.ts'
 import { readEditorLibrary, readEditorVersion, readEditorVersions, saveEditorLibrary } from '../data/editor-client.ts'
 import { loadMapDataset, loadOfficialPointLibrary } from '../data/load.ts'
+import { hasGravityMap } from '../domain/gravity.ts'
+import type { GravityType } from '../domain/types.ts'
 
 const DRAFT_KEY = 'echo-map:point-editor:draft:v1'
 
@@ -16,6 +18,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const library = shallowRef<PointLibrary>(freeze(emptyPointLibrary(), true))
   const officialLibrary = shallowRef<PointLibrary>(freeze(emptyPointLibrary(), true))
   const showOfficial = shallowRef(true)
+  const mapTileError = shallowRef(false)
+  const mapTileRetry = shallowRef(0)
   const trackingEchoId = shallowRef('')
   const matchRadius = shallowRef(30)
   const heightTolerance = shallowRef(8)
@@ -41,7 +45,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     return !query || `${dataset.value ? pointTitle(point, dataset.value) : ''} ${point.note} ${Object.values(point.coordinate).join(' ')}`.toLocaleLowerCase('zh-CN').includes(query)
   }))
   const nearbyPoints = computed(() => draft.value ? findNearbyPoints(allPoints.value, draft.value, matchRadius.value, heightTolerance.value) : [])
-  const matchKey = computed(() => JSON.stringify([draft.value?.id, draft.value?.coordinate, draft.value?.stateId, draft.value?.levelId, nearbyPoints.value.map(({ point }) => point.id)]))
+  const matchKey = computed(() => JSON.stringify([draft.value?.id, draft.value?.coordinate, draft.value?.stateId, draft.value?.levelId, draft.value?.gravityType, nearbyPoints.value.map(({ point }) => point.id)]))
   const requiresMatchDecision = computed(() => draft.value?.kind === 'echo' && !library.value.points.some(({ id }) => id === draft.value?.id) && !draft.value.replacesOfficialIds?.length && nearbyPoints.value.length > 0 && separateMatchKey.value !== matchKey.value)
 
   function cacheDraft(): void {
@@ -76,6 +80,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     const base = {
       id: crypto.randomUUID(), status: 'draft' as const, stateId: previous?.stateId ?? (dataset.value?.states.some(({ id }) => id === 8) ? 8 : dataset.value?.states[0]?.id ?? 8),
       countryId: previous?.countryId ?? null, levelId: previous?.levelId ?? null,
+      gravityType: previous?.gravityType ?? null,
       coordinate: { x: null, y: null, z: null }, note: '',
     }
     openDraft(kind === 'echo' ? { ...base, kind, compositionStatus: 'partial', members: trackingEchoId.value ? [{ echoId: trackingEchoId.value, count: 1 }] : [] } : { ...base, kind, name: '', navigationKind: 'beacon', mode: 'fast-travel' })
@@ -145,6 +150,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       point.stateId = stateId
       point.countryId = null
       point.levelId = null
+      point.gravityType = null
       point.coordinate = { x: null, y: null, z: null }
       point.status = 'draft'
     })
@@ -158,6 +164,15 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (existing) existing.count = Math.min(999, existing.count + 1)
       else point.members.push({ echoId, count: 1 })
       point.compositionStatus = 'partial'
+      point.status = 'draft'
+    })
+  }
+
+  function selectGravity(value: GravityType | null): void {
+    if (value !== null && value !== 1 && value !== 2) return
+    if (!hasGravityMap(dataset.value?.states.find(({ id }) => id === draft.value?.stateId))) return
+    edit((point) => {
+      point.gravityType = value
       point.status = 'draft'
     })
   }
@@ -396,6 +411,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   return {
+    selectGravity,
+    mapTileError: shallowReadonly(mapTileError), mapTileRetry: shallowReadonly(mapTileRetry),
+    reportMapTileError: (failed: boolean) => { mapTileError.value = failed },
+    retryMapTiles: () => { mapTileError.value = false; mapTileRetry.value += 1 },
     officialLibrary: shallowReadonly(officialLibrary), showOfficial: shallowReadonly(showOfficial), allPoints,
     trackingEchoId: shallowReadonly(trackingEchoId), matchRadius: shallowReadonly(matchRadius), heightTolerance: shallowReadonly(heightTolerance), requiresMatchDecision,
     appendToNearby, setTrackingEcho, setMatchingDistance,

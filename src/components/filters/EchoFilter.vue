@@ -5,16 +5,18 @@ import { useExplorerStore } from '../../stores/explorer.ts'
 import WuScrollArea from '../base/WuScrollArea.vue'
 import WuInput from '../base/WuInput.vue'
 import { echoMembers } from '../../domain/point-library.ts'
+import { matchesGravity } from '../../domain/gravity.ts'
 
 defineProps<{ compact: boolean }>()
 
 const store = useExplorerStore()
+const { supportsGravity, selectedGravity } = storeToRefs(store)
 const { dataset, allEchoLocations, echoSearch, echoesMatchingSonata, selectedEchoIds, selectedStateId, visibleEchoLocations, pointSource, matchingMonsterCount } = storeToRefs(store)
 
 const locationCountByEcho = computed(() => {
   const counts = new Map<string, number>()
   for (const location of allEchoLocations.value) {
-    if (location.stateId === selectedStateId.value) {
+    if (location.stateId === selectedStateId.value && matchesGravity(location.gravityType, supportsGravity.value ? selectedGravity.value : null)) {
       for (const { echoId } of echoMembers(location)) counts.set(echoId, (counts.get(echoId) ?? 0) + 1)
     }
   }

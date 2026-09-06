@@ -32,6 +32,25 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('point editor actions', () => {
+  it('records gravity for new observations, keeps XYZ, and resets it when changing maps', async () => {
+    const store = usePointEditorStore()
+    await store.load()
+    store.selectState(903)
+    expect(store.draft?.gravityType).toBeNull()
+    store.setCoordinateText('100, 200, 30')
+    store.applyCoordinateText()
+    store.addMember(smallEcho.id)
+    store.selectGravity(2)
+    expect(store.draft?.coordinate).toEqual({ x: 100, y: 200, z: 30 })
+    expect(store.draft?.gravityType).toBe(2)
+    await store.saveDraft('verified', true)
+    expect(disk.points[0]?.gravityType).toBe(2)
+    expect(store.draft?.gravityType).toBe(2)
+    store.selectState(8)
+    expect(store.draft?.gravityType).toBeNull()
+    store.selectGravity(2)
+    expect(store.draft?.gravityType).toBeNull()
+  })
   it('requires a nearby decision, appends a partial observation, and retains the tracking target', async () => {
     disk = { version: 1, points: [{ ...mixedPoint(), members: [{ echoId: smallEcho.id, count: 3 }] }] }
     const store = usePointEditorStore()

@@ -6,10 +6,12 @@ import WuCheckBox from '../base/WuCheckBox.vue'
 import WuScrollArea from '../base/WuScrollArea.vue'
 import { mapZoomRangeLabel, navigationPointZoomRange } from '../../map/point-visibility.ts'
 import type { MapZoomRange, NavigationPoint } from '../../domain/types.ts'
+import { matchesGravity } from '../../domain/gravity.ts'
 
 defineProps<{ compact: boolean }>()
 
 const store = useExplorerStore()
+const { supportsGravity, selectedGravity } = storeToRefs(store)
 const { allNavigationPoints, allNavigationPointGroups, hiddenPointGroupIds, selectedStateId } = storeToRefs(store)
 
 interface PointGroupOption {
@@ -29,6 +31,7 @@ const pointGroupOptions = computed<PointGroupOption[]>(() => {
   return allNavigationPointGroups.value.flatMap((group) => {
     const groupPoints = points.filter((point) => (
       point.stateId === selectedStateId.value && point.groupId === group.id
+      && matchesGravity(point.gravityType, supportsGravity.value ? selectedGravity.value : null)
     ))
     if (groupPoints.length === 0) {
       return []

@@ -8,6 +8,7 @@ import type { MapPadding } from '../src/map/viewport-padding.ts'
 
 const projection = new Projection({ code: 'TEST:MAP', units: 'pixels' })
 const state: MapStateDefinition = {
+  gravityTiles: [],
   id: 8, name: '地图', tileIds: [], layeredMaps: [],
   tileExtent: { minTileX: 0, minTileY: 0, maxTileX: 9, maxTileY: 9, extent: [0, 0, 10000, 10000] },
 }

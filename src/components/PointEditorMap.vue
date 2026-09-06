@@ -10,7 +10,9 @@ import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
 import { defaults as controls } from 'ol/control/defaults.js'
 import type MapBrowserEvent from 'ol/MapBrowserEvent.js'
-import { createOfficialTileLayer } from '../map/official-source.ts'
+import { createOfficialBaseLayers } from '../map/official-base-layers.ts'
+import { hasGravityMap, matchesGravity } from '../domain/gravity.ts'
+import { usePointEditorStore } from '../stores/point-editor.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { gameToMapCoordinate, mapToGameCoordinate } from '../map/projection.ts'
 import { createEditorMarkerStyles } from '../map/editor-marker.ts'
@@ -36,7 +38,8 @@ const emit = defineEmits<{
 const mapTarget = useTemplateRef<HTMLElement>('mapTargetRef')
 const state = computed(() => props.dataset.states.find(({ id }) => id === props.draft.stateId))
 let map: Map | null = null
-let base: ReturnType<typeof createOfficialTileLayer> | null = null
+const store = usePointEditorStore()
+const baseLayers = createOfficialBaseLayers(store.reportMapTileError)
 let defaultViewport: {
   center: number[]
   zoom: number
@@ -70,6 +73,7 @@ function rebuildPoints(): void {
   const points = [...props.points.filter(({ id }) => id !== props.draft.id), props.draft]
   source.addFeatures(points.flatMap((point) => {
     const { x, y } = point.coordinate
+    if (!matchesGravity(point.gravityType, hasGravityMap(state.value) ? props.draft.gravityType ?? 1 : null)) return []
     if (point.stateId !== props.draft.stateId || point.levelId !== props.draft.levelId || x === null || y === null) return []
     const feature = new Feature({ geometry: new Point(gameToMapCoordinate(x, y, props.dataset.source.tileWidth)), pointId: point.id })
     feature.setStyle(icons.get(point, props.dataset.echoes, point.id === props.draft.id))
@@ -87,13 +91,7 @@ function rebuildFloor(): void {
 
 function rebuildBase(): void {
   if (!map || !state.value) return
-  if (base) {
-    map.removeLayer(base)
-    base.getSource()?.dispose()
-    base.dispose()
-  }
-  base = createOfficialTileLayer(state.value, props.dataset.source)
-  map.getLayers().insertAt(0, base)
+  baseLayers.update(map, state.value, props.dataset.source, props.draft.gravityType ?? 1)
   const extent = state.value.tileExtent.extent
   const size = Math.max(extent[2] - extent[0], extent[3] - extent[1])
   map.setView(new View({ projection, enableRotation: false, center: props.savedViewport?.center ?? [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2], resolution: Math.max(1, size / 1300), minResolution: 0.14, maxResolution: Math.max(2, size / 500) }))
@@ -121,6 +119,10 @@ onMounted(() => {
   if (!props.savedViewport) focusDraft()
 })
 watch(state, rebuildBase)
+watch(() => props.draft.gravityType, () => {
+  if (map && state.value) baseLayers.update(map, state.value, props.dataset.source, props.draft.gravityType ?? 1)
+})
+watch(() => store.mapTileRetry, () => baseLayers.retry())
 watch(() => props.draft.levelId, rebuildFloor)
 watch([() => props.points, () => props.draft], rebuildPoints)
 watch([() => props.draft.id, () => props.draft.coordinate.x, () => props.draft.coordinate.y], focusDraft)
@@ -129,8 +131,7 @@ onBeforeUnmount(() => {
   map?.un('moveend', publish)
   map?.setTarget(undefined)
   floors.dispose()
-  base?.getSource()?.dispose()
-  base?.dispose()
+  baseLayers.dispose()
   source.dispose()
   layer.dispose()
   icons.dispose()
@@ -141,6 +142,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="relative h-full min-h-240px bg-[#0c1715]">
     <div ref="mapTargetRef" class="absolute inset-0" aria-label="点位录入地图" />
+    <div v-if="store.mapTileError" role="alert" class="absolute right-12px top-12px z-70 rounded-8px bg-[#35261eed] p-8px text-12px text-[#f1d7b4]">底图部分加载失败<button type="button" class="ml-8px min-h-32px rounded-5px border border-[#a27f58] bg-transparent px-8px text-inherit" @click="store.retryMapTiles">重试</button></div>
     <div class="pointer-events-none absolute bottom-12px left-12px right-12px w-fit rounded-8px bg-[#0c211be8] px-12px py-8px text-12px text-[#b5cec1]">点击已有点位编辑 · 点击空白处填写参考 XY · 金色虚线菱形为当前点</div>
   </div>
 </template>

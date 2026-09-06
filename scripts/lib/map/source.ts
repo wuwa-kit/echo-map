@@ -42,12 +42,13 @@ export async function fetchCountryData(resourceHash: string): Promise<unknown> {
 
 export async function fetchStatePayloads(configuration: MapConfiguration): Promise<MapStatePayload[]> {
   return Promise.all(configuration.states.map(async (state) => {
-    const [positionData, layerData, catalogData] = await Promise.all([
+    const [positionData, layerData, catalogData, gravityData] = await Promise.all([
       fetchOptionalJson<unknown>(`${STATIC_ROOT}/mcmap/position/${state.id}/position.json`, []),
       fetchOptionalJson<unknown>(`${STATIC_ROOT}/mcmap/layer/${configuration.resourceHash}/${state.id}/layer.json`, []),
       fetchOptionalJson<unknown>(`${STATIC_ROOT}/mcmap/catalog/${configuration.resourceHash}/${state.id}/catalog.json`, []),
+      fetchJson<unknown>(`${STATIC_ROOT}/mcmap/gravity/${configuration.resourceHash}/${state.id}/gravity.json`),
     ])
-    return { state, positionData, layerData, catalogData }
+    return { state, positionData, layerData, catalogData, gravityData }
   }))
 }
 

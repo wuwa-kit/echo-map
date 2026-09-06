@@ -41,7 +41,7 @@ describe('authored point library', () => {
   it('keeps XY-overlapping floors and heights independent and only permits verified travel starts', () => {
     const point = mixedPoint()
     const other = { ...mixedPoint('higher'), coordinate: { ...point.coordinate, z: 200 } }
-    const library: PointLibrary = { version: 1, points: [point, other, { id: 'beacon', kind: 'navigation', status: 'verified', stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: 0 }, name: '测试信标', navigationKind: 'beacon', mode: 'fast-travel', note: '' }] }
+    const library: PointLibrary = { version: 1, points: [point, other, { gravityType: null, id: 'beacon', kind: 'navigation', status: 'verified', stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: 0 }, name: '测试信标', navigationKind: 'beacon', mode: 'fast-travel', note: '' }] }
     const locations = libraryLocations(library, referenceDataset)
     expect(locations.echoLocations).toHaveLength(2)
     expect(locations.echoLocations.map(({ gameCoordinate }) => gameCoordinate?.z)).toEqual([18, 200])

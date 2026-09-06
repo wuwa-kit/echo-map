@@ -107,6 +107,7 @@ const urlSnapshot = useEqualComputed<ExplorerUrlSnapshot>(() => ({
   stateId: store.selectedStateId,
   countryId: store.selectedCountryId,
   levelId: store.selectedLevelId,
+  gravityType: store.selectedGravity,
   echoIds: store.selectedEchoIds,
   sonataIds: store.selectedSonataIds,
   hiddenPointGroupIds: store.hiddenPointGroupIds,
@@ -171,7 +172,7 @@ const loadError = computed(() => {
       <MapCanvas :padding="mapPadding" />
       <div v-if="!compact" class="absolute left-70px top-14px z-90 flex flex-col items-start gap-7px">
         <MapNavigationCascader id="map-navigation-trigger" />
-        <span class="rounded-5px bg-[#07100fe6] px-8px py-5px text-12px text-[#a5c0b2]">当前底图 · {{ activeMapName }}</span>
+        <span class="rounded-5px bg-[#07100fe6] px-8px py-5px text-12px text-[#a5c0b2]">当前底图 · {{ activeMapName }}{{ store.supportsGravity ? ` · ${store.selectedGravity === 2 ? '反重力' : '普通重力'}` : '' }}</span>
       </div>
       <div v-if="!compact" class="absolute bottom-14px right-[calc(var(--control-panel-width)+18px)] flex max-w-560px flex-wrap items-center gap-12px rounded-7px border border-[var(--line)] bg-[#07100fe6] px-11px py-8px text-11px text-[#9bada6]" :class="controlPanelCollapsed ? 'translate-x-[var(--control-panel-width)]' : ''">
         <span>实测 XYZ 可规划</span>

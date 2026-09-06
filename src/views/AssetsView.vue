@@ -23,8 +23,8 @@ const details = useTemplateRef<HTMLElement>('detailsRef')
 const results = useTemplateRef<HTMLElement>('resultsRef')
 const activeCategory = computed(() => categories.value.find(({ id }) => id === filters.value.category))
 const summary = computed(() => [
-  { label: '图标资源', count: assets.value.filter(({ category }) => category !== 'tile' && category !== 'floor').length },
-  { label: '底图瓦片', count: assets.value.filter(({ category }) => category === 'tile' || category === 'floor').length },
+  { label: '图标资源', count: assets.value.filter(({ category }) => category !== 'tile' && category !== 'floor' && category !== 'gravity').length },
+  { label: '底图瓦片', count: assets.value.filter(({ category }) => category === 'tile' || category === 'floor' || category === 'gravity').length },
   { label: '地图范围', count: dataset.value?.states.length ?? 0 },
   { label: '分层楼层', count: dataset.value?.states.reduce((sum, state) => sum + state.layeredMaps.reduce((count, layer) => count + layer.floors.length, 0), 0) ?? 0 },
 ])

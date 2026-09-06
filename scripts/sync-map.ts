@@ -3,7 +3,7 @@ import type { MapDataset, MapStateDefinition } from '../src/domain/types.ts'
 import { calculateTileExtent } from '../src/map/projection.ts'
 import { isMainModule, projectPath, readJson, writeJson } from './lib/files.ts'
 import type { WikiSnapshot } from './lib/wiki.ts'
-import { flattenRegions, normalizeLayers, normalizeMapNavigation } from './lib/map/normalize.ts'
+import { flattenRegions, normalizeLayers, normalizeMapNavigation, normalizeGravityTiles } from './lib/map/normalize.ts'
 import { normalizeLocations } from './lib/map/locations.ts'
 import { groupNavigationPoints } from './lib/map/navigation-groups.ts'
 import { fetchCountryData, fetchMapConfiguration, fetchNavigationIconHashes, fetchStatePayloads } from './lib/map/source.ts'
@@ -22,12 +22,13 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
   const configuration = await fetchMapConfiguration()
   const countryData = await fetchCountryData(configuration.resourceHash)
   const statePayloads = await fetchStatePayloads(configuration)
-  const states: MapStateDefinition[] = statePayloads.map(({ state, layerData }) => {
+  const states: MapStateDefinition[] = statePayloads.map(({ state, layerData, gravityData }) => {
     const tileIds = configuration.tileIdsByState[String(state.id)] ?? []
     return {
       id: state.id,
       name: state.name,
       tileIds,
+      gravityTiles: normalizeGravityTiles(gravityData),
       tileExtent: calculateTileExtent(tileIds),
       layeredMaps: normalizeLayers(layerData),
     }

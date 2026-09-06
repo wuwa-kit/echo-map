@@ -30,7 +30,8 @@ beforeEach(() => {
   vi.mocked(postFormJson).mockImplementation(async (url) => ({
     data: url.endsWith('getMapResource') ? 'test-resource-hash' : { '8': ['8_0_1'], '9': [] },
   }))
-  vi.mocked(fetchJson).mockResolvedValue({ data: { state: [{ id: 8, name: '地图' }, { id: 9, name: '空地图' }] } })
+  vi.mocked(fetchJson).mockImplementation(async (url) => url.endsWith('gravity.json') ? {}
+    : { data: { state: [{ id: 8, name: '地图' }, { id: 9, name: '空地图' }] } })
   vi.mocked(fetchOptionalJson).mockImplementation(async (url) => {
     if (url.endsWith('country.json')) return countries
     if (url.endsWith('/9/position.json')) return [positions[0]]
@@ -52,6 +53,27 @@ afterEach(() => {
 })
 
 describe('map synchronization', () => {
+  it('preserves gravity resources and point modes through synchronization', async () => {
+    vi.mocked(fetchJson).mockImplementation(async (url) => url.endsWith('gravity.json') ? { '2': ['/2/0_1.png'] }
+      : { data: { state: [{ id: 8, name: '地图' }] } })
+    const originalFetch = vi.mocked(fetchOptionalJson).getMockImplementation()
+    vi.mocked(fetchOptionalJson).mockImplementation(async (url, fallback) => url.endsWith('position.json')
+      ? positions.map((type) => ({ ...type, location: type.location.map((point) => ({ ...point, gravityType: 2 })) }))
+      : originalFetch?.(url, fallback))
+    const dataset = await syncMap(wiki)
+    expect(dataset.states[0]?.gravityTiles).toEqual(['/2/0_1.png'])
+    expect(dataset.echoLocations.find(({ id }) => id === 'echo-official')?.gravityType).toBe(2)
+    expect(dataset.navigationPoints.every(({ gravityType }) => gravityType === 2)).toBe(true)
+  })
+
+  it('does not overwrite snapshots if the gravity manifest cannot be read', async () => {
+    vi.mocked(fetchJson).mockImplementation(async (url) => {
+      if (url.endsWith('gravity.json')) throw new Error('重力资源不可用')
+      return { data: { state: [{ id: 8, name: '地图' }] } }
+    })
+    await expect(syncMap(wiki)).rejects.toThrow('重力资源不可用')
+    expect(writeJson).not.toHaveBeenCalled()
+  })
   it('preserves the pre-refactor dataset, ordering, manual coordinates and failure report', async () => {
     const dataset = await syncMap()
     await expect(`${JSON.stringify(dataset, null, 2)}\n`).toMatchFileSnapshot('./fixtures/sync-map.json')

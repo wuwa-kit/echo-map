@@ -10,7 +10,7 @@ import { defaults as defaultInteractions } from 'ol/interaction/defaults.js'
 import Projection from 'ol/proj/Projection.js'
 import { useExplorerStore } from '../stores/explorer.ts'
 import { mapToGameCoordinate } from '../map/projection.ts'
-import { createOfficialTileLayer } from '../map/official-source.ts'
+import { createOfficialBaseLayers } from '../map/official-base-layers.ts'
 import { createPointLayers, mapFeaturePointIds } from '../map/point-layers.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
@@ -30,6 +30,9 @@ const {
   mapNavigationRequest,
   route,
   selectedLevelId,
+  selectedGravity,
+  baseTileError,
+  baseTileRetry,
   visibleEchoLocations,
   visibleNavigationPoints,
   visibleRegionLabels,
@@ -46,7 +49,7 @@ const pointerCoordinateText = computed(() => {
   return `X ${Math.round(x)} · Y ${Math.round(y)}`
 })
 let map: Map | null = null
-let baseLayer: ReturnType<typeof createOfficialTileLayer> | null = null
+const baseLayers = createOfficialBaseLayers(store.reportBaseTileError)
 const projection = new Projection({ code: 'KURO:CRS-SIMPLE', units: 'pixels' })
 const points = createPointLayers()
 const floors = createFloorLayers(projection)
@@ -100,18 +103,16 @@ function rebuildBaseLayer(): void {
   if (!map || !state || !manifest) {
     return
   }
-  if (baseLayer) {
-    map.removeLayer(baseLayer)
-    baseLayer.getSource()?.dispose()
-    baseLayer.dispose()
-  }
-  baseLayer = createOfficialTileLayer(state, manifest)
-  map.getLayers().insertAt(0, baseLayer)
+  baseLayers.update(map, state, manifest, selectedGravity.value)
   viewport.configureBaseView(state, projection)
   rebuildFloorLayers()
   if (selectedLevelId.value === null || mapViewport.value !== null) {
     viewport.publish()
   }
+}
+
+function switchGravity(): void {
+  if (map && activeState.value && dataset.value) baseLayers.update(map, activeState.value, dataset.value.source, selectedGravity.value)
 }
 
 function updatePointerCoordinate(event: MapBrowserEvent): void {
@@ -166,6 +167,8 @@ onMounted(() => {
 })
 
 watch(activeState, rebuildBaseLayer)
+watch(selectedGravity, switchGravity)
+watch(baseTileRetry, () => baseLayers.retry())
 watch(selectedLevelId, rebuildFloorLayers)
 watch([visibleEchoLocations, visibleNavigationPoints, visibleRegionLabels, activeEchoIds], rebuildPointLayers)
 watch(route, rebuildRoute, { flush: 'post' })
@@ -180,8 +183,7 @@ onBeforeUnmount(() => {
   floors.dispose()
   points.dispose()
   routeLayer.dispose()
-  baseLayer?.getSource()?.dispose()
-  baseLayer?.dispose()
+  baseLayers.dispose()
   map?.dispose()
   map = null
 })
@@ -190,6 +192,10 @@ onBeforeUnmount(() => {
 <template>
   <div class="relative h-full w-full min-h-0 min-w-0">
     <PointDetails />
+    <div v-if="baseTileError" role="alert" class="absolute left-1/2 top-12px z-70 flex max-w-[90%] translate-x--1/2 items-center gap-10px rounded-8px bg-[#35261eed] px-12px py-8px text-12px text-[#f1d7b4]">
+      <span>{{ selectedGravity === 2 ? '反重力' : '' }}底图部分加载失败</span>
+      <button type="button" class="min-h-32px shrink-0 rounded-5px border border-[#a27f58] bg-transparent px-8px text-inherit" @click="store.retryBaseTiles">重试</button>
+    </div>
     <div
       ref="mapTargetRef"
       class="absolute inset-0 [background:linear-gradient(rgba(101,241,194,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(101,241,194,0.025)_1px,transparent_1px),#0c1715] [background-size:32px_32px]"

@@ -1,6 +1,7 @@
 import type { NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointQuality, RouteConnector } from '../../../src/domain/types.ts'
 
 export interface ManualPoint {
+  gravityType?: 1 | 2 | null
   id: string
   officialLocationId?: string
   echoName?: string
@@ -63,4 +64,5 @@ export interface MapStatePayload {
   positionData: unknown
   layerData: unknown
   catalogData: unknown
+  gravityData: unknown
 }

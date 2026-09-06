@@ -2,6 +2,8 @@ export type NonEmptyArray<T> = [T, ...T[]]
 
 export type PointQuality = 'official-provisional' | 'manual-verified' | 'example'
 
+export type GravityType = 1 | 2
+
 export interface SonataEffect {
   id: string
   name: string
@@ -58,6 +60,7 @@ export interface MapStateDefinition {
   id: number
   name: string
   tileIds: string[]
+  gravityTiles: string[]
   tileExtent: TileExtent
   layeredMaps: LayeredMapDefinition[]
 }
@@ -88,6 +91,7 @@ export interface MapNavigationCountry {
 }
 
 export interface PointLocationBase extends MapLocationBase {
+  gravityType: GravityType | null
   typeId: string
   typeName: string
   iconUrl: string
@@ -107,6 +111,8 @@ export interface EchoMember {
 }
 
 export interface AuthoredPointBase {
+  // Older manual libraries are normalized to null when read.
+  gravityType: GravityType | null
   id: string
   status: 'draft' | 'verified' | 'imported'
   officialIds?: string[]
@@ -260,7 +266,7 @@ export interface MapDataset {
   connectors: RouteConnector[]
 }
 
-export type OfficialAssetCategory = 'echo' | 'sonata' | 'map-echo' | 'navigation' | 'tile' | 'floor'
+export type OfficialAssetCategory = 'echo' | 'sonata' | 'map-echo' | 'navigation' | 'tile' | 'floor' | 'gravity'
 
 export interface OfficialAsset {
   id: string

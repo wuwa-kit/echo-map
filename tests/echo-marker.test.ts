@@ -71,6 +71,7 @@ describe('echo marker appearance', () => {
   it('uses a diamond for editor navigation placeholders', () => {
     const editor = createEditorMarkerStyles(() => {})
     const [style] = editor.get({
+      gravityType: null,
       id: 'navigation', kind: 'navigation', status: 'draft', name: '', navigationKind: 'beacon', mode: 'fast-travel',
       stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: null }, note: '',
     }, referenceDataset.echoes, false)

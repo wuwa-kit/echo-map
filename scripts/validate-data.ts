@@ -26,6 +26,13 @@ const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []
 
 for (const range of Object.values(MAP_POINT_ZOOM_RANGES)) mapZoomRangeSchema.parse(range)
+const officialById = new Map([...dataset.echoLocations, ...dataset.navigationPoints].map((point) => [point.id, point]))
+for (const point of officialLibrary.points) {
+  for (const id of point.officialIds ?? []) {
+    const original = officialById.get(id)
+    if (!original || original.gravityType !== point.gravityType) errors.push(`官方点 ${point.id} 的重力与来源 ${id} 不一致，请重新转换官方点位`)
+  }
+}
 for (const label of dataset.regionLabels) {
   mapZoomRangeSchema.parse(mapPointZoomRange({ category: 'region-name', location: label }))
   if (!dataset.states.some(({ id }) => id === label.stateId)) {
@@ -115,6 +122,7 @@ if (errors.length > 0) {
 console.log([
   '数据校验通过',
   `官方资产 ${assets.length}`,
+  `反重力瓦片 ${dataset.states.reduce((sum, state) => sum + state.gravityTiles.length, 0)}`,
   `地图导航 ${dataset.mapNavigation.length} 个大区 / ${dataset.mapNavigation.reduce((sum, country) => sum + country.groups.length, 0)} 个分组`,
   `人工点位 ${pointLibrary.points.length}`,
   `官方录入格式 ${officialLibrary.points.length}`,

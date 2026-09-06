@@ -8,6 +8,7 @@ export const assetCategories: { id: OfficialAssetCategory; name: string; descrip
   { id: 'navigation', name: '定位点图标', description: '官方地图 · 传送与功能地标' },
   { id: 'tile', name: '地表瓦片', description: '官方地图 · 地表底图' },
   { id: 'floor', name: '分层瓦片', description: '官方地图 · 楼层底图' },
+  { id: 'gravity', name: '反重力瓦片', description: '官方地图 · 反重力底图' },
 ]
 
 export function buildOfficialAssets(dataset: MapDataset): OfficialAsset[] {
@@ -38,7 +39,7 @@ export function buildOfficialAssets(dataset: MapDataset): OfficialAsset[] {
     const isWiki = category === 'echo' || category === 'sonata'
     assets.set(id, {
       id, category, name, url,
-      previewUrl: category === 'tile' || category === 'floor' ? tilePreviewUrl(url, 320) : url,
+      previewUrl: category === 'tile' || category === 'floor' || category === 'gravity' ? tilePreviewUrl(url, 320) : url,
       sourceUrl: category === 'echo' ? source.sourceUrls.echoCatalogue
         : category === 'sonata' ? source.sourceUrls.sonataCatalogue : source.sourceUrls.officialMap,
       fetchedAt: isWiki ? source.wikiFetchedAt : source.mapFetchedAt,
@@ -68,6 +69,9 @@ export function buildOfficialAssets(dataset: MapDataset): OfficialAsset[] {
     ])
   }
   for (const state of dataset.states) {
+    for (const tilePath of state.gravityTiles) {
+      add('gravity', `${state.name} · 反重力 · ${tilePath.split('/').at(-1)}`, officialFloorTileUrl(source.mapResourceHash, state.id, tilePath), tilePath, [state.id], [state.name, '反重力'])
+    }
     for (const tileId of state.tileIds) {
       add('tile', tileId, officialTileUrl(source.mapResourceHash, state.id, tileId), tileId, [state.id], [state.name])
     }

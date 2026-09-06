@@ -86,6 +86,7 @@
       "tileIds": [
         "8_0_1"
       ],
+      "gravityTiles": [],
       "tileExtent": {
         "minTileX": 0,
         "minTileY": 1,
@@ -119,6 +120,7 @@
       "id": 9,
       "name": "空地图",
       "tileIds": [],
+      "gravityTiles": [],
       "tileExtent": {
         "minTileX": -1,
         "minTileY": 0,
@@ -175,6 +177,7 @@
   "echoLocations": [
     {
       "id": "echo-official",
+      "gravityType": null,
       "typeId": "1",
       "typeName": "  甲  ",
       "iconUrl": "https://web-static.kurobbs.com/echo.png",
@@ -198,6 +201,7 @@
     },
     {
       "id": "echo-alias",
+      "gravityType": null,
       "typeId": "2",
       "typeName": "官方别名",
       "iconUrl": "",
@@ -217,6 +221,7 @@
     },
     {
       "id": "manual-independent",
+      "gravityType": null,
       "typeId": "manual:echo-0",
       "typeName": "甲",
       "iconUrl": "",
@@ -240,6 +245,7 @@
     },
     {
       "id": "manual-orphan",
+      "gravityType": null,
       "typeId": "manual:echo-1",
       "typeName": "乙",
       "iconUrl": "",
@@ -343,6 +349,7 @@
   "navigationPoints": [
     {
       "id": "nav-1",
+      "gravityType": null,
       "typeId": "10",
       "typeName": "信标",
       "iconUrl": "https://web-static.kurobbs.com/same-a.png",
@@ -370,6 +377,7 @@
     },
     {
       "id": "nav-2",
+      "gravityType": null,
       "typeId": "11",
       "typeName": "服务",
       "iconUrl": "https://web-static.kurobbs.com/same-b.png",
@@ -393,6 +401,7 @@
     },
     {
       "id": "nav-3",
+      "gravityType": null,
       "typeId": "12",
       "typeName": "入口",
       "iconUrl": "https://web-static.kurobbs.com/failed.png",
@@ -416,6 +425,7 @@
     },
     {
       "id": "boss",
+      "gravityType": null,
       "typeId": "20",
       "typeName": "BOSS",
       "iconUrl": "https://web-static.kurobbs.com/boss.png",
@@ -439,6 +449,7 @@
     },
     {
       "id": "challenge",
+      "gravityType": null,
       "typeId": "21",
       "typeName": "挑战",
       "iconUrl": "",

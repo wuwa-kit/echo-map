@@ -13,6 +13,7 @@ export function findNearbyPoints(points: readonly AuthoredPoint[], target: Autho
   if (x === null || y === null || z === null) return []
   return points.flatMap((point) => {
     const coordinate = point.coordinate
+    if ((point.gravityType ?? null) !== (target.gravityType ?? null)) return []
     if (point.id === target.id || point.kind !== target.kind || point.stateId !== target.stateId || point.levelId !== target.levelId || coordinate.x === null || coordinate.y === null) return []
     const distance = Math.hypot(coordinate.x - x, coordinate.y - y)
     const heightDifference = point.status === 'imported' || coordinate.z === null ? null : Math.abs(coordinate.z - z)
@@ -28,6 +29,7 @@ export function mergeEchoMembers(existing: readonly EchoMember[], incoming: read
 }
 
 export function appendObservation(target: AuthoredEchoPoint, incoming: AuthoredEchoPoint): AuthoredEchoPoint {
+  if ((target.gravityType ?? null) !== (incoming.gravityType ?? null)) throw new Error('不同重力状态的点位不能合并')
   const imported = target.status === 'imported'
   return {
     ...target,

@@ -5,6 +5,7 @@ import { useExplorerStore } from '../stores/explorer.ts'
 import { echoMembers, MODE_NAMES } from '../domain/point-library.ts'
 import { describeEchoPoint } from '../domain/point-details.ts'
 import EchoPointIcon from './EchoPointIcon.vue'
+import { gravityName } from '../domain/gravity.ts'
 
 const store = useExplorerStore()
 const { selectedEchoLocation, selectedNavigationPoint, pointCandidates, activeEchoIds, dataset } = storeToRefs(store)
@@ -38,6 +39,7 @@ const candidates = computed(() => pointCandidates.value.map((point) => ({ point,
       <div v-if="selectedNavigationPoint" class="text-[#cde8dc]">{{ selectedNavigationPoint.typeName }} · {{ MODE_NAMES[selectedNavigationPoint.mode] }}</div>
       <div class="mt-14px font-mono text-12px text-[#a0baac]">{{ location.gameCoordinate ? `XYZ ${Object.values(location.gameCoordinate).join(', ')}` : '官方测试点，未录入 XYZ' }}</div>
       <div v-if="location.quality === 'official-provisional'" class="mt-8px text-12px text-[#e5bd7c]">官方导入 · Z=0 为占位值</div>
+      <div v-if="store.supportsGravity" class="mt-8px text-12px text-[#a0baac]">{{ gravityName(location.gravityType) }}</div>
       <div v-if="selectedEchoLocation && selectedEchoLocation.quality !== 'official-provisional' && 'note' in selectedEchoLocation" class="mt-8px whitespace-pre-wrap text-12px text-[#9cb3a7]">{{ selectedEchoLocation.note }}</div>
     </template>
   </div>

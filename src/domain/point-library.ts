@@ -28,6 +28,7 @@ export function parsePointLibrary(value: unknown, dataset: Pick<MapDataset, 'sta
     }
     const state = dataset.states.find(({ id }) => id === point.stateId)
     if (!state) throw new Error(`点位 ${point.id} 引用了未知地图`)
+    if (point.gravityType === 2 && state.gravityTiles.length === 0) throw new Error(`点位 ${point.id} 的地图没有反重力资源`)
     if (point.status !== 'imported' && point.levelId !== null && !state.layeredMaps.some(({ floors }) => floors.some(({ id }) => id === point.levelId))) {
       throw new Error(`点位 ${point.id} 的楼层不属于当前地图`)
     }
@@ -67,6 +68,7 @@ export function libraryLocations(library: PointLibrary, dataset: MapDataset) {
     const base = {
       id: point.id, typeId: `manual:${point.kind}`, typeName: pointTitle(point, dataset), iconUrl: '',
       stateId: point.stateId, countryId: point.countryId, levelId: point.levelId,
+      gravityType: point.gravityType ?? null,
       layeredMapId: dataset.states.find(({ id }) => id === point.stateId)?.layeredMaps.find(({ floors }) => floors.some(({ id }) => id === point.levelId))?.id ?? null,
       coordinate: officialToMapCoordinate(x * 100, y * 100, dataset.source.tileWidth),
       gameCoordinate: { x, y, z }, quality,

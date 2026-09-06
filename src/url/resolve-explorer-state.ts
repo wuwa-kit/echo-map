@@ -1,4 +1,5 @@
 import type { MapDataset } from '../domain/types.ts'
+import { hasGravityMap } from '../domain/gravity.ts'
 import { DEFAULT_ROUTE_Z_WEIGHT, DEFAULT_STATE_ID } from './explorer-url.ts'
 import type { ExplorerUrlSnapshot, ExplorerUrlState } from './explorer-url.ts'
 
@@ -26,6 +27,7 @@ export function resolveExplorerState(
   return {
     pointSource: state.pointSource ?? 'all',
     stateId,
+    gravityType: hasGravityMap(nextState) && state.gravityType === 2 ? 2 : 1,
     countryId: state.countryId !== undefined && countryIds.has(state.countryId) ? state.countryId : null,
     levelId: state.levelId !== undefined && floorIds.has(state.levelId) ? state.levelId : null,
     echoIds: (state.echoIds ?? []).filter((id) => echoIds.has(id)),

@@ -5,6 +5,20 @@ import type { CatalogTypeInfo } from './types.ts'
 
 export const STATIC_ROOT = 'https://web-static.kurobbs.com'
 
+export function normalizeGravityTiles(value: unknown): string[] {
+  // Maps without gravity resources return an empty object or an empty array.
+  if (Array.isArray(value) && value.length === 0) return []
+  const data = asRecord(value, 'gravity map')
+  if (Object.keys(data).some((key) => key !== '2')) throw new Error('未知重力地图模式')
+  const tiles = data['2'] === undefined ? [] : asArray(data['2'], 'negative gravity tiles').map((tile) => {
+    const path = asString(tile)
+    if (!/^\/2\/-?\d+_-?\d+\.png$/u.test(path)) throw new Error(`无效反重力瓦片：${path}`)
+    return path
+  })
+  if (new Set(tiles).size !== tiles.length) throw new Error('反重力瓦片不能重复')
+  return tiles
+}
+
 export function normalizeName(name: string): string {
   return name.trim().replaceAll(/\s+/gu, ' ')
 }

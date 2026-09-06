@@ -19,6 +19,8 @@ import {
 } from '../domain/explorer-selectors.ts'
 import { resolveExplorerState } from '../url/resolve-explorer-state.ts'
 import { createRoutePlanInput } from '../route/plan-input.ts'
+import type { GravityType, PointLocationBase } from '../domain/types.ts'
+import { hasGravityMap } from '../domain/gravity.ts'
 
 function toggleId(values: string[], id: string): string[] {
   return produce(values, (draft) => {
@@ -45,6 +47,9 @@ export const useExplorerStore = defineStore('explorer', () => {
   const selectedStateId = shallowRef<number>(DEFAULT_STATE_ID)
   const selectedCountryId = shallowRef<number | null>(null)
   const selectedLevelId = shallowRef<string | null>(null)
+  const selectedGravity = shallowRef<GravityType>(1)
+  const baseTileError = shallowRef(false)
+  const baseTileRetry = shallowRef(0)
   const selectedEchoIds = shallowRef<string[]>(immutableSnapshot([]))
   const selectedSonataIds = shallowRef<string[]>(immutableSnapshot([]))
   const echoSearch = shallowRef('')
@@ -69,6 +74,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const floors = computed<MapFloorDefinition[]>(() => (
     activeState.value?.layeredMaps.flatMap(({ floors: mapFloors }) => mapFloors) ?? []
   ))
+  const supportsGravity = computed(() => hasGravityMap(activeState.value))
   const regions = computed(() => selectRegions(dataset.value?.regionLabels ?? [], selectedStateId.value))
   const activeMapName = computed(() => {
     const state = activeState.value
@@ -93,6 +99,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const allNavigationPoints = computed(() => authoredLocations.value.navigationPoints)
   const allNavigationPointGroups = computed(() => authoredLocations.value.navigationPointGroups)
   const mapScope = computed(() => ({
+    gravityType: supportsGravity.value ? selectedGravity.value : null,
     stateId: selectedStateId.value,
     countryId: selectedCountryId.value,
     levelId: selectedLevelId.value,
@@ -111,13 +118,20 @@ export const useExplorerStore = defineStore('explorer', () => {
     scopedNavigationPoints.value.filter(({ groupId }) => !hiddenPointGroupIds.value.includes(groupId))
   ))
   const visibleRegionLabels = computed(() => selectRegionLabels(dataset.value?.regionLabels ?? [], mapScope.value))
-  const routeEligibleLocations = computed(() => visibleEchoLocations.value.filter(hasGameCoordinate))
-  const routeEligibleNavigationPoints = computed(() => scopedNavigationPoints.value.filter(isRouteStart))
+  function hasRouteGravity(point: PointLocationBase): boolean {
+    return !supportsGravity.value || point.gravityType === selectedGravity.value
+  }
+  const routeEligibleLocations = computed(() => visibleEchoLocations.value.filter((point) => hasGameCoordinate(point) && hasRouteGravity(point)))
+  const routeEligibleNavigationPoints = computed(() => scopedNavigationPoints.value.filter((point) => isRouteStart(point) && hasRouteGravity(point)))
+  const unmarkedGravityCount = computed(() => supportsGravity.value
+    ? [...visibleEchoLocations.value, ...scopedNavigationPoints.value].filter(({ gravityType }) => gravityType === null).length : 0)
 
   function setDataset(value: MapDataset): void {
     clearRoute()
     mapNavigationRequest.value = null
     dataset.value = immutableSnapshot(value)
+    selectedGravity.value = 1
+    baseTileError.value = false
     const preferredState = value.states.find(({ id }) => id === DEFAULT_STATE_ID) ?? value.states[0]
     if (preferredState) {
       selectedStateId.value = preferredState.id
@@ -135,6 +149,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectedStateId.value = resolved.stateId
     selectedCountryId.value = resolved.countryId
     selectedLevelId.value = resolved.levelId
+    selectedGravity.value = resolved.gravityType ?? 1
+    baseTileError.value = false
     selectedEchoIds.value = immutableSnapshot([...resolved.echoIds])
     selectedSonataIds.value = immutableSnapshot([...resolved.sonataIds])
     hiddenPointGroupIds.value = immutableSnapshot([...resolved.hiddenPointGroupIds])
@@ -148,6 +164,8 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   function selectState(id: number): void {
+    selectedGravity.value = 1
+    baseTileError.value = false
     selectedStateId.value = id
     selectedCountryId.value = null
     selectedLevelId.value = null
@@ -158,6 +176,13 @@ export const useExplorerStore = defineStore('explorer', () => {
   function selectCountry(id: number | null): void {
     selectedCountryId.value = id
     clearRoute()
+  }
+
+  function selectGravity(gravity: GravityType): void {
+    if ((gravity !== 1 && gravity !== 2) || !supportsGravity.value || selectedGravity.value === gravity) return
+    clearRoute()
+    selectedGravity.value = gravity
+    baseTileError.value = false
   }
 
   function selectLevel(id: string | null): void {
@@ -175,6 +200,10 @@ export const useExplorerStore = defineStore('explorer', () => {
     const currentDataset = dataset.value
     const destination = currentDataset?.regionLabels.find((region) => region.id === id)
     if (!destination || !currentDataset?.mapNavigation.some((country) => country.regionIds.includes(id))) return
+    if (selectedStateId.value !== destination.stateId) {
+      selectedGravity.value = 1
+      baseTileError.value = false
+    }
     if (selectedStateId.value !== destination.stateId || selectedCountryId.value !== null || selectedLevelId.value !== null) clearRoute()
     else {
       selectedPointId.value = null
@@ -341,6 +370,12 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectedStateId: shallowReadonly(selectedStateId),
     selectedCountryId: shallowReadonly(selectedCountryId),
     selectedLevelId: shallowReadonly(selectedLevelId),
+    selectedGravity: shallowReadonly(selectedGravity),
+    supportsGravity, unmarkedGravityCount, selectGravity,
+    baseTileError: shallowReadonly(baseTileError),
+    baseTileRetry: shallowReadonly(baseTileRetry),
+    reportBaseTileError: (failed: boolean) => { baseTileError.value = failed },
+    retryBaseTiles: () => { baseTileError.value = false; baseTileRetry.value += 1 },
     selectedEchoIds: shallowReadonly(selectedEchoIds),
     selectedSonataIds: shallowReadonly(selectedSonataIds),
     echoSearch: shallowReadonly(echoSearch),

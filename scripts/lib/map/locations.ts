@@ -1,4 +1,4 @@
-import type { EchoLocation, GameCoordinate, PointQuality } from '../../../src/domain/types.ts'
+import type { EchoLocation, GameCoordinate, GravityType, PointQuality } from '../../../src/domain/types.ts'
 import { officialToMapCoordinate } from '../../../src/map/projection.ts'
 import { asArray, asNumber, asRecord, asString } from '../raw.ts'
 import type { UnknownRecord } from '../raw.ts'
@@ -14,6 +14,13 @@ import type {
   NavigationPointDraft,
   NavigationRule,
 } from './types.ts'
+
+function normalizeGravity(value: unknown): GravityType | null {
+  if (value === 1 || value === '1') return 1
+  if (value === 2 || value === '2') return 2
+  if (value === undefined || value === null || value === '' || value === 0 || value === '0') return null
+  throw new Error(`未知点位重力状态：${String(value)}`)
+}
 
 function manualCoordinate(point: ManualPoint | undefined): GameCoordinate | null {
   return point ? { x: point.x, y: point.y, z: point.z } : null
@@ -47,6 +54,7 @@ function locationBase(
   const rawY = asNumber(location.y)
   return {
     id: asString(location.id),
+    gravityType: manual?.gravityType ?? normalizeGravity(location.gravityType),
     typeId: asString(type.id),
     typeName: asString(type.name),
     iconUrl: iconUrl(type.icon),
@@ -137,6 +145,7 @@ export function normalizeLocations(
     const coordinate = officialToMapCoordinate(point.x * 100, point.y * 100)
     echoLocations.set(point.id, {
       id: point.id,
+      gravityType: point.gravityType ?? null,
       typeId: `manual:${echo.id}`,
       typeName: echo.name,
       iconUrl: echo.iconUrl,

@@ -15,6 +15,7 @@ import WuOption from '../components/base/WuOption.vue'
 import WuScrollArea from '../components/base/WuScrollArea.vue'
 import WuSelect from '../components/base/WuSelect.vue'
 import type { WuSelectValue } from '../components/base/select-context.ts'
+import { hasGravityMap } from '../domain/gravity.ts'
 
 const store = usePointEditorStore()
 const compact = useMediaQuery('(max-width: 1023px)')
@@ -133,6 +134,9 @@ function changeCountry(value: WuSelectValue): void {
 function changeLevel(value: WuSelectValue): void {
   if (value === null || typeof value === 'string') store.setLevel(value)
 }
+function changeGravity(value: WuSelectValue): void {
+  if (value === null || value === 1 || value === 2) store.selectGravity(value)
+}
 onMounted(async () => {
   await store.load()
   store.setOfficialVisible(officialQuery.value !== '0')
@@ -211,6 +215,14 @@ useEventListener(window, 'beforeunload', (event) => {
           <label for="editor-state" class="mb-5px block text-12px text-[#91ae9e]">地图</label>
           <WuSelect id="editor-state" :native="compact" :model-value="draft.stateId" :disabled="busy" @update:model-value="changeState">
             <WuOption v-for="state in dataset.states" :key="state.id" :value="state.id">{{ state.name }}</WuOption>
+          </WuSelect>
+        </div>
+        <div v-if="hasGravityMap(currentState)" class="mb-10px">
+          <label for="editor-gravity" class="mb-5px block text-12px text-[#91ae9e]">重力状态</label>
+          <WuSelect id="editor-gravity" :native="compact" :model-value="draft.gravityType" :disabled="busy" @update:model-value="changeGravity">
+            <WuOption :value="null">待核验</WuOption>
+            <WuOption :value="1">普通重力</WuOption>
+            <WuOption :value="2">反重力</WuOption>
           </WuSelect>
         </div>
         <div class="grid grid-cols-2 gap-10px">

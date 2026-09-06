@@ -3,6 +3,7 @@ import { createRoutePlanInput } from '../src/route/plan-input.ts'
 import type { EchoLocation } from '../src/domain/types.ts'
 
 const location: EchoLocation = {
+  gravityType: null,
   id: 'echo-point', echoId: 'echo', typeId: 'type', typeName: '声骸', iconUrl: '',
   stateId: 8, countryId: 1, layeredMapId: null, levelId: 'floor',
   coordinate: { rawX: 100, rawY: 200, mapX: 300, mapY: 400 },
