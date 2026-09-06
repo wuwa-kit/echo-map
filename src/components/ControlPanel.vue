@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import WuScrollArea from './base/WuScrollArea.vue'
+import WuSvg from './base/WuSvg.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
 import MapScopeFilter from './filters/MapScopeFilter.vue'
 import SonataFilter from './filters/SonataFilter.vue'
@@ -32,14 +33,7 @@ function scrollToSection(id: string): void {
       <div v-if="dataset && !compact" class="border-b border-[var(--line)] p-18px" role="banner">
         <div class="flex items-center justify-between gap-12px">
           <div class="flex min-w-0 items-center gap-11px">
-            <span
-              class="relative h-31px w-31px shrink-0 border border-[rgba(101,241,194,0.58)] rounded-full shadow-[inset_0_0_14px_rgba(101,241,194,0.12),0_0_20px_rgba(101,241,194,0.09)]"
-              aria-hidden="true"
-            >
-              <span class="absolute left-9px top-7px h-15px w-1px origin-bottom rotate-[-28deg] bg-[var(--accent)]" />
-              <span class="absolute left-15px top-4px h-19px w-1px origin-bottom bg-[var(--accent)]" />
-              <span class="absolute right-9px top-7px h-15px w-1px origin-bottom rotate-[28deg] bg-[var(--accent)]" />
-            </span>
+            <WuSvg name="brand" class="shrink-0 text-[var(--accent)] [--wu-svg-h:34px]" />
             <div class="min-w-0 leading-none">
               <span class="block font-serif text-21px text-[#f1faf5] font-500 tracking-[0.12em]">声巡</span>
               <span class="mt-6px block truncate text-7px text-[#789087] font-700 tracking-[0.15em]">WUTHERING ECHO ROUTE</span>
