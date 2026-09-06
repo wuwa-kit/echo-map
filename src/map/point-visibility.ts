@@ -3,7 +3,8 @@ import type { MapDisplayPoint, MapZoomRange, NavigationKind, NavigationPoint } f
 // A display zoom measures actual map scale, independently of each base map's View/URL zoom.
 export const MAP_ZOOM_BASE_RESOLUTION = 64
 export const MAP_ZOOM_LEVELS = {
-  overview: { name: '远景', minZoom: 0 },
+  world: { name: '全图', minZoom: 0 },
+  overview: { name: '远景', minZoom: 1 },
   region: { name: '区域', minZoom: 2 },
   surroundings: { name: '周边', minZoom: 3 },
   local: { name: '局部', minZoom: 4 },
@@ -21,7 +22,7 @@ function fromLevel(level: MapZoomLevel, until?: MapZoomLevel): Readonly<MapZoomR
 
 export const MAP_POINT_ZOOM_RANGES = {
   echo: fromLevel('local'),
-  'country-name': fromLevel('overview', 'region'),
+  'country-name': fromLevel('world', 'region'),
   'region-name': fromLevel('region', 'detail'),
   'place-name': fromLevel('local'),
   nexus: fromLevel('overview'),

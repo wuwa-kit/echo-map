@@ -34,11 +34,28 @@ describe('map point zoom visibility', () => {
     if (!point) throw new Error('需要定位点测试数据')
     const nexus: MapDisplayPoint = { category: 'navigation', location: { ...point, kind: 'nexus' } }
     const service: MapDisplayPoint = { category: 'navigation', location: { ...point, kind: 'service' } }
-    expect(isMapPointVisibleAtZoom(nexus, 0)).toBe(true)
+    expect(isMapPointVisibleAtZoom(nexus, 0)).toBe(false)
+    expect(isMapPointVisibleAtZoom(nexus, 1)).toBe(true)
+    expect(isMapPointVisibleAtZoom(nexus, 2)).toBe(true)
     expect(isMapPointVisibleAtZoom(service, 4.99)).toBe(false)
     expect(isMapPointVisibleAtZoom(service, 5)).toBe(true)
     expect(isMapPointVisibleAtZoom(nexus, 8)).toBe(true)
     expect(isMapPointVisibleAtZoom(service, 8)).toBe(true)
+  })
+
+  it('keeps only country names at world scale and adds nexuses in overview', () => {
+    for (const zoom of [0, 0.5, 0.99]) {
+      for (const [kind, range] of Object.entries(MAP_POINT_ZOOM_RANGES)) {
+        expect(isPointVisibleAtZoom(range, zoom), `${kind} at zoom ${zoom}`).toBe(kind === 'country-name')
+      }
+    }
+    for (const zoom of [1 - 1e-8, 1, 1 + 1e-8, 1.5, 1.99]) {
+      expect(isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES.nexus, zoom)).toBe(true)
+      expect(isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES['country-name'], zoom)).toBe(true)
+      expect(isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES.beacon, zoom)).toBe(false)
+      expect(isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES['region-name'], zoom)).toBe(false)
+    }
+    expect(mapZoomRangeLabel(MAP_POINT_ZOOM_RANGES.nexus)).toBe('远景起显示')
   })
 
   it('reveals all echo sources together without using game height as a display condition', () => {
