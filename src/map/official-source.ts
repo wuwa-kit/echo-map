@@ -41,7 +41,8 @@ export function createOfficialTileLayer(state: MapStateDefinition, sourceManifes
 
   return new TileLayer({
     source,
-    preload: Infinity,
+    // This source has one resolution, so there is no coarser level to preload.
+    preload: 0,
   })
 }
 

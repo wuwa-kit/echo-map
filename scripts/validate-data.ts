@@ -1,9 +1,13 @@
 import { mapDatasetSchema } from '../src/domain/schema.ts'
 import type { MapDataset } from '../src/domain/types.ts'
 import { projectPath, readJson } from './lib/files.ts'
+import { parsePointLibrary } from '../src/domain/point-library.ts'
+import { readOfficialPointLibrary } from './lib/official-point-library.ts'
 
 const rawDataset = await readJson<unknown>(projectPath('public', 'data', 'app-data.json'))
 const dataset = mapDatasetSchema.parse(rawDataset) as MapDataset
+const pointLibrary = parsePointLibrary(await readJson<unknown>(projectPath('data', 'manual', 'points.json')), dataset, 'manual')
+const officialLibrary = await readOfficialPointLibrary(projectPath('data', 'generated', 'official-points.json'), dataset)
 const echoIds = new Set(dataset.echoes.map(({ id }) => id))
 const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []
@@ -89,6 +93,8 @@ if (errors.length > 0) {
 
 console.log([
   '数据校验通过',
+  `人工点位 ${pointLibrary.points.length}`,
+  `官方录入格式 ${officialLibrary.points.length}`,
   `声骸 ${dataset.echoes.length}`,
   `合鸣效果 ${dataset.sonatas.length}`,
   `声骸点位 ${dataset.echoLocations.length}`,

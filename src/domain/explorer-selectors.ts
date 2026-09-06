@@ -1,4 +1,5 @@
-import type { EchoDefinition, EchoLocation, NavigationPoint, PointLocationBase, RegionLabel } from './types.ts'
+import type { EchoDefinition, EchoMapLocation, NavigationPoint, PointLocationBase, RegionLabel } from './types.ts'
+import { echoMembers } from './point-library.ts'
 
 type MapScope = Pick<PointLocationBase, 'stateId' | 'countryId' | 'levelId'>
 
@@ -47,14 +48,14 @@ export function matchesMapScope(location: MapScope, scope: MapScope): boolean {
 }
 
 export function selectEchoLocations(
-  locations: readonly EchoLocation[],
+  locations: readonly EchoMapLocation[],
   scope: MapScope,
   activeEchoIds: ReadonlySet<string>,
   showProvisional: boolean,
-): EchoLocation[] {
+): EchoMapLocation[] {
   return locations.filter((location) => (
     matchesMapScope(location, scope)
-    && activeEchoIds.has(location.echoId)
+    && echoMembers(location).some(({ echoId }) => activeEchoIds.has(echoId))
     && (showProvisional || location.gameCoordinate !== null)
   ))
 }

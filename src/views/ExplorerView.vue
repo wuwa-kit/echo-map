@@ -8,7 +8,7 @@ import RoutePanel from '../components/RoutePanel.vue'
 import WuSvg from '../components/base/WuSvg.vue'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
 import { useExplorerRouteQuery } from '../composables/useExplorerRouteQuery.ts'
-import { loadMapDataset } from '../data/load.ts'
+import { loadMapDataset, loadPointLibrary, loadOfficialPointLibrary } from '../data/load.ts'
 import { useExplorerStore } from '../stores/explorer.ts'
 import type { MapDataset } from '../domain/types.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
@@ -102,6 +102,7 @@ function onKeydown(event: KeyboardEvent): void {
 const routeQuery = useExplorerRouteQuery()
 let urlSyncEnabled = false
 const urlSnapshot = useEqualComputed<ExplorerUrlSnapshot>(() => ({
+  pointSource: store.pointSource,
   stateId: store.selectedStateId,
   countryId: store.selectedCountryId,
   levelId: store.selectedLevelId,
@@ -120,7 +121,13 @@ watch(urlSnapshot, (snapshot) => {
   }
 })
 const { error: loadFailure, isLoading: loading, execute: reloadDataset } = useAsyncState<MapDataset | null>(
-  loadMapDataset,
+  async () => {
+    const value = await loadMapDataset()
+    const [manual, official] = await Promise.all([loadPointLibrary(value), loadOfficialPointLibrary(value)])
+    store.setPointLibrary(manual)
+    store.setOfficialPointLibrary(official)
+    return value
+  },
   null,
   {
     onSuccess(value) {

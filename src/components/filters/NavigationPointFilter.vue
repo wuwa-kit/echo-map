@@ -10,7 +10,7 @@ import type { NavigationPoint } from '../../domain/types.ts'
 defineProps<{ compact: boolean }>()
 
 const store = useExplorerStore()
-const { dataset, hiddenPointGroupIds, selectedStateId } = storeToRefs(store)
+const { allNavigationPoints, allNavigationPointGroups, hiddenPointGroupIds, selectedStateId } = storeToRefs(store)
 
 interface PointGroupOption {
   id: string
@@ -25,8 +25,8 @@ interface PointGroupOption {
 
 const modeOrder: NavigationPoint['mode'][] = ['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown']
 const pointGroupOptions = computed<PointGroupOption[]>(() => {
-  const points = dataset.value?.navigationPoints ?? []
-  return (dataset.value?.navigationPointGroups ?? []).flatMap((group) => {
+  const points = allNavigationPoints.value
+  return allNavigationPointGroups.value.flatMap((group) => {
     const groupPoints = points.filter((point) => (
       point.stateId === selectedStateId.value && point.groupId === group.id
     ))

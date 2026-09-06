@@ -6,9 +6,10 @@ import { useExplorerStore } from '../stores/explorer.ts'
 
 defineProps<{ compact: boolean }>()
 const store = useExplorerStore()
-const { dataset, route, routeEligibleLocations, routeEligibleNavigationPoints, routeZWeight, visibleEchoLocations, planning, routeError } = storeToRefs(store)
+const { allNavigationPoints, route, routeEligibleLocations, routeEligibleNavigationPoints, routeZWeight, visibleEchoLocations, planning, routeError } = storeToRefs(store)
 const incompleteCount = computed(() => visibleEchoLocations.value.length - routeEligibleLocations.value.length)
-const startPoint = computed(() => dataset.value?.navigationPoints.find(({ id }) => id === route.value?.startPointId) ?? null)
+const usesOfficialCoordinates = computed(() => [...routeEligibleLocations.value, ...routeEligibleNavigationPoints.value].some(({ quality }) => quality === 'official-provisional'))
+const startPoint = computed(() => allNavigationPoints.value.find(({ id }) => id === route.value?.startPointId) ?? null)
 
 function onRouteZWeightChange(event: Event): void {
   if (event.target instanceof HTMLInputElement) {
@@ -41,7 +42,8 @@ function onRouteZWeightChange(event: Event): void {
         <input class="mt-3px h-44px w-full min-w-0 rounded-6px border border-[var(--line)] bg-[#152823] px-5px text-16px text-inherit font-inherit outline-none focus:border-[var(--accent)]" :value="routeZWeight" type="number" inputmode="decimal" min="0.1" max="10" step="0.05" @change="onRouteZWeightChange" />
       </label>
     </div>
-    <div class="mb-10px text-12px text-[#9ab0a7] leading-relaxed">已核验 {{ routeEligibleNavigationPoints.length }} 个可传送起点。临时 XY 点位仅供定位，不参与路线。</div>
+    <div class="mb-10px text-12px text-[#9ab0a7] leading-relaxed">{{ routeEligibleNavigationPoints.length }} 个可传送起点。未补齐怪物清单的人工点按已知怪物参与路线。</div>
+    <div v-if="usesOfficialCoordinates" class="mb-10px text-12px leading-relaxed text-[#e5bd7c]">包含官方点位，Z=0 按占位高度计算。切换“仅人工”可使用实测坐标。</div>
     <div v-if="routeEligibleLocations.length === 0" class="mb-12px rounded-6px bg-[#182b25] p-12px text-14px text-[#b9c9c2]" role="status">
       {{ visibleEchoLocations.length === 0 ? '先在筛选中选择声骸或合鸣效果。' : '当前筛选的声骸尚未录入 XYZ，暂时无法生成路线。' }}
     </div>

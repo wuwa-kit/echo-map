@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import WuCheckBox from './base/WuCheckBox.vue'
 import WuScrollArea from './base/WuScrollArea.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
 import MapScopeFilter from './filters/MapScopeFilter.vue'
 import SonataFilter from './filters/SonataFilter.vue'
 import EchoFilter from './filters/EchoFilter.vue'
 import NavigationPointFilter from './filters/NavigationPointFilter.vue'
+import { RouterLink } from 'vue-router'
 
 defineProps<{ compact: boolean }>()
 
 const store = useExplorerStore()
-const { dataset, showProvisional } = storeToRefs(store)
+const { dataset, pointSource, allEchoLocations, allNavigationPoints } = storeToRefs(store)
+const canEdit = import.meta.env.DEV
 
 function scrollToSection(id: string): void {
   const target = document.getElementById(id)
@@ -58,16 +59,24 @@ function scrollToSection(id: string): void {
             <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#71877e]">C1/C3 声骸</span>
           </div>
           <div class="min-w-0 border border-[var(--line)] rounded-6px bg-[rgba(24,43,37,0.56)] px-8px py-7px">
-            <span class="block truncate text-14px text-[#d8eee5] font-600">{{ dataset.echoLocations.length.toLocaleString('zh-CN') }}</span>
+            <span class="block truncate text-14px text-[#d8eee5] font-600">{{ allEchoLocations.length.toLocaleString('zh-CN') }}</span>
             <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#71877e]">声骸点</span>
           </div>
           <div class="min-w-0 border border-[var(--line)] rounded-6px bg-[rgba(24,43,37,0.56)] px-8px py-7px">
-            <span class="block truncate text-14px text-[#d8eee5] font-600">{{ dataset.navigationPoints.length.toLocaleString('zh-CN') }}</span>
+            <span class="block truncate text-14px text-[#d8eee5] font-600">{{ allNavigationPoints.length.toLocaleString('zh-CN') }}</span>
             <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#71877e]">定位点</span>
           </div>
         </div>
       </div>
 
+      <div class="border-b border-[var(--line)] p-16px">
+        <div class="flex gap-6px" role="group" aria-label="点位来源">
+          <button v-for="source in (['all', 'manual', 'official'] as const)" :key="source" type="button" :aria-pressed="pointSource === source" class="min-h-40px flex-1 rounded-6px border border-[var(--line)] bg-[#182b25] px-8px text-12px text-[#b9cfc4] aria-pressed:text-[var(--accent)]" @click="store.setPointSource(source)">{{ { all: '全部点位', manual: '仅人工', official: '仅官方' }[source] }}</button>
+        </div>
+        <div v-if="pointSource !== 'manual'" class="mt-8px text-12px text-[#e5bd7c]">官方点 Z=0、数量为初始值；路线使用这些占位坐标。</div>
+        <div v-else-if="allEchoLocations.length === 0" class="mt-8px text-12px text-[#95afa2]">人工点位库为空，录入并核验后即可在这里筛选。</div>
+        <RouterLink v-if="canEdit" to="/editor" class="mt-8px inline-flex min-h-40px items-center text-13px text-[var(--accent)]">打开点位录入 →</RouterLink>
+      </div>
       <MapScopeFilter :compact="compact" />
 
       <SonataFilter :compact="compact" />
@@ -75,16 +84,6 @@ function scrollToSection(id: string): void {
       <EchoFilter :compact="compact" />
 
       <NavigationPointFilter :compact="compact" />
-
-      <div class="flex flex-wrap gap-x-15px gap-y-8px border-b border-[var(--line)] px-18px py-13px">
-        <WuCheckBox
-          class="flex min-h-44px items-center gap-8px text-14px min-[1024px]:text-10px text-[#a7b8b1]"
-          :model-value="showProvisional"
-          @update:model-value="store.setProvisionalVisible"
-        >
-          待补 XYZ 声骸
-        </WuCheckBox>
-      </div>
 
     </WuScrollArea>
   </div>

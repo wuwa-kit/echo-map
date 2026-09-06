@@ -30,14 +30,18 @@ export function createRouteLayer() {
     }))
     routeSource.addFeature(line)
     route.points.forEach((point, index) => {
+      const badgeOffset = point.members ? (point.members.length > 1 ? 27 : 17) : 0
       const marker = new Feature({ geometry: new Point(point.mapCoordinate) })
       marker.setStyle(new Style({
         image: new CircleStyle({
+          displacement: [-badgeOffset, badgeOffset],
           radius: 11,
           fill: new Fill({ color: '#d8fff1' }),
           stroke: new Stroke({ color: '#0b3c31', width: 2 }),
         }),
         text: new Text({
+          offsetX: -badgeOffset,
+          offsetY: -badgeOffset,
           text: String(index + 1),
           font: '700 11px sans-serif',
           fill: new Fill({ color: '#08241e' }),

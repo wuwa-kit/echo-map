@@ -7,7 +7,8 @@ type PortraitMarkerShape = 'diamond' | 'cut-diamond'
 export const PORTRAIT_MARKER_SIZES = { 1: 28, 3: 31, 4: 44 }
 
 const MARKER_SIZE = PORTRAIT_MARKER_SIZES[4]
-const CANVAS_SIZE = MARKER_SIZE + 2
+export const PORTRAIT_MARKER_CANVAS_SIZE = MARKER_SIZE + 2
+const CANVAS_SIZE = PORTRAIT_MARKER_CANVAS_SIZE
 const CENTER = CANVAS_SIZE / 2
 const OUTER_BORDER = 1.5
 const WHITE_BORDER = 2.5
@@ -45,7 +46,12 @@ function markerPath(shape: PortraitMarkerShape, inset: number): Path2D {
   return path
 }
 
-function drawMarker(context: CanvasRenderingContext2D, shape: PortraitMarkerShape, portrait?: HTMLImageElement): void {
+export function drawPortraitMarker(
+  context: CanvasRenderingContext2D,
+  shape: PortraitMarkerShape,
+  portrait?: HTMLImageElement,
+  drawComposition?: (context: CanvasRenderingContext2D, contentSize: number, center: number) => void,
+): void {
   context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
   context.fillStyle = '#000'
   context.fill(markerPath(shape, 0))
@@ -53,17 +59,21 @@ function drawMarker(context: CanvasRenderingContext2D, shape: PortraitMarkerShap
   context.fill(markerPath(shape, OUTER_BORDER))
   context.fillStyle = '#000'
   context.fill(markerPath(shape, OUTER_BORDER + WHITE_BORDER))
-  if (!portrait || portrait.naturalWidth === 0 || portrait.naturalHeight === 0) {
+  if (!drawComposition && (!portrait || portrait.naturalWidth === 0 || portrait.naturalHeight === 0)) {
     return
   }
 
   const contentSize = MARKER_SIZE - 2 * PORTRAIT_INSET * (shape === 'diamond' ? Math.SQRT2 : 1)
-  const scale = contentSize / Math.max(portrait.naturalWidth, portrait.naturalHeight)
-  const width = portrait.naturalWidth * scale
-  const height = portrait.naturalHeight * scale
   context.save()
   context.clip(markerPath(shape, PORTRAIT_INSET))
-  context.drawImage(portrait, CENTER - width / 2, CENTER - height / 2, width, height)
+  if (drawComposition) {
+    drawComposition(context, contentSize, CENTER)
+  } else if (portrait) {
+    const scale = contentSize / Math.max(portrait.naturalWidth, portrait.naturalHeight)
+    const width = portrait.naturalWidth * scale
+    const height = portrait.naturalHeight * scale
+    context.drawImage(portrait, CENTER - width / 2, CENTER - height / 2, width, height)
+  }
   context.restore()
 }
 
@@ -92,7 +102,7 @@ export function createPortraitMarkerStyles(onChange: () => void) {
     }
     context.scale(pixelRatio, pixelRatio)
     context.imageSmoothingQuality = 'high'
-    drawMarker(context, shape)
+    drawPortraitMarker(context, shape)
     const result = [new Style({ image: new Icon({ img: canvas, scale: size / MARKER_SIZE / pixelRatio, opacity }) })]
     styles.set(key, result)
 
@@ -107,7 +117,7 @@ export function createPortraitMarkerStyles(onChange: () => void) {
       portrait.crossOrigin = 'anonymous'
       portrait.onload = () => {
         finish()
-        drawMarker(context, shape, portrait)
+        drawPortraitMarker(context, shape, portrait)
         onChange()
       }
       portrait.onerror = finish

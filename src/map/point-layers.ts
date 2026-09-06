@@ -2,6 +2,7 @@ import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
+import Cluster from 'ol/source/Cluster.js'
 import CircleStyle from 'ol/style/Circle.js'
 import Fill from 'ol/style/Fill.js'
 import Icon from 'ol/style/Icon.js'
@@ -9,27 +10,37 @@ import Stroke from 'ol/style/Stroke.js'
 import Style from 'ol/style/Style.js'
 import Text from 'ol/style/Text.js'
 import { bossMarkerShape, createPortraitMarkerStyles, PORTRAIT_MARKER_SIZES } from './boss-marker.ts'
-import type { EchoDefinition, EchoLocation, NavigationPoint, PointLocationBase, RegionLabel } from '../domain/types.ts'
+import type { EchoDefinition, EchoMapLocation, NavigationPoint, PointLocationBase, RegionLabel } from '../domain/types.ts'
+import { echoMembers, NAVIGATION_NAMES } from '../domain/point-library.ts'
+import { createEchoMarkerStyles } from './echo-marker.ts'
 import { echoLocationMinZoom, isPointVisibleAtZoom, navigationPointMinZoom } from './point-visibility.ts'
 
 export function createPointLayers(zoomForResolution: (resolution: number) => number) {
   const echoSource = new VectorSource()
+  const clusters = new Cluster({ source: echoSource, distance: 64, minDistance: 32 })
   const navigationSource = new VectorSource()
   const labelSource = new VectorSource()
   const echoCosts = new globalThis.Map<string, EchoDefinition['cost']>()
   const navigationStyleCache = new globalThis.Map<string, Style[]>()
   const echoMarkerStyles = createPortraitMarkerStyles(() => echoLayer.changed())
+  const groupMarkerStyles = createEchoMarkerStyles(() => echoLayer.changed())
+  let echoDefinitions: readonly EchoDefinition[] = []
+  let selectedEchoIds: ReadonlySet<string> | undefined
   const bossMarkerStyles = createPortraitMarkerStyles(() => navigationLayer.changed())
 
   const echoLayer = new VectorLayer({
-    source: echoSource,
-    declutter: true,
+    source: clusters,
     zIndex: 40,
     style(feature, resolution) {
-      const location = feature.get('location') as EchoLocation
-      return isPointVisibleAtZoom(echoLocationMinZoom(location), zoomForResolution(resolution))
-        ? echoStyle(location)
-        : undefined
+      const members = feature.get('features') as Feature<Point>[]
+      const locations = members.map((member) => member.get('location') as EchoMapLocation)
+        .filter((location) => isPointVisibleAtZoom(echoLocationMinZoom(location), zoomForResolution(resolution)))
+      if (feature instanceof Feature) feature.set('locations', locations, true)
+      if (locations.length === 0) return undefined
+      if (locations.length === 1) return echoStyle(locations[0] as EchoMapLocation)
+      const composition = locations.flatMap((location) => echoMembers(location))
+        .filter(({ echoId }) => !selectedEchoIds || selectedEchoIds.has(echoId))
+      return groupMarkerStyles.get(composition, echoDefinitions, { showText: false }).styles
     },
   })
   const navigationLayer = new VectorLayer({
@@ -51,7 +62,8 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
     })
   }
 
-  function echoStyle(location: EchoLocation): Style[] | undefined {
+  function echoStyle(location: EchoMapLocation): Style[] | undefined {
+    if ('members' in location) return groupMarkerStyles.get(echoMembers(location).filter(({ echoId }) => !selectedEchoIds || selectedEchoIds.has(echoId)), echoDefinitions).styles
     const cost = echoCosts.get(location.echoId)
     if (cost === undefined) {
       return undefined
@@ -66,7 +78,7 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
 
   function navigationStyle(location: NavigationPoint): Style[] {
     const shape = bossMarkerShape(location)
-    if (shape) {
+    if (shape && location.iconUrl) {
       const bossStyles = bossMarkerStyles.getStyle({
         shape,
         size: PORTRAIT_MARKER_SIZES[4],
@@ -84,6 +96,7 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
     }
     const isFastTravel = location.mode === 'fast-travel'
     const styles = [new Style({
+      text: !location.iconUrl ? new Text({ text: NAVIGATION_NAMES[location.kind], offsetY: 18, font: '11px sans-serif', fill: new Fill({ color: '#cde8dc' }), stroke: new Stroke({ color: '#07120e', width: 3 }) }) : undefined,
       image: location.iconUrl
         ? new Icon({
           src: location.iconUrl,
@@ -101,11 +114,14 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
   }
 
   function update(
-    echoLocations: readonly EchoLocation[],
+    echoLocations: readonly EchoMapLocation[],
     navigationPoints: readonly NavigationPoint[],
     regionLabels: readonly RegionLabel[],
     echoes: readonly EchoDefinition[],
+    activeEchoIds?: ReadonlySet<string>,
   ): void {
+    echoDefinitions = echoes
+    selectedEchoIds = activeEchoIds
     echoCosts.clear()
     for (const echo of echoes) {
       echoCosts.set(echo.id, echo.cost)
@@ -137,6 +153,9 @@ export function createPointLayers(zoomForResolution: (resolution: number) => num
 
   function dispose(): void {
     echoMarkerStyles.dispose()
+    groupMarkerStyles.dispose()
+    clusters.setSource(null)
+    clusters.dispose()
     bossMarkerStyles.dispose()
     echoCosts.clear()
     navigationStyleCache.clear()

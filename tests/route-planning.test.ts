@@ -1,3 +1,4 @@
+import { convertOfficialPoints } from '../scripts/lib/official-point-library.ts'
 import { readFile } from 'node:fs/promises'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -14,6 +15,8 @@ const result: RouteResult = { points: [], totalCost: 12, algorithm: 'exact', sta
 function createStore() {
   const store = useExplorerStore()
   store.setDataset(dataset)
+    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
+    store.setPointSource('official')
   const target = dataset.echoLocations.find(({ stateId, levelId, gameCoordinate }) => stateId === 8 && levelId === null && gameCoordinate !== null)
   if (!target) {
     throw new Error('测试数据缺少可规划声骸')
@@ -80,12 +83,12 @@ describe('route planning actions', () => {
 
   it('restores mutually exclusive sheet state and keeps the desktop preference independent', () => {
     const store = createStore()
-    store.restoreUrlState({ mobileSheet: 'filters', controlPanelCollapsed: true })
+    store.restoreUrlState({ pointSource: 'official', mobileSheet: 'filters', controlPanelCollapsed: true })
     expect(store.mobileSheet).toBe('filters')
     store.setMobileSheet('route')
     expect(store.mobileSheet).toBe('route')
     expect(store.controlPanelCollapsed).toBe(true)
-    store.restoreUrlState({})
+    store.restoreUrlState({ pointSource: 'official',})
     expect(store.mobileSheet).toBeNull()
     expect(store.controlPanelCollapsed).toBe(false)
   })

@@ -16,6 +16,8 @@ import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
 import { useMapViewport } from '../map/useMapViewport.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
+import type { EchoMapLocation, NavigationPoint } from '../domain/types.ts'
+import PointDetails from './PointDetails.vue'
 
 const props = defineProps<{ padding: MapPadding }>()
 
@@ -23,6 +25,8 @@ const store = useExplorerStore()
 const {
   activeState,
   dataset,
+  activeEchoIds,
+  allNavigationPoints,
   mapViewport,
   route,
   selectedLevelId,
@@ -65,11 +69,11 @@ useResizeObserver(mapTarget, () => {
 })
 
 function rebuildPointLayers(): void {
-  points.update(visibleEchoLocations.value, visibleNavigationPoints.value, visibleRegionLabels.value, dataset.value?.echoes ?? [])
+  points.update(visibleEchoLocations.value, visibleNavigationPoints.value, visibleRegionLabels.value, dataset.value?.echoes ?? [], activeEchoIds.value)
 }
 
 function rebuildRoute(): void {
-  const start = dataset.value?.navigationPoints.find(({ id }) => id === route.value?.startPointId)
+  const start = allNavigationPoints.value.find(({ id }) => id === route.value?.startPointId)
   routeLayer.update(route.value, start)
   viewport.resetRoute()
   viewport.fitRoute(routeLayer.getExtent())
@@ -126,6 +130,18 @@ function clearPointerCoordinate(): void {
   pointerCoordinate.value = null
 }
 
+function selectMapPoint(event: MapBrowserEvent): void {
+  updatePointerCoordinate(event)
+  const found = map?.forEachFeatureAtPixel(event.pixel, (feature) => {
+    const locations = feature.get('locations') as EchoMapLocation[] | undefined
+    if (locations?.length) return locations.map(({ id }) => id)
+    const location = feature.get('location') as NavigationPoint | undefined
+    return location ? [location.id] : undefined
+  }, { hitTolerance: 6 })
+  if (found && found.length > 1) store.selectPointCandidates(found)
+  else store.selectPoint(found?.[0] ?? null)
+}
+
 onMounted(() => {
   if (!mapTarget.value || !activeState.value) {
     return
@@ -139,7 +155,7 @@ onMounted(() => {
   })
   map.on('moveend', viewport.publish)
   map.on('pointermove', updatePointerCoordinate)
-  map.on('singleclick', updatePointerCoordinate)
+  map.on('singleclick', selectMapPoint)
   rebuildBaseLayer()
   rebuildPointLayers()
   rebuildRoute()
@@ -147,14 +163,14 @@ onMounted(() => {
 
 watch(activeState, rebuildBaseLayer)
 watch(selectedLevelId, rebuildFloorLayers)
-watch([visibleEchoLocations, visibleNavigationPoints, visibleRegionLabels], rebuildPointLayers)
+watch([visibleEchoLocations, visibleNavigationPoints, visibleRegionLabels, activeEchoIds], rebuildPointLayers)
 watch(route, rebuildRoute, { flush: 'post' })
 watch(() => props.padding, fitViewport, { flush: 'post' })
 
 onBeforeUnmount(() => {
   map?.un('moveend', viewport.publish)
   map?.un('pointermove', updatePointerCoordinate)
-  map?.un('singleclick', updatePointerCoordinate)
+  map?.un('singleclick', selectMapPoint)
   map?.setTarget(undefined)
   floors.dispose()
   points.dispose()
@@ -168,6 +184,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="relative h-full w-full min-h-0 min-w-0">
+    <PointDetails />
     <div
       ref="mapTargetRef"
       class="absolute inset-0 [background:linear-gradient(rgba(101,241,194,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(101,241,194,0.025)_1px,transparent_1px),#0c1715] [background-size:32px_32px]"

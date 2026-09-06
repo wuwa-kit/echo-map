@@ -24,6 +24,7 @@ export function resolveExplorerState(
   const pointGroupIdByTypeId = new Map(dataset.navigationPoints.map(({ typeId, groupId }) => [typeId, groupId]))
 
   return {
+    pointSource: state.pointSource ?? 'all',
     stateId,
     countryId: state.countryId !== undefined && countryIds.has(state.countryId) ? state.countryId : null,
     levelId: state.levelId !== undefined && floorIds.has(state.levelId) ? state.levelId : null,

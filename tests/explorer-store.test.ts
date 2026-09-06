@@ -1,8 +1,10 @@
+import { convertOfficialPoints } from '../scripts/lib/official-point-library.ts'
 import { readFile } from 'node:fs/promises'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
+import { echoMembers } from '../src/domain/point-library.ts'
 import type { MapDataset } from '../src/domain/types.ts'
 
 const datasetUrl = new URL('../public/data/app-data.json', import.meta.url)
@@ -22,12 +24,14 @@ describe('explorer point group visibility', () => {
     }
     const store = useExplorerStore()
     store.setDataset(dataset)
+    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
+    store.setPointSource('official')
 
     expect(store.visibleEchoLocations).toEqual([])
 
     store.toggleEcho(location.echoId)
     expect(store.visibleEchoLocations.length).toBeGreaterThan(0)
-    expect(store.visibleEchoLocations.every(({ echoId }) => echoId === location.echoId)).toBe(true)
+    expect(store.visibleEchoLocations.every((point) => echoMembers(point).some(({ echoId }) => echoId === location.echoId))).toBe(true)
 
     store.clearFilters()
     expect(store.visibleEchoLocations).toEqual([])
@@ -38,13 +42,15 @@ describe('explorer point group visibility', () => {
       .map(({ id }) => id))
     store.toggleSonata(sonataId)
     expect(store.visibleEchoLocations.length).toBeGreaterThan(0)
-    expect(store.visibleEchoLocations.every(({ echoId }) => sonataEchoIds.has(echoId))).toBe(true)
+    expect(store.visibleEchoLocations.every((point) => echoMembers(point).some(({ echoId }) => sonataEchoIds.has(echoId)))).toBe(true)
   })
 
   it('hides every point in an icon group without changing route eligibility', async () => {
     const dataset = mapDatasetSchema.parse(JSON.parse(await readFile(datasetUrl, 'utf8'))) as MapDataset
     const store = useExplorerStore()
     store.setDataset(dataset)
+    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
+    store.setPointSource('official')
     const multiTypeGroup = dataset.navigationPointGroups.find(({ typeIds }) => typeIds.length > 1)
     if (!multiTypeGroup) {
       throw new Error('测试数据缺少多类型图标分组')
@@ -76,8 +82,10 @@ describe('explorer point group visibility', () => {
     }
     const store = useExplorerStore()
     store.setDataset(dataset)
+    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
+    store.setPointSource('official')
 
-    store.restoreUrlState({ hiddenPointGroupIds: [point.typeId] })
+    store.restoreUrlState({ pointSource: 'official', hiddenPointGroupIds: [point.typeId] })
 
     expect(store.hiddenPointGroupIds).toEqual([point.groupId])
   })
@@ -88,6 +96,8 @@ describe('explorer point group visibility', () => {
     if (!location) throw new Error('测试数据缺少声骸点')
     const store = useExplorerStore()
     store.setDataset(dataset)
+    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
+    store.setPointSource('official')
     store.toggleEcho(location.echoId)
     const locations = store.visibleEchoLocations
     store.toggleSonata('unmatched-sonata')
@@ -103,7 +113,9 @@ describe('explorer point group visibility', () => {
     if (!echo || !point) throw new Error('测试数据缺少声骸或定位点')
     const store = useExplorerStore()
     store.setDataset(dataset)
-    store.restoreUrlState({
+    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
+    store.setPointSource('official')
+    store.restoreUrlState({ pointSource: 'official',
       stateId: -999,
       countryId: -999,
       levelId: 'unknown-floor',

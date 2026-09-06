@@ -3,17 +3,18 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../../stores/explorer.ts'
 import WuScrollArea from '../base/WuScrollArea.vue'
+import { echoMembers } from '../../domain/point-library.ts'
 
 defineProps<{ compact: boolean }>()
 
 const store = useExplorerStore()
-const { dataset, echoSearch, echoesMatchingSonata, selectedEchoIds, selectedStateId, visibleEchoLocations } = storeToRefs(store)
+const { dataset, allEchoLocations, echoSearch, echoesMatchingSonata, selectedEchoIds, selectedStateId, visibleEchoLocations, pointSource, matchingMonsterCount } = storeToRefs(store)
 
 const locationCountByEcho = computed(() => {
   const counts = new Map<string, number>()
-  for (const location of dataset.value?.echoLocations ?? []) {
+  for (const location of allEchoLocations.value) {
     if (location.stateId === selectedStateId.value) {
-      counts.set(location.echoId, (counts.get(location.echoId) ?? 0) + 1)
+      for (const { echoId } of echoMembers(location)) counts.set(echoId, (counts.get(echoId) ?? 0) + 1)
     }
   }
   return counts
@@ -31,7 +32,7 @@ function onEchoSearch(event: Event): void {
         <span class="block text-12px min-[1024px]:text-8px text-[#608176] font-800 tracking-[0.18em]">ECHO TARGETS</span>
         <div class="mt-4px text-14px text-[#e7f1ec] font-[650]">选择声骸</div>
       </div>
-      <span class="text-14px min-[1024px]:text-10px text-[var(--accent)] font-600">{{ visibleEchoLocations.length }} 点</span>
+      <span class="text-14px min-[1024px]:text-10px text-[var(--accent)] font-600">{{ visibleEchoLocations.length }} 处<span v-if="pointSource === 'manual'"> · {{ matchingMonsterCount }} 只</span></span>
     </div>
     <div class="mb-10px flex h-44px w-full min-[1024px]:h-34px items-center gap-7px border border-[var(--line)] rounded-7px bg-[rgba(21,40,35,0.78)] px-10px text-[#6f887f] focus-within:border-[rgba(101,241,194,0.55)]">
       <span>⌕</span>

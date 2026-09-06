@@ -4,7 +4,9 @@ import { freeze, produce } from 'immer'
 import { DEFAULT_ROUTE_Z_WEIGHT, DEFAULT_STATE_ID } from '../url/explorer-url.ts'
 import type { ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
 import { planRouteInWorker } from '../route/worker-client.ts'
-import type { MapDataset, MapFloorDefinition, MapStateDefinition, RouteResult } from '../domain/types.ts'
+import type { EchoMapLocation, MapDataset, MapFloorDefinition, MapStateDefinition, PointLibrary, PointSource, RouteResult } from '../domain/types.ts'
+import { echoMembers, emptyPointLibrary, libraryLocations } from '../domain/point-library.ts'
+import { combinePointLibraries } from '../domain/point-matching.ts'
 import {
   hasGameCoordinate,
   isRouteStart,
@@ -35,6 +37,11 @@ function immutableSnapshot<T>(value: T): T {
 
 export const useExplorerStore = defineStore('explorer', () => {
   const dataset = shallowRef<MapDataset | null>(null)
+  const pointLibrary = shallowRef<PointLibrary>(immutableSnapshot(emptyPointLibrary()))
+  const officialLibrary = shallowRef<PointLibrary>(immutableSnapshot(emptyPointLibrary()))
+  const pointSource = shallowRef<PointSource>('all')
+  const selectedPointId = shallowRef<string | null>(null)
+  const candidateIds = shallowRef<string[]>(immutableSnapshot([]))
   const selectedStateId = shallowRef<number>(DEFAULT_STATE_ID)
   const selectedCountryId = shallowRef<number | null>(null)
   const selectedLevelId = shallowRef<string | null>(null)
@@ -65,19 +72,29 @@ export const useExplorerStore = defineStore('explorer', () => {
   const echoesMatchingSonata = computed(() => selectEchoDefinitions(
     dataset.value?.echoes ?? [], selectedSonataIds.value, echoSearch.value,
   ))
-  const activeEchoIds = computed(() => selectActiveEchoIds(
+  const activeEchoIds = computed<ReadonlySet<string>>(() => selectActiveEchoIds(
     dataset.value?.echoes ?? [], selectedEchoIds.value, selectedSonataIds.value,
   ))
+  const authoredLocations = computed(() => dataset.value
+    ? immutableSnapshot(libraryLocations(combinePointLibraries({ ...pointLibrary.value, points: pointLibrary.value.points.filter(({ status }) => status === 'verified') }, officialLibrary.value, pointSource.value), dataset.value))
+    : { echoLocations: [], navigationPoints: [], navigationPointGroups: [] })
+  const allEchoLocations = computed<readonly EchoMapLocation[]>(() => authoredLocations.value.echoLocations)
+  const allNavigationPoints = computed(() => authoredLocations.value.navigationPoints)
+  const allNavigationPointGroups = computed(() => authoredLocations.value.navigationPointGroups)
   const mapScope = computed(() => ({
     stateId: selectedStateId.value,
     countryId: selectedCountryId.value,
     levelId: selectedLevelId.value,
   }))
   const visibleEchoLocations = computed(() => selectEchoLocations(
-    dataset.value?.echoLocations ?? [], mapScope.value, activeEchoIds.value, showProvisional.value,
+    allEchoLocations.value, mapScope.value, activeEchoIds.value, showProvisional.value,
   ))
+  const selectedEchoLocation = computed(() => visibleEchoLocations.value.find(({ id }) => id === selectedPointId.value) ?? null)
+  const selectedNavigationPoint = computed(() => visibleNavigationPoints.value.find(({ id }) => id === selectedPointId.value) ?? null)
+  const pointCandidates = computed(() => visibleEchoLocations.value.filter(({ id }) => candidateIds.value.includes(id)))
+  const matchingMonsterCount = computed(() => visibleEchoLocations.value.reduce((sum, location) => sum + echoMembers(location).reduce((count, member) => count + (activeEchoIds.value.has(member.echoId) ? member.count ?? 0 : 0), 0), 0))
   const scopedNavigationPoints = computed(() => (
-    (dataset.value?.navigationPoints ?? []).filter((location) => matchesMapScope(location, mapScope.value))
+    allNavigationPoints.value.filter((location) => matchesMapScope(location, mapScope.value))
   ))
   const visibleNavigationPoints = computed(() => (
     scopedNavigationPoints.value.filter(({ groupId }) => !hiddenPointGroupIds.value.includes(groupId))
@@ -101,7 +118,8 @@ export const useExplorerStore = defineStore('explorer', () => {
       return
     }
 
-    const resolved = resolveExplorerState(currentDataset, state, selectedStateId.value)
+    pointSource.value = state.pointSource ?? 'all'
+    const resolved = resolveExplorerState({ ...currentDataset, navigationPoints: allNavigationPoints.value, navigationPointGroups: allNavigationPointGroups.value }, state, selectedStateId.value)
     selectedStateId.value = resolved.stateId
     selectedCountryId.value = resolved.countryId
     selectedLevelId.value = resolved.levelId
@@ -219,6 +237,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     planning.value = false
     routeError.value = ''
     route.value = null
+    selectedPointId.value = null
+    candidateIds.value = immutableSnapshot([])
   }
 
   async function planRoute(): Promise<void> {
@@ -232,7 +252,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     try {
       const input = createRoutePlanInput(
         dataset.value, routeEligibleLocations.value, routeEligibleNavigationPoints.value,
-        selectedStateId.value, routeZWeight.value,
+        selectedStateId.value, routeZWeight.value, activeEchoIds.value,
       )
       const result = await planRouteInWorker(input, controller.signal)
       if (activePlan === controller) {
@@ -259,6 +279,30 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   return {
+    pointSource: shallowReadonly(pointSource),
+    allEchoLocations, allNavigationPoints, allNavigationPointGroups, activeEchoIds, matchingMonsterCount, selectedEchoLocation, selectedNavigationPoint,
+    setPointLibrary: (value: PointLibrary) => {
+      pointLibrary.value = immutableSnapshot(value)
+      clearRoute()
+    },
+    setOfficialPointLibrary: (value: PointLibrary) => {
+      officialLibrary.value = immutableSnapshot(value)
+      clearRoute()
+    },
+    setPointSource: (value: PointSource) => {
+      pointSource.value = value
+      hiddenPointGroupIds.value = immutableSnapshot([])
+      clearRoute()
+    },
+    pointCandidates,
+    selectPoint: (id: string | null) => {
+      selectedPointId.value = id
+      candidateIds.value = immutableSnapshot([])
+    },
+    selectPointCandidates: (ids: string[]) => {
+      candidateIds.value = immutableSnapshot(ids)
+      selectedPointId.value = null
+    },
     dataset: shallowReadonly(dataset),
     selectedStateId: shallowReadonly(selectedStateId),
     selectedCountryId: shallowReadonly(selectedCountryId),

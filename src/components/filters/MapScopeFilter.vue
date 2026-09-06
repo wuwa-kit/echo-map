@@ -27,7 +27,7 @@ function onLevelChange(value: string | number | null): void {
     <div class="mb-13px flex items-center justify-between gap-12px">
       <span class="text-12px min-[1024px]:text-8px text-[#608176] font-800 tracking-[0.18em]">MAP SCOPE</span>
       <span class="flex items-center text-14px min-[1024px]:text-10px text-[var(--accent)] font-600">
-        <span class="mr-6px h-5px w-5px rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent)]" />官方数据快照
+        <span class="mr-6px h-5px w-5px rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent)]" />底图与楼层
       </span>
     </div>
     <label class="mb-6px block text-14px min-[1024px]:text-10px text-[var(--muted)]" for="state-select">地图</label>

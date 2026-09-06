@@ -87,6 +87,57 @@ export interface EchoLocation extends PointLocationBase {
   echoId: string
 }
 
+export interface EchoMember {
+  echoId: string
+  count: number
+}
+
+export interface AuthoredPointBase {
+  id: string
+  status: 'draft' | 'verified' | 'imported'
+  officialIds?: string[]
+  replacesOfficialIds?: string[]
+  stateId: number
+  countryId: number | null
+  levelId: string | null
+  coordinate: {
+    x: number | null
+    y: number | null
+    z: number | null
+  }
+  note: string
+}
+
+export interface AuthoredEchoPoint extends AuthoredPointBase {
+  kind: 'echo'
+  members: EchoMember[]
+  compositionStatus?: 'partial' | 'complete'
+}
+
+export interface AuthoredNavigationPoint extends AuthoredPointBase {
+  kind: 'navigation'
+  name: string
+  navigationKind: NavigationKind
+  mode: NavigationMode
+}
+
+export type AuthoredPoint = AuthoredEchoPoint | AuthoredNavigationPoint
+
+export interface PointLibrary {
+  version: 1
+  points: AuthoredPoint[]
+}
+
+export interface AuthoredEchoLocation extends PointLocationBase {
+  members: EchoMember[]
+  note: string
+  compositionStatus?: 'partial' | 'complete'
+}
+
+export type PointSource = 'all' | 'manual' | 'official'
+
+export type EchoMapLocation = EchoLocation | AuthoredEchoLocation
+
 export type NavigationMode = 'fast-travel' | 'local-transit' | 'entrance' | 'landmark' | 'unknown'
 
 export type NavigationKind =
@@ -191,6 +242,11 @@ export interface RoutePoint {
   levelId: string | null
   coordinate: GameCoordinate
   mapCoordinate: [number, number]
+  members?: {
+    echoId: string
+    name: string
+    count: number
+  }[]
 }
 
 export interface RouteResult {

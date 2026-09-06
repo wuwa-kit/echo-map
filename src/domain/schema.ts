@@ -3,6 +3,73 @@ import { z } from 'zod'
 const finiteNumber = z.number().finite()
 const nullableString = z.string().nullable()
 
+export const navigationKindSchema = z.enum([
+  'nexus', 'beacon', 'tacet-field', 'training-ground', 'hologram', 'boss', 'domain',
+  'endgame', 'challenge', 'service', 'local-transit', 'entrance', 'landmark', 'unknown',
+])
+export const navigationModeSchema = z.enum(['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown'])
+
+const authoredPointBase = {
+  id: z.string().min(1).max(100),
+  status: z.enum(['draft', 'verified', 'imported']),
+  officialIds: z.array(z.string().min(1).max(100)).min(1).optional(),
+  replacesOfficialIds: z.array(z.string().min(1).max(100)).min(1).optional(),
+  stateId: z.number().int(),
+  countryId: z.number().int().nullable(),
+  levelId: z.string().min(1).nullable(),
+  coordinate: z.object({
+    x: z.number().int().safe().nullable(),
+    y: z.number().int().safe().nullable(),
+    z: z.number().int().safe().nullable(),
+  }).strict(),
+  note: z.string().max(2000),
+}
+
+export const authoredPointSchema = z.discriminatedUnion('kind', [
+  z.object({
+    ...authoredPointBase,
+    kind: z.literal('echo'),
+    members: z.array(z.object({ echoId: z.string().min(1), count: z.number().int().positive().max(999) }).strict()).max(100),
+    compositionStatus: z.enum(['partial', 'complete']).optional(),
+  }).strict(),
+  z.object({
+    ...authoredPointBase,
+    kind: z.literal('navigation'),
+    name: z.string().max(100),
+    navigationKind: navigationKindSchema,
+    mode: navigationModeSchema,
+  }).strict(),
+]).superRefine((point, context) => {
+  const issue = (message: string) => context.addIssue({ code: 'custom', message })
+  if (point.kind === 'echo' && new Set(point.members.map(({ echoId }) => echoId)).size !== point.members.length) {
+    issue('同种怪物只能有一行，请合并数量')
+  }
+  if (point.status === 'imported' && (point.coordinate.z !== 0 || !point.officialIds?.length)) {
+    issue('官方导入点必须保留来源 ID，Z 固定为 0')
+  }
+  if (point.status !== 'draft') {
+    if (Object.values(point.coordinate).some((value) => value === null)) issue('核验点位必须填写完整的整数 XYZ')
+    if (point.kind === 'echo' && point.members.length === 0) issue('刷取点至少需要一种怪物')
+    if (point.status === 'verified' && point.kind === 'navigation' && (!point.name.trim() || point.navigationKind === 'unknown' || point.mode === 'unknown')) {
+      issue('定位点需要名称、明确的类型和传送能力')
+    }
+    if (point.status === 'verified' && point.kind === 'navigation' && ['boss', 'domain', 'challenge'].includes(point.navigationKind) && point.mode !== 'fast-travel') {
+      issue('BOSS、副本与挑战定位点应标记为可直接传送')
+    }
+  }
+})
+
+export const pointLibrarySchema = z.object({
+  version: z.literal(1),
+  points: z.array(authoredPointSchema).max(100000),
+}).strict().superRefine(({ points }, context) => {
+  const ids = new Set<string>()
+  for (const point of points) {
+    if (ids.has(point.id)) context.addIssue({ code: 'custom', message: `重复点位 ID：${point.id}` })
+    ids.add(point.id)
+  }
+})
+
 export const gameCoordinateSchema = z.object({
   x: finiteNumber,
   y: finiteNumber,
@@ -73,7 +140,7 @@ export const mapDatasetSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1),
     iconUrl: z.string(),
-    sonataIds: z.array(z.string().min(1)).min(1),
+    sonataIds: z.tuple([z.string().min(1)]).rest(z.string().min(1)),
     cost: z.union([z.literal(1), z.literal(3)]),
     sourceId: z.number().int(),
   })).min(1),

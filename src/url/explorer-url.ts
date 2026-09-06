@@ -1,3 +1,5 @@
+import type { PointSource } from '../domain/types.ts'
+
 export const DEFAULT_STATE_ID = 8
 export const DEFAULT_ROUTE_Z_WEIGHT = 1.35
 
@@ -9,6 +11,7 @@ export interface MapViewportState {
 }
 
 export interface ExplorerUrlState {
+  pointSource?: PointSource
   stateId?: number
   countryId?: number
   levelId?: string
@@ -23,6 +26,7 @@ export interface ExplorerUrlState {
 }
 
 export interface ExplorerUrlSnapshot {
+  pointSource?: PointSource
   stateId: number
   countryId: number | null
   levelId: string | null
@@ -39,6 +43,7 @@ export interface ExplorerUrlSnapshot {
 export type ExplorerQueryValue = string | string[] | null | undefined
 
 export interface ExplorerQueryValues {
+  source?: ExplorerQueryValue
   map?: ExplorerQueryValue
   region?: ExplorerQueryValue
   floor?: ExplorerQueryValue
@@ -101,6 +106,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
   const zoom = finiteNumber(values.zoom)
   const sheet = single(values.sheet)
   return {
+    pointSource: single(values.source) === 'manual' ? 'manual' : ['test', 'official'].includes(single(values.source) ?? '') ? 'official' : 'all',
     stateId: integer(values.map),
     countryId: integer(values.region),
     levelId: single(values.floor),
@@ -119,6 +125,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
 
 export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerSerializedQueryValues {
   return {
+    source: state.pointSource && state.pointSource !== 'all' ? state.pointSource : undefined,
     map: state.stateId === DEFAULT_STATE_ID ? undefined : String(state.stateId),
     region: state.countryId === null ? undefined : String(state.countryId),
     floor: state.levelId ?? undefined,

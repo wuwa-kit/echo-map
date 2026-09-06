@@ -13,7 +13,8 @@
     "data:sync": "node scripts/sync-all.ts",
     "data:sync:wiki": "node scripts/sync-wiki.ts",
     "data:sync:map": "node scripts/sync-map.ts",
-    "data:validate": "node scripts/validate-data.ts"
+    "data:validate": "node scripts/validate-data.ts",
+    "data:convert-official": "node scripts/convert-official-points.ts"
   },
   "dependencies": {
     "@types/node": "catalog:",
