@@ -242,6 +242,20 @@ function validateMapGravity(dataset: Pick<MapDataset, 'states' | 'echoLocations'
   }
 }
 
+export const floorCoverageTileSchema = z.object({
+  tile: z.string().regex(/^-?\d+_-?\d+\.png$/u),
+  size: z.number().int().positive().max(1024),
+  runs: z.array(z.tuple([z.number().int().nonnegative(), z.number().int().positive()])),
+}).superRefine(({ size, runs }, context) => {
+  let previousEnd = -1
+  for (const [index, [start, end]] of runs.entries()) {
+    if (start <= previousEnd || start >= end || end > size * size) {
+      context.addIssue({ code: 'custom', path: ['runs', index], message: '楼层覆盖区间必须有序、合并且处于图片范围内' })
+    }
+    previousEnd = end
+  }
+})
+
 const mapDatasetObjectSchema = z.object({
   version: z.literal(3),
   source: z.object({
@@ -293,12 +307,28 @@ const mapDatasetObjectSchema = z.object({
     layeredMaps: z.array(z.object({
       id: z.string(),
       name: z.string(),
+      coverage: z.array(floorCoverageTileSchema).default([]),
       floors: z.array(z.object({
         id: z.string(),
         name: z.string(),
         layeredMapId: z.string(),
         tiles: z.array(z.string()),
       })),
+    }).superRefine((group, context) => {
+      const tiles = new Set(group.floors.flatMap(({ tiles }) => tiles.map((tile) => tile.split('/').at(-1))))
+      const covered = new Set<string>()
+      for (const [index, entry] of group.coverage.entries()) {
+        if (!tiles.has(entry.tile) || covered.has(entry.tile)) context.addIssue({
+          code: 'custom', path: ['coverage', index], message: '楼层覆盖数据引用了未知或重复瓦片',
+        })
+        covered.add(entry.tile)
+      }
+      if (group.coverage.length && covered.size !== tiles.size) context.addIssue({
+        code: 'custom', path: ['coverage'], message: '楼层覆盖数据遗漏瓦片',
+      })
+      if (group.floors.some((floor) => floor.layeredMapId !== group.id)) context.addIssue({
+        code: 'custom', path: ['floors'], message: '楼层归属与所在组不一致',
+      })
     })),
   })).min(1),
   mapNavigation: z.array(z.object({

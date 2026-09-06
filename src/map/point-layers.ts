@@ -1,6 +1,8 @@
 import Feature from 'ol/Feature.js'
 import type { FeatureLike } from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
+import type { Extent } from 'ol/extent.js'
+import type Projection from 'ol/proj/Projection.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
 import Cluster from 'ol/source/Cluster.js'
@@ -14,7 +16,25 @@ import { bossMarkerShape, createPortraitMarkerStyles, PORTRAIT_MARKER_SIZES } fr
 import type { EchoDefinition, EchoMapLocation, MapDisplayPoint, NavigationPoint, RegionLabel } from '../domain/types.ts'
 import { echoMembers, NAVIGATION_NAMES } from '../domain/point-library.ts'
 import { createEchoMarkerStyles } from './echo-marker.ts'
-import { isMapPointVisibleAtZoom, mapZoomForResolution } from './point-visibility.ts'
+import { isMapPointVisibleAtZoom, isPointVisibleAtZoom, MAP_POINT_ZOOM_RANGES, mapZoomForResolution } from './point-visibility.ts'
+
+class InteractionCluster extends Cluster {
+  private readonly isMoving: () => boolean
+
+  constructor(source: VectorSource, isMoving: () => boolean) {
+    super({ source, distance: 64, minDistance: 32 })
+    this.isMoving = isMoving
+  }
+
+  override loadFeatures(extent: Extent, resolution: number, projection: Projection): void {
+    // Keep clusters for the whole source available while drawing a changing viewport.
+    super.loadFeatures(extent, this.isMoving() ? this.resolution ?? resolution : resolution, projection)
+  }
+
+  finishInteraction(extent: Extent, resolution: number, projection: Projection): void {
+    super.loadFeatures(extent, resolution, projection)
+  }
+}
 
 export function mapFeaturePointIds(feature: FeatureLike): string[] | undefined {
   const locations = feature.get('locations') as EchoMapLocation[] | undefined
@@ -23,44 +43,90 @@ export function mapFeaturePointIds(feature: FeatureLike): string[] | undefined {
   return point && point.category !== 'region-name' ? [point.location.id] : undefined
 }
 
-export function createPointLayers() {
+export function createPointLayers(isMoving: () => boolean = () => false) {
   const echoSource = new VectorSource()
-  const clusters = new Cluster({ source: echoSource, distance: 64, minDistance: 32 })
+  const clusters = new InteractionCluster(echoSource, isMoving)
   const navigationSource = new VectorSource()
+  const backgroundEchoSource = new VectorSource()
+  const backgroundClusters = new InteractionCluster(backgroundEchoSource, isMoving)
+  const backgroundNavigationSource = new VectorSource()
   const labelSource = new VectorSource()
   const echoCosts = new globalThis.Map<string, EchoDefinition['cost']>()
+  let clusterStyleCache = new WeakMap<FeatureLike, { members: Feature<Point>[]; locations: EchoMapLocation[]; styles: Style[] }>()
   const navigationStyleCache = new globalThis.Map<string, Style[]>()
   const labelStyleCache = new globalThis.Map<string, Style>()
-  const echoMarkerStyles = createPortraitMarkerStyles(() => echoLayer.changed())
-  const groupMarkerStyles = createEchoMarkerStyles(() => echoLayer.changed())
+  const echoMarkerStyles = createPortraitMarkerStyles(redrawEchoLayers)
+  const groupMarkerStyles = createEchoMarkerStyles(redrawEchoLayers)
   let echoDefinitions: readonly EchoDefinition[] = []
   let selectedEchoIds: ReadonlySet<string> | undefined
-  const bossMarkerStyles = createPortraitMarkerStyles(() => navigationLayer.changed())
+  const bossMarkerStyles = createPortraitMarkerStyles(() => {
+    navigationLayer.changed()
+    backgroundNavigationLayer.changed()
+  })
 
   const echoLayer = new VectorLayer({
     source: clusters,
     zIndex: 40,
-    style(feature, resolution) {
-      const members = feature.get('features') as Feature<Point>[]
-      const zoom = mapZoomForResolution(resolution)
-      const locations = members.flatMap((member) => {
-        const point = member.get('mapPoint') as MapDisplayPoint
-        return point.category === 'echo' && isMapPointVisibleAtZoom(point, zoom) ? [point.location] : []
-      })
-      if (feature instanceof Feature) feature.set('locations', locations, true)
-      if (locations.length === 0) return undefined
-      if (locations.length === 1) return echoStyle(locations[0] as EchoMapLocation)
-      const composition = locations.flatMap((location) => echoMembers(location))
-        .filter(({ echoId }) => !selectedEchoIds || selectedEchoIds.has(echoId))
-      return groupMarkerStyles.get(composition, echoDefinitions, { showText: false }).styles
-    },
+    updateWhileAnimating: true,
+    updateWhileInteracting: true,
+    style: clusterStyle,
+  })
+  const backgroundEchoLayer = new VectorLayer({
+    source: backgroundClusters,
+    zIndex: 4,
+    updateWhileAnimating: true,
+    updateWhileInteracting: true,
+    style: clusterStyle,
   })
   const navigationLayer = new VectorLayer({
     source: navigationSource,
     zIndex: 50,
+    updateWhileAnimating: true,
+    updateWhileInteracting: true,
     style: pointStyle,
   })
-  const labelLayer = new VectorLayer({ source: labelSource, declutter: true, zIndex: 20, style: pointStyle })
+  const backgroundNavigationLayer = new VectorLayer({
+    source: backgroundNavigationSource,
+    zIndex: 4,
+    updateWhileAnimating: true,
+    updateWhileInteracting: true,
+    style: pointStyle,
+  })
+  const labelLayer = new VectorLayer({
+    source: labelSource, declutter: true, zIndex: 3, style: pointStyle,
+    updateWhileAnimating: true, updateWhileInteracting: true,
+  })
+  const layers = [labelLayer, echoLayer, navigationLayer, backgroundEchoLayer, backgroundNavigationLayer]
+
+  function redrawEchoLayers(): void {
+    echoLayer.changed()
+    backgroundEchoLayer.changed()
+  }
+
+  function clusterStyle(feature: FeatureLike, resolution: number): Style[] | undefined {
+    const zoom = mapZoomForResolution(resolution)
+    if (!isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES.echo, zoom)) {
+      if (feature instanceof Feature && feature.get('locations')?.length) feature.set('locations', [], true)
+      return undefined
+    }
+    const members = feature.get('features') as Feature<Point>[]
+    const cached = clusterStyleCache.get(feature)
+    if (cached?.members === members) {
+      if (feature instanceof Feature && feature.get('locations') !== cached.locations) feature.set('locations', cached.locations, true)
+      return cached.styles
+    }
+    const locations = members.flatMap((member) => {
+      const point = member.get('mapPoint') as MapDisplayPoint
+      return point.category === 'echo' && isMapPointVisibleAtZoom(point, zoom) ? [point.location] : []
+    })
+    if (feature instanceof Feature) feature.set('locations', locations, true)
+    if (locations.length === 0) return undefined
+    const styles = locations.length === 1 ? echoStyle(locations[0] as EchoMapLocation)
+      : groupMarkerStyles.get(locations.flatMap((location) => echoMembers(location))
+        .filter(({ echoId }) => !selectedEchoIds || selectedEchoIds.has(echoId)), echoDefinitions, { showText: false }).styles
+    if (styles) clusterStyleCache.set(feature, { members, locations, styles })
+    return styles
+  }
 
   function pointFeature(point: MapDisplayPoint): Feature<Point> {
     return new Feature({
@@ -151,23 +217,41 @@ export function createPointLayers() {
     regionLabels: readonly RegionLabel[],
     echoes: readonly EchoDefinition[],
     activeEchoIds?: ReadonlySet<string>,
+    levelId: string | null = null,
   ): void {
     echoDefinitions = echoes
     selectedEchoIds = activeEchoIds
+    clusterStyleCache = new WeakMap()
     echoCosts.clear()
     for (const echo of echoes) {
       echoCosts.set(echo.id, echo.cost)
     }
     echoSource.clear(true)
     navigationSource.clear(true)
+    backgroundEchoSource.clear(true)
+    backgroundNavigationSource.clear(true)
     labelSource.clear(true)
     labelStyleCache.clear()
 
-    const echoFeatures = echoLocations.map((location) => pointFeature({ category: 'echo', location }))
+    // Independent sources prevent base and floor echoes at the same XY from clustering across the mask.
+    const echoFeatures: Feature<Point>[] = []
+    const backgroundEchoFeatures: Feature<Point>[] = []
+    for (const location of echoLocations) {
+      const target = levelId === null || location.levelId === levelId ? echoFeatures : backgroundEchoFeatures
+      target.push(pointFeature({ category: 'echo', location }))
+    }
     echoSource.addFeatures(echoFeatures)
+    backgroundEchoSource.addFeatures(backgroundEchoFeatures)
 
-    const navigationFeatures = navigationPoints.map((location) => pointFeature({ category: 'navigation', location }))
+    const navigationFeatures: Feature<Point>[] = []
+    const backgroundNavigationFeatures: Feature<Point>[] = []
+    for (const location of navigationPoints) {
+      const target = levelId === null || location.levelId === levelId || location.mode === 'fast-travel'
+        ? navigationFeatures : backgroundNavigationFeatures
+      target.push(pointFeature({ category: 'navigation', location }))
+    }
     navigationSource.addFeatures(navigationFeatures)
+    backgroundNavigationSource.addFeatures(backgroundNavigationFeatures)
 
     const labels = regionLabels.map((location) => pointFeature({ category: 'region-name', location }))
     labelSource.addFeatures(labels)
@@ -178,18 +262,26 @@ export function createPointLayers() {
     groupMarkerStyles.dispose()
     clusters.setSource(null)
     clusters.dispose()
+    backgroundClusters.setSource(null)
+    backgroundClusters.dispose()
     bossMarkerStyles.dispose()
     echoCosts.clear()
     navigationStyleCache.clear()
     labelStyleCache.clear()
-    for (const source of [echoSource, navigationSource, labelSource]) {
+    for (const source of [echoSource, navigationSource, labelSource, backgroundEchoSource, backgroundNavigationSource]) {
       source.clear(true)
       source.dispose()
     }
-    for (const layer of [echoLayer, navigationLayer, labelLayer]) {
+    for (const layer of layers) {
       layer.dispose()
     }
   }
 
-  return { layers: [labelLayer, echoLayer, navigationLayer], update, dispose }
+  return {
+    layers, update, dispose,
+    finishInteraction: (extent: Extent, resolution: number, projection: Projection) => {
+      clusters.finishInteraction(extent, resolution, projection)
+      backgroundClusters.finishInteraction(extent, resolution, projection)
+    },
+  }
 }

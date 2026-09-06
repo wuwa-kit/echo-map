@@ -103,6 +103,7 @@ describe('map point zoom visibility', () => {
     const labels = [country, label, otherCountry, otherState]
     expect(selectRegionLabels(labels, { stateId: 8, countryId: 1, levelId: null })).toEqual([country, label])
     expect(selectRegionLabels(labels, { stateId: 8, countryId: null, levelId: null })).toEqual([country, label, otherCountry])
-    expect(selectRegionLabels(labels, { stateId: 8, countryId: null, levelId: '-1/3' })).toEqual([])
+    expect(selectRegionLabels(labels, { stateId: 8, countryId: null, levelId: '-1/3' })).toEqual([country, label, otherCountry])
+    expect(selectRegionLabels(labels, { stateId: 8, countryId: 1, levelId: '-1/3' })).toEqual([country, label])
   })
 })

@@ -16,6 +16,7 @@ export interface ExplorerUrlState {
   stateId?: number
   countryId?: number
   levelId?: string
+  compactFloors?: boolean
   echoIds?: string[]
   sonataIds?: string[]
   hiddenPointGroupIds?: string[]
@@ -32,6 +33,7 @@ export interface ExplorerUrlSnapshot {
   stateId: number
   countryId: number | null
   levelId: string | null
+  compactFloors?: boolean
   echoIds: readonly string[]
   sonataIds: readonly string[]
   hiddenPointGroupIds: readonly string[]
@@ -50,6 +52,7 @@ export interface ExplorerQueryValues {
   map?: ExplorerQueryValue
   region?: ExplorerQueryValue
   floor?: ExplorerQueryValue
+  floorStyle?: ExplorerQueryValue
   echoes?: ExplorerQueryValue
   sonatas?: ExplorerQueryValue
   hiddenTypes?: ExplorerQueryValue
@@ -114,6 +117,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
     gravityType: single(values.gravity) === '2' ? 2 : 1,
     countryId: integer(values.region),
     levelId: single(values.floor),
+    compactFloors: single(values.floorStyle) === 'icons',
     echoIds: idList(values.echoes),
     sonataIds: idList(values.sonatas),
     hiddenPointGroupIds: idList(values.hiddenTypes),
@@ -134,6 +138,7 @@ export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerS
     gravity: state.gravityType === 2 ? '2' : undefined,
     region: state.countryId === null ? undefined : String(state.countryId),
     floor: state.levelId ?? undefined,
+    floorStyle: state.compactFloors ? 'icons' : undefined,
     echoes: state.echoIds.length > 0 ? state.echoIds.join(',') : undefined,
     sonatas: state.sonataIds.length > 0 ? state.sonataIds.join(',') : undefined,
     hiddenTypes: state.hiddenPointGroupIds.length > 0

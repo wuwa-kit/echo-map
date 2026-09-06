@@ -1,17 +1,9 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../../stores/explorer.ts'
-import WuOption from '../base/WuOption.vue'
-import WuSelect from '../base/WuSelect.vue'
-
-defineProps<{ compact: boolean }>()
 
 const store = useExplorerStore()
-const { activeMapName, floors, selectedLevelId, selectedGravity, supportsGravity, unmarkedGravityCount } = storeToRefs(store)
-
-function onLevelChange(value: string | number | null): void {
-  store.selectLevel(value === null ? null : String(value))
-}
+const { activeMapName, selectedGravity, supportsGravity, unmarkedGravityCount } = storeToRefs(store)
 </script>
 
 <template>
@@ -28,10 +20,5 @@ function onLevelChange(value: string | number | null): void {
       <div v-if="selectedGravity === 2" class="mt-8px text-12px leading-relaxed text-[#d3b680]">官方反重力声骸点位待核验；此处仅显示已标注为反重力的点位。</div>
       <div v-if="unmarkedGravityCount" class="mt-8px text-12px leading-relaxed text-[#d3b680]">{{ unmarkedGravityCount }} 个点位的重力待核验，仅在普通重力显示，暂不参与路线。</div>
     </div>
-    <label class="mb-6px block text-14px text-[var(--muted)]" for="level-select">楼层显示</label>
-    <WuSelect :native="compact" id="level-select" :model-value="selectedLevelId" @update:model-value="onLevelChange">
-      <WuOption :value="null">主地图 / 地表</WuOption>
-      <WuOption v-for="floor in floors" :key="floor.id" :value="floor.id">{{ floor.name }}</WuOption>
-    </WuSelect>
   </div>
 </template>

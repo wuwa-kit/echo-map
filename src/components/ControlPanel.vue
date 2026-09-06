@@ -74,7 +74,7 @@ function scrollToSection(id: string): void {
           <RouterLink v-if="canEdit" to="/editor" class="inline-flex min-h-40px items-center text-13px text-[var(--accent)]">打开点位录入 →</RouterLink>
         </div>
       </div>
-      <MapScopeFilter :compact="compact" />
+      <MapScopeFilter />
 
       <SonataFilter :compact="compact" />
 

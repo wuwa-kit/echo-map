@@ -12,6 +12,7 @@ describe('explorer query state', () => {
       stateId: DEFAULT_STATE_ID,
       countryId: null,
       levelId: null,
+      compactFloors: false,
       echoIds: [],
       sonataIds: [],
       hiddenPointGroupIds: [],
@@ -44,6 +45,21 @@ describe('explorer query state', () => {
       routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: { center: [3072, -1536], zoom: 1.3785 },
     })
+  })
+
+  it('round-trips the compact floor layout and ignores unknown styles', () => {
+    const snapshot = {
+      stateId: DEFAULT_STATE_ID, countryId: null, levelId: '-1/58', compactFloors: true,
+      echoIds: [], sonataIds: [], hiddenPointGroupIds: [], showProvisional: true,
+      controlPanelCollapsed: false, mobileSheet: null, routeZWeight: DEFAULT_ROUTE_Z_WEIGHT, viewport: null,
+    }
+    const query = createExplorerQueryValues(snapshot)
+    expect(query.floorStyle).toBe('icons')
+    expect(parseExplorerQueryValues(query)).toMatchObject({ compactFloors: true, levelId: '-1/58' })
+    expect(createExplorerQueryValues({ ...snapshot, compactFloors: false }).floorStyle).toBeUndefined()
+    for (const floorStyle of [undefined, null, '', 'list', 'unknown', '1']) {
+      expect(parseExplorerQueryValues({ floorStyle }).compactFloors).toBe(false)
+    }
   })
 
   it('serializes only hidden point groups in stable order', () => {

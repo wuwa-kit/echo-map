@@ -14,7 +14,8 @@ export function useExplorerRouteQuery(): {
   const sourceQuery = useRouteQuery<string | undefined>('source', undefined, { mode: 'replace' })
   const mapQuery = useRouteQuery<string | undefined>('map', String(DEFAULT_STATE_ID))
   const regionQuery = useRouteQuery('region')
-  const floorQuery = useRouteQuery('floor')
+  const floorQuery = useRouteQuery<string | undefined>('floor', undefined, { mode: 'replace' })
+  const floorStyleQuery = useRouteQuery<string | undefined>('floorStyle', undefined, { mode: 'replace' })
   const gravityQuery = useRouteQuery<string | undefined>('gravity', undefined, { mode: 'replace' })
   const echoesQuery = useRouteQuery('echoes')
   const sonatasQuery = useRouteQuery('sonatas')
@@ -33,6 +34,7 @@ export function useExplorerRouteQuery(): {
       map: mapQuery.value,
       region: regionQuery.value,
       floor: floorQuery.value,
+      floorStyle: floorStyleQuery.value,
       gravity: gravityQuery.value,
       echoes: echoesQuery.value,
       sonatas: sonatasQuery.value,
@@ -53,6 +55,7 @@ export function useExplorerRouteQuery(): {
     mapQuery.value = values.map
     regionQuery.value = values.region
     floorQuery.value = values.floor
+    floorStyleQuery.value = values.floorStyle
     gravityQuery.value = values.gravity
     echoesQuery.value = values.echoes
     sonatasQuery.value = values.sonatas

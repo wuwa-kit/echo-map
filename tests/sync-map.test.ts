@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { PNG } from 'pngjs'
 import { syncMap } from '../scripts/sync-map.ts'
 import { fetchBytes, fetchJson, fetchOptionalJson, postFormJson } from '../scripts/lib/http.ts'
 import { readJson, writeJson } from '../scripts/lib/files.ts'
@@ -47,6 +48,11 @@ beforeEach(() => {
     throw new Error(`未预期的请求：${url}`)
   })
   vi.mocked(fetchBytes).mockImplementation(async (url) => {
+    if (url.includes('/mcmap/tiles/')) {
+      const image = new PNG({ width: 1, height: 1 })
+      image.data.fill(255)
+      return PNG.sync.write(image)
+    }
     if (url.endsWith('failed.png')) throw new Error('图标不可用')
     return iconBytes
   })
@@ -58,6 +64,11 @@ afterEach(() => {
 })
 
 describe('map synchronization', () => {
+  it('does not overwrite snapshots when floor coverage cannot be generated', async () => {
+    vi.mocked(fetchBytes).mockRejectedValue(new Error('图片不可用'))
+    await expect(syncMap(wiki)).rejects.toThrow('无法生成楼层覆盖范围')
+    expect(writeJson).not.toHaveBeenCalled()
+  })
   it('preserves gravity resources and point modes through synchronization', async () => {
     vi.mocked(fetchJson).mockImplementation(async (url) => url.endsWith('gravity.json') ? { '2': ['/2/0_1.png'] }
       : { data: { state: [{ id: 8, name: '地图' }] } })

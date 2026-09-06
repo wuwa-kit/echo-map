@@ -103,6 +103,18 @@
         {
           "id": "layer",
           "name": "分层地图",
+          "coverage": [
+            {
+              "tile": "0_1.png",
+              "size": 1024,
+              "runs": [
+                [
+                  0,
+                  1048576
+                ]
+              ]
+            }
+          ],
           "floors": [
             {
               "id": "floor-1",

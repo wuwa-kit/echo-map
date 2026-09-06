@@ -13,6 +13,7 @@ const options = computed(() => store.dataset ? mapNavigationOptions(store.datase
 <template>
   <WuCascader
     v-bind="$attrs" :options="options" placeholder="切换地图" root-label="全部地图" leaf-action-label="定位到"
+    :show-header="false" :show-path="false"
     @select="store.navigateToRegion"
   />
 </template>

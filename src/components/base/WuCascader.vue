@@ -17,12 +17,16 @@ const props = withDefaults(defineProps<{
   leafActionLabel?: string
   emptyText?: string
   disabled?: boolean
+  showHeader?: boolean
+  showPath?: boolean
 }>(), {
   placeholder: '请选择',
   rootLabel: '全部',
   leafActionLabel: '选择',
   emptyText: '暂无选项',
   disabled: false,
+  showHeader: true,
+  showPath: true,
 })
 const emit = defineEmits<{ select: [value: string, path: readonly string[]] }>()
 const attrs = useAttrs()
@@ -56,7 +60,9 @@ async function focusOption(depth: number, value?: string, last = false): Promise
     element?.focus({ preventScroll: true })
     element?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
   } else {
-    document.getElementById(panelId)?.querySelector<HTMLButtonElement>('[data-cascader-close]')?.focus()
+    const element = document.getElementById(panelId)
+    const fallback = element?.querySelector<HTMLButtonElement>('[data-cascader-close]') ?? element
+    fallback?.focus({ preventScroll: true })
   }
 }
 
@@ -140,15 +146,15 @@ function onTriggerKeydown(event: KeyboardEvent): void {
     </button>
     <WuPopover
       :id="panelId" ref="popoverRef" :anchor="trigger" :disabled="disabled" :width="panelWidth"
-      role="dialog" :aria-labelledby="titleId"
+      role="dialog" tabindex="-1" :aria-labelledby="showHeader ? titleId : undefined" :aria-label="showHeader ? undefined : title ?? placeholder"
       class="border border-[var(--line)] rounded-12px bg-[#101f1a] text-[#dce9e3] shadow-2xl"
       @opened="onOpened" @closed="onClosed"
     >
-      <div class="flex shrink-0 items-center justify-between gap-10px border-b border-[var(--line)] px-12px py-5px">
+      <div v-if="showHeader" class="flex shrink-0 items-center justify-between gap-10px border-b border-[var(--line)] px-12px py-5px">
         <span :id="titleId" class="min-w-0 text-14px font-600">{{ title ?? placeholder }}</span>
         <button data-cascader-close type="button" aria-label="关闭" class="min-h-44px cursor-pointer border-0 rounded-5px bg-transparent px-8px text-12px text-[#91ab9d] hover:text-[var(--accent)] focus-visible:outline-[var(--accent)]" @click="close()">关闭</button>
       </div>
-      <div v-if="narrow" class="flex shrink-0 flex-wrap items-center gap-x-5px border-b border-[var(--line)] px-12px py-4px text-13px" aria-label="选择路径">
+      <div v-if="narrow && showPath" class="flex shrink-0 flex-wrap items-center gap-x-5px border-b border-[var(--line)] px-12px py-4px text-13px" aria-label="选择路径">
         <button type="button" :aria-current="path.length === 0 ? 'step' : undefined" class="min-h-44px cursor-pointer border-0 bg-transparent px-0 text-[var(--accent)] focus-visible:outline-[var(--accent)]" @click="browseTo(0)">{{ rootLabel }}</button>
         <template v-for="(ancestor, index) in path" :key="ancestor.value">
           <WuSvg name="chevron-right" class="text-[#627e70] [--wu-svg-h:12px]" />
@@ -157,7 +163,7 @@ function onTriggerKeydown(event: KeyboardEvent): void {
       </div>
       <div class="min-h-0 flex overflow-x-auto overscroll-contain">
         <div v-for="column in visibleColumns" :key="column.depth" class="min-h-0 min-w-0 flex flex-col" :class="narrow ? 'w-full' : 'w-210px shrink-0 border-r border-[var(--line)] last:border-r-0'">
-          <span v-if="!narrow" class="shrink-0 px-12px pb-5px pt-10px text-12px text-[#91ab9d]">{{ column.parent?.label ?? rootLabel }}</span>
+          <span v-if="!narrow && showPath" class="shrink-0 px-12px pb-5px pt-10px text-12px text-[#91ab9d]">{{ column.parent?.label ?? rootLabel }}</span>
           <WuScrollArea size="sm" class="min-h-0 flex-1" content-class="p-5px">
             <div class="flex flex-col gap-3px" role="group" :aria-label="column.parent?.label ?? rootLabel">
               <button

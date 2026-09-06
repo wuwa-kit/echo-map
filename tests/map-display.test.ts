@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
+import Projection from 'ol/proj/Projection.js'
+import Cluster from 'ol/source/Cluster.js'
 import Style from 'ol/style/Style.js'
 import { createPointLayers, mapFeaturePointIds } from '../src/map/point-layers.ts'
 import type { MapDisplayPoint, NavigationPoint, RegionLabel } from '../src/domain/types.ts'
@@ -9,6 +12,101 @@ beforeEach(() => vi.stubGlobal('window', { devicePixelRatio: 1 }))
 afterEach(() => vi.unstubAllGlobals())
 
 describe('map display layer integration', () => {
+  it('places base context under the floor mask and keeps current-floor points and teleports above it', () => {
+    const points = createPointLayers()
+    const echo = referenceDataset.echoLocations[0]
+    const point = referenceDataset.navigationPoints[0]
+    if (!echo || !point) throw new Error('需要地图点位测试数据')
+    const navigation: NavigationPoint[] = [
+      { ...point, id: 'base-ordinary', levelId: null, mode: 'landmark', iconUrl: '' },
+      { ...point, id: 'floor-ordinary', levelId: 'a1', mode: 'landmark', iconUrl: '' },
+      { ...point, id: 'base-travel', levelId: null, mode: 'fast-travel', iconUrl: '' },
+      { ...point, id: 'other-travel', levelId: 'a2', mode: 'fast-travel', iconUrl: '' },
+    ]
+    points.update([
+      { ...echo, id: 'base-echo', levelId: null }, { ...echo, id: 'floor-echo', levelId: 'a1' },
+    ], navigation, [], referenceDataset.echoes, undefined, 'a1')
+    const [labels, foregroundEcho, foregroundNavigation, backgroundEcho, backgroundNavigation] = points.layers
+    expect(labels?.getZIndex()).toBeLessThan(5)
+    expect(backgroundEcho?.getZIndex()).toBeLessThan(5)
+    expect(backgroundNavigation?.getZIndex()).toBeLessThan(5)
+    expect(foregroundEcho?.getZIndex()).toBeGreaterThan(10)
+    expect(foregroundNavigation?.getZIndex()).toBeGreaterThan(10)
+    expect(backgroundNavigation?.getSource()?.getFeatures().flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual(['base-ordinary'])
+    expect(foregroundNavigation?.getSource()?.getFeatures().flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual(['floor-ordinary', 'base-travel', 'other-travel'])
+    points.finishInteraction([-100000, -100000, 100000, 100000], 2, new Projection({ code: 'TEST:FLOORS', units: 'pixels' }))
+    for (const [layer, id] of [[foregroundEcho, 'floor-echo'], [backgroundEcho, 'base-echo']] as const) {
+      const source = layer?.getSource()
+      if (!(source instanceof Cluster)) throw new Error('需要独立的声骸聚类图层')
+      const features = source.getFeatures()
+      expect(features).toHaveLength(1)
+      const cluster = features[0]
+      if (!cluster) throw new Error('需要声骸聚合点')
+      const members: Feature[] = cluster.get('features')
+      expect(members).toHaveLength(1)
+      expect(members.flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual([id])
+      expect(layer?.getStyleFunction()?.(cluster, 8)).toBeUndefined()
+    }
+    points.update([], navigation.slice(0, 1), [], [])
+    expect(backgroundNavigation?.getSource()?.getFeatures()).toEqual([])
+    expect(backgroundEcho?.getSource()?.getFeatures()).toEqual([])
+    expect(foregroundNavigation?.getSource()?.getFeatures()).toHaveLength(1)
+    points.dispose()
+  })
+
+  it('updates point and label batches while dragging and animating', () => {
+    const points = createPointLayers()
+    for (const layer of points.layers) {
+      expect(layer.getUpdateWhileInteracting()).toBe(true)
+      expect(layer.getUpdateWhileAnimating()).toBe(true)
+    }
+    points.dispose()
+  })
+
+  it('keeps all existing clusters during zoom frames and reclusters once at the final resolution', () => {
+    let moving = false
+    const points = createPointLayers(() => moving)
+    const location = referenceDataset.echoLocations[0]
+    if (!location) throw new Error('需要声骸点测试数据')
+    points.update([0, 80, 10000].map((x) => ({
+      ...location, id: `point-${x}`, coordinate: { ...location.coordinate, mapX: x, mapY: 0 },
+    })), [], [], referenceDataset.echoes)
+    const clusters = points.layers[1]?.getSource()
+    if (!(clusters instanceof Cluster)) throw new Error('需要声骸聚类图层')
+    const projection = new Projection({ code: 'TEST:POINTS', units: 'pixels' })
+    const extent = [-100, -100, 200, 100]
+    clusters.loadFeatures(extent, 2, projection)
+    const initial = clusters.getFeatures()
+    expect(initial).toHaveLength(2)
+    const refresh = vi.spyOn(clusters, 'refresh')
+    moving = true
+    for (const resolution of [1.8, 1.5, 1, 0.75, 0.5]) clusters.loadFeatures(extent, resolution, projection)
+    expect(refresh).not.toHaveBeenCalled()
+    expect(clusters.getFeatures()).toEqual(initial)
+    expect(clusters.getFeaturesInExtent([9900, -100, 10100, 100])).toHaveLength(1)
+    moving = false
+    points.finishInteraction(extent, 0.5, projection)
+    expect(refresh).toHaveBeenCalledOnce()
+    expect(clusters.getFeatures()).toHaveLength(3)
+    points.finishInteraction(extent, 0.5, projection)
+    expect(refresh).toHaveBeenCalledOnce()
+    points.dispose()
+  })
+
+  it('builds initial clusters during an interaction and immediately respects changed point filters', () => {
+    const points = createPointLayers(() => true)
+    const location = referenceDataset.echoLocations[0]
+    if (!location) throw new Error('需要声骸点测试数据')
+    points.update([location], [], [], referenceDataset.echoes)
+    const clusters = points.layers[1]?.getSource()
+    if (!(clusters instanceof Cluster)) throw new Error('需要声骸聚类图层')
+    clusters.loadFeatures([-10000, -10000, 10000, 10000], 2, new Projection({ code: 'TEST:POINTS', units: 'pixels' }))
+    expect(clusters.getFeatures()).toHaveLength(1)
+    points.update([], [], [], referenceDataset.echoes)
+    expect(clusters.getFeatures()).toEqual([])
+    points.dispose()
+  })
+
   it('switches text navigation levels on zoom without rebuilding features or making labels selectable', () => {
     const points = createPointLayers()
     const labels: RegionLabel[] = [1, 2, 3].map((level) => ({

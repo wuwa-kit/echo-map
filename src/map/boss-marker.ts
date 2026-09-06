@@ -96,7 +96,8 @@ export function createPortraitMarkerStyles(onChange: () => void) {
 
     const canvas = document.createElement('canvas')
     canvas.width = canvas.height = CANVAS_SIZE * pixelRatio
-    const context = canvas.getContext('2d')
+    // OpenLayers reads the marker pixels when preparing hit detection.
+    const context = canvas.getContext('2d', { willReadFrequently: true })
     if (!context) {
       return null
     }

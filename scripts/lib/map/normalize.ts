@@ -49,6 +49,7 @@ export function normalizeLayers(value: unknown): LayeredMapDefinition[] {
     return {
       id: layeredMapId,
       name: asString(layer.name),
+      coverage: [],
       floors: floors.map((rawFloor) => {
         const floor = asRecord(rawFloor, 'layered map floor')
         return {

@@ -42,11 +42,14 @@ export function selectActiveEchoIds(
     .map(({ id }) => id))
 }
 
-export function matchesMapScope(location: MapScope, scope: MapScope): boolean {
+export function matchesMapContext(location: MapScope, scope: MapScope): boolean {
   return location.stateId === scope.stateId
     && (scope.countryId === null || location.countryId === scope.countryId)
-    && location.levelId === scope.levelId
     && matchesGravity(location.gravityType, scope.gravityType)
+}
+
+export function matchesMapScope(location: MapScope, scope: MapScope): boolean {
+  return matchesMapContext(location, scope) && location.levelId === scope.levelId
 }
 
 export function selectEchoLocations(
@@ -63,7 +66,6 @@ export function selectEchoLocations(
 }
 
 export function selectRegionLabels(labels: readonly RegionLabel[], scope: MapScope): RegionLabel[] {
-  if (scope.levelId !== null) return []
   return labels.filter((label) => (
     label.stateId === scope.stateId
     && (scope.countryId === null || label.countryId === scope.countryId)

@@ -23,6 +23,13 @@ const echoIds = new Set(dataset.echoes.map(({ id }) => id))
 const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []
 
+for (const state of dataset.states) {
+  for (const group of state.layeredMaps) {
+    const tiles = new Set(group.floors.flatMap(({ tiles }) => tiles.map((tile) => tile.split('/').at(-1))))
+    if (group.coverage.length !== tiles.size) errors.push(`楼层组 ${state.id}/${group.id} 缺少覆盖数据，请重新生成楼层覆盖范围`)
+  }
+}
+
 for (const range of Object.values(MAP_POINT_ZOOM_RANGES)) mapZoomRangeSchema.parse(range)
 const officialById = new Map([...dataset.echoLocations, ...dataset.navigationPoints].map((point) => [point.id, point]))
 for (const point of officialLibrary.points) {

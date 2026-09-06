@@ -42,10 +42,18 @@ export interface MapFloorDefinition {
   tiles: string[]
 }
 
+export interface FloorCoverageTile {
+  tile: string
+  size: number
+  // Row-major occupied pixel intervals, inclusive start and exclusive end.
+  runs: [number, number][]
+}
+
 export interface LayeredMapDefinition {
   id: string
   name: string
   floors: MapFloorDefinition[]
+  coverage: FloorCoverageTile[]
 }
 
 export interface TileExtent {

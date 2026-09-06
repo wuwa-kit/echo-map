@@ -24,7 +24,6 @@ function matchesViewport(viewport: MapViewportState, reference: MapViewportState
 
 export function useMapViewport(options: MapViewportOptions) {
   let defaultViewport: MapViewportState | null = null
-  let baseViewport: MapViewportState | null = null
   let routeViewport: MapViewportState | null = null
 
   function current(): MapViewportState | null {
@@ -67,7 +66,6 @@ export function useMapViewport(options: MapViewportOptions) {
     const y = center?.[1]
     const zoom = view.getZoom()
     defaultViewport = x !== undefined && y !== undefined && zoom !== undefined ? { center: [x, y], zoom } : null
-    baseViewport = defaultViewport
     const saved = options.getSavedViewport()
     if (saved) {
       view.setCenter([...saved.center])
@@ -76,18 +74,10 @@ export function useMapViewport(options: MapViewportOptions) {
     map.setView(view)
   }
 
-  function restoreBaseViewport(): void {
+  // Only called once for a legacy floor URL without an explicit viewport.
+  function restoreFloorViewport(extent: Extent | null): void {
     const map = options.getMap()
-    if (map && options.getSavedViewport() === null && baseViewport) {
-      defaultViewport = baseViewport
-      map.getView().setCenter([...baseViewport.center])
-      map.getView().setZoom(baseViewport.zoom)
-    }
-  }
-
-  function fitFloor(extent: Extent | null): void {
-    const map = options.getMap()
-    if (!map || !extent || options.getSavedViewport() !== null) {
+    if (!map || !extent || isEmpty(extent) || options.getSavedViewport() !== null) {
       return
     }
     const [width = 0, height = 0] = map.getSize() ?? []
@@ -98,7 +88,7 @@ export function useMapViewport(options: MapViewportOptions) {
       padding: fitMapPadding(width, height, options.getPadding()),
       minResolution: 0.5,
     })
-    defaultViewport = current()
+    publish()
   }
 
   function resetRoute(): void {
@@ -136,5 +126,5 @@ export function useMapViewport(options: MapViewportOptions) {
     publish()
   }
 
-  return { configureBaseView, restoreBaseViewport, fitFloor, fitRoute, resetRoute, publish, locate }
+  return { configureBaseView, restoreFloorViewport, fitRoute, resetRoute, publish, locate }
 }

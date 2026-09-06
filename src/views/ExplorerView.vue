@@ -32,11 +32,12 @@ const mobileBar = useTemplateRef<HTMLElement>('mobileBarRef')
 const filtersButton = useTemplateRef<HTMLButtonElement>('filtersButtonRef')
 const routeButton = useTemplateRef<HTMLButtonElement>('routeButtonRef')
 const mapPadding = shallowRef<MapPadding>([16, 16, 16, 16])
+const mapDockBottom = shallowRef(8)
 const controlVisible = computed(() => compact.value ? mobileSheet.value === 'filters' : !controlPanelCollapsed.value)
 const routeVisible = computed(() => !compact.value || mobileSheet.value === 'route')
 const compactPanelClass = computed(() => shortLandscape.value
   ? 'bottom-[var(--mobile-bar-height)] right-[max(12px,env(safe-area-inset-right))] top-[max(12px,env(safe-area-inset-top))] w-[min(360px,calc(100%_-_24px))] rounded-14px'
-  : 'bottom-[var(--mobile-bar-height)] inset-x-0 max-h-[min(70%,calc(100%_-_var(--mobile-bar-height)_-_12px))] rounded-t-18px')
+  : 'bottom-[var(--mobile-bar-height)] inset-x-0 max-h-[min(70%,calc(100%_-_var(--mobile-bar-height)_-_220px))] rounded-t-18px')
 
 function updateMapPadding(): void {
   if (!stage.value) {
@@ -46,8 +47,12 @@ function updateMapPadding(): void {
   const style = getComputedStyle(stage.value)
   const safe = (edge: string): number => Number.parseFloat(style.getPropertyValue(`--safe-${edge}`)) || 0
   const padding: MapPadding = [safe('top') + 16, safe('right') + 16, safe('bottom') + 16, safe('left') + 16]
+  // The bottom-left dock clears panels and the toolbar independently of right-side attribution.
+  let dockBottom = safe('bottom') + 8
   if (compact.value && mobileBar.value) {
-    padding[2] = area.bottom - mobileBar.value.getBoundingClientRect().top + 12
+    const coveredBottom = area.bottom - mobileBar.value.getBoundingClientRect().top
+    padding[2] = coveredBottom + 12
+    dockBottom = Math.max(dockBottom, coveredBottom + 8)
   }
   const zoom = stage.value.querySelector('.ol-zoom')?.getBoundingClientRect()
   const attribution = stage.value.querySelector('.ol-attribution')?.getBoundingClientRect()
@@ -64,11 +69,13 @@ function updateMapPadding(): void {
     const rect = panel.getBoundingClientRect()
     if (compact.value && !shortLandscape.value) {
       padding[2] = Math.max(padding[2], area.bottom - rect.top + 12)
+      dockBottom = Math.max(dockBottom, area.bottom - rect.top + 8)
     } else {
       padding[1] = Math.max(padding[1], area.right - rect.left + 12)
     }
   }
   mapPadding.value = padding
+  mapDockBottom.value = dockBottom
 }
 
 useResizeObserver([stage, controlDock, routeDock, mobileBar], updateMapPadding)
@@ -107,6 +114,7 @@ const urlSnapshot = useEqualComputed<ExplorerUrlSnapshot>(() => ({
   stateId: store.selectedStateId,
   countryId: store.selectedCountryId,
   levelId: store.selectedLevelId,
+  compactFloors: store.compactFloors,
   gravityType: store.selectedGravity,
   echoIds: store.selectedEchoIds,
   sonataIds: store.selectedSonataIds,
@@ -169,7 +177,7 @@ const loadError = computed(() => {
       ref="stageRef"
       class="relative h-full w-full min-h-0 min-w-0 overflow-hidden bg-[#101c1a] [--control-panel-width:340px] [--mobile-bar-height:calc(72px+env(safe-area-inset-bottom))] [--safe-top:env(safe-area-inset-top)] [--safe-right:env(safe-area-inset-right)] [--safe-bottom:env(safe-area-inset-bottom)] [--safe-left:env(safe-area-inset-left)]"
     >
-      <MapCanvas :padding="mapPadding" />
+      <MapCanvas :padding="mapPadding" :dock-bottom="mapDockBottom" />
       <div v-if="!compact" class="absolute left-70px top-14px z-90 flex flex-col items-start gap-7px">
         <MapNavigationCascader id="map-navigation-trigger" />
         <span class="rounded-5px bg-[#07100fe6] px-8px py-5px text-12px text-[#a5c0b2]">当前底图 · {{ activeMapName }}{{ store.supportsGravity ? ` · ${store.selectedGravity === 2 ? '反重力' : '普通重力'}` : '' }}</span>

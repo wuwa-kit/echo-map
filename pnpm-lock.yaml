@@ -208,6 +208,9 @@ catalogs:
     '@types/node':
       specifier: ^26.4.0
       version: 26.4.0
+    '@types/pngjs':
+      specifier: ^6.0.5
+      version: 6.0.5
     '@vitejs/plugin-vue':
       specifier: ^6.0.8
       version: 6.0.8
@@ -226,6 +229,9 @@ catalogs:
     pinia:
       specifier: ^4.0.3
       version: 4.0.3
+    pngjs:
+      specifier: ^7.0.0
+      version: 7.0.0
     typescript:
       specifier: ^6.0.3
       version: 6.0.3
@@ -258,6 +264,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.4.0
+      '@types/pngjs':
+        specifier: 'catalog:'
+        version: 6.0.5
       '@vitejs/plugin-vue':
         specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@26.4.0)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3))
@@ -276,6 +285,9 @@ importers:
       pinia:
         specifier: 'catalog:'
         version: 4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
+      pngjs:
+        specifier: 'catalog:'
+        version: 7.0.0
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -619,6 +631,9 @@ packages:
 
   '@types/node@26.4.0':
     resolution: {integrity: sha512-faiGnoIrLH/V8cibOMEAZ8pMw6oXqSukl29ra4mN8GdaB2ZewzeaLj+INpV5N+Z1eKWzY+IzaIZH2EIR6YZRNQ==}
+
+  '@types/pngjs@6.0.5':
+    resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
 
   '@types/rbush@4.0.0':
     resolution: {integrity: sha512-+N+2H39P8X+Hy1I5mC6awlTX54k3FhiUmvt7HWzGJZvF+syUAAxP/stwppS8JE84YHqFgRMv6fCy31202CMFxQ==}
@@ -1128,6 +1143,10 @@ packages:
 
   pkg-types@2.3.1:
     resolution: {integrity: sha512-y+ichcgc2LrADuhLNAx8DFjVfgz91pRxfZdI3UDhxHvcVEZsenLO+7XaU5vOp0u/7V/wZ+plyuQxtrDlZJ+yeg==}
+
+  pngjs@7.0.0:
+    resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
+    engines: {node: '>=14.19.0'}
 
   postcss@8.5.26:
     resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
@@ -1646,6 +1665,10 @@ snapshots:
   '@types/node@26.4.0':
     dependencies:
       undici-types: 8.3.0
+
+  '@types/pngjs@6.0.5':
+    dependencies:
+      '@types/node': 26.4.0
 
   '@types/rbush@4.0.0': {}
 
@@ -2240,6 +2263,8 @@ snapshots:
       confbox: 0.2.4
       exsolve: 1.1.1
       pathe: 2.0.3
+
+  pngjs@7.0.0: {}
 
   postcss@8.5.26:
     dependencies:

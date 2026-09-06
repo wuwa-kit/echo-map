@@ -30,6 +30,7 @@ export function resolveExplorerState(
     gravityType: hasGravityMap(nextState) && state.gravityType === 2 ? 2 : 1,
     countryId: state.countryId !== undefined && countryIds.has(state.countryId) ? state.countryId : null,
     levelId: state.levelId !== undefined && floorIds.has(state.levelId) ? state.levelId : null,
+    compactFloors: state.compactFloors === true,
     echoIds: (state.echoIds ?? []).filter((id) => echoIds.has(id)),
     sonataIds: (state.sonataIds ?? []).filter((id) => sonataIds.has(id)),
     hiddenPointGroupIds: [...new Set((state.hiddenPointGroupIds ?? []).flatMap((id) => {

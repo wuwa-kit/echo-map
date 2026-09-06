@@ -7,6 +7,7 @@ import type { WikiSnapshot } from './lib/wiki.ts'
 import { flattenRegions, normalizeLayers, normalizeMapNavigation, normalizeGravityTiles } from './lib/map/normalize.ts'
 import { normalizeLocations } from './lib/map/locations.ts'
 import { groupNavigationPoints } from './lib/map/navigation-groups.ts'
+import { buildFloorCoverage } from './lib/map/floor-coverage.ts'
 import { fetchCountryData, fetchMapConfiguration, fetchNavigationIconHashes, fetchStatePayloads } from './lib/map/source.ts'
 import type { AliasData, ManualData, NavigationConfig, NavigationGroupConfig } from './lib/map/types.ts'
 
@@ -23,7 +24,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
   const configuration = await fetchMapConfiguration()
   const countryData = await fetchCountryData(configuration.resourceHash)
   const statePayloads = await fetchStatePayloads(configuration)
-  const states: MapStateDefinition[] = statePayloads.map(({ state, layerData, gravityData }) => {
+  const normalizedStates: MapStateDefinition[] = statePayloads.map(({ state, layerData, gravityData }) => {
     const tileIds = configuration.tileIdsByState[String(state.id)] ?? []
     return {
       id: state.id,
@@ -34,6 +35,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
       layeredMaps: normalizeLayers(layerData),
     }
   })
+  const states = await buildFloorCoverage(normalizedStates, configuration.resourceHash)
 
   const locations = normalizeLocations(wiki, manual, aliases, navigationConfig, statePayloads)
   const { exactMatchedEchoIds, aliasMatchedEchoIds } = locations

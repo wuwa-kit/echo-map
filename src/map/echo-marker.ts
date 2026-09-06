@@ -51,7 +51,8 @@ export function createEchoMarkerStyles(onChange: () => void) {
     const size = single ? PORTRAIT_MARKER_SIZES[single.cost] : count === 0 ? 31 : 54
     const canvas = document.createElement('canvas')
     canvas.width = canvas.height = PORTRAIT_MARKER_CANVAS_SIZE * ratio
-    const context = canvas.getContext('2d')
+    // Keep first-use hit detection from forcing a GPU canvas readback.
+    const context = canvas.getContext('2d', { willReadFrequently: true })
     const portraits = (showText ? composition.portraits : composition.types.slice(0, 4))
       .map((echo) => ({ echo, image: getImage(echo.iconUrl) }))
     function redraw(): void {

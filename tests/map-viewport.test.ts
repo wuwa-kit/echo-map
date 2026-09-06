@@ -49,22 +49,25 @@ describe('map viewport coordination', () => {
     expect(initial.onViewportChanged).toHaveBeenLastCalledWith(null)
     const saved: MapViewportState = { center: [1200, 1400], zoom: 2 }
     const restored = setup(saved)
-    restored.viewport.fitFloor([2000, 2000, 3000, 3000])
+    restored.viewport.restoreFloorViewport([2000, 2000, 3000, 3000])
     expect(restored.view().getCenter()).toEqual(saved.center)
     expect(restored.view().getZoom()).toBe(saved.zoom)
     restored.viewport.publish()
     expect(restored.onViewportChanged).toHaveBeenLastCalledWith(saved)
   })
 
-  it('treats a fitted floor as default and restores the base view on return to surface', () => {
+  it('publishes a legacy floor location explicitly so a refresh or resize cannot refit it', () => {
     const app = setup()
     const baseCenter = app.view().getCenter()
-    app.viewport.fitFloor([1000, 1000, 2000, 2000])
+    app.viewport.restoreFloorViewport([1000, 1000, 2000, 2000])
     expect(app.view().getCenter()).not.toEqual(baseCenter)
     app.viewport.publish()
-    expect(app.onViewportChanged).toHaveBeenLastCalledWith(null)
-    app.viewport.restoreBaseViewport()
-    expect(app.view().getCenter()).toEqual(baseCenter)
+    const saved = app.onViewportChanged.mock.lastCall?.[0]
+    expect(saved).not.toBeNull()
+    app.setSize([500, 800])
+    app.viewport.restoreFloorViewport([3000, 3000, 4000, 4000])
+    expect(app.view().getCenter()).toEqual(saved?.center)
+    expect(setup(saved).view().getCenter()).toEqual(saved?.center)
   })
 
   it('refits a route for panel changes until a deliberate map movement', () => {
@@ -89,9 +92,9 @@ describe('map viewport coordination', () => {
     const fit = vi.spyOn(app.view(), 'fit')
     app.viewport.fitRoute(null)
     app.viewport.fitRoute([Infinity, Infinity, -Infinity, -Infinity])
-    app.viewport.fitFloor(null)
+    app.viewport.restoreFloorViewport(null)
     app.setSize([0, 0])
-    app.viewport.fitFloor([0, 0, 100, 100])
+    app.viewport.restoreFloorViewport([0, 0, 100, 100])
     expect(fit).not.toHaveBeenCalled()
   })
 

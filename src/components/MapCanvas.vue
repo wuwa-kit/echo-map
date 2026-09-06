@@ -15,10 +15,16 @@ import { createPointLayers, mapFeaturePointIds } from '../map/point-layers.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
 import { useMapViewport } from '../map/useMapViewport.ts'
+import { floorExtent } from '../map/floor-coverage.ts'
+import { fitMapPadding } from '../map/viewport-padding.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
 import PointDetails from './PointDetails.vue'
+import FloorSwitcher from './FloorSwitcher.vue'
 
-const props = defineProps<{ padding: MapPadding }>()
+const props = defineProps<{
+  padding: MapPadding
+  dockBottom: number
+}>()
 
 const store = useExplorerStore()
 const {
@@ -30,14 +36,23 @@ const {
   mapNavigationRequest,
   route,
   selectedLevelId,
+  floorRequest,
   selectedGravity,
   baseTileError,
   baseTileRetry,
-  visibleEchoLocations,
-  visibleNavigationPoints,
+  mapEchoLocations,
+  mapNavigationPoints,
   visibleRegionLabels,
 } = storeToRefs(store)
 const mapTarget = useTemplateRef<HTMLElement>('mapTargetRef')
+const mapSize = shallowRef<[number, number]>([0, 0])
+const shortFloorDock = computed(() => mapSize.value[1] - props.dockBottom < 320)
+const floorDockHeight = computed(() => Math.max(86, mapSize.value[1] - props.dockBottom - (shortFloorDock.value ? 16 : 112)))
+const floorDockStyle = computed(() => ({
+  '--floor-dock-bottom': `${props.dockBottom}px`,
+  '--floor-dock-height': `${floorDockHeight.value}px`,
+  '--floor-dock-right': `${props.padding[1]}px`,
+}))
 const pointerCoordinate = shallowRef<[number, number] | null>(null)
 const pointerCoordinateText = computed(() => {
   const coordinate = pointerCoordinate.value
@@ -51,8 +66,11 @@ const pointerCoordinateText = computed(() => {
 let map: Map | null = null
 const baseLayers = createOfficialBaseLayers(store.reportBaseTileError)
 const projection = new Projection({ code: 'KURO:CRS-SIMPLE', units: 'pixels' })
-const points = createPointLayers()
-const floors = createFloorLayers(projection)
+const points = createPointLayers(() => {
+  const view = map?.getView()
+  return Boolean(view?.getAnimating() || view?.getInteracting())
+})
+const floors = createFloorLayers(projection, { dimBase: true, onError: store.reportFloorTileError })
 const routeLayer = createRouteLayer()
 const viewport = useMapViewport({
   getMap: () => map,
@@ -62,17 +80,37 @@ const viewport = useMapViewport({
 })
 
 function fitViewport(): void {
-  viewport.fitFloor(floors.getExtent())
   viewport.fitRoute(routeLayer.getExtent())
+  updateFloorCenter()
 }
 
 useResizeObserver(mapTarget, () => {
   map?.updateSize()
+  const [width = 0, height = 0] = map?.getSize() ?? []
+  mapSize.value = [width, height]
   fitViewport()
 })
 
+function updateFloorCenter(): void {
+  const [width = 0, height = 0] = map?.getSize() ?? []
+  if (!map || width <= 0 || height <= 0) return
+  const [top, right, bottom, left] = fitMapPadding(width, height, props.padding)
+  const coordinate = map.getCoordinateFromPixel([(left + width - right) / 2, (top + height - bottom) / 2])
+  const [x, y] = coordinate ?? []
+  store.setFloorCenter(x === undefined || y === undefined ? null : [x, y], map.getView().getResolution() ?? 1)
+}
+
+function onMoveEnd(): void {
+  const view = map?.getView()
+  const resolution = view?.getResolution()
+  if (view && resolution !== undefined) points.finishInteraction(view.calculateExtent(map?.getSize()), resolution, projection)
+  viewport.publish()
+  updateFloorCenter()
+  if (map) floors.updateViewport(map.getView().calculateExtent(map.getSize()))
+}
+
 function rebuildPointLayers(): void {
-  points.update(visibleEchoLocations.value, visibleNavigationPoints.value, visibleRegionLabels.value, dataset.value?.echoes ?? [], activeEchoIds.value)
+  points.update(mapEchoLocations.value, mapNavigationPoints.value, visibleRegionLabels.value, dataset.value?.echoes ?? [], activeEchoIds.value, selectedLevelId.value)
 }
 
 function rebuildRoute(): void {
@@ -90,11 +128,7 @@ function rebuildFloorLayers(): void {
     return
   }
   floors.update(map, state, manifest, selectedLevelId.value)
-  if (selectedLevelId.value === null) {
-    viewport.restoreBaseViewport()
-    return
-  }
-  viewport.fitFloor(floors.getExtent())
+  floors.updateViewport(map.getView().calculateExtent(map.getSize()))
 }
 
 function rebuildBaseLayer(): void {
@@ -105,10 +139,11 @@ function rebuildBaseLayer(): void {
   }
   baseLayers.update(map, state, manifest, selectedGravity.value)
   viewport.configureBaseView(state, projection)
+  const selected = state.layeredMaps.flatMap(({ floors }) => floors).find(({ id }) => id === selectedLevelId.value)
+  if (selected) viewport.restoreFloorViewport(floorExtent(selected, manifest.tileWidth))
   rebuildFloorLayers()
-  if (selectedLevelId.value === null || mapViewport.value !== null) {
-    viewport.publish()
-  }
+  viewport.publish()
+  updateFloorCenter()
 }
 
 function switchGravity(): void {
@@ -157,7 +192,7 @@ onMounted(() => {
     layers: [...points.layers, routeLayer.layer],
     view: new View({ projection, enableRotation: false, center: [0, 0], resolution: 4 }),
   })
-  map.on('moveend', viewport.publish)
+  map.on('moveend', onMoveEnd)
   map.on('pointermove', updatePointerCoordinate)
   map.on('singleclick', selectMapPoint)
   rebuildBaseLayer()
@@ -170,13 +205,32 @@ watch(activeState, rebuildBaseLayer)
 watch(selectedGravity, switchGravity)
 watch(baseTileRetry, () => baseLayers.retry())
 watch(selectedLevelId, rebuildFloorLayers)
-watch([visibleEchoLocations, visibleNavigationPoints, visibleRegionLabels, activeEchoIds], rebuildPointLayers)
+watch(floorRequest, async (request, _previous, onCleanup) => {
+  if (request?.status !== 'loading') { floors.cancelPreparation(); return }
+  const currentMap = map
+  const state = activeState.value
+  const manifest = dataset.value?.source
+  if (!currentMap || !state || !manifest) return
+  const controller = new AbortController()
+  onCleanup(() => controller.abort())
+  try {
+    const preparation = floors.prepare(state, manifest, request.levelId, () => currentMap.getView().calculateExtent(currentMap.getSize()), controller.signal)
+    if (preparation) await preparation
+    if (controller.signal.aborted || !store.completeFloorRequest(request.token)) return
+    // The prepared images, point scope and mask become visible in the same render turn.
+    floors.update(currentMap, state, manifest, request.levelId)
+    floors.updateViewport(currentMap.getView().calculateExtent(currentMap.getSize()))
+  } catch {
+    if (!controller.signal.aborted) store.failFloorRequest(request.token)
+  }
+})
+watch([mapEchoLocations, mapNavigationPoints, visibleRegionLabels, activeEchoIds, selectedLevelId], rebuildPointLayers)
 watch(route, rebuildRoute, { flush: 'post' })
 watch(() => props.padding, fitViewport, { flush: 'post' })
 watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 
 onBeforeUnmount(() => {
-  map?.un('moveend', viewport.publish)
+  map?.un('moveend', onMoveEnd)
   map?.un('pointermove', updatePointerCoordinate)
   map?.un('singleclick', selectMapPoint)
   map?.setTarget(undefined)
@@ -202,12 +256,11 @@ onBeforeUnmount(() => {
       aria-label="鸣潮声骸地图"
       @mouseleave="clearPointerCoordinate"
     />
-    <div
-      v-if="pointerCoordinateText"
-      aria-hidden="true"
-      class="pointer-events-none absolute bottom-[calc(var(--mobile-bar-height)+12px)] left-[max(12px,env(safe-area-inset-left))] z-70 select-none rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-12px text-[var(--muted)] tabular-nums shadow-lg min-[1024px]:bottom-16px"
-    >
-      {{ pointerCoordinateText }}
+    <div :style="floorDockStyle" class="pointer-events-none absolute bottom-[var(--floor-dock-bottom)] right-[var(--floor-dock-right)] z-70 max-h-[var(--floor-dock-height)] flex flex-col items-start gap-8px" :class="shortFloorDock ? 'left-[max(68px,env(safe-area-inset-left))]' : 'left-[max(8px,env(safe-area-inset-left))]'">
+      <FloorSwitcher />
+      <div aria-hidden="true" class="h-32px max-w-full shrink-0 select-none overflow-hidden whitespace-nowrap rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-12px text-[var(--muted)] tabular-nums shadow-lg" :class="{ invisible: !pointerCoordinateText }">
+        {{ pointerCoordinateText }}
+      </div>
     </div>
   </div>
 </template>
