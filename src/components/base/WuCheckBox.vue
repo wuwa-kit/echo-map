@@ -14,6 +14,7 @@ const model = defineModel<boolean>({ required: true })
 
 <template>
   <label
+    class="relative"
     :class="props.disabled ? 'cursor-not-allowed opacity-55' : 'cursor-pointer'"
   >
     <input

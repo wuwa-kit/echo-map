@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import WuScrollArea from './base/WuScrollArea.vue'
+import WuInput from './base/WuInput.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
 
 defineProps<{ compact: boolean }>()
@@ -10,13 +11,6 @@ const { allNavigationPoints, route, routeEligibleLocations, routeEligibleNavigat
 const incompleteCount = computed(() => visibleEchoLocations.value.length - routeEligibleLocations.value.length)
 const usesOfficialCoordinates = computed(() => [...routeEligibleLocations.value, ...routeEligibleNavigationPoints.value].some(({ quality }) => quality === 'official-provisional'))
 const startPoint = computed(() => allNavigationPoints.value.find(({ id }) => id === route.value?.startPointId) ?? null)
-
-function onRouteZWeightChange(event: Event): void {
-  if (event.target instanceof HTMLInputElement) {
-    store.setRouteZWeight(Number(event.target.value))
-    event.target.value = String(routeZWeight.value)
-  }
-}
 </script>
 
 <template>
@@ -39,7 +33,7 @@ function onRouteZWeightChange(event: Event): void {
       </div>
       <label class="flex min-w-0 flex-col justify-center rounded-6px border border-[var(--line)] bg-[#182b25] p-9px">
         <span class="text-12px text-[#9ab0a7]">高度权重</span>
-        <input class="mt-3px h-44px w-full min-w-0 rounded-6px border border-[var(--line)] bg-[#152823] px-5px text-16px text-inherit font-inherit outline-none focus:border-[var(--accent)]" :value="routeZWeight" type="number" inputmode="decimal" min="0.1" max="10" step="0.05" @change="onRouteZWeightChange" />
+        <WuInput class="mt-3px" :model-value="routeZWeight" type="number" inputmode="decimal" min="0.1" max="10" step="0.05" lazy @update:model-value="store.setRouteZWeight(Number($event))" />
       </label>
     </div>
     <div class="mb-10px text-12px text-[#9ab0a7] leading-relaxed">{{ routeEligibleNavigationPoints.length }} 个可传送起点。未补齐怪物清单的人工点按已知怪物参与路线。</div>

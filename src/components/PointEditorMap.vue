@@ -8,16 +8,12 @@ import Point from 'ol/geom/Point.js'
 import Projection from 'ol/proj/Projection.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
-import Style from 'ol/style/Style.js'
-import CircleStyle from 'ol/style/Circle.js'
-import Stroke from 'ol/style/Stroke.js'
-import Fill from 'ol/style/Fill.js'
 import { defaults as controls } from 'ol/control/defaults.js'
 import type MapBrowserEvent from 'ol/MapBrowserEvent.js'
 import { createOfficialTileLayer } from '../map/official-source.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { gameToMapCoordinate, mapToGameCoordinate } from '../map/projection.ts'
-import { createEchoMarkerStyles } from '../map/echo-marker.ts'
+import { createEditorMarkerStyles } from '../map/editor-marker.ts'
 import type { AuthoredPoint, MapDataset } from '../domain/types.ts'
 
 const props = defineProps<{
@@ -49,7 +45,7 @@ const source = new VectorSource()
 const layer = new VectorLayer({ source, zIndex: 40, declutter: true })
 const projection = new Projection({ code: 'KURO:CRS-SIMPLE', units: 'pixels' })
 const floors = createFloorLayers(projection)
-const icons = createEchoMarkerStyles(() => layer.changed())
+const icons = createEditorMarkerStyles(() => layer.changed())
 
 function publish(): void {
   const center = map?.getView().getCenter()
@@ -76,11 +72,7 @@ function rebuildPoints(): void {
     const { x, y } = point.coordinate
     if (point.stateId !== props.draft.stateId || point.levelId !== props.draft.levelId || x === null || y === null) return []
     const feature = new Feature({ geometry: new Point(gameToMapCoordinate(x, y, props.dataset.source.tileWidth)), pointId: point.id })
-    const styles = point.kind === 'echo'
-      ? [...icons.get(point.members, props.dataset.echoes).styles]
-      : [new Style({ image: new CircleStyle({ radius: 10, fill: new Fill({ color: '#75d8ba' }), stroke: new Stroke({ color: '#ecfff5', width: 2 }) }) })]
-    if (point.id === props.draft.id) styles.unshift(new Style({ image: new CircleStyle({ radius: 37, stroke: new Stroke({ color: '#f0c477', width: 2, lineDash: [5, 4] }) }) }))
-    feature.setStyle(styles)
+    feature.setStyle(icons.get(point, props.dataset.echoes, point.id === props.draft.id))
     return [feature]
   }))
 }
@@ -149,6 +141,6 @@ onBeforeUnmount(() => {
 <template>
   <div class="relative h-full min-h-240px bg-[#0c1715]">
     <div ref="mapTargetRef" class="absolute inset-0" aria-label="点位录入地图" />
-    <div class="pointer-events-none absolute bottom-12px left-12px right-12px w-fit rounded-8px bg-[#0c211be8] px-12px py-8px text-12px text-[#b5cec1]">点击已有点位编辑 · 点击空白处填写参考 XY · 金色虚线为当前点</div>
+    <div class="pointer-events-none absolute bottom-12px left-12px right-12px w-fit rounded-8px bg-[#0c211be8] px-12px py-8px text-12px text-[#b5cec1]">点击已有点位编辑 · 点击空白处填写参考 XY · 金色虚线菱形为当前点</div>
   </div>
 </template>

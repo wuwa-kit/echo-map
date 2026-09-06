@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
+import RegularShape from 'ol/style/RegularShape.js'
 import { libraryLocations } from '../src/domain/point-library.ts'
 import { createEchoMarkerStyles } from '../src/map/echo-marker.ts'
+import { createEditorMarkerStyles } from '../src/map/editor-marker.ts'
 import { createPointLayers } from '../src/map/point-layers.ts'
 import { createPortraitMarkerStyles, PORTRAIT_MARKER_SIZES } from '../src/map/boss-marker.ts'
 import { referenceDataset, smallEcho, eliteEcho, mixedPoint } from './fixtures/point-library.ts'
@@ -52,6 +54,31 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('echo marker appearance', () => {
+  it('uses a diamond editor selection that cannot hide the portrait during decluttering', () => {
+    const editor = createEditorMarkerStyles(() => {})
+    const point = mixedPoint()
+    const normal = editor.get(point, referenceDataset.echoes, false)
+    const selected = editor.get(point, referenceDataset.echoes, true)
+    const outline = selected[0]?.getImage()
+    expect(outline?.getDeclutterMode()).toBe('none')
+    expect(outline instanceof RegularShape ? outline.getPoints() : null).toBe(4)
+    expect(selected.slice(1)).toEqual(normal)
+    expect(normal[0]?.getImage()).toBeDefined()
+    expect(normal).toHaveLength(1)
+    editor.dispose()
+  })
+
+  it('uses a diamond for editor navigation placeholders', () => {
+    const editor = createEditorMarkerStyles(() => {})
+    const [style] = editor.get({
+      id: 'navigation', kind: 'navigation', status: 'draft', name: '', navigationKind: 'beacon', mode: 'fast-travel',
+      stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: null }, note: '',
+    }, referenceDataset.echoes, false)
+    const image = style?.getImage()
+    expect(image instanceof RegularShape ? image.getPoints() : null).toBe(4)
+    editor.dispose()
+  })
+
   it.each([smallEcho, eliteEcho])('keeps the original C$cost diamond and size after conversion to members', (echo) => {
     const original = createPortraitMarkerStyles(() => {})
     const grouped = createEchoMarkerStyles(() => {})

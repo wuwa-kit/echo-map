@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../../stores/explorer.ts'
 import WuScrollArea from '../base/WuScrollArea.vue'
+import WuInput from '../base/WuInput.vue'
 import { echoMembers } from '../../domain/point-library.ts'
 
 defineProps<{ compact: boolean }>()
@@ -19,10 +20,6 @@ const locationCountByEcho = computed(() => {
   }
   return counts
 })
-
-function onEchoSearch(event: Event): void {
-  store.setEchoSearch((event.target as HTMLInputElement).value)
-}
 </script>
 
 <template>
@@ -36,7 +33,7 @@ function onEchoSearch(event: Event): void {
     </div>
     <div class="mb-10px flex h-44px w-full min-[1024px]:h-34px items-center gap-7px border border-[var(--line)] rounded-7px bg-[rgba(21,40,35,0.78)] px-10px text-[#6f887f] focus-within:border-[rgba(101,241,194,0.55)]">
       <span>⌕</span>
-      <input aria-label="搜索声骸" class="w-full min-w-0 border-0 bg-transparent text-16px min-[1024px]:text-11px text-[#dce9e3] font-inherit outline-none" :value="echoSearch" type="search" :placeholder="`搜索 ${dataset?.echoes.length ?? 0} 个 C1/C3 声骸`" @input="onEchoSearch" />
+      <WuInput aria-label="搜索声骸" variant="plain" size="sm" :model-value="echoSearch" type="search" :placeholder="`搜索 ${dataset?.echoes.length ?? 0} 个 C1/C3 声骸`" @update:model-value="store.setEchoSearch" />
     </div>
     <WuScrollArea :unbounded="compact"
       class="min-[1024px]:max-h-290px"
