@@ -85,6 +85,7 @@ pnpm exec node scripts/build-floor-coverage.ts
 - 小于等于 15 个点时使用精确动态规划。
 - 更多点位使用多起点最近邻和 2-opt。
 - 启发式路线会检查当前地图内全部合格传送起点，不按官方数据顺序截断。
+- 传送点优先使用实测 `teleportCoordinate` 作为路线起点，未录入时回退到图标点位 XYZ；地图图标不随落点移动。
 - 距离使用 X、Y、Z，高度权重可在界面调整。
 - 不同楼层之间必须存在人工维护的 connector，否则拒绝生成穿墙路线。
 - 路线在 Web Worker 中计算，不阻塞 OpenLayers 拖动和缩放。

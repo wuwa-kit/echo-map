@@ -90,6 +90,7 @@ function intermediate(from: RoutePoint, to: RoutePoint, t: number): ExportNode {
     targetId: null,
     point: {
       ...from, id: `crop:${from.id}:${to.id}:${t}`, name: '续接', echoId: null, members: undefined,
+      isTeleportArrival: undefined,
       coordinate: { x: interpolate(from.coordinate.x, to.coordinate.x), y: interpolate(from.coordinate.y, to.coordinate.y), z: interpolate(from.coordinate.z, to.coordinate.z) },
       mapCoordinate: [interpolate(from.mapCoordinate[0], to.mapCoordinate[0]), interpolate(from.mapCoordinate[1], to.mapCoordinate[1])],
     },

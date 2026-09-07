@@ -31,6 +31,27 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('point editor actions', () => {
+  it('records an optional teleport arrival and clears it when it no longer applies', async () => {
+    const store = usePointEditorStore()
+    await store.load()
+    store.newPoint('navigation')
+    store.setName('测试信标')
+    store.setCoordinateText('100, 200, 30')
+    store.applyCoordinateText()
+    store.setTeleportCoordinateText('104, 198, 28')
+    store.applyTeleportCoordinateText()
+    expect(store.draft?.kind === 'navigation' ? store.draft.teleportCoordinate : null).toEqual({ x: 104, y: 198, z: 28 })
+    await store.saveDraft('verified')
+    expect(disk.points[0]?.kind === 'navigation' ? disk.points[0].teleportCoordinate : null).toEqual({ x: 104, y: 198, z: 28 })
+
+    store.copyPoint()
+    expect(store.draft?.kind === 'navigation' ? store.draft.teleportCoordinate : null).toBeUndefined()
+    store.setTeleportCoordinate('x', '110')
+    expect(store.draft?.kind === 'navigation' ? store.draft.teleportCoordinate : null).toEqual({ x: 110, y: null, z: null })
+    store.setMode('landmark')
+    expect(store.draft?.kind === 'navigation' ? store.draft.teleportCoordinate : null).toBeUndefined()
+  })
+
   it('records gravity for new observations, keeps XYZ, and resets it when changing maps', async () => {
     const store = usePointEditorStore()
     await store.load()

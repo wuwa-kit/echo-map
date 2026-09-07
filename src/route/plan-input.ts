@@ -1,4 +1,6 @@
 import type { EchoMapLocation, MapDataset, NavigationPoint, PointLocationBase, RoutePoint } from '../domain/types.ts'
+import { navigationRouteCoordinate } from '../domain/point-library.ts'
+import { gameToMapCoordinate } from '../map/projection.ts'
 import type { RoutePlanInput } from './optimizer.ts'
 
 export function createRoutePlanInput(
@@ -24,6 +26,23 @@ export function createRoutePlanInput(
       mapCoordinate: [location.coordinate.mapX, location.coordinate.mapY],
     }
   }
+  function toStartRoutePoint(location: NavigationPoint): RoutePoint {
+    const coordinate = navigationRouteCoordinate(location)
+    if (!coordinate) throw new Error(`传送点 ${location.id} 缺少 XYZ`)
+    const isTeleportArrival = location.teleportCoordinate !== undefined
+    return {
+      id: location.id,
+      name: location.typeName,
+      echoId: null,
+      stateId: location.stateId,
+      levelId: location.levelId,
+      coordinate,
+      mapCoordinate: isTeleportArrival
+        ? gameToMapCoordinate(coordinate.x, coordinate.y, dataset?.source.tileWidth)
+        : [location.coordinate.mapX, location.coordinate.mapY],
+      ...(isTeleportArrival ? { isTeleportArrival: true as const } : {}),
+    }
+  }
   return {
     points: locations.flatMap((location) => {
       if (!('members' in location)) return [toRoutePoint(location, location.echoId)]
@@ -31,7 +50,7 @@ export function createRoutePlanInput(
       if (members.length === 0) return []
       return [{ ...toRoutePoint(location, null), name: members.map(({ name, count }) => `${name} ×${count}`).join(' · '), members }]
     }),
-    startPoints: startPoints.map((location) => toRoutePoint(location, null)),
+    startPoints: startPoints.map(toStartRoutePoint),
     connectors: (dataset?.connectors ?? []).filter((connector) => connector.stateId === stateId),
     zWeight,
   }

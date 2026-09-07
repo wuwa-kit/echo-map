@@ -34,6 +34,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const search = shallowRef('')
   const monsterSearch = shallowRef('')
   const coordinateText = shallowRef('')
+  const teleportCoordinateText = shallowRef('')
   const error = shallowRef('')
   const notice = shallowRef('')
   const busy = shallowRef(false)
@@ -42,7 +43,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const allPoints = computed(() => freeze(combinePointLibraries(library.value, officialLibrary.value, showOfficial.value ? 'all' : 'manual'), true).points)
   const filteredPoints = computed(() => allPoints.value.filter((point) => {
     const query = search.value.trim().toLocaleLowerCase('zh-CN')
-    return !query || `${dataset.value ? pointTitle(point, dataset.value) : ''} ${point.note} ${Object.values(point.coordinate).join(' ')}`.toLocaleLowerCase('zh-CN').includes(query)
+    const teleportCoordinate = point.kind === 'navigation' ? Object.values(point.teleportCoordinate ?? {}).join(' ') : ''
+    return !query || `${dataset.value ? pointTitle(point, dataset.value) : ''} ${point.note} ${Object.values(point.coordinate).join(' ')} ${teleportCoordinate}`.toLocaleLowerCase('zh-CN').includes(query)
   }))
   const nearbyPoints = computed(() => draft.value ? findNearbyPoints(allPoints.value, draft.value, matchRadius.value, heightTolerance.value) : [])
   const matchKey = computed(() => JSON.stringify([draft.value?.id, draft.value?.coordinate, draft.value?.stateId, draft.value?.levelId, draft.value?.gravityType, nearbyPoints.value.map(({ point }) => point.id)]))
@@ -61,6 +63,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     draft.value = freeze(point, true)
     baseline.value = JSON.stringify(point)
     coordinateText.value = ''
+    teleportCoordinateText.value = ''
     monsterSearch.value = ''
     inputErrors.value = {}
   }
@@ -135,6 +138,40 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     } catch (failure) { error.value = failure instanceof Error ? failure.message : String(failure) }
   }
 
+  function setTeleportCoordinate(axis: 'x' | 'y' | 'z', value: string): void {
+    const key = `teleport:${axis}`
+    if (value.trim() !== '' && !/^[+-]?\d+$/u.test(value.trim())) {
+      invalidInput(key, '传送落点坐标必须是整数')
+      return
+    }
+    const number = value.trim() === '' ? null : Number(value)
+    if (number !== null && !Number.isSafeInteger(number)) {
+      invalidInput(key, '传送落点坐标必须是有效整数')
+      return
+    }
+    clearInputError(key)
+    edit((point) => {
+      if (point.kind !== 'navigation') return
+      const coordinate = point.teleportCoordinate ?? { x: null, y: null, z: null }
+      coordinate[axis] = number
+      if (Object.values(coordinate).every((entry) => entry === null)) delete point.teleportCoordinate
+      else point.teleportCoordinate = coordinate
+      point.status = 'draft'
+    })
+  }
+
+  function applyTeleportCoordinateText(): void {
+    try {
+      const coordinate = parseCoordinateInput(teleportCoordinateText.value)
+      for (const axis of ['x', 'y', 'z']) clearInputError(`teleport:${axis}`)
+      edit((point) => {
+        if (point.kind !== 'navigation') return
+        point.teleportCoordinate = coordinate
+        point.status = 'draft'
+      })
+    } catch (failure) { error.value = failure instanceof Error ? failure.message : String(failure) }
+  }
+
   function pickMapPosition(x: number, y: number): void {
     for (const axis of ['x', 'y', 'z']) clearInputError(axis)
     edit((point) => {
@@ -145,13 +182,17 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   function selectState(stateId: number): void {
-    for (const axis of ['x', 'y', 'z']) clearInputError(axis)
+    for (const axis of ['x', 'y', 'z']) {
+      clearInputError(axis)
+      clearInputError(`teleport:${axis}`)
+    }
     edit((point) => {
       point.stateId = stateId
       point.countryId = null
       point.levelId = null
       point.gravityType = null
       point.coordinate = { x: null, y: null, z: null }
+      if (point.kind === 'navigation') delete point.teleportCoordinate
       point.status = 'draft'
     })
   }
@@ -295,6 +336,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       point.id = crypto.randomUUID()
       point.status = 'draft'
       point.coordinate = { x: null, y: null, z: null }
+      if (point.kind === 'navigation') delete point.teleportCoordinate
     })
     openDraft(copy)
     baseline.value = ''
@@ -423,13 +465,14 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     setCompositionComplete: (value: boolean) => edit((point) => { if (point.kind === 'echo') point.compositionStatus = value ? 'complete' : 'partial' }),
     dataset: shallowReadonly(dataset), library: shallowReadonly(library), draft: shallowReadonly(draft),
     recovery: shallowReadonly(recovery), deleted: shallowReadonly(deleted), importPreview: shallowReadonly(importPreview),
-    versions: shallowReadonly(versions), search: shallowReadonly(search), monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText),
+    versions: shallowReadonly(versions), search: shallowReadonly(search), monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy: shallowReadonly(busy), dirty, filteredPoints, nearbyPoints,
-    load, newPoint, selectPoint, setCoordinate, applyCoordinateText, pickMapPosition, selectState, addMember, setMemberCount, removeMember,
+    load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, pickMapPosition, selectState, addMember, setMemberCount, removeMember,
     saveDraft, discardChanges, copyPoint, deletePoint, undoDelete, recoverDraft, previewImport, applyImport, loadVersions, previewVersion,
     setSearch: (value: string) => { search.value = value },
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
+    setTeleportCoordinateText: (value: string) => { teleportCoordinateText.value = value },
     setLevel: (value: string | null) => edit((point) => {
       point.levelId = value
       point.status = 'draft'
@@ -443,12 +486,19 @@ export const usePointEditorStore = defineStore('point-editor', () => {
         point.status = 'draft'
       }
     }),
-    setMode: (value: NavigationMode) => edit((point) => {
-      if (point.kind === 'navigation') {
-        point.mode = value
-        point.status = 'draft'
+    setMode: (value: NavigationMode) => {
+      if (value !== 'fast-travel') {
+        for (const axis of ['x', 'y', 'z']) clearInputError(`teleport:${axis}`)
+        teleportCoordinateText.value = ''
       }
-    }),
+      edit((point) => {
+        if (point.kind === 'navigation') {
+          point.mode = value
+          if (value !== 'fast-travel') delete point.teleportCoordinate
+          point.status = 'draft'
+        }
+      })
+    },
     cancelImport: () => { importPreview.value = null },
     reportError: (value: string) => { error.value = value },
     dismissRecovery: () => {

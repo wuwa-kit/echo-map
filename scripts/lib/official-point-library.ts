@@ -33,7 +33,7 @@ export function convertOfficialPoints(dataset: MapDataset): PointLibrary {
     }
   }
   for (const location of dataset.navigationPoints) {
-    points.push({ ...makeBase(location), kind: 'navigation', name: location.typeName, navigationKind: location.kind, mode: location.mode, note: '官方导入：Z=0 为占位值，待实测。' })
+    points.push({ ...makeBase(location), kind: 'navigation', name: location.typeName, navigationKind: location.kind, mode: location.mode, note: '官方导入：Z=0 为占位值，待实测。', ...(location.teleportCoordinate ? { teleportCoordinate: location.teleportCoordinate } : {}) })
   }
   return parsePointLibrary({ version: 1, points }, dataset, 'official')
 }

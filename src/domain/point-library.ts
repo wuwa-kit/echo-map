@@ -1,5 +1,5 @@
 import { pointLibrarySchema } from './schema.ts'
-import type { AuthoredPoint, EchoMapLocation, AuthoredEchoLocation, MapDataset, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointLibrary, PointQuality } from './types.ts'
+import type { AuthoredCoordinate, AuthoredPoint, EchoMapLocation, AuthoredEchoLocation, GameCoordinate, MapDataset, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointLibrary, PointQuality } from './types.ts'
 import { officialToMapCoordinate } from '../map/projection.ts'
 
 export const NAVIGATION_NAMES: Record<NavigationKind, string> = {
@@ -55,6 +55,15 @@ export function pointTitle(point: AuthoredPoint, dataset: Pick<MapDataset, 'echo
   return point.members.map(({ echoId, count }) => `${names.get(echoId) ?? echoId} ×${count}`).join(' · ') || '未添加怪物'
 }
 
+function completeCoordinate(coordinate: AuthoredCoordinate | undefined): GameCoordinate | undefined {
+  if (!coordinate || coordinate.x === null || coordinate.y === null || coordinate.z === null) return undefined
+  return { x: coordinate.x, y: coordinate.y, z: coordinate.z }
+}
+
+export function navigationRouteCoordinate(point: NavigationPoint): GameCoordinate | null {
+  return point.teleportCoordinate ?? point.gameCoordinate
+}
+
 export function libraryLocations(library: PointLibrary, dataset: MapDataset) {
   const echoLocations: AuthoredEchoLocation[] = []
   const navigationPoints: NavigationPoint[] = []
@@ -76,14 +85,15 @@ export function libraryLocations(library: PointLibrary, dataset: MapDataset) {
     if (point.kind === 'echo') {
       echoLocations.push({ ...base, members: point.members, note: point.note, compositionStatus: point.compositionStatus ?? 'partial' })
     } else {
+      const teleportCoordinate = completeCoordinate(point.teleportCoordinate)
       const original = point.status === 'imported' ? officialNavigation.get(point.officialIds?.[0] ?? '') : undefined
       if (original) {
-        navigationPoints.push({ ...original, ...base, typeId: original.typeId, iconUrl: original.iconUrl })
+        navigationPoints.push({ ...original, ...base, typeId: original.typeId, iconUrl: original.iconUrl, ...(teleportCoordinate ? { teleportCoordinate } : {}) })
         officialGroupIds.add(original.groupId)
         continue
       }
       const groupId = `manual:${point.navigationKind}`
-      navigationPoints.push({ ...base, typeId: groupId, groupId, kind: point.navigationKind, mode: point.mode, catalogCategoryId: 'manual', catalogCategoryName: '人工定位点' })
+      navigationPoints.push({ ...base, typeId: groupId, groupId, kind: point.navigationKind, mode: point.mode, catalogCategoryId: 'manual', catalogCategoryName: '人工定位点', ...(teleportCoordinate ? { teleportCoordinate } : {}) })
     }
   }
   for (const kind of Object.keys(NAVIGATION_NAMES) as NavigationKind[]) {

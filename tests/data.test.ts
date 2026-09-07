@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { mapCatalogDataSchema, mapDataSchema, mapPointLocationsSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { readMapDataset } from '../scripts/lib/map-data.ts'
+import { isRouteStart } from '../src/domain/explorer-selectors.ts'
 
 describe('generated application data', () => {
   it('separates compact map structure, catalogue icons and point coordinates', async () => {
@@ -64,8 +65,6 @@ describe('generated application data', () => {
     expect(new Set(bossPoints.map(({ groupId }) => groupId))).toEqual(new Set(['kind:boss']))
     expect(parsed.navigationPointGroups.find(({ id }) => id === 'kind:boss')?.name).toBe('BOSS')
     expect(parsed.navigationPoints.filter(({ catalogCategoryName }) => catalogCategoryName === '挑战').every(({ mode }) => mode === 'fast-travel')).toBe(true)
-    expect(parsed.report.routeEligibleNavigationPointCount).toBe(parsed.navigationPoints.filter(({ mode, gameCoordinate }) => (
-      mode === 'fast-travel' && gameCoordinate !== null
-    )).length)
+    expect(parsed.report.routeEligibleNavigationPointCount).toBe(parsed.navigationPoints.filter(isRouteStart).length)
   })
 })

@@ -20,6 +20,7 @@ const ARROW_HALF_WIDTH = 5
 const ARROW_SPACING = 80
 const MIN_ARROW_LEG_LENGTH = 24
 const MIN_ROUTE_SCALE = 0.4
+const TELEPORT_ARRIVAL_RADIUS = 5
 type Pixel = [number, number]
 
 interface VisibleIcon {
@@ -130,6 +131,7 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
   const layer = new VectorLayer({ source: routeSource, style: null, zIndex: 60, className: 'route-lines', updateWhileAnimating: true, updateWhileInteracting: true })
   let routeExtent = createEmpty()
   let legs: [RoutePoint, RoutePoint][] = []
+  let teleportArrivals: RoutePoint[] = []
 
   function renderRoute({ context, frameState, inversePixelTransform }: RenderEvent): void {
     if (!context || !('clearRect' in context) || !frameState?.extent || !inversePixelTransform || routeSource.isEmpty()) return
@@ -191,7 +193,7 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     context.setLineDash([9 * scale, 7 * scale])
     const arrows: [Pixel, Pixel, Pixel][] = []
     for (const [from, to] of legs) {
-      const endpoints = linkEndpoints(pixel([...from.mapCoordinate]), pixel([...to.mapCoordinate]), iconsByPoint.get(from.id), iconsByPoint.get(to.id), lineWidth)
+      const endpoints = linkEndpoints(pixel([...from.mapCoordinate]), pixel([...to.mapCoordinate]), from.isTeleportArrival ? undefined : iconsByPoint.get(from.id), iconsByPoint.get(to.id), lineWidth)
       if (!endpoints) continue
       context.beginPath()
       context.moveTo(...endpoints[0])
@@ -208,6 +210,16 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
         context.lineTo(...tip)
         context.lineTo(...right)
       }
+      context.stroke()
+    }
+    context.fillStyle = '#07110f'
+    context.strokeStyle = '#65f1c2'
+    context.lineWidth = Math.max(1.5, 2 * scale)
+    for (const arrival of teleportArrivals) {
+      const [x, y] = pixel([...arrival.mapCoordinate])
+      context.beginPath()
+      context.arc(x, y, TELEPORT_ARRIVAL_RADIUS * scale, 0, Math.PI * 2)
+      context.fill()
       context.stroke()
     }
     // Clip against visible outlines, including unrelated icons crossed by a leg.
@@ -240,14 +252,22 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     routeSource.clear(true)
     routeExtent = createEmpty()
     legs = []
+    teleportArrivals = []
     if (!route || route.points.length === 0) {
       return
     }
     const segments: [number, number][][] = []
     let coordinates: [number, number][] = []
+    const arrivalIds = new Set<string>()
     for (const [index, point] of route.points.entries()) {
       const from = point.teleportFrom ?? route.points[index - 1]
       if (from) legs.push([from, point])
+      for (const candidate of [point, point.teleportFrom]) {
+        if (candidate?.isTeleportArrival && !arrivalIds.has(candidate.id)) {
+          arrivalIds.add(candidate.id)
+          teleportArrivals.push(candidate)
+        }
+      }
       extendCoordinate(routeExtent, point.mapCoordinate)
       if (point.teleportFrom) {
         extendCoordinate(routeExtent, point.teleportFrom.mapCoordinate)

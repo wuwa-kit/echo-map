@@ -25,7 +25,7 @@ function drawingContext() {
     strokeStyle: '#000',
     lineWidth: 1,
     save: vi.fn(), restore: vi.fn(), setTransform: vi.fn(), resetTransform: vi.fn(), clearRect: vi.fn(),
-    beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(),
+    beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(), arc: vi.fn(),
     setLineDash: vi.fn(), stroke: vi.fn(), fill: vi.fn(), fillRect: vi.fn(),
   }
 }
@@ -92,6 +92,28 @@ describe('route map lines', () => {
       expect(routeLayer.layer.getSource()?.getFeatures()).toEqual([])
     } finally {
       routeLayer.dispose()
+    }
+  })
+
+  it('starts at an explicit teleport arrival instead of clipping against the nearby map icon', () => {
+    const source = new VectorSource({ features: [new Feature({
+      geometry: new Point([100, 0]), mapPoint: { category: 'navigation', location: { id: 'beacon', kind: 'beacon', iconUrl: '' } },
+    })] })
+    const iconLayer = new VectorLayer({ source, style: new Style({ image: new CircleStyle({ radius: 20 }) }) })
+    const routeLayer = createRouteLayer([iconLayer])
+    const context = drawingContext()
+    try {
+      routeLayer.update({
+        points: [{ ...point('target', 200), teleportFrom: { ...point('beacon', 120), isTeleportArrival: true } }],
+        totalCost: 80, startPointId: 'beacon', algorithm: 'exact',
+      })
+      render(routeLayer.layer, context)
+      expect(context.moveTo.mock.calls[0]).toEqual([120, 200])
+      expect(context.arc).toHaveBeenCalledWith(120, 200, 5, 0, Math.PI * 2)
+    } finally {
+      routeLayer.dispose()
+      iconLayer.dispose()
+      source.dispose()
     }
   })
 

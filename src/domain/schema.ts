@@ -28,6 +28,12 @@ export const navigationKindSchema = z.enum([
 ])
 export const navigationModeSchema = z.enum(['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown'])
 
+const authoredCoordinateSchema = z.object({
+  x: z.number().int().safe().nullable(),
+  y: z.number().int().safe().nullable(),
+  z: z.number().int().safe().nullable(),
+}).strict()
+
 const authoredPointBase = {
   gravityType: gravityTypeSchema.nullable().default(null),
   id: z.string().min(1).max(100),
@@ -37,11 +43,7 @@ const authoredPointBase = {
   stateId: z.number().int(),
   countryId: z.number().int().nullable(),
   levelId: z.string().min(1).nullable(),
-  coordinate: z.object({
-    x: z.number().int().safe().nullable(),
-    y: z.number().int().safe().nullable(),
-    z: z.number().int().safe().nullable(),
-  }).strict(),
+  coordinate: authoredCoordinateSchema,
   note: z.string().max(2000),
 }
 
@@ -58,6 +60,7 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     name: z.string().max(100),
     navigationKind: navigationKindSchema,
     mode: navigationModeSchema,
+    teleportCoordinate: authoredCoordinateSchema.optional(),
   }).strict(),
 ]).superRefine((point, context) => {
   const issue = (message: string) => context.addIssue({ code: 'custom', message })
@@ -69,6 +72,9 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
   }
   if (point.status !== 'draft') {
     if (Object.values(point.coordinate).some((value) => value === null)) issue('核验点位必须填写完整的整数 XYZ')
+    if (point.kind === 'navigation' && point.teleportCoordinate && Object.values(point.teleportCoordinate).some((value) => value === null)) {
+      issue('核验传送落点必须填写完整的整数 XYZ')
+    }
     if (point.kind === 'echo' && point.members.length === 0) issue('刷取点至少需要一种怪物')
     if (point.status === 'verified' && point.kind === 'navigation' && (!point.name.trim() || point.navigationKind === 'unknown' || point.mode === 'unknown')) {
       issue('定位点需要名称、明确的类型和传送能力')
@@ -76,6 +82,9 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     if (point.status === 'verified' && point.kind === 'navigation' && ['boss', 'domain', 'challenge'].includes(point.navigationKind) && point.mode !== 'fast-travel') {
       issue('BOSS、副本与挑战定位点应标记为可直接传送')
     }
+  }
+  if (point.kind === 'navigation' && point.teleportCoordinate && point.mode !== 'fast-travel') {
+    issue('只有可直接传送的定位点可以填写传送落点')
   }
 })
 
@@ -95,6 +104,12 @@ export const gameCoordinateSchema = z.object({
   y: finiteNumber,
   z: finiteNumber,
 })
+
+const teleportCoordinateSchema = z.object({
+  x: z.number().int().safe(),
+  y: z.number().int().safe(),
+  z: z.number().int().safe(),
+}).strict()
 
 const officialCoordinateSchema = z.object({
   rawX: finiteNumber,
@@ -242,6 +257,14 @@ function validateMapGravity(dataset: Pick<MapDataset, 'states' | 'echoLocations'
   }
 }
 
+function validateNavigationTeleportCoordinates(dataset: { navigationPoints: readonly { mode: string, teleportCoordinate?: unknown }[] }, context: RefinementCtx): void {
+  dataset.navigationPoints.forEach((point, index) => {
+    if (point.teleportCoordinate && point.mode !== 'fast-travel') context.addIssue({
+      code: 'custom', path: ['navigationPoints', index, 'teleportCoordinate'], message: '只有可直接传送的定位点可以填写传送落点',
+    })
+  })
+}
+
 export const floorCoverageTileSchema = z.object({
   tile: z.string().regex(/^-?\d+_-?\d+\.png$/u),
   size: z.number().int().positive().max(1024),
@@ -373,6 +396,7 @@ const mapDatasetObjectSchema = z.object({
   })),
   navigationPoints: z.array(z.object({
     ...pointBaseShape,
+    teleportCoordinate: teleportCoordinateSchema.optional(),
     groupId: z.string().min(1),
     catalogCategoryId: z.string().min(1),
     catalogCategoryName: z.string().min(1),
@@ -408,7 +432,7 @@ const mapDatasetObjectSchema = z.object({
 })
 
 export const mapDatasetSchema = mapDatasetObjectSchema
-  .superRefine(validateSonataEchoIds).superRefine(validateMapNavigation).superRefine(validateMapGravity)
+  .superRefine(validateSonataEchoIds).superRefine(validateMapNavigation).superRefine(validateMapGravity).superRefine(validateNavigationTeleportCoordinates)
 
 const sourceSchema = mapDatasetObjectSchema.shape.source
 
@@ -441,7 +465,7 @@ export const mapPointLocationsSchema = z.object({
     .omit({ iconUrl: true }).strict()),
   navigationPoints: z.array(mapDatasetObjectSchema.shape.navigationPoints.element
     .omit({ typeId: true, typeName: true, iconUrl: true }).extend({ iconId: z.string().min(1) }).strict()),
-}).strict()
+}).strict().superRefine(validateNavigationTeleportCoordinates)
 
 export const officialPointDataSchema = z.object({
   locations: mapPointLocationsSchema,

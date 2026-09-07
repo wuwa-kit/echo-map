@@ -41,20 +41,34 @@ describe('authored point library', () => {
   it('keeps XY-overlapping floors and heights independent and only permits verified travel starts', () => {
     const point = mixedPoint()
     const other = { ...mixedPoint('higher'), coordinate: { ...point.coordinate, z: 200 } }
-    const library: PointLibrary = { version: 1, points: [point, other, { gravityType: null, id: 'beacon', kind: 'navigation', status: 'verified', stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: 0 }, name: '测试信标', navigationKind: 'beacon', mode: 'fast-travel', note: '' }] }
+    const teleportCoordinate = { x: 3, y: 4, z: 5 }
+    const library: PointLibrary = { version: 1, points: [point, other, { gravityType: null, id: 'beacon', kind: 'navigation', status: 'verified', stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: 0 }, teleportCoordinate, name: '测试信标', navigationKind: 'beacon', mode: 'fast-travel', note: '' }] }
     const locations = libraryLocations(library, referenceDataset)
     expect(locations.echoLocations).toHaveLength(2)
     expect(locations.echoLocations.map(({ gameCoordinate }) => gameCoordinate?.z)).toEqual([18, 200])
     expect(locations.navigationPoints[0]?.mode).toBe('fast-travel')
+    expect(locations.navigationPoints[0]?.teleportCoordinate).toEqual(teleportCoordinate)
     expect(locations.navigationPointGroups[0]?.id).toBe('manual:beacon')
     setActivePinia(createPinia())
     const store = useExplorerStore()
     store.setDataset(referenceDataset)
     store.setPointLibrary(library)
     expect(store.routeEligibleNavigationPoints).toHaveLength(1)
+    expect(createRoutePlanInput(referenceDataset, [], store.routeEligibleNavigationPoints, 8, 1).startPoints[0]?.coordinate).toEqual(teleportCoordinate)
     store.setPointGroupVisible('manual:beacon', false)
     expect(store.visibleNavigationPoints).toHaveLength(0)
     expect(store.routeEligibleNavigationPoints).toHaveLength(1)
+  })
+
+  it('requires complete teleport XYZ for verified fast-travel points and rejects it for other modes', () => {
+    const navigation = {
+      gravityType: null, id: 'beacon', kind: 'navigation' as const, status: 'verified' as const,
+      stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: 0 },
+      name: '测试信标', navigationKind: 'beacon' as const, mode: 'fast-travel' as const, note: '',
+    }
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, teleportCoordinate: { x: 1, y: 2, z: null } }] }, referenceDataset)).toThrow('核验传送落点')
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, mode: 'landmark', teleportCoordinate: { x: 1, y: 2, z: 3 } }] }, referenceDataset)).toThrow('只有可直接传送')
+    expect(parsePointLibrary({ version: 1, points: [navigation] }, referenceDataset).points[0]).not.toHaveProperty('teleportCoordinate')
   })
 
   it.each([

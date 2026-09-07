@@ -1,6 +1,6 @@
 import type { EchoDefinition, EchoMapLocation, GravityType, NavigationPoint, PointLocationBase, RegionLabel } from './types.ts'
 import { matchesGravity } from './gravity.ts'
-import { echoMembers } from './point-library.ts'
+import { echoMembers, navigationRouteCoordinate } from './point-library.ts'
 
 type MapScope = Pick<PointLocationBase, 'stateId' | 'countryId' | 'levelId'> & { gravityType?: GravityType | null }
 
@@ -77,5 +77,5 @@ export function hasGameCoordinate(location: PointLocationBase): boolean {
 }
 
 export function isRouteStart(location: NavigationPoint): boolean {
-  return location.mode === 'fast-travel' && hasGameCoordinate(location)
+  return location.mode === 'fast-travel' && navigationRouteCoordinate(location) !== null
 }

@@ -3,6 +3,7 @@ import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
 import { projectPath, readJson } from './lib/files.ts'
 import { parsePointLibrary } from '../src/domain/point-library.ts'
+import { isRouteStart } from '../src/domain/explorer-selectors.ts'
 import { readMapDataset, readOfficialPointData } from './lib/map-data.ts'
 
 const dataset = await readMapDataset()
@@ -104,9 +105,7 @@ for (const collection of [dataset.echoLocations, dataset.navigationPoints, datas
   }
 }
 
-const routeEligibleNavigationPoints = dataset.navigationPoints.filter(({ mode, gameCoordinate }) => (
-  mode === 'fast-travel' && gameCoordinate !== null
-))
+const routeEligibleNavigationPoints = dataset.navigationPoints.filter(isRouteStart)
 if (routeEligibleNavigationPoints.length !== dataset.report.routeEligibleNavigationPointCount) {
   errors.push('路线起点统计与定位点数据不一致')
 }

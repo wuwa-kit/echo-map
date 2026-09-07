@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../stores/explorer.ts'
-import { echoMembers, MODE_NAMES } from '../domain/point-library.ts'
+import { echoMembers, MODE_NAMES, navigationRouteCoordinate } from '../domain/point-library.ts'
 import { describeEchoPoint } from '../domain/point-details.ts'
 import EchoPointIcon from './EchoPointIcon.vue'
 import { gravityName } from '../domain/gravity.ts'
@@ -12,6 +12,7 @@ const { selectedEchoLocation, selectedNavigationPoint, pointCandidates, activeEc
 const location = computed(() => selectedEchoLocation.value ?? selectedNavigationPoint.value)
 const details = computed(() => selectedEchoLocation.value ? describeEchoPoint(selectedEchoLocation.value, dataset.value?.echoes ?? []) : null)
 const candidates = computed(() => pointCandidates.value.map((point) => ({ point, ...describeEchoPoint(point, dataset.value?.echoes ?? []) })))
+const routeCoordinate = computed(() => selectedNavigationPoint.value ? navigationRouteCoordinate(selectedNavigationPoint.value) : null)
 </script>
 
 <template>
@@ -37,7 +38,9 @@ const candidates = computed(() => pointCandidates.value.map((point) => ({ point,
         <span v-if="activeEchoIds.has(member.echoId)" class="shrink-0 rounded-4px bg-[#153b2d] px-5px py-2px text-11px">目标</span>
       </div>
       <div v-if="selectedNavigationPoint" class="text-[#cde8dc]">{{ selectedNavigationPoint.typeName }} · {{ MODE_NAMES[selectedNavigationPoint.mode] }}</div>
-      <div class="mt-14px font-mono text-12px text-[#a0baac]">{{ location.gameCoordinate ? `XYZ ${Object.values(location.gameCoordinate).join(', ')}` : '官方测试点，未录入 XYZ' }}</div>
+      <div v-if="selectedNavigationPoint" class="mt-14px font-mono text-12px text-[#a0baac]">{{ selectedNavigationPoint.gameCoordinate ? `图标 XYZ ${Object.values(selectedNavigationPoint.gameCoordinate).join(', ')}` : '图标点位未录入 XYZ' }}</div>
+      <div v-else class="mt-14px font-mono text-12px text-[#a0baac]">{{ location.gameCoordinate ? `XYZ ${Object.values(location.gameCoordinate).join(', ')}` : '官方测试点，未录入 XYZ' }}</div>
+      <div v-if="selectedNavigationPoint?.mode === 'fast-travel'" class="mt-6px font-mono text-12px text-[#78dcb9]">{{ selectedNavigationPoint.teleportCoordinate ? `传送落点 ${Object.values(selectedNavigationPoint.teleportCoordinate).join(', ')}` : routeCoordinate ? `传送落点未单独录入，按图标 XYZ ${Object.values(routeCoordinate).join(', ')}` : '传送落点未录入' }}</div>
       <div v-if="location.quality === 'official-provisional'" class="mt-8px text-12px text-[#e5bd7c]">官方导入 · Z=0 为占位值</div>
       <div v-if="store.supportsGravity" class="mt-8px text-12px text-[#a0baac]">{{ gravityName(location.gravityType) }}</div>
       <div v-if="selectedEchoLocation && selectedEchoLocation.quality !== 'official-provisional' && 'note' in selectedEchoLocation" class="mt-8px whitespace-pre-wrap text-12px text-[#9cb3a7]">{{ selectedEchoLocation.note }}</div>

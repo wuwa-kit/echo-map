@@ -8,6 +8,7 @@ import { flattenRegions, normalizeLayers, normalizeMapNavigation, normalizeGravi
 import { normalizeLocations } from './lib/map/locations.ts'
 import { groupNavigationPoints } from './lib/map/navigation-groups.ts'
 import { buildFloorCoverage } from './lib/map/floor-coverage.ts'
+import { isRouteStart } from '../src/domain/explorer-selectors.ts'
 import { fetchCountryData, fetchMapConfiguration, fetchNavigationIconHashes, fetchStatePayloads } from './lib/map/source.ts'
 import type { AliasData, ManualData, NavigationConfig, NavigationGroupConfig } from './lib/map/types.ts'
 
@@ -60,9 +61,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
     bossNavigationPointCount: normalizedNavigationPoints.filter(({ kind }) => kind === 'boss').length,
     challengeNavigationPointCount: normalizedNavigationPoints.filter(({ catalogCategoryName }) => catalogCategoryName === '挑战').length,
     navigationIconFetchFailureCount: navigationGrouping.iconFetchFailureCount,
-    routeEligibleNavigationPointCount: normalizedNavigationPoints.filter(({ mode, gameCoordinate }) => (
-      mode === 'fast-travel' && gameCoordinate !== null
-    )).length,
+    routeEligibleNavigationPointCount: normalizedNavigationPoints.filter(isRouteStart).length,
   }
   const dataset: MapDataset = {
     version: 3,

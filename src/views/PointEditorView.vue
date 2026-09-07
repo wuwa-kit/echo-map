@@ -19,7 +19,7 @@ import { hasGravityMap } from '../domain/gravity.ts'
 
 const store = usePointEditorStore()
 const compact = useMediaQuery('(max-width: 1023px)')
-const { dataset, library, officialLibrary, allPoints, showOfficial, trackingEchoId, matchRadius, heightTolerance, requiresMatchDecision, draft, filteredPoints, nearbyPoints, busy, dirty, error, notice, search, monsterSearch, coordinateText, recovery, deleted, importPreview, versions } = storeToRefs(store)
+const { dataset, library, officialLibrary, allPoints, showOfficial, trackingEchoId, matchRadius, heightTolerance, requiresMatchDecision, draft, filteredPoints, nearbyPoints, busy, dirty, error, notice, search, monsterSearch, coordinateText, teleportCoordinateText, recovery, deleted, importPreview, versions } = storeToRefs(store)
 const importFile = useTemplateRef<HTMLInputElement>('importFileRef')
 const selectedQuery = useRouteQuery<string | undefined>('point', undefined, { mode: 'replace' })
 const xQuery = useRouteQuery<string | undefined>('x', undefined, { mode: 'replace' })
@@ -243,7 +243,7 @@ useEventListener(window, 'beforeunload', (event) => {
           </div>
         </div>
         <div class="mt-16px border-t border-[var(--line)] pt-14px">
-          <div class="mb-7px text-13px font-600">游戏内实测坐标</div>
+          <div class="mb-7px text-13px font-600">{{ draft.kind === 'navigation' ? '图标点位坐标' : '游戏内实测坐标' }}</div>
           <div class="flex gap-6px"><WuInput :model-value="coordinateText" :disabled="busy" placeholder="粘贴 XYZ，例如 -497, 449, 18" aria-label="粘贴 XYZ" @update:model-value="store.setCoordinateText" @confirm="store.applyCoordinateText" /><button :class="buttonClass" class="shrink-0" :disabled="busy" @click="store.applyCoordinateText">应用</button></div>
           <div class="mt-8px grid grid-cols-3 gap-8px"><label v-for="axis in (['x', 'y', 'z'] as const)" :key="axis" class="text-11px text-[#88a694]">{{ axis.toUpperCase() }}<WuInput class="mt-4px font-mono" inputmode="numeric" :aria-label="`坐标 ${axis.toUpperCase()}`" :model-value="draft.coordinate[axis]" :disabled="busy" @update:model-value="store.setCoordinate(axis, $event)" /></label></div>
         </div>
@@ -289,10 +289,16 @@ useEventListener(window, 'beforeunload', (event) => {
           <WuSelect id="editor-navigation-mode" :native="compact" :model-value="draft.mode" :disabled="busy" @update:model-value="setMode">
             <WuOption v-for="(name, mode) in MODE_NAMES" :key="mode" :value="mode">{{ name }}</WuOption>
           </WuSelect>
+          <div v-if="draft.mode === 'fast-travel'" class="mt-14px rounded-8px border border-[var(--line)] p-10px">
+            <div class="mb-7px text-13px font-600">实际传送落点 XYZ</div>
+            <div class="flex gap-6px"><WuInput :model-value="teleportCoordinateText" :disabled="busy" placeholder="粘贴落点 XYZ" aria-label="粘贴传送落点 XYZ" @update:model-value="store.setTeleportCoordinateText" @confirm="store.applyTeleportCoordinateText" /><button :class="buttonClass" class="shrink-0" :disabled="busy" @click="store.applyTeleportCoordinateText">应用</button></div>
+            <div class="mt-8px grid grid-cols-3 gap-8px"><label v-for="axis in (['x', 'y', 'z'] as const)" :key="axis" class="text-11px text-[#88a694]">{{ axis.toUpperCase() }}<WuInput class="mt-4px font-mono" inputmode="numeric" :aria-label="`传送落点 ${axis.toUpperCase()}`" :model-value="draft.teleportCoordinate?.[axis] ?? ''" :disabled="busy" @update:model-value="store.setTeleportCoordinate(axis, $event)" /></label></div>
+            <div class="mt-8px text-11px leading-relaxed text-[#8daa99]">可选；留空时路线使用图标点位 XYZ。地图图标始终保留在图标点位。</div>
+          </div>
         </div>
         <label class="mt-16px block text-12px text-[#91ae9e]">备注<WuInput class="mt-5px" :model-value="draft.note" :disabled="busy" placeholder="入口、地形、核验说明…" @update:model-value="store.setNote" /></label>
         <div class="sticky bottom-0 mt-16px border-t border-[var(--line)] bg-[#0d1e16] pt-12px">
-          <div class="mb-8px text-11px text-[#8daa99]">{{ draft.kind === 'echo' ? '核验 XYZ 和本次已知怪物即可保存；清单不必一次补齐。同种声骸再次追加时取较大数量。' : '核验 XYZ 和传送能力后保存；可直接传送的点位可作为路线起点。' }}</div>
+          <div class="mb-8px text-11px text-[#8daa99]">{{ draft.kind === 'echo' ? '核验 XYZ 和本次已知怪物即可保存；清单不必一次补齐。同种声骸再次追加时取较大数量。' : '核验图标点位 XYZ 和传送能力后保存；实际落点留空时按图标点位规划。' }}</div>
           <div class="grid grid-cols-2 gap-6px"><button :class="buttonClass" :disabled="busy" @click="save('draft')">保存草稿</button><button class="min-h-42px rounded-7px border-0 bg-[#65f1c2] px-8px text-13px text-[#092519] font-600 disabled:opacity-40" :disabled="busy" @click="save('verified')">{{ busy ? '保存中…' : '核验并保存' }}</button></div>
           <button :class="buttonClass" class="mt-6px w-full" :disabled="busy" @click="save('verified', true)">核验保存，继续下一处 →</button>
           <div class="mt-7px flex flex-wrap gap-5px"><button :class="buttonClass" :disabled="busy" @click="runDraftAction(store.copyPoint)">复制到新点</button><button :class="buttonClass" :disabled="busy" @click="runDraftAction(store.discardChanges)">放弃修改</button><button v-if="existing" :class="buttonClass" class="text-[#e5ad9a]" :disabled="busy" @click="runDraftAction(store.deletePoint)">删除点位</button></div>

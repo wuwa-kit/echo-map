@@ -118,12 +118,14 @@ export function normalizeLocations(
         }
 
         if (navigation && !navigationPoints.has(locationId)) {
+          const manualPoint = manualNavigationByLocation.get(locationId)
           navigationPoints.set(locationId, {
-            ...locationBase(location, type, state.id, manualNavigationByLocation.get(locationId), iconUrl(type.icon)),
+            ...locationBase(location, type, state.id, manualPoint, iconUrl(type.icon)),
             catalogCategoryId: navigation.categoryId,
             catalogCategoryName: navigation.categoryName,
             mode: navigation.mode,
             kind: navigation.kind,
+            ...(manualPoint?.teleportCoordinate ? { teleportCoordinate: manualPoint.teleportCoordinate } : {}),
           })
         }
       }

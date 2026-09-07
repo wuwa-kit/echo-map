@@ -1,4 +1,4 @@
-import type { NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointQuality, RouteConnector } from '../../../src/domain/types.ts'
+import type { GameCoordinate, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointQuality, RouteConnector } from '../../../src/domain/types.ts'
 
 export interface ManualPoint {
   gravityType?: 1 | 2 | null
@@ -15,9 +15,13 @@ export interface ManualPoint {
   note: string
 }
 
+export interface ManualNavigationPoint extends ManualPoint {
+  teleportCoordinate?: GameCoordinate
+}
+
 export interface ManualData {
   echoLocations: ManualPoint[]
-  navigationPoints: ManualPoint[]
+  navigationPoints: ManualNavigationPoint[]
   connectors: RouteConnector[]
 }
 

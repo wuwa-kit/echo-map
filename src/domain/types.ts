@@ -28,6 +28,12 @@ export interface GameCoordinate {
   z: number
 }
 
+export interface AuthoredCoordinate {
+  x: number | null
+  y: number | null
+  z: number | null
+}
+
 export interface OfficialCoordinate {
   rawX: number
   rawY: number
@@ -128,11 +134,7 @@ export interface AuthoredPointBase {
   stateId: number
   countryId: number | null
   levelId: string | null
-  coordinate: {
-    x: number | null
-    y: number | null
-    z: number | null
-  }
+  coordinate: AuthoredCoordinate
   note: string
 }
 
@@ -147,6 +149,7 @@ export interface AuthoredNavigationPoint extends AuthoredPointBase {
   name: string
   navigationKind: NavigationKind
   mode: NavigationMode
+  teleportCoordinate?: AuthoredCoordinate
 }
 
 export type AuthoredPoint = AuthoredEchoPoint | AuthoredNavigationPoint
@@ -190,6 +193,7 @@ export interface NavigationPoint extends PointLocationBase {
   catalogCategoryName: string
   mode: NavigationMode
   kind: NavigationKind
+  teleportCoordinate?: GameCoordinate
 }
 
 export type MapDisplayPoint =
@@ -327,6 +331,7 @@ export interface RoutePoint {
   levelId: string | null
   coordinate: GameCoordinate
   mapCoordinate: [number, number]
+  isTeleportArrival?: true
   members?: {
     echoId: string
     name: string

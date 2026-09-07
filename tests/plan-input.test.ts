@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createRoutePlanInput } from '../src/route/plan-input.ts'
-import type { EchoLocation } from '../src/domain/types.ts'
+import { gameToMapCoordinate } from '../src/map/projection.ts'
+import type { EchoLocation, NavigationPoint } from '../src/domain/types.ts'
 
 const location: EchoLocation = {
   gravityType: null,
@@ -8,6 +9,10 @@ const location: EchoLocation = {
   stateId: 8, countryId: 1, layeredMapId: null, levelId: 'floor',
   coordinate: { rawX: 100, rawY: 200, mapX: 300, mapY: 400 },
   gameCoordinate: { x: 1, y: 2, z: 30 }, quality: 'manual-verified',
+}
+const startPoint: NavigationPoint = {
+  ...location, groupId: 'beacon', catalogCategoryId: 'navigation', catalogCategoryName: '传送',
+  mode: 'fast-travel', kind: 'beacon',
 }
 
 describe('route input conversion', () => {
@@ -24,5 +29,20 @@ describe('route input conversion', () => {
   it('rejects provisional points instead of deriving Z from map coordinates', () => {
     expect(() => createRoutePlanInput(null, [{ ...location, gameCoordinate: null }], [], 8, 1))
       .toThrow('点位 echo-point 缺少 XYZ')
+  })
+
+  it('uses an explicit teleport arrival for route distance and map drawing, with marker fallback', () => {
+    const teleportCoordinate = { x: 10, y: 20, z: 40 }
+    const explicit = createRoutePlanInput(null, [], [{ ...startPoint, teleportCoordinate }], 8, 1).startPoints[0]
+    expect(explicit).toMatchObject({
+      id: startPoint.id,
+      coordinate: teleportCoordinate,
+      mapCoordinate: gameToMapCoordinate(teleportCoordinate.x, teleportCoordinate.y),
+      isTeleportArrival: true,
+    })
+
+    const fallback = createRoutePlanInput(null, [], [startPoint], 8, 1).startPoints[0]
+    expect(fallback).toMatchObject({ coordinate: startPoint.gameCoordinate, mapCoordinate: [300, 400] })
+    expect(fallback).not.toHaveProperty('isTeleportArrival')
   })
 })
