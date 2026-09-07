@@ -67,4 +67,99 @@ describe('route optimizer', () => {
     expect(result.startPointId).toBe('nearest')
     expect(result.totalCost).toBe(16)
   })
+
+  it.each([2, 16])('reconsiders fast travel at every stop for %i targets', (count) => {
+    const half = count / 2
+    const points = Array.from({ length: count }, (_, index) => point(`target-${index}`, index < half ? index + 1 : 100 + index - half + 1, 0, 0))
+    const result = optimizeRoute({
+      points,
+      startPoints: [point('west', 0, 0, 0), point('east', 100, 0, 0)],
+      connectors: [],
+      zWeight: 1,
+    })
+
+    expect(result.totalCost).toBe(count)
+    expect(new Set(result.points.map(({ id }) => id))).toEqual(new Set(points.map(({ id }) => id)))
+    expect(result.points).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'target-0', teleportFrom: expect.objectContaining({ id: 'west' }) }),
+      expect.objectContaining({ id: `target-${half}`, teleportFrom: expect.objectContaining({ id: 'east' }) }),
+    ]))
+  })
+
+  it.each([2, 16])('can teleport between disconnected floors with %i targets and an eligible beacon on each floor', (count) => {
+    const points = Array.from({ length: count }, (_, index) => index < count / 2
+      ? point(`upper-${index}`, index + 1, 0, 10, 'upper')
+      : point(`lower-${index}`, index - count / 2 + 1, 0, -10, 'lower'))
+    const result = optimizeRoute({
+      points,
+      startPoints: [point('upper-beacon', 0, 0, 10, 'upper'), point('lower-beacon', 0, 0, -10, 'lower')],
+      connectors: [],
+      zWeight: 1,
+    })
+
+    expect(result.totalCost).toBe(count)
+    expect(new Set(result.points.map(({ id }) => id))).toEqual(new Set(points.map(({ id }) => id)))
+    expect(result.points.filter(({ teleportFrom }) => teleportFrom)).toHaveLength(2)
+  })
+
+  it.each([2, 16])('keeps walking costs for %i targets when no fast travel points are available', (count) => {
+    const result = optimizeRoute({
+      points: Array.from({ length: count }, (_, index) => point(`target-${index}`, index * 10, 0, 0)),
+      startPoints: [],
+      connectors: [],
+      zWeight: 1,
+    })
+
+    expect(result.totalCost).toBe((count - 1) * 10)
+    expect(result.startPointId).toBeNull()
+  })
+
+  it('uses XYZ cost instead of map proximity when choosing each teleport', () => {
+    const upper = point('upper', 0, 0, 100)
+    const lower = point('lower', 0, 0, 0)
+    const result = optimizeRoute({
+      points: [upper, lower],
+      startPoints: [point('upper-beacon', 3, 4, 100), point('lower-beacon', 3, 4, 0)],
+      connectors: [],
+      zWeight: 2,
+    })
+
+    expect(result.totalCost).toBe(10)
+    expect(result.points.find(({ id }) => id === 'upper')?.teleportFrom?.id).toBe('upper-beacon')
+    expect(result.points.find(({ id }) => id === 'lower')?.teleportFrom?.id).toBe('lower-beacon')
+  })
+
+  it('keeps walking when it ties with teleporting', () => {
+    const result = optimizeRoute({
+      points: [point('first', 1, 0, 0), point('second', 2, 0, 0)],
+      startPoints: [point('beacon', 0, 0, 0), point('tied-beacon', 3, 0, 0)],
+      connectors: [],
+      zWeight: 1,
+    })
+
+    expect(result.totalCost).toBe(2)
+    expect(result.points[0]?.teleportFrom).toBeDefined()
+    expect(result.points[1]?.teleportFrom).toBeUndefined()
+  })
+
+  it('finds the minimum directed travel cost among all small-route permutations', () => {
+    const input = {
+      points: [point('a', 5, 3, 0), point('b', 45, 10, 8), point('c', 41, 8, 0), point('d', 20, 40, 0)],
+      startPoints: [point('west', 0, 0, 0), point('east', 40, 0, 0)],
+      connectors: [],
+      zWeight: 2,
+    }
+    function minimumCost(remaining: RoutePoint[], previous?: RoutePoint): number {
+      if (remaining.length === 0) return 0
+      return Math.min(...remaining.map((next) => {
+        const cost = Math.min(
+          previous ? movementCost(previous, next, input) : Number.POSITIVE_INFINITY,
+          ...input.startPoints.map((start) => movementCost(start, next, input)),
+        )
+        return cost + minimumCost(remaining.filter((point) => point !== next), next)
+      }))
+    }
+
+    expect(optimizeRoute(input).totalCost).toBeCloseTo(minimumCost(input.points), 8)
+  })
 })

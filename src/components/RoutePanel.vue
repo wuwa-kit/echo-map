@@ -4,13 +4,14 @@ import { storeToRefs } from 'pinia'
 import WuScrollArea from './base/WuScrollArea.vue'
 import WuInput from './base/WuInput.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
+import { useRouteExportStore } from '../stores/route-export.ts'
 
 defineProps<{ compact: boolean }>()
 const store = useExplorerStore()
-const { allNavigationPoints, route, routeEligibleLocations, routeEligibleNavigationPoints, routeZWeight, visibleEchoLocations, planning, routeError } = storeToRefs(store)
+const exportStore = useRouteExportStore()
+const { route, routeEligibleLocations, routeEligibleNavigationPoints, routeZWeight, visibleEchoLocations, planning, routeError } = storeToRefs(store)
 const incompleteCount = computed(() => visibleEchoLocations.value.length - routeEligibleLocations.value.length)
 const usesOfficialCoordinates = computed(() => [...routeEligibleLocations.value, ...routeEligibleNavigationPoints.value].some(({ quality }) => quality === 'official-provisional'))
-const startPoint = computed(() => allNavigationPoints.value.find(({ id }) => id === route.value?.startPointId) ?? null)
 </script>
 
 <template>
@@ -36,7 +37,7 @@ const startPoint = computed(() => allNavigationPoints.value.find(({ id }) => id 
         <WuInput class="mt-3px" :model-value="routeZWeight" type="number" inputmode="decimal" min="0.1" max="10" step="0.05" lazy @update:model-value="store.setRouteZWeight(Number($event))" />
       </label>
     </div>
-    <div class="mb-10px text-12px text-[#9ab0a7] leading-relaxed">{{ routeEligibleNavigationPoints.length }} 个可传送起点。未补齐怪物清单的人工点按已知怪物参与路线。</div>
+    <div class="mb-10px text-12px text-[#9ab0a7] leading-relaxed">{{ routeEligibleNavigationPoints.length }} 个可用传送点，每一步选择步行距离更短的走法。未补齐怪物清单的人工点按已知怪物参与路线。</div>
     <div v-if="usesOfficialCoordinates" class="mb-10px text-12px leading-relaxed text-[#e5bd7c]">包含官方点位，Z=0 按占位高度计算。切换“仅人工”可使用实测坐标。</div>
     <div v-if="routeEligibleLocations.length === 0" class="mb-12px rounded-6px bg-[#182b25] p-12px text-14px text-[#b9c9c2]" role="status">
       {{ visibleEchoLocations.length === 0 ? '先在筛选中选择声骸或合鸣效果。' : '当前筛选的声骸尚未录入 XYZ，暂时无法生成路线。' }}
@@ -47,15 +48,16 @@ const startPoint = computed(() => allNavigationPoints.value.find(({ id }) => id 
     <button v-if="planning" type="button" class="mt-8px min-h-44px w-full cursor-pointer rounded-7px border border-[var(--line)] bg-transparent text-14px text-[#b9c9c2]" @click="store.clearRoute">取消计算</button>
     <div v-if="routeError" class="mt-12px text-14px text-[#ff9f92]" role="alert">{{ routeError }}</div>
     <div v-if="route" class="mt-14px border-t border-[var(--line)] pt-12px">
+      <button type="button" class="mb-12px min-h-44px w-full rounded-7px border border-[#65f1c2] bg-[#163e2e] px-12px text-14px text-[#a8f6d5] disabled:opacity-50" :disabled="planning || exportStore.status === 'running'" @click="exportStore.start">导出路线长图</button>
       <div class="flex flex-wrap items-center justify-between gap-8px" role="status">
         <span class="rounded-4px bg-[#163e2e] px-7px py-4px text-12px text-[var(--accent)]">{{ route.algorithm === 'exact' ? '精确最优' : '启发式优化' }}</span>
         <span class="text-14px text-[#d8e8e1]">{{ route.totalCost.toFixed(1) }} 距离成本</span>
       </div>
-      <div v-if="startPoint" class="mt-10px text-14px text-[#9ab0a7]">起点：{{ startPoint.typeName }}</div>
       <WuScrollArea :unbounded="compact" class="mt-10px min-[1024px]:max-h-240px" role="list" aria-label="路线点位">
         <div v-for="(point, index) in route.points" :key="point.id" class="flex gap-9px border-b border-[var(--line)] py-10px text-14px" role="listitem">
           <span class="w-24px shrink-0 text-right text-[var(--accent)]">{{ index + 1 }}.</span>
           <span class="min-w-0">
+            <span v-if="point.teleportFrom" class="mb-4px block text-12px text-[var(--accent)]">传送至 {{ point.teleportFrom.name }}（{{ point.teleportFrom.coordinate.x }}, {{ point.teleportFrom.coordinate.y }}, {{ point.teleportFrom.coordinate.z }}）后前往</span>
             <span class="block text-[#d9e7e1]">{{ point.name }}</span>
             <span class="mt-4px block text-12px text-[#9ab0a7]">{{ point.coordinate.x }}, {{ point.coordinate.y }}, {{ point.coordinate.z }}</span>
           </span>

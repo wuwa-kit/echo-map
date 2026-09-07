@@ -22,26 +22,27 @@ export function bossMarkerShape(point: Pick<NavigationPoint, 'kind' | 'typeName'
   return /^.{4}之.$/u.test(point.typeName) ? 'cut-diamond' : 'diamond'
 }
 
-function markerPath(shape: PortraitMarkerShape, inset: number): Path2D {
+export function portraitMarkerOutline(shape: PortraitMarkerShape, inset = 0): [number, number][] {
   const radius = MARKER_SIZE / 2 - inset * Math.SQRT2
-  const path = new Path2D()
   if (shape === 'diamond') {
-    path.moveTo(CENTER, CENTER - radius)
-    path.lineTo(CENTER + radius, CENTER)
-    path.lineTo(CENTER, CENTER + radius)
-    path.lineTo(CENTER - radius, CENTER)
-  } else {
-    const edge = MARKER_SIZE / 2 - inset
-    const corner = radius + CUT_HALF_WIDTH - edge
-    path.moveTo(CENTER - corner, CENTER - edge)
-    path.lineTo(CENTER + corner, CENTER - edge)
-    path.lineTo(CENTER + edge, CENTER - corner)
-    path.lineTo(CENTER + edge, CENTER + corner)
-    path.lineTo(CENTER + corner, CENTER + edge)
-    path.lineTo(CENTER - corner, CENTER + edge)
-    path.lineTo(CENTER - edge, CENTER + corner)
-    path.lineTo(CENTER - edge, CENTER - corner)
+    return [[CENTER, CENTER - radius], [CENTER + radius, CENTER], [CENTER, CENTER + radius], [CENTER - radius, CENTER]]
   }
+  const edge = MARKER_SIZE / 2 - inset
+  const corner = radius + CUT_HALF_WIDTH - edge
+  return [
+    [CENTER - corner, CENTER - edge], [CENTER + corner, CENTER - edge],
+    [CENTER + edge, CENTER - corner], [CENTER + edge, CENTER + corner],
+    [CENTER + corner, CENTER + edge], [CENTER - corner, CENTER + edge],
+    [CENTER - edge, CENTER + corner], [CENTER - edge, CENTER - corner],
+  ]
+}
+
+function markerPath(shape: PortraitMarkerShape, inset: number): Path2D {
+  const path = new Path2D()
+  portraitMarkerOutline(shape, inset).forEach(([x, y], index) => {
+    if (index === 0) path.moveTo(x, y)
+    else path.lineTo(x, y)
+  })
   path.closePath()
   return path
 }
@@ -77,10 +78,11 @@ export function drawPortraitMarker(
   context.restore()
 }
 
-export function createPortraitMarkerStyles(onChange: () => void) {
-  const pixelRatio = Math.max(2, Math.ceil(window.devicePixelRatio || 1))
+export function createPortraitMarkerStyles(onChange: () => void, ratio = window.devicePixelRatio || 1) {
+  const pixelRatio = Math.max(2, Math.ceil(ratio))
   const styles = new Map<string, Style[]>()
   const pendingImages = new Set<HTMLImageElement>()
+  let failed = false
 
   function getStyle({ shape, size, iconUrl, opacity }: {
     shape: PortraitMarkerShape
@@ -121,7 +123,10 @@ export function createPortraitMarkerStyles(onChange: () => void) {
         drawPortraitMarker(context, shape, portrait)
         onChange()
       }
-      portrait.onerror = finish
+      portrait.onerror = () => {
+        failed = true
+        finish()
+      }
       portrait.src = iconUrl
     }
     return result
@@ -137,5 +142,11 @@ export function createPortraitMarkerStyles(onChange: () => void) {
     styles.clear()
   }
 
-  return { getStyle, dispose }
+  return {
+    getStyle, dispose,
+    ready: async () => {
+      if (failed) throw new Error('声骸或 BOSS 图标加载失败')
+      await Promise.all([...pendingImages].map((image) => image.decode()))
+    },
+  }
 }

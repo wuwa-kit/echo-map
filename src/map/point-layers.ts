@@ -9,6 +9,8 @@ import Cluster from 'ol/source/Cluster.js'
 import CircleStyle from 'ol/style/Circle.js'
 import Fill from 'ol/style/Fill.js'
 import Icon from 'ol/style/Icon.js'
+import ImageState from 'ol/ImageState.js'
+import { shared as iconImageCache } from 'ol/style/IconImageCache.js'
 import Stroke from 'ol/style/Stroke.js'
 import Style from 'ol/style/Style.js'
 import Text from 'ol/style/Text.js'
@@ -43,26 +45,32 @@ export function mapFeaturePointIds(feature: FeatureLike): string[] | undefined {
   return point && point.category !== 'region-name' ? [point.location.id] : undefined
 }
 
-export function createPointLayers(isMoving: () => boolean = () => false) {
+export function createPointLayers(isMoving: () => boolean = () => false, options: { exportMode?: boolean; pixelRatio?: number } = {}) {
   const echoSource = new VectorSource()
   const clusters = new InteractionCluster(echoSource, isMoving)
   const navigationSource = new VectorSource()
   const backgroundEchoSource = new VectorSource()
   const backgroundClusters = new InteractionCluster(backgroundEchoSource, isMoving)
+  if (options.exportMode) {
+    clusters.setDistance(18)
+    clusters.setMinDistance(0)
+    backgroundClusters.setDistance(18)
+    backgroundClusters.setMinDistance(0)
+  }
   const backgroundNavigationSource = new VectorSource()
   const labelSource = new VectorSource()
   const echoCosts = new globalThis.Map<string, EchoDefinition['cost']>()
   let clusterStyleCache = new WeakMap<FeatureLike, { members: Feature<Point>[]; locations: EchoMapLocation[]; styles: Style[] }>()
   const navigationStyleCache = new globalThis.Map<string, Style[]>()
   const labelStyleCache = new globalThis.Map<string, Style>()
-  const echoMarkerStyles = createPortraitMarkerStyles(redrawEchoLayers)
-  const groupMarkerStyles = createEchoMarkerStyles(redrawEchoLayers)
+  const echoMarkerStyles = createPortraitMarkerStyles(redrawEchoLayers, options.pixelRatio)
+  const groupMarkerStyles = createEchoMarkerStyles(redrawEchoLayers, options.pixelRatio)
   let echoDefinitions: readonly EchoDefinition[] = []
   let selectedEchoIds: ReadonlySet<string> | undefined
   const bossMarkerStyles = createPortraitMarkerStyles(() => {
     navigationLayer.changed()
     backgroundNavigationLayer.changed()
-  })
+  }, options.pixelRatio)
 
   const echoLayer = new VectorLayer({
     source: clusters,
@@ -97,6 +105,21 @@ export function createPointLayers(isMoving: () => boolean = () => false) {
     updateWhileAnimating: true, updateWhileInteracting: true,
   })
   const layers = [labelLayer, echoLayer, navigationLayer, backgroundEchoLayer, backgroundNavigationLayer]
+  const resizedMarkers = new WeakSet()
+
+  function resizeExportMarkers(styles: Style | Style[] | undefined, artworkWidth?: number): void {
+    if (!options.exportMode) return
+    for (const style of Array.isArray(styles) ? styles : styles ? [styles] : []) {
+      const image = style.getImage()
+      const width = image?.getSize()?.[0]
+      // Set artwork width only after loading; OpenLayers' width callback also
+      // runs on image errors, when its intrinsic size is still unavailable.
+      if (!image || !width || resizedMarkers.has(image)) continue
+      const [x = 1, y = 1] = artworkWidth ? [artworkWidth / width, artworkWidth / width] : image.getScaleArray()
+      image.setScale([x * 0.6, y * 0.6])
+      resizedMarkers.add(image)
+    }
+  }
 
   function redrawEchoLayers(): void {
     echoLayer.changed()
@@ -105,7 +128,7 @@ export function createPointLayers(isMoving: () => boolean = () => false) {
 
   function clusterStyle(feature: FeatureLike, resolution: number): Style[] | undefined {
     const zoom = mapZoomForResolution(resolution)
-    if (!isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES.echo, zoom)) {
+    if (!options.exportMode && !isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES.echo, zoom)) {
       if (feature instanceof Feature && feature.get('locations')?.length) feature.set('locations', [], true)
       return undefined
     }
@@ -117,13 +140,14 @@ export function createPointLayers(isMoving: () => boolean = () => false) {
     }
     const locations = members.flatMap((member) => {
       const point = member.get('mapPoint') as MapDisplayPoint
-      return point.category === 'echo' && isMapPointVisibleAtZoom(point, zoom) ? [point.location] : []
+      return point.category === 'echo' && (options.exportMode || isMapPointVisibleAtZoom(point, zoom)) ? [point.location] : []
     })
     if (feature instanceof Feature) feature.set('locations', locations, true)
     if (locations.length === 0) return undefined
     const styles = locations.length === 1 ? echoStyle(locations[0] as EchoMapLocation)
       : groupMarkerStyles.get(locations.flatMap((location) => echoMembers(location))
         .filter(({ echoId }) => !selectedEchoIds || selectedEchoIds.has(echoId)), echoDefinitions, { showText: false }).styles
+    resizeExportMarkers(styles)
     if (styles) clusterStyleCache.set(feature, { members, locations, styles })
     return styles
   }
@@ -137,12 +161,12 @@ export function createPointLayers(isMoving: () => boolean = () => false) {
 
   function pointStyle(feature: FeatureLike, resolution: number): Style | Style[] | undefined {
     const point = feature.get('mapPoint') as MapDisplayPoint
-    if (!isMapPointVisibleAtZoom(point, mapZoomForResolution(resolution))) return undefined
-    switch (point.category) {
-      case 'echo': return echoStyle(point.location)
-      case 'navigation': return navigationStyle(point.location)
-      case 'region-name': return labelStyle(point.location)
-    }
+    if (!options.exportMode && !isMapPointVisibleAtZoom(point, mapZoomForResolution(resolution))) return undefined
+    const style = point.category === 'echo' ? echoStyle(point.location)
+      : point.category === 'navigation' ? navigationStyle(point.location) : labelStyle(point.location)
+    const artworkWidth = point.category === 'navigation' && point.location.iconUrl && !bossMarkerShape(point.location) ? 36 : undefined
+    resizeExportMarkers(style, artworkWidth)
+    return style
   }
 
   function labelStyle(label: RegionLabel): Style {
@@ -191,6 +215,11 @@ export function createPointLayers(isMoving: () => boolean = () => false) {
     const cached = navigationStyleCache.get(key)
     if (cached) {
       return cached
+    }
+    // A new exporter must retry failed artwork instead of inheriting an ERROR
+    // image from OpenLayers' shared cache. Keep loaded and pending images intact.
+    if (options.exportMode && location.iconUrl && iconImageCache.get(location.iconUrl, null)?.getImageState() === ImageState.ERROR) {
+      iconImageCache.set(location.iconUrl, null, null)
     }
     const isFastTravel = location.mode === 'fast-travel'
     const styles = [new Style({
@@ -279,6 +308,12 @@ export function createPointLayers(isMoving: () => boolean = () => false) {
 
   return {
     layers, update, dispose,
+    ready: async () => {
+      await Promise.all([echoMarkerStyles.ready(), groupMarkerStyles.ready(), bossMarkerStyles.ready(), ...[...navigationStyleCache.values()].flatMap((styles) => styles.flatMap((style) => {
+        const image = style.getImage()?.getImage(1)
+        return image instanceof HTMLImageElement ? [image.decode()] : []
+      }))])
+    },
     finishInteraction: (extent: Extent, resolution: number, projection: Projection) => {
       clusters.finishInteraction(extent, resolution, projection)
       backgroundClusters.finishInteraction(extent, resolution, projection)

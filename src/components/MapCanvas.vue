@@ -31,7 +31,6 @@ const {
   activeState,
   dataset,
   activeEchoIds,
-  allNavigationPoints,
   mapViewport,
   mapNavigationRequest,
   route,
@@ -71,7 +70,7 @@ const points = createPointLayers(() => {
   return Boolean(view?.getAnimating() || view?.getInteracting())
 })
 const floors = createFloorLayers(projection, { dimBase: true, onError: store.reportFloorTileError })
-const routeLayer = createRouteLayer()
+const routeLayer = createRouteLayer(points.layers)
 const viewport = useMapViewport({
   getMap: () => map,
   getPadding: () => props.padding,
@@ -79,16 +78,11 @@ const viewport = useMapViewport({
   onViewportChanged: store.setMapViewport,
 })
 
-function fitViewport(): void {
-  viewport.fitRoute(routeLayer.getExtent())
-  updateFloorCenter()
-}
-
 useResizeObserver(mapTarget, () => {
   map?.updateSize()
   const [width = 0, height = 0] = map?.getSize() ?? []
   mapSize.value = [width, height]
-  fitViewport()
+  updateFloorCenter()
 })
 
 function updateFloorCenter(): void {
@@ -114,10 +108,7 @@ function rebuildPointLayers(): void {
 }
 
 function rebuildRoute(): void {
-  const start = allNavigationPoints.value.find(({ id }) => id === route.value?.startPointId)
-  routeLayer.update(route.value, start)
-  viewport.resetRoute()
-  viewport.fitRoute(routeLayer.getExtent())
+  routeLayer.update(route.value)
 }
 
 function rebuildFloorLayers(): void {
@@ -226,7 +217,7 @@ watch(floorRequest, async (request, _previous, onCleanup) => {
 })
 watch([mapEchoLocations, mapNavigationPoints, visibleRegionLabels, activeEchoIds, selectedLevelId], rebuildPointLayers)
 watch(route, rebuildRoute, { flush: 'post' })
-watch(() => props.padding, fitViewport, { flush: 'post' })
+watch(() => props.padding, updateFloorCenter, { flush: 'post' })
 watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 
 onBeforeUnmount(() => {

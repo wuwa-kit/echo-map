@@ -70,29 +70,11 @@ describe('map viewport coordination', () => {
     expect(setup(saved).view().getCenter()).toEqual(saved?.center)
   })
 
-  it('refits a route for panel changes until a deliberate map movement', () => {
-    const app = setup()
-    const extent = [1000, 1000, 4000, 3000]
-    app.viewport.fitRoute(extent)
-    const initialCenter = app.view().getCenter()
-    app.setPadding([16, 340, 16, 16])
-    app.viewport.fitRoute(extent)
-    expect(app.view().getCenter()).not.toEqual(initialCenter)
-    app.view().setCenter([7000, 7000])
-    app.setPadding([16, 16, 16, 16])
-    app.viewport.fitRoute(extent)
-    expect(app.view().getCenter()).toEqual([7000, 7000])
-    app.viewport.resetRoute()
-    app.viewport.fitRoute(extent)
-    expect(app.view().getCenter()).toEqual(initialCenter)
-  })
-
-  it('does not fit missing or empty geometry or a floor in a zero-sized map', () => {
+  it('does not fit a missing or empty floor extent or a zero-sized map', () => {
     const app = setup()
     const fit = vi.spyOn(app.view(), 'fit')
-    app.viewport.fitRoute(null)
-    app.viewport.fitRoute([Infinity, Infinity, -Infinity, -Infinity])
     app.viewport.restoreFloorViewport(null)
+    app.viewport.restoreFloorViewport([Infinity, Infinity, -Infinity, -Infinity])
     app.setSize([0, 0])
     app.viewport.restoreFloorViewport([0, 0, 100, 100])
     expect(fit).not.toHaveBeenCalled()

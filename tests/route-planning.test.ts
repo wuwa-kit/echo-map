@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import { planRouteInWorker } from '../src/route/worker-client.ts'
+import { movementCost, optimizeRoute } from '../src/route/optimizer.ts'
 import type { RouteResult } from '../src/domain/types.ts'
 
 vi.mock('../src/route/worker-client.ts')
@@ -79,6 +80,39 @@ describe('route planning actions', () => {
     expect(store.routeError).toBe('')
     expect(store.route).toEqual(result)
   })
+
+  it('keeps the reported neighboring echoes on one walk instead of returning from the same nexus', async () => {
+    planner.mockImplementation(async (input) => optimizeRoute(input))
+    const store = useExplorerStore()
+    store.setDataset(dataset)
+    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
+    store.toggleSonata('wiki-sonata-19922')
+    await store.planRoute()
+
+    expect(store.routeError).toBe('')
+    const route = store.route
+    if (!route) throw new Error('长路启航之星路线未生成')
+    const first = route.points.findIndex(({ coordinate: { x, y } }) => x === -460 && y === -7940)
+    expect(first).toBeGreaterThanOrEqual(0)
+    expect(route.points.slice(first, first + 3).map(({ coordinate }) => coordinate)).toEqual([
+      { x: -460, y: -7940, z: 0 },
+      { x: -462, y: -7939, z: 0 },
+      { x: -506, y: -8016, z: 0 },
+    ])
+    expect(route.points[first]?.teleportFrom?.coordinate).toEqual({ x: -333, y: -7803, z: 0 })
+    expect(route.points[first + 1]?.teleportFrom).toBeUndefined()
+    expect(route.points[first + 2]?.teleportFrom).toBeUndefined()
+    const input = planner.mock.calls[0]?.[0]
+    if (!input) throw new Error('路线计算输入缺失')
+    expect(route.points).toHaveLength(input.points.length)
+    expect(new Set(route.points.map(({ id }) => id))).toEqual(new Set(input.points.map(({ id }) => id)))
+    const totalCost = route.points.reduce((cost, point, index) => {
+      const previous = point.teleportFrom ?? route.points[index - 1]
+      return cost + (previous ? movementCost(previous, point, input) : 0)
+    }, 0)
+    expect(route.totalCost).toBeCloseTo(totalCost, 8)
+    expect(route.totalCost).toBeLessThan(30_000)
+  }, 15_000)
 
   it('restores mutually exclusive sheet state and keeps the desktop preference independent', () => {
     const store = createStore()

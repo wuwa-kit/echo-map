@@ -335,7 +335,7 @@ export interface RoutePoint {
 }
 
 export interface RouteResult {
-  points: RoutePoint[]
+  points: (RoutePoint & { teleportFrom?: RoutePoint })[]
   totalCost: number
   algorithm: 'exact' | 'nearest-neighbor-2opt'
   startPointId: string | null

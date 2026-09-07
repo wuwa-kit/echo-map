@@ -11,7 +11,7 @@ interface BaseLayerEntry {
 }
 
 // Own only the basemap layers. Changing gravity must never reconfigure the map's View.
-export function createOfficialBaseLayers(reportError: (failed: boolean) => void) {
+export function createOfficialBaseLayers(reportError: (failed: boolean) => void, options: { cacheSize?: number } = {}) {
   let map: Pick<Map, 'removeLayer' | 'getLayers'> | null = null
   let state: MapStateDefinition | null = null
   let manifest: SourceManifest | null = null
@@ -40,7 +40,7 @@ export function createOfficialBaseLayers(reportError: (failed: boolean) => void)
     let entry = entries.get(active)
     if (!entry) {
       const gravity = active
-      const layer = createOfficialTileLayer(state, manifest, gravity)
+      const layer = createOfficialTileLayer(state, manifest, gravity, options.cacheSize)
       const next: BaseLayerEntry = { layer, events: [], failed: false }
       const source = layer.getSource()
       if (source) next.events.push(source.on('tileloaderror', () => {

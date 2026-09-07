@@ -24,7 +24,6 @@ function matchesViewport(viewport: MapViewportState, reference: MapViewportState
 
 export function useMapViewport(options: MapViewportOptions) {
   let defaultViewport: MapViewportState | null = null
-  let routeViewport: MapViewportState | null = null
 
   function current(): MapViewportState | null {
     const view = options.getMap()?.getView()
@@ -91,10 +90,6 @@ export function useMapViewport(options: MapViewportOptions) {
     publish()
   }
 
-  function resetRoute(): void {
-    routeViewport = null
-  }
-
   function locate(center: [number, number]): void {
     const map = options.getMap()
     const [width = 0, height = 0] = map?.getSize() ?? []
@@ -107,24 +102,5 @@ export function useMapViewport(options: MapViewportOptions) {
     publish()
   }
 
-  function fitRoute(extent: Extent | null | undefined): void {
-    const map = options.getMap()
-    const viewport = current()
-    if (!map || !extent || isEmpty(extent) || !viewport) {
-      return
-    }
-    // Refit around changing panels until the user deliberately moves the map.
-    if (routeViewport && !matchesViewport(viewport, routeViewport)) {
-      return
-    }
-    const [width = 0, height = 0] = map.getSize() ?? []
-    map.getView().fit(extent, {
-      padding: fitMapPadding(width, height, options.getPadding()),
-      minResolution: 0.5,
-    })
-    routeViewport = current()
-    publish()
-  }
-
-  return { configureBaseView, restoreFloorViewport, fitRoute, resetRoute, publish, locate }
+  return { configureBaseView, restoreFloorViewport, publish, locate }
 }

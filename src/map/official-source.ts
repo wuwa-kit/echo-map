@@ -4,7 +4,7 @@ import TileGrid from 'ol/tilegrid/TileGrid.js'
 import type { GravityType, MapStateDefinition, SourceManifest } from '../domain/types.ts'
 import { officialFloorTileUrl, officialTileUrl, tilePreviewUrl } from '../data/official-asset-urls.ts'
 
-export function createOfficialTileLayer(state: MapStateDefinition, sourceManifest: SourceManifest, gravity: GravityType = 1): TileLayer<TileImage> {
+export function createOfficialTileLayer(state: MapStateDefinition, sourceManifest: SourceManifest, gravity: GravityType = 1, cacheSize?: number): TileLayer<TileImage> {
   const { tileExtent } = state
   const availableTiles = new Set(state.tileIds)
   const gravityTiles = new Set(state.gravityTiles)
@@ -47,6 +47,7 @@ export function createOfficialTileLayer(state: MapStateDefinition, sourceManifes
     source,
     // This source has one resolution, so there is no coarser level to preload.
     preload: 0,
+    cacheSize,
   })
 }
 

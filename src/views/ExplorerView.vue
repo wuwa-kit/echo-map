@@ -6,6 +6,7 @@ import ControlPanel from '../components/ControlPanel.vue'
 import MapCanvas from '../components/MapCanvas.vue'
 import MapNavigationCascader from '../components/MapNavigationCascader.vue'
 import RoutePanel from '../components/RoutePanel.vue'
+import RouteExportDialog from '../components/RouteExportDialog.vue'
 import WuSvg from '../components/base/WuSvg.vue'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
 import { useExplorerRouteQuery } from '../composables/useExplorerRouteQuery.ts'
@@ -157,6 +158,7 @@ const loadError = computed(() => {
 </script>
 
 <template>
+  <RouteExportDialog />
   <div
     class="fixed inset-x-0 top-[var(--viewport-top)] h-[var(--viewport-height)] overflow-hidden bg-[#07100f]"
     :style="{ '--viewport-height': `${viewportHeight}px`, '--viewport-top': `${viewportTop}px` }"

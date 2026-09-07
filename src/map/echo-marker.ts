@@ -5,8 +5,8 @@ import type { CompositionMember } from './echo-composition.ts'
 import type { EchoDefinition } from '../domain/types.ts'
 import { drawPortraitMarker, PORTRAIT_MARKER_CANVAS_SIZE, PORTRAIT_MARKER_SIZES } from './boss-marker.ts'
 
-export function createEchoMarkerStyles(onChange: () => void) {
-  const ratio = Math.max(2, Math.ceil(window.devicePixelRatio || 1))
+export function createEchoMarkerStyles(onChange: () => void, pixelRatio = window.devicePixelRatio || 1) {
+  const ratio = Math.max(2, Math.ceil(pixelRatio))
   const images = new Map<string, HTMLImageElement>()
   const cache = new Map<string, {
     canvas: HTMLCanvasElement
@@ -121,5 +121,5 @@ export function createEchoMarkerStyles(onChange: () => void) {
     images.clear()
     cache.clear()
   }
-  return { get, dispose }
+  return { get, dispose, ready: () => Promise.all([...images.values()].map((image) => image.decode())) }
 }
