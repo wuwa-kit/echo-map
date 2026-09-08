@@ -2,6 +2,8 @@ import type { GravityType, PointSourceFilter } from '../domain/types.ts'
 
 export const DEFAULT_STATE_ID = 8
 export const DEFAULT_ROUTE_Z_WEIGHT = 1.35
+const WIKI_SONATA_ID_PREFIX = 'wiki-sonata-'
+const WIKI_SONATA_ID_PATTERN = /^wiki-sonata-(\d+)$/u
 
 export type MobileSheet = 'filters' | 'route' | null
 export type EchoCostFilter = 1 | 3
@@ -106,6 +108,19 @@ function idList(value: ExplorerQueryValue): string[] | undefined {
   return ids.length > 0 ? ids : undefined
 }
 
+function sonataIdList(value: ExplorerQueryValue): string[] | undefined {
+  const ids = idList(value)?.filter((id) => /^\d+$/u.test(id)).map((id) => `${WIKI_SONATA_ID_PREFIX}${id}`)
+  return ids && ids.length > 0 ? ids : undefined
+}
+
+function compactSonataIdList(ids: readonly string[]): string | undefined {
+  const sourceIds = ids.flatMap((id) => {
+    const match = id.match(WIKI_SONATA_ID_PATTERN)
+    return match?.[1] ? [match[1]] : []
+  })
+  return sourceIds.length > 0 ? [...new Set(sourceIds)].join(',') : undefined
+}
+
 function costList(value: ExplorerQueryValue): EchoCostFilter[] | undefined {
   const selected = new Set(idList(value))
   const values = ([1, 3] as const).filter((cost) => selected.has(String(cost)))
@@ -135,7 +150,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
     levelId: single(values.floor),
     compactFloors: single(values.floorStyle) === 'icons',
     echoIds: idList(values.echoes),
-    sonataFilterIds: idList(values.sonatas),
+    sonataFilterIds: sonataIdList(values.sonatas),
     echoCostFilters: costList(values.costs),
     hiddenPointGroupIds: idList(values.hiddenTypes),
     showProvisional: booleanFlag(values.provisional),
@@ -159,7 +174,7 @@ export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerS
     floor: state.levelId ?? undefined,
     floorStyle: state.compactFloors ? 'icons' : undefined,
     echoes: state.echoIds.length > 0 ? state.echoIds.join(',') : undefined,
-    sonatas: state.sonataFilterIds.length > 0 ? state.sonataFilterIds.join(',') : undefined,
+    sonatas: compactSonataIdList(state.sonataFilterIds),
     costs: state.echoCostFilters.length > 0 ? state.echoCostFilters.join(',') : undefined,
     hiddenTypes: state.hiddenPointGroupIds.length > 0
       ? [...state.hiddenPointGroupIds].sort().join(',')

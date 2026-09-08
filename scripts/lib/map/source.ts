@@ -40,6 +40,30 @@ export async function fetchCountryData(resourceHash: string): Promise<unknown> {
   )
 }
 
+export function parseMapSonataOrder(value: unknown): string[] {
+  const categories = asArray(value, 'map catalog relation')
+  const sonataCategory = categories
+    .map((category) => asRecord(category, 'map catalog relation category'))
+    .find((category) => asString(category.id) === 'C_100')
+  if (!sonataCategory) throw new Error('地图目录缺少声骸套装分类')
+
+  const sonatas = asArray(sonataCategory.children, 'map sonata catalog').map((item) => {
+    const record = asRecord(item, 'map sonata')
+    return { id: asNumber(record.id, Number.NaN), name: asString(record.name).trim() }
+  })
+  if (sonatas.length === 0 || sonatas.some(({ id, name }) => !Number.isSafeInteger(id) || id < 1 || name.length === 0)) {
+    throw new Error('地图目录的声骸套装顺序为空或包含无效 ID、空名称')
+  }
+  if (new Set(sonatas.map(({ id }) => id)).size !== sonatas.length) throw new Error('地图目录的声骸套装 ID 不能重复')
+  if (new Set(sonatas.map(({ name }) => name)).size !== sonatas.length) throw new Error('地图目录的声骸套装名称不能重复')
+  return sonatas.sort((left, right) => left.id - right.id).map(({ name }) => name)
+}
+
+export async function fetchMapSonataOrder(resourceHash: string): Promise<string[]> {
+  const value = await fetchJson<unknown>(`${STATIC_ROOT}/mcmap/catalog/${resourceHash}/catalogRelation.json`)
+  return parseMapSonataOrder(value)
+}
+
 export async function fetchStatePayloads(configuration: MapConfiguration): Promise<MapStatePayload[]> {
   return Promise.all(configuration.states.map(async (state) => {
     const [positionData, layerData, catalogData, gravityData] = await Promise.all([

@@ -36,8 +36,13 @@ beforeEach(() => {
   vi.mocked(postFormJson).mockImplementation(async (url) => ({
     data: url.endsWith('getMapResource') ? 'test-resource-hash' : { '8': ['8_0_1'], '9': [] },
   }))
-  vi.mocked(fetchJson).mockImplementation(async (url) => url.endsWith('gravity.json') ? {}
-    : { data: { state: [{ id: 8, name: '地图' }, { id: 9, name: '空地图' }] } })
+  vi.mocked(fetchJson).mockImplementation(async (url) => {
+    if (url.endsWith('catalogRelation.json')) {
+      return [{ id: 'C_100', children: wiki.sonatas.map(({ name }, index) => ({ id: String(index + 1), name })) }]
+    }
+    return url.endsWith('gravity.json') ? {}
+      : { data: { state: [{ id: 8, name: '地图' }, { id: 9, name: '空地图' }] } }
+  })
   vi.mocked(fetchOptionalJson).mockImplementation(async (url) => {
     if (url.endsWith('country.json')) return countries
     if (url.endsWith('/9/position.json')) return [positions[0]]
@@ -70,8 +75,12 @@ describe('map synchronization', () => {
     expect(writeJson).not.toHaveBeenCalled()
   })
   it('preserves gravity resources and point modes through synchronization', async () => {
-    vi.mocked(fetchJson).mockImplementation(async (url) => url.endsWith('gravity.json') ? { '2': ['/2/0_1.png'] }
-      : { data: { state: [{ id: 8, name: '地图' }] } })
+    const originalFetchJson = vi.mocked(fetchJson).getMockImplementation()
+    vi.mocked(fetchJson).mockImplementation(async (url, options) => {
+      if (url.endsWith('catalogRelation.json')) return originalFetchJson?.(url, options)
+      return url.endsWith('gravity.json') ? { '2': ['/2/0_1.png'] }
+        : { data: { state: [{ id: 8, name: '地图' }] } }
+    })
     const originalFetch = vi.mocked(fetchOptionalJson).getMockImplementation()
     vi.mocked(fetchOptionalJson).mockImplementation(async (url, fallback) => url.endsWith('position.json')
       ? positions.map((type) => ({ ...type, location: type.location.map((point) => ({ ...point, gravityType: 2 })) }))
@@ -83,9 +92,10 @@ describe('map synchronization', () => {
   })
 
   it('does not overwrite snapshots if the gravity manifest cannot be read', async () => {
-    vi.mocked(fetchJson).mockImplementation(async (url) => {
+    const originalFetchJson = vi.mocked(fetchJson).getMockImplementation()
+    vi.mocked(fetchJson).mockImplementation(async (url, options) => {
       if (url.endsWith('gravity.json')) throw new Error('重力资源不可用')
-      return { data: { state: [{ id: 8, name: '地图' }] } }
+      return originalFetchJson?.(url, options)
     })
     await expect(syncMap(wiki)).rejects.toThrow('重力资源不可用')
     expect(writeJson).not.toHaveBeenCalled()

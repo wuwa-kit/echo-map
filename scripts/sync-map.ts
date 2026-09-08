@@ -4,12 +4,13 @@ import { calculateTileExtent } from '../src/map/projection.ts'
 import { isMainModule, projectPath, readJson, writeJson } from './lib/files.ts'
 import { writeMapDataset } from './lib/map-data.ts'
 import type { WikiSnapshot } from './lib/wiki.ts'
+import { orderSonatasByNames } from './lib/wiki.ts'
 import { flattenRegions, normalizeLayers, normalizeMapNavigation, normalizeGravityTiles } from './lib/map/normalize.ts'
 import { normalizeLocations } from './lib/map/locations.ts'
 import { groupNavigationPoints } from './lib/map/navigation-groups.ts'
 import { buildFloorCoverage } from './lib/map/floor-coverage.ts'
 import { isRouteStart } from '../src/domain/explorer-selectors.ts'
-import { fetchCountryData, fetchMapConfiguration, fetchNavigationIconHashes, fetchStatePayloads } from './lib/map/source.ts'
+import { fetchCountryData, fetchMapConfiguration, fetchMapSonataOrder, fetchNavigationIconHashes, fetchStatePayloads } from './lib/map/source.ts'
 import type { AliasData, ManualData, NavigationConfig, NavigationGroupConfig } from './lib/map/types.ts'
 
 const TILE_WIDTH = 1024
@@ -23,8 +24,12 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
   const mapFetchedAt = new Date().toISOString()
   console.log('正在抓取官方地图资源清单、分层和点位…')
   const configuration = await fetchMapConfiguration()
-  const countryData = await fetchCountryData(configuration.resourceHash)
-  const statePayloads = await fetchStatePayloads(configuration)
+  const [countryData, sonataOrder, statePayloads] = await Promise.all([
+    fetchCountryData(configuration.resourceHash),
+    fetchMapSonataOrder(configuration.resourceHash),
+    fetchStatePayloads(configuration),
+  ])
+  const sonatas = orderSonatasByNames(wiki.sonatas, sonataOrder.toReversed())
   const normalizedStates: MapStateDefinition[] = statePayloads.map(({ state, layerData, gravityData }) => {
     const tileIds = configuration.tileIdsByState[String(state.id)] ?? []
     return {
@@ -50,7 +55,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
     wikiEchoCount: wiki.totalEchoCount,
     includedEchoCount: wiki.echoes.length,
     excludedEchoCount: wiki.excludedEchoNames.length,
-    sonataCount: wiki.sonatas.length,
+    sonataCount: sonatas.length,
     exactMatchedEchoCount: exactMatchedEchoIds.size,
     aliasMatchedEchoCount: aliasMatchedEchoIds.size,
     unmatchedEchoNames: wiki.echoes.filter((echo) => !matchedEchoIds.has(echo.id)).map((echo) => echo.name),
@@ -80,7 +85,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
       },
     },
     report,
-    sonatas: wiki.sonatas,
+    sonatas,
     echoes: wiki.echoes,
     states,
     mapNavigation: normalizeMapNavigation(countryData),

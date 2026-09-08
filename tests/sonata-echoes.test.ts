@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { withSonataEchoIds } from '../scripts/lib/wiki.ts'
+import { orderSonatasByNames, withSonataEchoIds } from '../scripts/lib/wiki.ts'
+import { parseMapSonataOrder } from '../scripts/lib/map/source.ts'
 import { mapDatasetSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import type { EchoDefinition, MapDataset, SonataEffect } from '../src/domain/types.ts'
 import { referenceDataset } from './fixtures/point-library.ts'
@@ -17,6 +18,26 @@ const sonatas: SonataEffect[] = [
 ]
 
 describe('sonata echo membership', () => {
+  it('parses and preserves the official map sonata order', () => {
+    const relation = [
+      { id: 'C_101', name: '其他分类' },
+      { id: 'C_100', name: '声骸套装', children: [{ id: '19', name: '甲套装' }, { id: '3', name: '乙套装' }] },
+    ]
+    const order = parseMapSonataOrder(relation)
+    expect(order).toEqual(['乙套装', '甲套装'])
+    expect(orderSonatasByNames(sonatas, order)).toEqual([sonatas[1], sonatas[0], sonatas[2]])
+    expect(orderSonatasByNames(sonatas, ['未知套装', '甲套装'])).toEqual([sonatas[0], sonatas[1], sonatas[2]])
+  })
+
+  it.each([
+    { label: 'missing category', relation: [{ id: 'C_101', children: [] }] },
+    { label: 'empty set name', relation: [{ id: 'C_100', children: [{ id: '1', name: '' }] }] },
+    { label: 'duplicate set ID', relation: [{ id: 'C_100', children: [{ id: '1', name: '甲套装' }, { id: '1', name: '乙套装' }] }] },
+    { label: 'duplicate set name', relation: [{ id: 'C_100', children: [{ id: '1', name: '甲套装' }, { id: '2', name: '甲套装' }] }] },
+  ])('rejects $label in the official map sonata order', ({ relation }) => {
+    expect(() => parseMapSonataOrder(relation)).toThrow()
+  })
+
   it('builds sorted C1/C3 lists for every set and replaces stale lists without changing input', () => {
     const stale = sonatas.map((sonata) => ({ ...sonata, c1EchoIds: ['stale-id'], c3EchoIds: [] }))
     const input = structuredClone(stale)

@@ -115,7 +115,7 @@ describe('explorer query state', () => {
       countryId: null,
       levelId: null,
       echoIds: ['echo-target'],
-      sonataFilterIds: ['set-a', 'set-b'],
+      sonataFilterIds: ['wiki-sonata-11947', 'wiki-sonata-11948'],
       echoCostFilters: [1, 3],
       hiddenPointGroupIds: [],
       showProvisional: true,
@@ -125,10 +125,31 @@ describe('explorer query state', () => {
       viewport: null,
     })
 
-    expect(query).toMatchObject({ echoes: 'echo-target', sonatas: 'set-a,set-b', costs: '1,3' })
+    expect(query).toMatchObject({ echoes: 'echo-target', sonatas: '11947,11948', costs: '1,3' })
     expect(parseExplorerQueryValues(query)).toMatchObject({
-      echoIds: ['echo-target'], sonataFilterIds: ['set-a', 'set-b'], echoCostFilters: [1, 3],
+      echoIds: ['echo-target'],
+      sonataFilterIds: ['wiki-sonata-11947', 'wiki-sonata-11948'],
+      echoCostFilters: [1, 3],
     })
     expect(parseExplorerQueryValues({ costs: '2,3,3' }).echoCostFilters).toEqual([3])
+  })
+
+  it('ignores invalid and obsolete long-form sonata IDs', () => {
+    expect(parseExplorerQueryValues({ sonatas: '11947,wiki-sonata-11948,unknown,11947' }).sonataFilterIds)
+      .toEqual(['wiki-sonata-11947'])
+    expect(createExplorerQueryValues({
+      stateId: DEFAULT_STATE_ID,
+      countryId: null,
+      levelId: null,
+      echoIds: [],
+      sonataFilterIds: ['unknown-sonata'],
+      echoCostFilters: [],
+      hiddenPointGroupIds: [],
+      showProvisional: true,
+      controlPanelCollapsed: false,
+      mobileSheet: null,
+      routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
+      viewport: null,
+    }).sonatas).toBeUndefined()
   })
 })

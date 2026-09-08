@@ -33,10 +33,18 @@ describe('generated application data', () => {
     }
   })
 
-  it('preserves Wiki sonata display order in the public catalogue and assembled dataset', async () => {
+  it('stores the reverse official map sonata display order in the public catalogue and assembled dataset', async () => {
     const wiki = wikiCatalogueSchema.parse(JSON.parse(await readFile(new URL('../data/generated/wiki.json', import.meta.url), 'utf8')))
     const dataset = await readMapDataset()
-    expect(dataset.sonatas.map(({ id }) => id)).toEqual(wiki.sonatas.map(({ id }) => id))
+    expect(dataset.sonatas.map(({ name }) => name)).toEqual([
+      '冥途夜行之灯', '清邪荡煞之心', '羽落空尘之歌', '碎梦亡鬼之魇', '剪心辑梦之影', '雪落无声之愿',
+      '听唤语义之愿', '斑驳粉饰之沫', '长路启航之星', '流金溯真之式', '星构寻辉之环', '逆光跃彩之约',
+      '命理崩毁之弦', '焚羽猎魔之影', '息界同调之律', '荣斗铸锋之冠', '失序彼岸之梦', '奔狼燎原之焰',
+      '愿戴荣光之旅', '流云逝尽之空', '无惧浪涛之勇', '高天共奏之曲', '幽夜隐匿之帷', '此间永驻之光',
+      '凌冽决断之心', '不绝余音', '轻云出月', '隐世回光', '沉日劫明', '浮星祛暗', '啸谷长风', '彻空冥雷',
+      '熔山裂谷', '凝夜白霜',
+    ])
+    expect(dataset.sonatas.map(({ id }) => id)).not.toEqual(wiki.sonatas.map(({ id }) => id))
   })
 
   it('contains only C1/C3 echoes with at least one valid sonata', async () => {

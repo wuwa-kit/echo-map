@@ -8,6 +8,14 @@ export interface WikiSnapshot {
   echoes: EchoDefinition[]
 }
 
+export function orderSonatasByNames(sonatas: readonly SonataEffect[], names: readonly string[]): SonataEffect[] {
+  const order = new Map(names.map((name, index) => [name, index]))
+  return sonatas
+    .map((sonata, index) => ({ sonata, index, rank: order.get(sonata.name) ?? Number.MAX_SAFE_INTEGER }))
+    .sort((left, right) => left.rank - right.rank || left.index - right.index)
+    .map(({ sonata }) => sonata)
+}
+
 export function withSonataEchoIds(
   sonatas: readonly Omit<SonataEffect, 'c1EchoIds' | 'c3EchoIds'>[],
   echoes: readonly EchoDefinition[],
