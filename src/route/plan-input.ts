@@ -8,7 +8,6 @@ export function createRoutePlanInput(
   locations: readonly EchoMapLocation[],
   startPoints: readonly NavigationPoint[],
   stateId: number,
-  zWeight: number,
   activeEchoIds?: ReadonlySet<string>,
 ): RoutePlanInput {
   const names = new Map(dataset?.echoes.map(({ id, name }) => [id, name]))
@@ -52,6 +51,5 @@ export function createRoutePlanInput(
     }),
     startPoints: startPoints.map(toStartRoutePoint),
     connectors: (dataset?.connectors ?? []).filter((connector) => connector.stateId === stateId),
-    zWeight,
   }
 }

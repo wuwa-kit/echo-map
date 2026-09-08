@@ -2,14 +2,13 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import WuScrollArea from './base/WuScrollArea.vue'
-import WuInput from './base/WuInput.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
 import { useRouteExportStore } from '../stores/route-export.ts'
 
 defineProps<{ compact: boolean }>()
 const store = useExplorerStore()
 const exportStore = useRouteExportStore()
-const { route, routeEligibleLocations, routeEligibleNavigationPoints, routeZWeight, visibleEchoLocations, planning, routeError } = storeToRefs(store)
+const { route, routeEligibleLocations, routeEligibleNavigationPoints, visibleEchoLocations, planning, routeError } = storeToRefs(store)
 const incompleteCount = computed(() => visibleEchoLocations.value.length - routeEligibleLocations.value.length)
 const usesOfficialCoordinates = computed(() => [...routeEligibleLocations.value, ...routeEligibleNavigationPoints.value].some(({ quality }) => quality === 'official-provisional'))
 </script>
@@ -23,7 +22,7 @@ const usesOfficialCoordinates = computed(() => [...routeEligibleLocations.value,
       </div>
       <span class="shrink-0 rounded-4px border border-[rgba(101,241,194,0.3)] px-6px py-4px text-12px text-[var(--accent)]">XYZ</span>
     </div>
-    <div class="my-14px grid grid-cols-[1fr_1fr_1.25fr] gap-7px">
+    <div class="my-14px grid grid-cols-2 gap-7px">
       <div class="flex min-w-0 flex-col justify-center rounded-6px border border-[var(--line)] bg-[#182b25] p-9px">
         <span class="text-20px text-[#d8eee5]">{{ routeEligibleLocations.length }}</span>
         <span class="text-12px text-[#9ab0a7]">可规划</span>
@@ -31,10 +30,6 @@ const usesOfficialCoordinates = computed(() => [...routeEligibleLocations.value,
       <div class="flex min-w-0 flex-col justify-center rounded-6px border border-[var(--line)] bg-[#182b25] p-9px">
         <span class="text-20px text-[#d8eee5]">{{ incompleteCount }}</span>
         <span class="text-12px text-[#9ab0a7]">待补 XYZ</span>
-      </div>
-      <div class="flex min-w-0 flex-col justify-center rounded-6px border border-[var(--line)] bg-[#182b25] p-9px">
-        <span class="text-12px text-[#9ab0a7]">高度权重</span>
-        <WuInput class="mt-3px" :model-value="routeZWeight" type="number" inputmode="decimal" min="0.1" max="10" step="0.05" lazy @update:model-value="store.setRouteZWeight(Number($event))" />
       </div>
     </div>
     <div class="mb-10px text-12px text-[#9ab0a7] leading-relaxed">{{ routeEligibleNavigationPoints.length }} 个可用传送点，每一步选择步行距离更短的走法。未补齐怪物清单的人工点按已知怪物参与路线。</div>

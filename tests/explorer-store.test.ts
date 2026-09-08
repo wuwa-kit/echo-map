@@ -122,7 +122,6 @@ describe('explorer point group visibility', () => {
       sonataFilterIds: ['unknown-sonata', echo.sonataIds[0]],
       echoCostFilters: [echo.cost],
       hiddenPointGroupIds: ['unknown-group', point.typeId, point.groupId],
-      routeZWeight: Number.NaN,
     })
     expect(store.selectedStateId).toBe(8)
     expect(store.selectedCountryId).toBeNull()
@@ -131,7 +130,6 @@ describe('explorer point group visibility', () => {
     expect(store.sonataFilterIds).toEqual([echo.sonataIds[0]])
     expect(store.echoCostFilters).toEqual([echo.cost])
     expect(store.hiddenPointGroupIds).toEqual([point.groupId])
-    expect(store.routeZWeight).toBe(1.35)
   })
 
   it('combines candidate filters and keeps list search outside batch selection', async () => {

@@ -1,6 +1,6 @@
 import type { MapDataset } from '../domain/types.ts'
 import { hasGravityMap } from '../domain/gravity.ts'
-import { DEFAULT_ROUTE_Z_WEIGHT, DEFAULT_STATE_ID } from './explorer-url.ts'
+import { DEFAULT_STATE_ID } from './explorer-url.ts'
 import type { ExplorerUrlSnapshot, ExplorerUrlState } from './explorer-url.ts'
 
 export function resolveExplorerState(
@@ -44,9 +44,6 @@ export function resolveExplorerState(
     showProvisional: state.showProvisional ?? true,
     controlPanelCollapsed: state.controlPanelCollapsed ?? false,
     mobileSheet: state.mobileSheet === 'filters' || state.mobileSheet === 'route' ? state.mobileSheet : null,
-    routeZWeight: state.routeZWeight !== undefined && state.routeZWeight >= 0.1 && state.routeZWeight <= 10
-      ? state.routeZWeight
-      : DEFAULT_ROUTE_Z_WEIGHT,
     viewport: state.viewport ? { center: [...state.viewport.center], zoom: state.viewport.zoom } : null,
   }
 }

@@ -56,7 +56,7 @@ describe('route planning actions', () => {
     planner.mockReturnValueOnce(old.promise).mockReturnValueOnce(next.promise)
     const store = createStore()
     const oldTask = store.planRoute()
-    store.setRouteZWeight(2)
+    store.clearRoute()
     expect(planner.mock.calls[0]?.[1]?.aborted).toBe(true)
     const nextTask = store.planRoute()
     old.resolve(result)

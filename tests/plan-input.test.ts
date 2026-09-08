@@ -17,23 +17,23 @@ const startPoint: NavigationPoint = {
 
 describe('route input conversion', () => {
   it('preserves independent map XY and authoritative XYZ with floor identity', () => {
-    expect(createRoutePlanInput(null, [location], [], 8, 2)).toEqual({
+    expect(createRoutePlanInput(null, [location], [], 8)).toEqual({
       points: [{
         id: 'echo-point', name: '声骸', echoId: 'echo', stateId: 8, levelId: 'floor',
         coordinate: { x: 1, y: 2, z: 30 }, mapCoordinate: [300, 400],
       }],
-      startPoints: [], connectors: [], zWeight: 2,
+      startPoints: [], connectors: [],
     })
   })
 
   it('rejects provisional points instead of deriving Z from map coordinates', () => {
-    expect(() => createRoutePlanInput(null, [{ ...location, gameCoordinate: null }], [], 8, 1))
+    expect(() => createRoutePlanInput(null, [{ ...location, gameCoordinate: null }], [], 8))
       .toThrow('点位 echo-point 缺少 XYZ')
   })
 
   it('uses an explicit teleport arrival for route distance and map drawing, with marker fallback', () => {
     const teleportCoordinate = { x: 10, y: 20, z: 40 }
-    const explicit = createRoutePlanInput(null, [], [{ ...startPoint, teleportCoordinate }], 8, 1).startPoints[0]
+    const explicit = createRoutePlanInput(null, [], [{ ...startPoint, teleportCoordinate }], 8).startPoints[0]
     expect(explicit).toMatchObject({
       id: startPoint.id,
       coordinate: teleportCoordinate,
@@ -41,7 +41,7 @@ describe('route input conversion', () => {
       isTeleportArrival: true,
     })
 
-    const fallback = createRoutePlanInput(null, [], [startPoint], 8, 1).startPoints[0]
+    const fallback = createRoutePlanInput(null, [], [startPoint], 8).startPoints[0]
     expect(fallback).toMatchObject({ coordinate: startPoint.gameCoordinate, mapCoordinate: [300, 400] })
     expect(fallback).not.toHaveProperty('isTeleportArrival')
   })

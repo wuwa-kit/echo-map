@@ -20,7 +20,6 @@ describe('route optimizer', () => {
       points: [point('far', 10, 0, 0), point('near', 2, 0, 0), point('middle', 5, 0, 0)],
       startPoints: [point('teleport', 0, 0, 0)],
       connectors: [],
-      zWeight: 1,
     })
     expect(result.algorithm).toBe('exact')
     expect(result.startPointId).toBe('teleport')
@@ -29,18 +28,17 @@ describe('route optimizer', () => {
   })
 
   it('uses z in movement cost', () => {
-    const flat = movementCost(point('a', 0, 0, 0), point('b', 3, 4, 0), { connectors: [], zWeight: 2 })
-    const vertical = movementCost(point('a', 0, 0, 0), point('b', 3, 4, 6), { connectors: [], zWeight: 2 })
+    const flat = movementCost(point('a', 0, 0, 0), point('b', 3, 4, 0), { connectors: [] })
+    const vertical = movementCost(point('a', 0, 0, 0), point('b', 3, 4, 6), { connectors: [] })
     expect(flat).toBe(5)
-    expect(vertical).toBe(13)
+    expect(vertical).toBeCloseTo(Math.sqrt(61))
   })
 
   it('rejects cross-floor travel without a connector and accepts an explicit connector', () => {
     const upper = point('upper', 0, 0, 10, 'upper')
     const lower = point('lower', 5, 0, -10, 'lower')
-    expect(movementCost(upper, lower, { connectors: [], zWeight: 1 })).toBe(Number.POSITIVE_INFINITY)
+    expect(movementCost(upper, lower, { connectors: [] })).toBe(Number.POSITIVE_INFINITY)
     expect(movementCost(upper, lower, {
-      zWeight: 1,
       connectors: [{
         id: 'lift',
         name: '升降梯',
@@ -61,7 +59,7 @@ describe('route optimizer', () => {
       ...Array.from({ length: 32 }, (_, index) => point(`far-${index}`, 1_000 + index, 0, 0)),
       point('nearest', -1, 0, 0),
     ]
-    const result = optimizeRoute({ points, startPoints, connectors: [], zWeight: 1 })
+    const result = optimizeRoute({ points, startPoints, connectors: [] })
 
     expect(result.algorithm).toBe('nearest-neighbor-2opt')
     expect(result.startPointId).toBe('nearest')
@@ -75,7 +73,6 @@ describe('route optimizer', () => {
       points,
       startPoints: [point('west', 0, 0, 0), point('east', 100, 0, 0)],
       connectors: [],
-      zWeight: 1,
     })
 
     expect(result.totalCost).toBe(count)
@@ -94,7 +91,6 @@ describe('route optimizer', () => {
       points,
       startPoints: [point('upper-beacon', 0, 0, 10, 'upper'), point('lower-beacon', 0, 0, -10, 'lower')],
       connectors: [],
-      zWeight: 1,
     })
 
     expect(result.totalCost).toBe(count)
@@ -107,7 +103,6 @@ describe('route optimizer', () => {
       points: Array.from({ length: count }, (_, index) => point(`target-${index}`, index * 10, 0, 0)),
       startPoints: [],
       connectors: [],
-      zWeight: 1,
     })
 
     expect(result.totalCost).toBe((count - 1) * 10)
@@ -121,7 +116,6 @@ describe('route optimizer', () => {
       points: [upper, lower],
       startPoints: [point('upper-beacon', 3, 4, 100), point('lower-beacon', 3, 4, 0)],
       connectors: [],
-      zWeight: 2,
     })
 
     expect(result.totalCost).toBe(10)
@@ -134,7 +128,6 @@ describe('route optimizer', () => {
       points: [point('first', 1, 0, 0), point('second', 2, 0, 0)],
       startPoints: [point('beacon', 0, 0, 0), point('tied-beacon', 3, 0, 0)],
       connectors: [],
-      zWeight: 1,
     })
 
     expect(result.totalCost).toBe(2)
@@ -147,7 +140,6 @@ describe('route optimizer', () => {
       points: [point('a', 5, 3, 0), point('b', 45, 10, 8), point('c', 41, 8, 0), point('d', 20, 40, 0)],
       startPoints: [point('west', 0, 0, 0), point('east', 40, 0, 0)],
       connectors: [],
-      zWeight: 2,
     }
     function minimumCost(remaining: RoutePoint[], previous?: RoutePoint): number {
       if (remaining.length === 0) return 0

@@ -13,7 +13,7 @@ class TestWorker extends EventTarget {
   }
 }
 
-const input: RoutePlanInput = { points: [], startPoints: [], connectors: [], zWeight: 1.35 }
+const input: RoutePlanInput = { points: [], startPoints: [], connectors: [] }
 
 describe('route worker lifetime', () => {
   beforeEach(() => {

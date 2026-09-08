@@ -104,7 +104,6 @@ const urlSnapshot = useEqualComputed<ExplorerUrlSnapshot>(() => ({
   showProvisional: store.showProvisional,
   controlPanelCollapsed: store.controlPanelCollapsed,
   mobileSheet: store.mobileSheet,
-  routeZWeight: store.routeZWeight,
   viewport: store.mapViewport,
 }))
 watch(urlSnapshot, (snapshot) => {

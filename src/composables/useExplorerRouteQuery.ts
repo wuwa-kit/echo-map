@@ -1,7 +1,6 @@
 import { useRouteQuery } from '@vueuse/router'
 import {
   createExplorerQueryValues,
-  DEFAULT_ROUTE_Z_WEIGHT,
   DEFAULT_STATE_ID,
   parseExplorerQueryValues,
 } from '../url/explorer-url.ts'
@@ -24,7 +23,6 @@ export function useExplorerRouteQuery(): {
   const provisionalQuery = useRouteQuery<string | undefined>('provisional', '1')
   const panelQuery = useRouteQuery<string | undefined>('panel', '0')
   const sheetQuery = useRouteQuery<string | undefined>('sheet', undefined, { mode: 'replace' })
-  const heightQuery = useRouteQuery<string | undefined>('height', String(DEFAULT_ROUTE_Z_WEIGHT))
   const xQuery = useRouteQuery('x')
   const yQuery = useRouteQuery('y')
   const zoomQuery = useRouteQuery('zoom')
@@ -44,7 +42,6 @@ export function useExplorerRouteQuery(): {
       provisional: provisionalQuery.value,
       panel: panelQuery.value,
       sheet: sheetQuery.value,
-      height: heightQuery.value,
       x: xQuery.value,
       y: yQuery.value,
       zoom: zoomQuery.value,
@@ -66,7 +63,6 @@ export function useExplorerRouteQuery(): {
     provisionalQuery.value = values.provisional
     panelQuery.value = values.panel
     sheetQuery.value = values.sheet
-    heightQuery.value = values.height
     xQuery.value = values.x
     yQuery.value = values.y
     zoomQuery.value = values.zoom

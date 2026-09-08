@@ -1,7 +1,6 @@
 import type { GravityType, PointSourceFilter } from '../domain/types.ts'
 
 export const DEFAULT_STATE_ID = 8
-export const DEFAULT_ROUTE_Z_WEIGHT = 1.35
 const WIKI_SONATA_ID_PREFIX = 'wiki-sonata-'
 const WIKI_SONATA_ID_PATTERN = /^wiki-sonata-(\d+)$/u
 
@@ -27,7 +26,6 @@ export interface ExplorerUrlState {
   showProvisional?: boolean
   controlPanelCollapsed?: boolean
   mobileSheet?: MobileSheet
-  routeZWeight?: number
   viewport?: MapViewportState
 }
 
@@ -45,7 +43,6 @@ export interface ExplorerUrlSnapshot {
   showProvisional: boolean
   controlPanelCollapsed: boolean
   mobileSheet: MobileSheet
-  routeZWeight: number
   viewport: MapViewportState | null
 }
 
@@ -65,7 +62,6 @@ export interface ExplorerQueryValues {
   provisional?: ExplorerQueryValue
   panel?: ExplorerQueryValue
   sheet?: ExplorerQueryValue
-  height?: ExplorerQueryValue
   x?: ExplorerQueryValue
   y?: ExplorerQueryValue
   zoom?: ExplorerQueryValue
@@ -156,7 +152,6 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
     showProvisional: booleanFlag(values.provisional),
     controlPanelCollapsed: booleanFlag(values.panel),
     mobileSheet: sheet === 'filters' || sheet === 'route' ? sheet : null,
-    routeZWeight: finiteNumber(values.height),
     viewport: x !== undefined && y !== undefined && zoom !== undefined
       ? { center: [x, y], zoom }
       : undefined,
@@ -182,9 +177,6 @@ export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerS
     provisional: state.showProvisional ? undefined : '0',
     panel: state.controlPanelCollapsed ? '1' : undefined,
     sheet: state.mobileSheet ?? undefined,
-    height: state.routeZWeight === DEFAULT_ROUTE_Z_WEIGHT
-      ? undefined
-      : compactNumber(state.routeZWeight, 2),
     x: state.viewport ? compactNumber(state.viewport.center[0], 2) : undefined,
     y: state.viewport ? compactNumber(state.viewport.center[1], 2) : undefined,
     zoom: state.viewport ? compactNumber(state.viewport.zoom, 4) : undefined,

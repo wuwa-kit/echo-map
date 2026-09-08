@@ -2,7 +2,7 @@ import { computed, onScopeDispose, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
 import type { Extent } from 'ol/extent.js'
-import { DEFAULT_ROUTE_Z_WEIGHT, DEFAULT_STATE_ID } from '../url/explorer-url.ts'
+import { DEFAULT_STATE_ID } from '../url/explorer-url.ts'
 import type { EchoCostFilter, ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
 import { planRouteInWorker } from '../route/worker-client.ts'
 import type { EchoMapLocation, MapDataset, MapFloorDefinition, MapStateDefinition, PointLibrary, PointSource, PointSourceFilter, RouteResult } from '../domain/types.ts'
@@ -67,7 +67,6 @@ export const useExplorerStore = defineStore('explorer', () => {
   const showProvisional = shallowRef(true)
   const controlPanelCollapsed = shallowRef(false)
   const mobileSheet = shallowRef<MobileSheet>(null)
-  const routeZWeight = shallowRef(DEFAULT_ROUTE_Z_WEIGHT)
   const mapViewport = shallowRef<MapViewportState | null>(null)
   const mapNavigationRequest = shallowRef<{ regionId: string } | null>(null)
   const route = shallowRef<RouteResult | null>(null)
@@ -201,7 +200,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     showProvisional.value = resolved.showProvisional
     controlPanelCollapsed.value = resolved.controlPanelCollapsed
     mobileSheet.value = resolved.mobileSheet
-    routeZWeight.value = resolved.routeZWeight
     mapViewport.value = immutableSnapshot(resolved.viewport)
     echoSearch.value = ''
     clearRoute()
@@ -382,14 +380,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     mobileSheet.value = value
   }
 
-  function setRouteZWeight(value: number): void {
-    if (!Number.isFinite(value) || value < 0.1 || value > 10) {
-      return
-    }
-    routeZWeight.value = value
-    clearRoute()
-  }
-
   function setMapViewport(value: MapViewportState | null): void {
     mapViewport.value = value === null
       ? null
@@ -421,7 +411,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     try {
       const input = createRoutePlanInput(
         dataset.value, routeEligibleLocations.value, routeEligibleNavigationPoints.value,
-        selectedStateId.value, routeZWeight.value, activeEchoIds.value,
+        selectedStateId.value, activeEchoIds.value,
       )
       const result = await planRouteInWorker(input, controller.signal)
       if (activePlan === controller) {
@@ -496,7 +486,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     showProvisional: shallowReadonly(showProvisional),
     controlPanelCollapsed: shallowReadonly(controlPanelCollapsed),
     mobileSheet: shallowReadonly(mobileSheet),
-    routeZWeight: shallowReadonly(routeZWeight),
     mapViewport: shallowReadonly(mapViewport),
     mapNavigationRequest: shallowReadonly(mapNavigationRequest),
     activeMapName,
@@ -537,7 +526,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     toggleControlPanel,
     setMobileSheet,
     planRoute,
-    setRouteZWeight,
     setMapViewport,
     setRoute,
     clearRoute,

@@ -4,12 +4,10 @@ export interface RoutePlanInput {
   points: RoutePoint[]
   startPoints: RoutePoint[]
   connectors: RouteConnector[]
-  zWeight: number
 }
 
 interface DistanceContext {
   connectors: RouteConnector[]
-  zWeight: number
 }
 
 interface RouteContext extends DistanceContext {
@@ -17,10 +15,10 @@ interface RouteContext extends DistanceContext {
   bestStarts: Map<RoutePoint, { index: number; cost: number }>
 }
 
-function coordinateDistance(left: RoutePoint['coordinate'], right: RoutePoint['coordinate'], zWeight: number): number {
+function coordinateDistance(left: RoutePoint['coordinate'], right: RoutePoint['coordinate']): number {
   const dx = left.x - right.x
   const dy = left.y - right.y
-  const dz = (left.z - right.z) * zWeight
+  const dz = left.z - right.z
   return Math.hypot(dx, dy, dz)
 }
 
@@ -29,7 +27,7 @@ export function movementCost(left: RoutePoint, right: RoutePoint, context: Dista
     return Number.POSITIVE_INFINITY
   }
   if (left.levelId === right.levelId) {
-    return coordinateDistance(left.coordinate, right.coordinate, context.zWeight)
+    return coordinateDistance(left.coordinate, right.coordinate)
   }
 
   let best = Number.POSITIVE_INFINITY
@@ -39,15 +37,15 @@ export function movementCost(left: RoutePoint, right: RoutePoint, context: Dista
     }
     if (connector.fromLevelId === left.levelId && connector.toLevelId === right.levelId) {
       best = Math.min(best,
-        coordinateDistance(left.coordinate, connector.from, context.zWeight)
+        coordinateDistance(left.coordinate, connector.from)
         + connector.traversalCost
-        + coordinateDistance(connector.to, right.coordinate, context.zWeight))
+        + coordinateDistance(connector.to, right.coordinate))
     }
     if (connector.toLevelId === left.levelId && connector.fromLevelId === right.levelId) {
       best = Math.min(best,
-        coordinateDistance(left.coordinate, connector.to, context.zWeight)
+        coordinateDistance(left.coordinate, connector.to)
         + connector.traversalCost
-        + coordinateDistance(connector.from, right.coordinate, context.zWeight))
+        + coordinateDistance(connector.from, right.coordinate))
     }
   }
   return best
@@ -316,13 +314,8 @@ export function optimizeRoute(input: RoutePlanInput): RouteResult {
   if (input.points.length === 0) {
     throw new Error('当前筛选条件下没有已录入 XYZ 的声骸点')
   }
-  if (input.zWeight <= 0 || !Number.isFinite(input.zWeight)) {
-    throw new Error('高度权重必须大于 0')
-  }
-
   const context: RouteContext = {
     connectors: input.connectors,
-    zWeight: input.zWeight,
     startPoints: input.startPoints,
     bestStarts: new Map(input.points.map((point) => [point, bestStart(point, input.startPoints, input)])),
   }

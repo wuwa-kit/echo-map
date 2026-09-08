@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   createExplorerQueryValues,
-  DEFAULT_ROUTE_Z_WEIGHT,
   DEFAULT_STATE_ID,
   parseExplorerQueryValues,
 } from '../src/url/explorer-url.ts'
@@ -20,7 +19,6 @@ describe('explorer query state', () => {
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
-      routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: null,
     })
 
@@ -33,7 +31,6 @@ describe('explorer query state', () => {
       hiddenTypes: 'IconMap_WYQ,CS_02,IconMap_WYQ',
       provisional: '1',
       panel: '0',
-      height: String(DEFAULT_ROUTE_Z_WEIGHT),
       x: '3072',
       y: '-1536',
       zoom: '1.3785',
@@ -43,7 +40,6 @@ describe('explorer query state', () => {
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
-      routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: { center: [3072, -1536], zoom: 1.3785 },
     })
   })
@@ -52,7 +48,7 @@ describe('explorer query state', () => {
     const snapshot = {
       stateId: DEFAULT_STATE_ID, countryId: null, levelId: '-1/58', compactFloors: true,
       echoIds: [], sonataFilterIds: [], echoCostFilters: [], hiddenPointGroupIds: [], showProvisional: true,
-      controlPanelCollapsed: false, mobileSheet: null, routeZWeight: DEFAULT_ROUTE_Z_WEIGHT, viewport: null,
+      controlPanelCollapsed: false, mobileSheet: null, viewport: null,
     }
     const query = createExplorerQueryValues(snapshot)
     expect(query.floorStyle).toBe('icons')
@@ -75,7 +71,6 @@ describe('explorer query state', () => {
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
-      routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: null,
     })
 
@@ -94,7 +89,6 @@ describe('explorer query state', () => {
       showProvisional: true,
       controlPanelCollapsed: true,
       mobileSheet,
-      routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: null,
     })
     expect(query.sheet).toBe(mobileSheet)
@@ -121,7 +115,6 @@ describe('explorer query state', () => {
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
-      routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: null,
     })
 
@@ -148,7 +141,6 @@ describe('explorer query state', () => {
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
-      routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
       viewport: null,
     }).sonatas).toBeUndefined()
   })
