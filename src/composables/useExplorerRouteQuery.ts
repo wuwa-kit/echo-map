@@ -11,7 +11,7 @@ export function useExplorerRouteQuery(): {
   read: () => ExplorerUrlState
   write: (state: ExplorerUrlSnapshot) => void
 } {
-  const sourceQuery = useRouteQuery<string | undefined>('source', undefined, { mode: 'replace' })
+  const sourcesQuery = useRouteQuery<string | undefined>('sources', undefined, { mode: 'replace' })
   const mapQuery = useRouteQuery<string | undefined>('map', String(DEFAULT_STATE_ID))
   const regionQuery = useRouteQuery('region')
   const floorQuery = useRouteQuery<string | undefined>('floor', undefined, { mode: 'replace' })
@@ -19,6 +19,7 @@ export function useExplorerRouteQuery(): {
   const gravityQuery = useRouteQuery<string | undefined>('gravity', undefined, { mode: 'replace' })
   const echoesQuery = useRouteQuery('echoes')
   const sonatasQuery = useRouteQuery('sonatas')
+  const costsQuery = useRouteQuery<string | undefined>('costs', undefined, { mode: 'replace' })
   const hiddenTypesQuery = useRouteQuery('hiddenTypes')
   const provisionalQuery = useRouteQuery<string | undefined>('provisional', '1')
   const panelQuery = useRouteQuery<string | undefined>('panel', '0')
@@ -30,7 +31,7 @@ export function useExplorerRouteQuery(): {
 
   function read(): ExplorerUrlState {
     return parseExplorerQueryValues({
-      source: sourceQuery.value,
+      sources: sourcesQuery.value,
       map: mapQuery.value,
       region: regionQuery.value,
       floor: floorQuery.value,
@@ -38,6 +39,7 @@ export function useExplorerRouteQuery(): {
       gravity: gravityQuery.value,
       echoes: echoesQuery.value,
       sonatas: sonatasQuery.value,
+      costs: costsQuery.value,
       hiddenTypes: hiddenTypesQuery.value,
       provisional: provisionalQuery.value,
       panel: panelQuery.value,
@@ -51,7 +53,7 @@ export function useExplorerRouteQuery(): {
 
   function write(state: ExplorerUrlSnapshot): void {
     const values = createExplorerQueryValues(state)
-    sourceQuery.value = values.source
+    sourcesQuery.value = values.sources
     mapQuery.value = values.map
     regionQuery.value = values.region
     floorQuery.value = values.floor
@@ -59,6 +61,7 @@ export function useExplorerRouteQuery(): {
     gravityQuery.value = values.gravity
     echoesQuery.value = values.echoes
     sonatasQuery.value = values.sonatas
+    costsQuery.value = values.costs
     hiddenTypesQuery.value = values.hiddenTypes
     provisionalQuery.value = values.provisional
     panelQuery.value = values.panel

@@ -25,14 +25,15 @@ export function resolveExplorerState(
   const pointGroupIdByTypeId = new Map(dataset.navigationPoints.map(({ typeId, groupId }) => [typeId, groupId]))
 
   return {
-    pointSource: state.pointSource ?? 'all',
+    pointSourceFilters: (['manual', 'official'] as const).filter(source => state.pointSourceFilters?.includes(source)),
     stateId,
     gravityType: hasGravityMap(nextState) && state.gravityType === 2 ? 2 : 1,
     countryId: state.countryId !== undefined && countryIds.has(state.countryId) ? state.countryId : null,
     levelId: state.levelId !== undefined && floorIds.has(state.levelId) ? state.levelId : null,
     compactFloors: state.compactFloors === true,
     echoIds: (state.echoIds ?? []).filter((id) => echoIds.has(id)),
-    sonataIds: (state.sonataIds ?? []).filter((id) => sonataIds.has(id)),
+    sonataFilterIds: (state.sonataFilterIds ?? []).filter((id) => sonataIds.has(id)),
+    echoCostFilters: ([1, 3] as const).filter((cost) => state.echoCostFilters?.includes(cost)),
     hiddenPointGroupIds: [...new Set((state.hiddenPointGroupIds ?? []).flatMap((id) => {
       if (pointGroupIds.has(id)) {
         return [id]

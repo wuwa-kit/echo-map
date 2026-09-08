@@ -2,9 +2,9 @@ import { computed, onScopeDispose, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
 import { DEFAULT_ROUTE_Z_WEIGHT, DEFAULT_STATE_ID } from '../url/explorer-url.ts'
-import type { ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
+import type { EchoCostFilter, ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
 import { planRouteInWorker } from '../route/worker-client.ts'
-import type { EchoMapLocation, MapDataset, MapFloorDefinition, MapStateDefinition, PointLibrary, PointSource, RouteResult } from '../domain/types.ts'
+import type { EchoMapLocation, MapDataset, MapFloorDefinition, MapStateDefinition, PointLibrary, PointSource, PointSourceFilter, RouteResult } from '../domain/types.ts'
 import { echoMembers, emptyPointLibrary, libraryLocations } from '../domain/point-library.ts'
 import { combinePointLibraries } from '../domain/point-matching.ts'
 import {
@@ -47,7 +47,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const dataset = shallowRef<MapDataset | null>(null)
   const pointLibrary = shallowRef<PointLibrary>(immutableSnapshot(emptyPointLibrary()))
   const officialLibrary = shallowRef<PointLibrary>(immutableSnapshot(emptyPointLibrary()))
-  const pointSource = shallowRef<PointSource>('all')
+  const pointSourceFilters = shallowRef<PointSourceFilter[]>(immutableSnapshot([]))
   const selectedPointId = shallowRef<string | null>(null)
   const candidateIds = shallowRef<string[]>(immutableSnapshot([]))
   const selectedStateId = shallowRef<number>(DEFAULT_STATE_ID)
@@ -61,7 +61,8 @@ export const useExplorerStore = defineStore('explorer', () => {
   const baseTileError = shallowRef(false)
   const baseTileRetry = shallowRef(0)
   const selectedEchoIds = shallowRef<string[]>(immutableSnapshot([]))
-  const selectedSonataIds = shallowRef<string[]>(immutableSnapshot([]))
+  const sonataFilterIds = shallowRef<string[]>(immutableSnapshot([]))
+  const echoCostFilters = shallowRef<EchoCostFilter[]>(immutableSnapshot([]))
   const echoSearch = shallowRef('')
   const hiddenPointGroupIds = shallowRef<string[]>(immutableSnapshot([]))
   const showProvisional = shallowRef(true)
@@ -76,6 +77,10 @@ export const useExplorerStore = defineStore('explorer', () => {
   let activePlan: AbortController | null = null
 
   onScopeDispose(() => activePlan?.abort())
+
+  const pointSource = computed<PointSource>(() => (
+    pointSourceFilters.value.length === 1 ? pointSourceFilters.value[0] ?? 'all' : 'all'
+  ))
 
   const states = computed(() => dataset.value?.states ?? [])
   const activeState = computed<MapStateDefinition | null>(() => (
@@ -111,12 +116,13 @@ export const useExplorerStore = defineStore('explorer', () => {
     return matchingGroups.length === 1 ? matchingGroups[0]?.name ?? state.name
       : state.id === DEFAULT_STATE_ID ? '地表地图' : state.name
   })
-  const echoesMatchingSonata = computed(() => selectEchoDefinitions(
-    dataset.value?.echoes ?? [], selectedSonataIds.value, echoSearch.value,
+  const candidateEchoes = computed(() => selectEchoDefinitions(
+    dataset.value?.echoes ?? [], sonataFilterIds.value, echoCostFilters.value, '',
   ))
-  const activeEchoIds = computed<ReadonlySet<string>>(() => selectActiveEchoIds(
-    dataset.value?.echoes ?? [], selectedEchoIds.value, selectedSonataIds.value,
+  const filteredEchoes = computed(() => selectEchoDefinitions(
+    candidateEchoes.value, [], [], echoSearch.value,
   ))
+  const activeEchoIds = computed<ReadonlySet<string>>(() => selectActiveEchoIds(selectedEchoIds.value))
   const authoredLocations = computed(() => dataset.value
     ? immutableSnapshot(libraryLocations(combinePointLibraries({ ...pointLibrary.value, points: pointLibrary.value.points.filter(({ status }) => status === 'verified') }, officialLibrary.value, pointSource.value), dataset.value))
     : { echoLocations: [], navigationPoints: [], navigationPointGroups: [] })
@@ -181,8 +187,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     }
     resetFloorContext()
 
-    pointSource.value = state.pointSource ?? 'all'
     const resolved = resolveExplorerState({ ...currentDataset, navigationPoints: allNavigationPoints.value, navigationPointGroups: allNavigationPointGroups.value }, state, selectedStateId.value)
+    pointSourceFilters.value = immutableSnapshot([...(resolved.pointSourceFilters ?? [])])
     selectedStateId.value = resolved.stateId
     selectedCountryId.value = resolved.countryId
     selectedLevelId.value = resolved.levelId
@@ -190,7 +196,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectedGravity.value = resolved.gravityType ?? 1
     baseTileError.value = false
     selectedEchoIds.value = immutableSnapshot([...resolved.echoIds])
-    selectedSonataIds.value = immutableSnapshot([...resolved.sonataIds])
+    sonataFilterIds.value = immutableSnapshot([...resolved.sonataFilterIds])
+    echoCostFilters.value = immutableSnapshot([...resolved.echoCostFilters])
     hiddenPointGroupIds.value = immutableSnapshot([...resolved.hiddenPointGroupIds])
     showProvisional.value = resolved.showProvisional
     controlPanelCollapsed.value = resolved.controlPanelCollapsed
@@ -270,8 +277,29 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   function toggleEcho(id: string): void {
-    selectedEchoIds.value = toggleId(selectedEchoIds.value, id)
+    replaceSelectedEchoes(toggleId(selectedEchoIds.value, id))
+  }
+
+  function replaceSelectedEchoes(ids: readonly string[]): void {
+    const next = [...new Set(ids)]
+    if (next.length === selectedEchoIds.value.length && next.every((id, index) => id === selectedEchoIds.value[index])) return
+    selectedEchoIds.value = immutableSnapshot(next)
     clearRoute()
+  }
+
+  function selectCandidateEchoes(): void {
+    const selected = new Set(selectedEchoIds.value)
+    for (const echo of candidateEchoes.value) selected.add(echo.id)
+    replaceSelectedEchoes([...selected])
+  }
+
+  function deselectCandidateEchoes(): void {
+    const candidateEchoIds = new Set(candidateEchoes.value.map(({ id }) => id))
+    replaceSelectedEchoes(selectedEchoIds.value.filter((id) => !candidateEchoIds.has(id)))
+  }
+
+  function clearSelectedEchoes(): void {
+    replaceSelectedEchoes([])
   }
 
   function navigateToRegion(id: string): void {
@@ -301,14 +329,12 @@ export const useExplorerStore = defineStore('explorer', () => {
     mapNavigationRequest.value = null
   }
 
-  function toggleSonata(id: string): void {
-    selectedSonataIds.value = toggleId(selectedSonataIds.value, id)
-    clearRoute()
+  function setSonataFilters(ids: readonly string[]): void {
+    sonataFilterIds.value = immutableSnapshot([...new Set(ids)])
   }
 
-  function clearSonataFilters(): void {
-    selectedSonataIds.value = immutableSnapshot([])
-    clearRoute()
+  function setEchoCostFilters(values: readonly EchoCostFilter[]): void {
+    echoCostFilters.value = immutableSnapshot(([1, 3] as const).filter((cost) => values.includes(cost)))
   }
 
   function setEchoSearch(value: string): void {
@@ -413,15 +439,14 @@ export const useExplorerStore = defineStore('explorer', () => {
     }
   }
 
-  function clearFilters(): void {
-    selectedEchoIds.value = immutableSnapshot([])
-    selectedSonataIds.value = immutableSnapshot([])
+  function resetEchoFilters(): void {
+    sonataFilterIds.value = immutableSnapshot([])
+    echoCostFilters.value = immutableSnapshot([])
     echoSearch.value = ''
-    clearRoute()
   }
 
   return {
-    pointSource: shallowReadonly(pointSource),
+    pointSourceFilters: shallowReadonly(pointSourceFilters),
     allEchoLocations, allNavigationPoints, allNavigationPointGroups, activeEchoIds, matchingMonsterCount, selectedEchoLocation, selectedNavigationPoint,
     setPointLibrary: (value: PointLibrary) => {
       pointLibrary.value = immutableSnapshot(value)
@@ -431,8 +456,10 @@ export const useExplorerStore = defineStore('explorer', () => {
       officialLibrary.value = immutableSnapshot(value)
       clearRoute()
     },
-    setPointSource: (value: PointSource) => {
-      pointSource.value = value
+    setPointSourceFilters: (values: readonly PointSourceFilter[]) => {
+      pointSourceFilters.value = immutableSnapshot(
+        (['manual', 'official'] as const).filter(source => values.includes(source)),
+      )
       hiddenPointGroupIds.value = immutableSnapshot([])
       clearRoute()
     },
@@ -461,7 +488,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     reportBaseTileError: (failed: boolean) => { baseTileError.value = failed },
     retryBaseTiles: () => { baseTileError.value = false; baseTileRetry.value += 1 },
     selectedEchoIds: shallowReadonly(selectedEchoIds),
-    selectedSonataIds: shallowReadonly(selectedSonataIds),
+    sonataFilterIds: shallowReadonly(sonataFilterIds),
+    echoCostFilters: shallowReadonly(echoCostFilters),
     echoSearch: shallowReadonly(echoSearch),
     hiddenPointGroupIds: shallowReadonly(hiddenPointGroupIds),
     showProvisional: shallowReadonly(showProvisional),
@@ -480,7 +508,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     activeState,
     floors,
     regions,
-    echoesMatchingSonata,
+    candidateEchoes,
+    filteredEchoes,
     visibleEchoLocations,
     visibleNavigationPoints,
     mapEchoLocations,
@@ -494,8 +523,11 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectCountry,
     selectLevel,
     toggleEcho,
-    toggleSonata,
-    clearSonataFilters,
+    selectCandidateEchoes,
+    deselectCandidateEchoes,
+    clearSelectedEchoes,
+    setSonataFilters,
+    setEchoCostFilters,
     setEchoSearch,
     setPointGroupVisible,
     showAllPointGroups,
@@ -508,6 +540,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     setMapViewport,
     setRoute,
     clearRoute,
-    clearFilters,
+    resetEchoFilters,
   }
 })

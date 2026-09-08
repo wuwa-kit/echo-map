@@ -1,36 +1,48 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { RouterLink } from 'vue-router'
 import WuScrollArea from './base/WuScrollArea.vue'
 import WuSvg from './base/WuSvg.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
 import MapScopeFilter from './filters/MapScopeFilter.vue'
-import SonataFilter from './filters/SonataFilter.vue'
 import EchoFilter from './filters/EchoFilter.vue'
 import NavigationPointFilter from './filters/NavigationPointFilter.vue'
-import { RouterLink } from 'vue-router'
+import type { PointSourceFilter } from '../domain/types.ts'
 
 defineProps<{ compact: boolean }>()
 
 const store = useExplorerStore()
-const { dataset, pointSource, allEchoLocations, allNavigationPoints } = storeToRefs(store)
-const canEdit = import.meta.env.DEV
+const { dataset, pointSourceFilters } = storeToRefs(store)
+const pointSourceOptions = [
+  { value: 'manual', label: '人工点位' },
+  { value: 'official', label: '官方点位' },
+] as const satisfies readonly { value: PointSourceFilter; label: string }[]
+const activePointSourceFilterSet = computed(() => new Set(pointSourceFilters.value))
+
+function togglePointSourceFilter(source: PointSourceFilter): void {
+  const next = new Set(activePointSourceFilterSet.value)
+  if (next.has(source)) next.delete(source)
+  else next.add(source)
+  store.setPointSourceFilters(pointSourceOptions
+    .filter(({ value }) => next.has(value))
+    .map(({ value }) => value))
+}
 
 function scrollToSection(id: string): void {
   const target = document.getElementById(id)
   target?.scrollIntoView({ block: 'start' })
-  target?.focus({ preventScroll: true })
 }
 </script>
 
 <template>
   <div class="min-h-0 flex flex-1 flex-col">
-    <div v-if="compact" class="grid shrink-0 grid-cols-3 gap-6px border-b border-[var(--line)] px-12px" role="group" aria-label="筛选分类导航">
+    <div v-if="compact" class="grid shrink-0 grid-cols-2 gap-6px border-b border-[var(--line)] px-12px">
       <button type="button" class="min-h-44px cursor-pointer border-0 bg-transparent text-14px text-[var(--accent)]" @click="scrollToSection('echo-filters')">声骸</button>
-      <button type="button" class="min-h-44px cursor-pointer border-0 bg-transparent text-14px text-[var(--accent)]" @click="scrollToSection('sonata-filters')">合鸣</button>
       <button type="button" class="min-h-44px cursor-pointer border-0 bg-transparent text-14px text-[var(--accent)]" @click="scrollToSection('point-filters')">定位点</button>
     </div>
     <WuScrollArea class="min-h-0 flex-1" content-class="pb-16px">
-      <div v-if="dataset && !compact" class="border-b border-[var(--line)] p-18px" role="banner">
+      <div v-if="dataset && !compact" class="border-b border-[var(--line)] p-18px">
         <div class="flex items-center justify-between gap-12px">
           <div class="flex min-w-0 items-center gap-11px">
             <WuSvg name="brand" class="shrink-0 text-[var(--accent)] [--wu-svg-h:34px]" />
@@ -47,36 +59,29 @@ function scrollToSection(id: string): void {
             <span class="block">{{ new Date(dataset.source.generatedAt).toLocaleDateString('zh-CN') }}</span>
           </span>
         </div>
-        <div class="mt-14px grid grid-cols-3 gap-6px">
-          <div class="min-w-0 border border-[var(--line)] rounded-6px bg-[rgba(24,43,37,0.56)] px-8px py-7px">
-            <span class="block truncate text-14px text-[#d8eee5] font-600">{{ dataset.report.includedEchoCount }}</span>
-            <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#71877e]">C1/C3 声骸</span>
-          </div>
-          <div class="min-w-0 border border-[var(--line)] rounded-6px bg-[rgba(24,43,37,0.56)] px-8px py-7px">
-            <span class="block truncate text-14px text-[#d8eee5] font-600">{{ allEchoLocations.length.toLocaleString('zh-CN') }}</span>
-            <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#71877e]">声骸点</span>
-          </div>
-          <div class="min-w-0 border border-[var(--line)] rounded-6px bg-[rgba(24,43,37,0.56)] px-8px py-7px">
-            <span class="block truncate text-14px text-[#d8eee5] font-600">{{ allNavigationPoints.length.toLocaleString('zh-CN') }}</span>
-            <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#71877e]">定位点</span>
-          </div>
-        </div>
       </div>
 
       <div class="border-b border-[var(--line)] p-16px">
-        <div class="flex gap-6px" role="group" aria-label="点位来源">
-          <button v-for="source in (['all', 'manual', 'official'] as const)" :key="source" type="button" :aria-pressed="pointSource === source" class="min-h-40px flex-1 rounded-6px border border-[var(--line)] bg-[#182b25] px-8px text-12px text-[#b9cfc4] aria-pressed:text-[var(--accent)]" @click="store.setPointSource(source)">{{ { all: '全部点位', manual: '仅人工', official: '仅官方' }[source] }}</button>
-        </div>
-        <div v-if="pointSource !== 'manual'" class="mt-8px text-12px text-[#e5bd7c]">官方点 Z=0、数量为初始值；路线使用这些占位坐标。</div>
-        <div v-else-if="allEchoLocations.length === 0" class="mt-8px text-12px text-[#95afa2]">人工点位库为空，录入并核验后即可在这里筛选。</div>
-        <div class="mt-8px flex flex-wrap gap-x-16px">
-          <RouterLink to="/assets" class="inline-flex min-h-40px items-center text-13px text-[var(--accent)]">浏览官方资产 →</RouterLink>
-          <RouterLink v-if="canEdit" to="/editor" class="inline-flex min-h-40px items-center text-13px text-[var(--accent)]">打开点位录入 →</RouterLink>
+        <div class="flex items-center justify-between gap-10px">
+          <div class="min-w-0 flex items-center gap-12px whitespace-nowrap">
+            <RouterLink to="/editor" class="inline-flex min-h-40px min-[1024px]:min-h-0 items-center text-12px min-[1024px]:text-9px text-[var(--accent)] hover:text-[#b9ffe7]">点位录入</RouterLink>
+            <RouterLink to="/assets" class="inline-flex min-h-40px min-[1024px]:min-h-0 items-center text-12px min-[1024px]:text-9px text-[var(--accent)] hover:text-[#b9ffe7]">资产浏览</RouterLink>
+          </div>
+          <div class="flex shrink-0 gap-5px">
+            <button
+              v-for="option in pointSourceOptions"
+              :key="option.value"
+              type="button"
+              class="min-h-40px min-[1024px]:min-h-0 cursor-pointer rounded-5px border px-9px py-4px text-12px min-[1024px]:text-9px font-650 outline-none"
+              :class="activePointSourceFilterSet.has(option.value)
+                ? 'border-[rgba(101,241,194,0.5)] bg-[#244b39] text-[#eafff2]'
+                : 'border-[var(--line)] bg-transparent text-[#91a99f] hover:border-[rgba(101,241,194,0.36)] hover:text-[#dce9e3]'"
+              @click="togglePointSourceFilter(option.value)"
+            >{{ option.label }}</button>
+          </div>
         </div>
       </div>
       <MapScopeFilter />
-
-      <SonataFilter :compact="compact" />
 
       <EchoFilter :compact="compact" />
 

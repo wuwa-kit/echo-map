@@ -30,12 +30,15 @@ describe('authored point library', () => {
     expect(store.matchingMonsterCount).toBe(4)
     expect(store.visibleEchoLocations).toHaveLength(1)
     store.setOfficialPointLibrary(convertOfficialPoints(referenceDataset))
-    store.setPointSource('official')
+    store.setPointSourceFilters(['official'])
     expect(store.allEchoLocations.length).toBeGreaterThan(6000)
     expect(store.allEchoLocations.every(({ gameCoordinate }) => gameCoordinate?.z === 0)).toBe(true)
     expect(store.allEchoLocations.some(({ id }) => id === 'mixed-point')).toBe(false)
-    store.setPointSource('manual')
+    store.setPointSourceFilters(['manual'])
     expect(store.allEchoLocations).toHaveLength(1)
+    store.setPointSourceFilters(['manual', 'official'])
+    expect(store.allEchoLocations.length).toBeGreaterThan(6000)
+    expect(store.allEchoLocations.some(({ id }) => id === 'mixed-point')).toBe(true)
   })
 
   it('keeps XY-overlapping floors and heights independent and only permits verified travel starts', () => {
@@ -107,11 +110,11 @@ describe('authored point library', () => {
     expect(echoComposition([{ echoId: smallEcho.id, count: null }], referenceDataset.echoes).total).toBeNull()
   })
 
-  it('restores the data source from URL and treats unknown sources as manual', () => {
-    expect(parseExplorerQueryValues({ source: 'test' }).pointSource).toBe('official')
-    expect(parseExplorerQueryValues({ source: 'official' }).pointSource).toBe('official')
-    expect(parseExplorerQueryValues({ source: 'manual' }).pointSource).toBe('manual')
-    expect(parseExplorerQueryValues({ source: 'unknown' }).pointSource).toBe('all')
-    expect(createExplorerQueryValues({ stateId: 8, countryId: null, levelId: null, echoIds: [], sonataIds: [], hiddenPointGroupIds: [], showProvisional: true, controlPanelCollapsed: false, mobileSheet: null, routeZWeight: 1.35, viewport: null }).source).toBeUndefined()
+  it('round-trips independent point source filters and ignores unknown values', () => {
+    expect(parseExplorerQueryValues({ sources: 'official' }).pointSourceFilters).toEqual(['official'])
+    expect(parseExplorerQueryValues({ sources: 'manual' }).pointSourceFilters).toEqual(['manual'])
+    expect(parseExplorerQueryValues({ sources: 'official,manual' }).pointSourceFilters).toEqual(['manual', 'official'])
+    expect(parseExplorerQueryValues({ sources: 'unknown' }).pointSourceFilters).toBeUndefined()
+    expect(createExplorerQueryValues({ stateId: 8, countryId: null, levelId: null, pointSourceFilters: [], echoIds: [], sonataFilterIds: [], echoCostFilters: [], hiddenPointGroupIds: [], showProvisional: true, controlPanelCollapsed: false, mobileSheet: null, routeZWeight: 1.35, viewport: null }).sources).toBeUndefined()
   })
 })

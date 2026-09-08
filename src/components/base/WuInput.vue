@@ -38,7 +38,6 @@ const events = createInputEvents(props, {
     :value="modelValue ?? ''"
     :disabled="disabled"
     :readonly="readonly"
-    :aria-invalid="invalid || undefined"
     class="block w-full min-w-0 text-16px text-[#e1f0e8] font-inherit outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[#6f887f] disabled:cursor-not-allowed disabled:opacity-50"
     :class="[
       variant === 'plain' ? 'h-full border-0 bg-transparent p-0' : 'rounded-7px border bg-[#12271f]',

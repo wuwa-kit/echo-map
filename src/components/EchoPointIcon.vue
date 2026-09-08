@@ -24,5 +24,5 @@ onBeforeUnmount(renderer.dispose)
 </script>
 
 <template>
-  <canvas ref="iconRef" class="h-54px w-54px shrink-0" aria-hidden="true" />
+  <canvas ref="iconRef" class="h-54px w-54px shrink-0" />
 </template>

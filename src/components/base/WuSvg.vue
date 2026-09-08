@@ -4,7 +4,6 @@ import { computedAsync } from '@vueuse/core'
 
 const props = defineProps<{
   name: string
-  label?: string
 }>()
 
 const svgElements = computedAsync(
@@ -42,8 +41,5 @@ watchEffect(() => {
     ref="actualElementRef"
     class="block h-[var(--wu-svg-h,1em)] w-[var(--wu-svg-w,var(--wu-svg-h,1em))] overflow-hidden fill-current"
     :data-icon="name"
-    :role="label ? 'img' : undefined"
-    :aria-label="label"
-    :aria-hidden="label ? undefined : true"
   />
 </template>

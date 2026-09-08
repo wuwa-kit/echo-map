@@ -141,8 +141,8 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="relative h-full min-h-240px bg-[#0c1715]">
-    <div ref="mapTargetRef" class="absolute inset-0" aria-label="点位录入地图" />
-    <div v-if="store.mapTileError" role="alert" class="absolute right-12px top-12px z-70 rounded-8px bg-[#35261eed] p-8px text-12px text-[#f1d7b4]">底图部分加载失败<button type="button" class="ml-8px min-h-32px rounded-5px border border-[#a27f58] bg-transparent px-8px text-inherit" @click="store.retryMapTiles">重试</button></div>
+    <div ref="mapTargetRef" class="absolute inset-0" />
+    <div v-if="store.mapTileError" class="absolute right-12px top-12px z-70 rounded-8px bg-[#35261eed] p-8px text-12px text-[#f1d7b4]">底图部分加载失败<button type="button" class="ml-8px min-h-32px rounded-5px border border-[#a27f58] bg-transparent px-8px text-inherit" @click="store.retryMapTiles">重试</button></div>
     <div class="pointer-events-none absolute bottom-12px left-12px right-12px w-fit rounded-8px bg-[#0c211be8] px-12px py-8px text-12px text-[#b5cec1]">点击已有点位编辑 · 点击空白处填写参考 XY · 金色虚线菱形为当前点</div>
   </div>
 </template>

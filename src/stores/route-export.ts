@@ -84,13 +84,13 @@ export const useRouteExportStore = defineStore('route-export', () => {
       open.value = true
       return
     }
-    const names = explorer.dataset.sonatas.filter(({ id }) => explorer.selectedSonataIds.includes(id)).map(({ name }) => name)
     const echoNames = explorer.dataset.echoes.filter(({ id }) => explorer.selectedEchoIds.includes(id)).map(({ name }) => name)
+    const title = echoNames.length <= 3 ? echoNames.join(' · ') : `${echoNames.slice(0, 2).join(' · ')} 等 ${echoNames.length} 种声骸`
     await generate({
       route: explorer.route, dataset: explorer.dataset,
       locations: explorer.routeEligibleLocations, navigationPoints: explorer.routeEligibleNavigationPoints,
       echoIds: [...explorer.activeEchoIds], gravity: explorer.selectedGravity,
-      title: [...names, ...echoNames].join(' · ') || `${explorer.activeMapName}声骸路线`,
+      title: title || `${explorer.activeMapName}声骸路线`,
       usesOfficial: [...explorer.routeEligibleLocations, ...explorer.routeEligibleNavigationPoints].some(({ quality }) => quality === 'official-provisional'),
       createdAt: new Date().toLocaleString('zh-CN', { hour12: false }),
     })

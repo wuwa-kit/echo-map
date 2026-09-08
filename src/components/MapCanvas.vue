@@ -178,7 +178,7 @@ onMounted(() => {
   }
   map = new Map({
     target: mapTarget.value,
-    controls: defaultControls({ rotate: false }),
+    controls: defaultControls({ rotate: false, zoom: false }),
     interactions: defaultInteractions({ pinchRotate: false, altShiftDragRotate: false }),
     layers: [...points.layers, routeLayer.layer],
     view: new View({ projection, enableRotation: false, center: [0, 0], resolution: 4 }),
@@ -237,19 +237,18 @@ onBeforeUnmount(() => {
 <template>
   <div class="relative h-full w-full min-h-0 min-w-0">
     <PointDetails />
-    <div v-if="baseTileError" role="alert" class="absolute left-1/2 top-12px z-70 flex max-w-[90%] translate-x--1/2 items-center gap-10px rounded-8px bg-[#35261eed] px-12px py-8px text-12px text-[#f1d7b4]">
+    <div v-if="baseTileError" class="absolute left-1/2 top-12px z-70 flex max-w-[90%] translate-x--1/2 items-center gap-10px rounded-8px bg-[#35261eed] px-12px py-8px text-12px text-[#f1d7b4]">
       <span>{{ selectedGravity === 2 ? '反重力' : '' }}底图部分加载失败</span>
       <button type="button" class="min-h-32px shrink-0 rounded-5px border border-[#a27f58] bg-transparent px-8px text-inherit" @click="store.retryBaseTiles">重试</button>
     </div>
     <div
       ref="mapTargetRef"
       class="absolute inset-0 [background:linear-gradient(rgba(101,241,194,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(101,241,194,0.025)_1px,transparent_1px),#0c1715] [background-size:32px_32px]"
-      aria-label="鸣潮声骸地图"
       @mouseleave="clearPointerCoordinate"
     />
     <div :style="floorDockStyle" class="pointer-events-none absolute bottom-[var(--floor-dock-bottom)] right-[var(--floor-dock-right)] z-70 max-h-[var(--floor-dock-height)] flex flex-col items-start gap-8px" :class="shortFloorDock ? 'left-[max(68px,env(safe-area-inset-left))]' : 'left-[max(8px,env(safe-area-inset-left))]'">
       <FloorSwitcher />
-      <div aria-hidden="true" class="h-32px max-w-full shrink-0 select-none overflow-hidden whitespace-nowrap rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-12px text-[var(--muted)] tabular-nums shadow-lg" :class="{ invisible: !pointerCoordinateText }">
+      <div class="h-32px max-w-full shrink-0 select-none overflow-hidden whitespace-nowrap rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-12px text-[var(--muted)] tabular-nums shadow-lg" :class="{ invisible: !pointerCoordinateText }">
         {{ pointerCoordinateText }}
       </div>
     </div>

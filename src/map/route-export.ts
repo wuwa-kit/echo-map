@@ -43,7 +43,6 @@ export function createRouteExportView(projection: Projection, center: [number, n
 
 export function createRouteExportRenderer(snapshot: RouteExportSnapshot) {
   const target = document.createElement('div')
-  target.setAttribute('aria-hidden', 'true')
   Object.assign(target.style, { position: 'fixed', left: '-10000px', top: '0', pointerEvents: 'none' })
   document.body.append(target)
   const projection = new Projection({ code: 'KURO:CRS-SIMPLE', units: 'pixels' })

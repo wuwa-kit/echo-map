@@ -18,28 +18,23 @@ export function selectRegions(labels: readonly RegionLabel[], stateId: number): 
 export function selectEchoDefinitions(
   echoes: readonly EchoDefinition[],
   sonataIds: readonly string[],
+  costs: readonly EchoDefinition['cost'][],
   searchText: string,
 ): EchoDefinition[] {
   const selectedSet = new Set(sonataIds)
+  const selectedCosts = new Set(costs)
   const search = searchText.trim().toLocaleLowerCase('zh-CN')
   return echoes.filter((echo) => {
     const matchesSonata = selectedSet.size === 0 || echo.sonataIds.some((id) => selectedSet.has(id))
-    return matchesSonata && (search.length === 0 || echo.name.toLocaleLowerCase('zh-CN').includes(search))
+    const matchesCost = selectedCosts.size === 0 || selectedCosts.has(echo.cost)
+    return matchesSonata && matchesCost && (search.length === 0 || echo.name.toLocaleLowerCase('zh-CN').includes(search))
   })
 }
 
 export function selectActiveEchoIds(
-  echoes: readonly EchoDefinition[],
   echoIds: readonly string[],
-  sonataIds: readonly string[],
 ): Set<string> {
-  if (echoIds.length > 0) {
-    return new Set(echoIds)
-  }
-  const selectedSet = new Set(sonataIds)
-  return new Set(echoes
-    .filter((echo) => echo.sonataIds.some((id) => selectedSet.has(id)))
-    .map(({ id }) => id))
+  return new Set(echoIds)
 }
 
 export function matchesMapContext(location: MapScope, scope: MapScope): boolean {

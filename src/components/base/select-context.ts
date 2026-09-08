@@ -11,10 +11,8 @@ export interface WuSelectOptionRecord {
 
 export interface WuSelectContext {
   chooseOption: (option: WuSelectOptionRecord) => void
-  isActiveOption: (id: string) => boolean
   isSelectedValue: (value: WuSelectValue) => boolean
   registerOption: (option: WuSelectOptionRecord) => void
-  setActiveOption: (id: string) => void
   unregisterOption: (id: string) => void
   updateOption: (option: WuSelectOptionRecord) => void
 }

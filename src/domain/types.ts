@@ -166,6 +166,7 @@ export interface AuthoredEchoLocation extends PointLocationBase {
 }
 
 export type PointSource = 'all' | 'manual' | 'official'
+export type PointSourceFilter = Exclude<PointSource, 'all'>
 
 export type EchoMapLocation = EchoLocation | AuthoredEchoLocation
 

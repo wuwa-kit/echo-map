@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, shallowRef, useId, useTemplateRef, watch } from 'vue'
+import { computed, onScopeDispose, shallowRef, useId, useTemplateRef, watch } from 'vue'
 import { useEventListener, useMutationObserver, useResizeObserver, useSupported } from '@vueuse/core'
 import { popoverPosition, popoverWidth } from './popover-position.ts'
 import type { WuPopoverPlacement, WuPopoverWidth } from './popover-position.ts'
@@ -30,6 +30,7 @@ const panel = useTemplateRef<HTMLDivElement>('panelRef')
 const openState = shallowRef(false)
 const isOpen = computed(() => openState.value)
 const isSupported = useSupported(() => typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype)
+let resizeFrame: number | null = null
 
 function updatePosition(): void {
   const element = panel.value
@@ -43,20 +44,32 @@ function updatePosition(): void {
     height: visualViewport?.height ?? window.innerHeight,
   }
   // Measure after applying the requested width so wrapping participates in placement.
-  element.style.width = props.width === 'content' ? 'max-content' : `${popoverWidth(
+  const width = props.width === 'content' ? 'max-content' : `${popoverWidth(
     props.width, anchor.width, 0, viewport.width, props.viewportMargin,
   )}px`
-  element.style.maxWidth = `${popoverWidth('viewport', 0, 0, viewport.width, props.viewportMargin)}px`
-  element.style.maxHeight = `${Math.max(0, props.maxHeight)}px`
+  const maxWidth = `${popoverWidth('viewport', 0, 0, viewport.width, props.viewportMargin)}px`
+  const requestedMaxHeight = `${Math.max(0, props.maxHeight)}px`
+  if (element.style.width !== width) element.style.width = width
+  if (element.style.maxWidth !== maxWidth) element.style.maxWidth = maxWidth
+  if (element.style.maxHeight !== requestedMaxHeight) element.style.maxHeight = requestedMaxHeight
   const size = element.getBoundingClientRect()
   const position = popoverPosition({
     anchor, viewport, size, placement: props.placement, gap: props.gap,
     margin: props.viewportMargin, maxHeight: props.maxHeight,
   })
-  Object.assign(element.style, {
-    left: `${position.left}px`,
-    top: `${position.top}px`,
-    maxHeight: `${position.maxHeight}px`,
+  const left = `${position.left}px`
+  const top = `${position.top}px`
+  const maxHeight = `${position.maxHeight}px`
+  if (element.style.left !== left) element.style.left = left
+  if (element.style.top !== top) element.style.top = top
+  if (element.style.maxHeight !== maxHeight) element.style.maxHeight = maxHeight
+}
+
+function schedulePositionUpdate(): void {
+  if (resizeFrame !== null) cancelAnimationFrame(resizeFrame)
+  resizeFrame = requestAnimationFrame(() => {
+    resizeFrame = null
+    updatePosition()
   })
 }
 
@@ -95,8 +108,11 @@ watch(() => [props.anchor, props.placement, props.width, props.maxHeight, props.
 useEventListener(window, 'resize', updatePosition, { passive: true })
 useEventListener(window, 'scroll', updatePosition, { capture: true, passive: true })
 useEventListener(window.visualViewport, ['resize', 'scroll'], updatePosition, { passive: true })
-useResizeObserver([() => props.anchor, panel], updatePosition)
+useResizeObserver([() => props.anchor, panel], schedulePositionUpdate)
 useMutationObserver(panel, updatePosition, { childList: true, subtree: true, characterData: true })
+onScopeDispose(() => {
+  if (resizeFrame !== null) cancelAnimationFrame(resizeFrame)
+})
 
 defineExpose({ id: popoverId, isOpen, isSupported, show, hide, toggle, updatePosition })
 </script>

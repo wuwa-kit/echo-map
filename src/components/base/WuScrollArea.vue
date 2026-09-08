@@ -168,7 +168,6 @@ onMounted(() => {
         trackSizeClass,
         scrollbarActive ? 'opacity-100' : 'opacity-35 hover:opacity-100',
       ]"
-      aria-hidden="true"
       @pointerdown="onTrackPointerDown"
     >
       <div

@@ -14,12 +14,16 @@
 
 - Vue 模板、JSX/TSX、`h('tag')` 和 `document.createElement('tag')` 只能使用本节白名单中的原生标签。
 - 当前允许的通用及交互标签为：`div`、`span`、`a`、`button`、`input`、`img`、`canvas`、`svg`。
-- 当前项目因原生地图筛选表单额外允许：`label`、`select`、`option`；仅在需要对应原生表单行为时使用。
 - 当前允许的表格标签为：`table`、`caption`、`colgroup`、`col`、`thead`、`tbody`、`tfoot`、`tr`、`th`、`td`。
 - 当前允许的 Vue 内建标签为：`template`、`slot`、`component`。
-- 不使用 `header`、`main`、`section`、`aside`、`article`、`nav`、`footer`、`h1`—`h6`、`p`、`time`、`pre`、`code`、`strong`、`small`、`ol`、`ul`、`li`、`i`、`mark` 等白名单外标签；无原生行为要求时使用 `div` 或 `span`，需要语义时使用 ARIA 属性补充。
+- 不使用 `header`、`main`、`section`、`aside`、`article`、`nav`、`footer`、`h1`—`h6`、`p`、`time`、`pre`、`code`、`strong`、`small`、`ol`、`ul`、`li`、`i`、`mark`、`label`、`select`、`option` 等白名单外标签；无原生行为要求时使用 `div` 或 `span`。
 - Vue 组件统一使用 PascalCase，禁止用小写组件名绕过或混淆原生标签检查。
 - SFC 的 `script`、`template`、`style` 块、`index.html` 文档骨架及独立 SVG 资源不受此 Vue/TS 规则约束。
+
+## 无障碍语义
+
+- 项目不实现无障碍语义适配；源码中禁止出现 `aria-*`、无障碍用途的 `role`、`tabindex`、`label`/`for` 关联、图片替代文本、隐藏朗读文本和实时区域。
+- 禁止实现焦点转移、焦点陷阱、焦点游走，以及仅为无障碍操作服务的键盘事件逻辑；可见文案、普通标题、指针或触摸交互以及产品明确要求的键盘操作不受此限制。
 
 ## TypeScript 与源码
 
@@ -57,7 +61,7 @@
 - UI SVG 图标放在 `src/assets/svg/`，通过 `WuSvg` 按不含扩展名的文件名使用，不在业务组件中重复粘贴 SVG 标记。
 - SVG 文件的根 `<svg>` 只能包含 `viewBox` 属性，不设置 `xmlns`、`fill`、`stroke`、`width`、`height`、`class` 或 `style`。
 - `fill`、`stroke`、`stroke-width`、`stroke-linecap`、`stroke-linejoin` 等呈现属性写在 `<path>`、`rect` 等内部元素上；单色图标使用 `currentColor`。
-- 图标仅作装饰时不传 `label`；表达独立含义时为 `WuSvg` 提供简洁的 `label`。
+- `WuSvg` 不提供无障碍标签或语义属性；图标需要表达独立含义时使用可见文案或普通标题补充。
 
 ## 地图与数据领域约束
 
@@ -74,6 +78,7 @@
 
 ## URL 会话状态
 
+- 本项目没有后端接口或持久化用户数据，并且业务数据在构建前确定；调整 URL query、前端状态或构建产物字段时默认直接使用新结构，不为旧字段或旧语义增加兼容、迁移或双写逻辑，除非用户明确要求。
 - 可复现当前页面渲染的核心简单状态写入 URL，包括地图范围、筛选、图层开关、核心组件配置和地图视口。
 - URL query 由 Vue Router 与 `@vueuse/router` 的 `useRouteQuery` 管理，不直接操作 `URLSearchParams` 或调用 `history.replaceState`。
 - 每个 query 字段必须声明默认值；状态等于默认值时从 URL 中移除，根页面的完整默认状态保持为 `/`。

@@ -170,18 +170,18 @@ useEventListener(window, 'beforeunload', (event) => {
         <button :class="buttonClass" :disabled="busy || !dataset" @click="exportJson">导出人工 JSON</button>
         <button :class="buttonClass" :disabled="busy || !dataset" @click="importFile?.click()">导入人工 JSON</button>
         <button :class="buttonClass" :disabled="busy" @click="store.loadVersions">历史版本</button>
-        <input ref="importFileRef" type="file" accept="application/json,.json" class="hidden" aria-label="导入点位 JSON" @change="importJson" />
+        <input ref="importFileRef" type="file" accept="application/json,.json" class="hidden" @change="importJson" />
       </div>
     </div>
-    <div v-if="error" class="shrink-0 whitespace-pre-wrap break-words bg-[#44251e] px-20px py-10px text-13px text-[#ffd0b8]" role="alert">{{ error }}</div>
-    <div v-else-if="notice" class="shrink-0 bg-[#163328] px-20px py-8px text-12px text-[#a8d9c0]" role="status">{{ notice }}</div>
+    <div v-if="error" class="shrink-0 whitespace-pre-wrap break-words bg-[#44251e] px-20px py-10px text-13px text-[#ffd0b8]">{{ error }}</div>
+    <div v-else-if="notice" class="shrink-0 bg-[#163328] px-20px py-8px text-12px text-[#a8d9c0]">{{ notice }}</div>
     <div v-if="recovery" class="flex shrink-0 flex-wrap items-center gap-10px bg-[#3b3420] px-20px py-10px text-13px"><span>发现上次未保存的编辑。</span><button :class="buttonClass" @click="runDraftAction(store.recoverDraft)">恢复草稿</button><button :class="buttonClass" @click="store.dismissRecovery">忽略草稿</button></div>
     <div v-if="deleted" class="flex shrink-0 items-center gap-10px bg-[#192e25] px-20px py-8px text-13px"><span>点位已删除。</span><button :class="buttonClass" :disabled="busy" @click="runDraftAction(store.undoDelete)">撤销删除</button></div>
     <div v-if="importPreview && importSummary" class="shrink-0 border-b border-[#937544] bg-[#302b1c] p-16px text-13px">
       <div>替换预览：共 {{ importPreview.points.length }} 处，新增 {{ importSummary.added }}、修改 {{ importSummary.updated }}、移除 {{ importSummary.removed }}。保存前会保留当前版本。</div>
       <div class="mt-10px flex gap-8px"><button :class="buttonClass" :disabled="busy" @click="runDraftAction(store.applyImport)">确认替换点位库</button><button :class="buttonClass" :disabled="busy" @click="store.cancelImport">取消</button></div>
     </div>
-    <WuScrollArea v-if="versions.length" class="max-h-160px shrink-0 border-b border-[var(--line)]" content-class="p-12px" aria-label="历史版本">
+    <WuScrollArea v-if="versions.length" class="max-h-160px shrink-0 border-b border-[var(--line)]" content-class="p-12px">
       <div class="mb-8px flex items-center justify-between text-13px"><span>历史版本 · 选择后预览差异</span><button :class="buttonClass" @click="store.closeVersions">收起</button></div>
       <button v-for="version in versions" :key="version.revision" :class="buttonClass" class="mb-6px mr-6px" :disabled="busy" @click="store.previewVersion(version.revision)">{{ new Date(version.savedAt).toLocaleString('zh-CN') }}</button>
     </WuScrollArea>
@@ -189,10 +189,10 @@ useEventListener(window, 'beforeunload', (event) => {
       <div class="flex max-h-340px min-h-0 flex-col border-b border-[var(--line)] p-12px lg:max-h-none lg:border-b-0 lg:border-r">
         <div class="mb-10px grid grid-cols-2 gap-6px"><button :class="buttonClass" :disabled="busy" @click="newPoint('echo')">＋ 刷取点</button><button :class="buttonClass" :disabled="busy" @click="newPoint('navigation')">＋ 定位点</button></div>
         <WuCheckBox :model-value="showOfficial" :disabled="busy" class="mb-10px flex min-h-36px items-center gap-8px text-13px text-[#b9cfbf]" @update:model-value="toggleOfficial">显示官方点位</WuCheckBox>
-        <WuInput :model-value="search" type="search" placeholder="搜索怪物、坐标或备注" aria-label="搜索点位" @update:model-value="store.setSearch" />
-        <WuScrollArea class="mt-10px min-h-0 flex-1" role="list" aria-label="人工点位列表">
+        <WuInput :model-value="search" type="search" placeholder="搜索怪物、坐标或备注" @update:model-value="store.setSearch" />
+        <WuScrollArea class="mt-10px min-h-0 flex-1">
           <div v-if="!filteredPoints.length" class="py-24px text-center text-13px text-[#7e9e8d]">{{ library.points.length ? '没有匹配的点位' : '从第一处实测点位开始。' }}</div>
-          <button v-for="point in filteredPoints.slice(0, 100)" :key="point.id" type="button" :aria-pressed="point.id === draft.id" class="mb-7px w-full rounded-8px border border-[var(--line)] bg-[#10241b] p-11px text-left aria-pressed:border-[#65f1c2]" @click="selectPoint(point.id)">
+          <button v-for="point in filteredPoints.slice(0, 100)" :key="point.id" type="button" class="mb-7px w-full rounded-8px border border-[var(--line)] bg-[#10241b] p-11px text-left" :class="point.id === draft.id ? 'border-[#65f1c2]' : ''" @click="selectPoint(point.id)">
             <div class="mb-6px flex items-center justify-between text-10px tracking-wide"><span class="text-[#9ebaac]">{{ point.kind === 'echo' ? '刷取点' : '定位点' }}</span><span :class="point.status === 'verified' ? 'text-[#77e5b6]' : 'text-[#e2bd7f]'">{{ point.status === 'imported' ? '官方 · Z=0' : point.status === 'verified' ? '人工 · 已核验' : '人工 · 草稿' }}</span></div>
             <div class="text-13px leading-relaxed">{{ pointTitle(point, dataset) }}</div><div class="mt-6px font-mono text-11px text-[#7d9e8c]">{{ Object.values(point.coordinate).map((value) => value ?? '—').join(', ') }}</div>
           </button>
@@ -200,11 +200,11 @@ useEventListener(window, 'beforeunload', (event) => {
         </WuScrollArea>
       </div>
       <PointEditorMap :dataset="dataset" :points="allPoints" :draft="draft" :saved-viewport="savedViewport" class="h-340px lg:h-full" @point-selected="selectPoint" @position-picked="store.pickMapPosition" @viewport-changed="publishViewport" />
-      <WuScrollArea :unbounded="compact" class="min-h-0 border-t border-[var(--line)] bg-[#0d1e16] lg:border-l lg:border-t-0" content-class="p-16px" aria-label="点位录入表单">
+      <WuScrollArea :unbounded="compact" class="min-h-0 border-t border-[var(--line)] bg-[#0d1e16] lg:border-l lg:border-t-0" content-class="p-16px">
         <div class="mb-16px flex items-center justify-between"><div class="text-17px font-600">{{ existing ? '编辑' : '新增' }}{{ draft.kind === 'echo' ? '刷取点' : '定位点' }}</div><span class="text-12px text-[#dcb77b]">{{ dirty ? '未保存' : draft.status === 'verified' ? '已核验' : '草稿' }}</span></div>
         <div v-if="draft.kind === 'echo'" class="mb-16px rounded-8px border border-[var(--line)] bg-[#142d22] p-10px">
-          <label for="editor-tracking-echo" class="mb-6px block text-13px text-[#b4d9c5]">当前追踪声骸</label>
-          <WuSelect id="editor-tracking-echo" :native="compact" :model-value="trackingEchoId" :disabled="busy" @update:model-value="setTracking">
+          <div class="mb-6px block text-13px text-[#b4d9c5]">当前追踪声骸</div>
+          <WuSelect :model-value="trackingEchoId" :disabled="busy" @update:model-value="setTracking">
             <WuOption value="">未选择</WuOption>
             <WuOption v-for="echo in dataset.echoes" :key="echo.id" :value="echo.id">{{ echo.name }} · C{{ echo.cost }}</WuOption>
           </WuSelect>
@@ -212,14 +212,14 @@ useEventListener(window, 'beforeunload', (event) => {
           <button v-if="trackingEchoId && !draft.members.some(({ echoId }) => echoId === trackingEchoId)" :class="buttonClass" class="mt-7px w-full" :disabled="busy" @click="store.addMember(trackingEchoId)">加入本次记录</button>
         </div>
         <div class="mb-10px">
-          <label for="editor-state" class="mb-5px block text-12px text-[#91ae9e]">地图</label>
-          <WuSelect id="editor-state" :native="compact" :model-value="draft.stateId" :disabled="busy" @update:model-value="changeState">
+          <div class="mb-5px block text-12px text-[#91ae9e]">地图</div>
+          <WuSelect :model-value="draft.stateId" :disabled="busy" @update:model-value="changeState">
             <WuOption v-for="state in dataset.states" :key="state.id" :value="state.id">{{ state.name }}</WuOption>
           </WuSelect>
         </div>
         <div v-if="hasGravityMap(currentState)" class="mb-10px">
-          <label for="editor-gravity" class="mb-5px block text-12px text-[#91ae9e]">重力状态</label>
-          <WuSelect id="editor-gravity" :native="compact" :model-value="draft.gravityType" :disabled="busy" @update:model-value="changeGravity">
+          <div class="mb-5px block text-12px text-[#91ae9e]">重力状态</div>
+          <WuSelect :model-value="draft.gravityType" :disabled="busy" @update:model-value="changeGravity">
             <WuOption :value="null">待核验</WuOption>
             <WuOption :value="1">普通重力</WuOption>
             <WuOption :value="2">反重力</WuOption>
@@ -227,15 +227,15 @@ useEventListener(window, 'beforeunload', (event) => {
         </div>
         <div class="grid grid-cols-2 gap-10px">
           <div>
-            <label for="editor-country" class="mb-5px block text-12px text-[#91ae9e]">地区</label>
-            <WuSelect id="editor-country" :native="compact" :model-value="draft.countryId" :disabled="busy" @update:model-value="changeCountry">
+            <div class="mb-5px block text-12px text-[#91ae9e]">地区</div>
+            <WuSelect :model-value="draft.countryId" :disabled="busy" @update:model-value="changeCountry">
               <WuOption :value="null">未指定地区</WuOption>
               <WuOption v-for="country in countries" :key="country.id" :value="country.countryId">{{ country.name }}</WuOption>
             </WuSelect>
           </div>
           <div>
-            <label for="editor-level" class="mb-5px block text-12px text-[#91ae9e]">楼层</label>
-            <WuSelect id="editor-level" :native="compact" :model-value="draft.levelId" :disabled="busy" @update:model-value="changeLevel">
+            <div class="mb-5px block text-12px text-[#91ae9e]">楼层</div>
+            <WuSelect :model-value="draft.levelId" :disabled="busy" @update:model-value="changeLevel">
               <WuOption :value="null">地表</WuOption>
               <WuOption v-if="draft.levelId && !floors.some(({ id }) => id === draft?.levelId)" :value="draft.levelId">官方楼层 {{ draft.levelId }}（请核验选择）</WuOption>
               <WuOption v-for="floor in floors" :key="floor.id" :value="floor.id">{{ floor.name }}</WuOption>
@@ -244,12 +244,12 @@ useEventListener(window, 'beforeunload', (event) => {
         </div>
         <div class="mt-16px border-t border-[var(--line)] pt-14px">
           <div class="mb-7px text-13px font-600">{{ draft.kind === 'navigation' ? '图标点位坐标' : '游戏内实测坐标' }}</div>
-          <div class="flex gap-6px"><WuInput :model-value="coordinateText" :disabled="busy" placeholder="粘贴 XYZ，例如 -497, 449, 18" aria-label="粘贴 XYZ" @update:model-value="store.setCoordinateText" @confirm="store.applyCoordinateText" /><button :class="buttonClass" class="shrink-0" :disabled="busy" @click="store.applyCoordinateText">应用</button></div>
-          <div class="mt-8px grid grid-cols-3 gap-8px"><label v-for="axis in (['x', 'y', 'z'] as const)" :key="axis" class="text-11px text-[#88a694]">{{ axis.toUpperCase() }}<WuInput class="mt-4px font-mono" inputmode="numeric" :aria-label="`坐标 ${axis.toUpperCase()}`" :model-value="draft.coordinate[axis]" :disabled="busy" @update:model-value="store.setCoordinate(axis, $event)" /></label></div>
+          <div class="flex gap-6px"><WuInput :model-value="coordinateText" :disabled="busy" placeholder="粘贴 XYZ，例如 -497, 449, 18" @update:model-value="store.setCoordinateText" @confirm="store.applyCoordinateText" /><button :class="buttonClass" class="shrink-0" :disabled="busy" @click="store.applyCoordinateText">应用</button></div>
+          <div class="mt-8px grid grid-cols-3 gap-8px"><div v-for="axis in (['x', 'y', 'z'] as const)" :key="axis" class="text-11px text-[#88a694]">{{ axis.toUpperCase() }}<WuInput class="mt-4px font-mono" inputmode="numeric" :model-value="draft.coordinate[axis]" :disabled="busy" @update:model-value="store.setCoordinate(axis, $event)" /></div></div>
         </div>
         <div v-if="draft.kind === 'echo'" class="mt-12px rounded-8px border border-[var(--line)] p-10px">
           <div class="mb-8px text-13px font-600">附近点位匹配</div>
-          <div class="grid grid-cols-2 gap-8px"><label class="text-11px text-[#91ae9e]">XY 范围<WuInput type="number" min="1" max="500" :model-value="matchRadius" lazy @update:model-value="setMatchDistance('radius', $event)" /></label><label class="text-11px text-[#91ae9e]">最大高度差<WuInput type="number" min="0" max="500" :model-value="heightTolerance" lazy @update:model-value="setMatchDistance('height', $event)" /></label></div>
+          <div class="grid grid-cols-2 gap-8px"><div class="text-11px text-[#91ae9e]">XY 范围<WuInput type="number" min="1" max="500" :model-value="matchRadius" lazy @update:model-value="setMatchDistance('radius', $event)" /></div><div class="text-11px text-[#91ae9e]">最大高度差<WuInput type="number" min="0" max="500" :model-value="heightTolerance" lazy @update:model-value="setMatchDistance('height', $event)" /></div></div>
           <div v-if="Object.values(draft.coordinate).some((value) => value === null)" class="mt-8px text-12px text-[#91ae9e]">填写完整 XYZ 后自动查找同地图、同楼层的已有刷取点。</div>
           <div v-else-if="!nearbyPoints.length" class="mt-8px text-12px text-[#91ae9e]">附近没有匹配点，可以新建。</div>
           <template v-else>
@@ -268,35 +268,35 @@ useEventListener(window, 'beforeunload', (event) => {
           <div class="mb-10px flex items-center gap-12px"><EchoPointIcon :members="draft.members" :echoes="dataset.echoes" /><div><div class="text-13px font-600">怪物清单</div><div class="mt-4px text-12px text-[#90ae9d]">{{ draft.members.length }} 种 · {{ draft.members.reduce((sum, member) => sum + member.count, 0) }} 只 · 自动组合图标</div></div></div>
           <WuCheckBox :model-value="draft.compositionStatus === 'complete'" :disabled="busy" class="mb-10px flex min-h-36px items-center gap-8px text-12px text-[#a9c7b6]" @update:model-value="store.setCompositionComplete">怪物清单已补齐（可留空，后续继续追加）</WuCheckBox>
           <div v-for="member in draft.members" :key="member.echoId" class="mb-7px flex items-center gap-6px rounded-7px bg-[#152c22] px-8px py-5px">
-            <img :src="echoById.get(member.echoId)?.iconUrl" alt="" class="h-32px w-32px object-contain" /><span class="min-w-0 flex-1 text-12px">{{ echoById.get(member.echoId)?.name ?? member.echoId }}</span>
-            <div class="w-52px shrink-0"><WuInput size="sm" type="number" min="1" max="999" :aria-label="`${echoById.get(member.echoId)?.name}数量`" :model-value="member.count" :disabled="busy" @update:model-value="store.setMemberCount(member.echoId, Number($event))" /></div>
-            <button class="h-36px border-0 bg-transparent text-13px text-[#a6b6a9]" :disabled="busy" :aria-label="`移除${echoById.get(member.echoId)?.name}`" @click="store.removeMember(member.echoId)">移除</button>
+            <img :src="echoById.get(member.echoId)?.iconUrl" class="h-32px w-32px object-contain" /><span class="min-w-0 flex-1 text-12px">{{ echoById.get(member.echoId)?.name ?? member.echoId }}</span>
+            <div class="w-52px shrink-0"><WuInput size="sm" type="number" min="1" max="999" :model-value="member.count" :disabled="busy" @update:model-value="store.setMemberCount(member.echoId, Number($event))" /></div>
+            <button class="h-36px border-0 bg-transparent text-13px text-[#a6b6a9]" :disabled="busy" @click="store.removeMember(member.echoId)">移除</button>
           </div>
-          <WuInput class="mt-6px" :model-value="monsterSearch" type="search" placeholder="搜索怪物，点击添加" aria-label="搜索可添加怪物" @update:model-value="store.setMonsterSearch" />
-          <WuScrollArea class="mt-7px max-h-190px" content-class="grid grid-cols-2 gap-5px" aria-label="可添加怪物">
-            <button v-for="echo in echoes" :key="echo.id" class="flex min-h-44px items-center gap-5px rounded-6px border border-[var(--line)] bg-[#10251b] p-5px text-left" :disabled="busy" :aria-label="`添加${echo.name}`" @click="store.addMember(echo.id)"><img :src="echo.iconUrl" alt="" class="h-30px w-30px object-contain" loading="lazy" /><span class="min-w-0 text-11px leading-relaxed">{{ echo.name }}<span class="block text-10px text-[#88aa96]">C{{ echo.cost }} ＋</span></span></button>
+          <WuInput class="mt-6px" :model-value="monsterSearch" type="search" placeholder="搜索怪物，点击添加" @update:model-value="store.setMonsterSearch" />
+          <WuScrollArea class="mt-7px max-h-190px" content-class="grid grid-cols-2 gap-5px">
+            <button v-for="echo in echoes" :key="echo.id" class="flex min-h-44px items-center gap-5px rounded-6px border border-[var(--line)] bg-[#10251b] p-5px text-left" :disabled="busy" @click="store.addMember(echo.id)"><img :src="echo.iconUrl" class="h-30px w-30px object-contain" loading="lazy" /><span class="min-w-0 text-11px leading-relaxed">{{ echo.name }}<span class="block text-10px text-[#88aa96]">C{{ echo.cost }} ＋</span></span></button>
           </WuScrollArea>
         </div>
         <div v-else class="mt-16px border-t border-[var(--line)] pt-14px">
-          <label class="mb-10px block text-12px text-[#91ae9e]">名称<WuInput class="mt-5px" :model-value="draft.name" :disabled="busy" @update:model-value="store.setName" /></label>
+          <div class="mb-10px block text-12px text-[#91ae9e]">名称<WuInput class="mt-5px" :model-value="draft.name" :disabled="busy" @update:model-value="store.setName" /></div>
           <div class="mb-10px">
-            <label for="editor-navigation-kind" class="mb-5px block text-12px text-[#91ae9e]">定位点类型</label>
-            <WuSelect id="editor-navigation-kind" :native="compact" :model-value="draft.navigationKind" :disabled="busy" @update:model-value="setNavigationKind">
+            <div class="mb-5px block text-12px text-[#91ae9e]">定位点类型</div>
+            <WuSelect :model-value="draft.navigationKind" :disabled="busy" @update:model-value="setNavigationKind">
               <WuOption v-for="(name, kind) in NAVIGATION_NAMES" :key="kind" :value="kind">{{ name }}</WuOption>
             </WuSelect>
           </div>
-          <label for="editor-navigation-mode" class="mb-5px block text-12px text-[#91ae9e]">传送能力</label>
-          <WuSelect id="editor-navigation-mode" :native="compact" :model-value="draft.mode" :disabled="busy" @update:model-value="setMode">
+          <div class="mb-5px block text-12px text-[#91ae9e]">传送能力</div>
+          <WuSelect :model-value="draft.mode" :disabled="busy" @update:model-value="setMode">
             <WuOption v-for="(name, mode) in MODE_NAMES" :key="mode" :value="mode">{{ name }}</WuOption>
           </WuSelect>
           <div v-if="draft.mode === 'fast-travel'" class="mt-14px rounded-8px border border-[var(--line)] p-10px">
             <div class="mb-7px text-13px font-600">实际传送落点 XYZ</div>
-            <div class="flex gap-6px"><WuInput :model-value="teleportCoordinateText" :disabled="busy" placeholder="粘贴落点 XYZ" aria-label="粘贴传送落点 XYZ" @update:model-value="store.setTeleportCoordinateText" @confirm="store.applyTeleportCoordinateText" /><button :class="buttonClass" class="shrink-0" :disabled="busy" @click="store.applyTeleportCoordinateText">应用</button></div>
-            <div class="mt-8px grid grid-cols-3 gap-8px"><label v-for="axis in (['x', 'y', 'z'] as const)" :key="axis" class="text-11px text-[#88a694]">{{ axis.toUpperCase() }}<WuInput class="mt-4px font-mono" inputmode="numeric" :aria-label="`传送落点 ${axis.toUpperCase()}`" :model-value="draft.teleportCoordinate?.[axis] ?? ''" :disabled="busy" @update:model-value="store.setTeleportCoordinate(axis, $event)" /></label></div>
+            <div class="flex gap-6px"><WuInput :model-value="teleportCoordinateText" :disabled="busy" placeholder="粘贴落点 XYZ" @update:model-value="store.setTeleportCoordinateText" @confirm="store.applyTeleportCoordinateText" /><button :class="buttonClass" class="shrink-0" :disabled="busy" @click="store.applyTeleportCoordinateText">应用</button></div>
+            <div class="mt-8px grid grid-cols-3 gap-8px"><div v-for="axis in (['x', 'y', 'z'] as const)" :key="axis" class="text-11px text-[#88a694]">{{ axis.toUpperCase() }}<WuInput class="mt-4px font-mono" inputmode="numeric" :model-value="draft.teleportCoordinate?.[axis] ?? ''" :disabled="busy" @update:model-value="store.setTeleportCoordinate(axis, $event)" /></div></div>
             <div class="mt-8px text-11px leading-relaxed text-[#8daa99]">可选；留空时路线使用图标点位 XYZ。地图图标始终保留在图标点位。</div>
           </div>
         </div>
-        <label class="mt-16px block text-12px text-[#91ae9e]">备注<WuInput class="mt-5px" :model-value="draft.note" :disabled="busy" placeholder="入口、地形、核验说明…" @update:model-value="store.setNote" /></label>
+        <div class="mt-16px block text-12px text-[#91ae9e]">备注<WuInput class="mt-5px" :model-value="draft.note" :disabled="busy" placeholder="入口、地形、核验说明…" @update:model-value="store.setNote" /></div>
         <div class="sticky bottom-0 mt-16px border-t border-[var(--line)] bg-[#0d1e16] pt-12px">
           <div class="mb-8px text-11px text-[#8daa99]">{{ draft.kind === 'echo' ? '核验 XYZ 和本次已知怪物即可保存；清单不必一次补齐。同种声骸再次追加时取较大数量。' : '核验图标点位 XYZ 和传送能力后保存；实际落点留空时按图标点位规划。' }}</div>
           <div class="grid grid-cols-2 gap-6px"><button :class="buttonClass" :disabled="busy" @click="save('draft')">保存草稿</button><button class="min-h-42px rounded-7px border-0 bg-[#65f1c2] px-8px text-13px text-[#092519] font-600 disabled:opacity-40" :disabled="busy" @click="save('verified')">{{ busy ? '保存中…' : '核验并保存' }}</button></div>

@@ -16,7 +16,7 @@ function createStore() {
   const store = useExplorerStore()
   store.setDataset(dataset)
     store.setOfficialPointLibrary(convertOfficialPoints(dataset))
-    store.setPointSource('official')
+    store.setPointSourceFilters(['official'])
   const target = dataset.echoLocations.find(({ stateId, levelId, gameCoordinate }) => stateId === 8 && levelId === null && gameCoordinate !== null)
   if (!target) {
     throw new Error('测试数据缺少可规划声骸')
@@ -86,7 +86,8 @@ describe('route planning actions', () => {
     const store = useExplorerStore()
     store.setDataset(dataset)
     store.setOfficialPointLibrary(convertOfficialPoints(dataset))
-    store.toggleSonata('wiki-sonata-19922')
+    store.setSonataFilters(['wiki-sonata-19922'])
+    store.selectCandidateEchoes()
     await store.planRoute()
 
     expect(store.routeError).toBe('')
@@ -116,12 +117,12 @@ describe('route planning actions', () => {
 
   it('restores mutually exclusive sheet state and keeps the desktop preference independent', () => {
     const store = createStore()
-    store.restoreUrlState({ pointSource: 'official', mobileSheet: 'filters', controlPanelCollapsed: true })
+    store.restoreUrlState({ pointSourceFilters: ['official'], mobileSheet: 'filters', controlPanelCollapsed: true })
     expect(store.mobileSheet).toBe('filters')
     store.setMobileSheet('route')
     expect(store.mobileSheet).toBe('route')
     expect(store.controlPanelCollapsed).toBe(true)
-    store.restoreUrlState({ pointSource: 'official',})
+    store.restoreUrlState({ pointSourceFilters: ['official'] })
     expect(store.mobileSheet).toBeNull()
     expect(store.controlPanelCollapsed).toBe(false)
   })

@@ -21,7 +21,6 @@ interface PointGroupOption {
   modes: readonly NavigationPoint['mode'][]
   zoomRanges: Readonly<MapZoomRange>[]
   count: number
-  typeCount: number
   typeNames: readonly string[]
 }
 
@@ -46,7 +45,6 @@ const pointGroupOptions = computed<PointGroupOption[]>(() => {
         return [`${range.minZoom}:${range.maxZoom}`, range] as const
       })).values()],
       count: groupPoints.length,
-      typeCount: new Set(groupPoints.map(({ typeId }) => typeId)).size,
       typeNames: [...new Set(groupPoints.map(({ typeName }) => typeName))],
     }]
   }).sort((left, right) => (
@@ -57,9 +55,16 @@ const pointGroupOptions = computed<PointGroupOption[]>(() => {
 })
 const hiddenPointGroupSet = computed(() => new Set(hiddenPointGroupIds.value))
 const visiblePointGroupCount = computed(() => pointGroupOptions.value.filter(({ id }) => !hiddenPointGroupSet.value.has(id)).length)
+const allCurrentPointGroupsVisible = computed(() => (
+  pointGroupOptions.value.length > 0 && visiblePointGroupCount.value === pointGroupOptions.value.length
+))
+const someCurrentPointGroupsVisible = computed(() => (
+  visiblePointGroupCount.value > 0 && !allCurrentPointGroupsVisible.value
+))
 
-function hideAllCurrentPointGroups(): void {
-  store.hidePointGroups(pointGroupOptions.value.map(({ id }) => id))
+function setCurrentPointGroupsVisible(visible: boolean): void {
+  if (visible) store.showAllPointGroups()
+  else store.hidePointGroups(pointGroupOptions.value.map(({ id }) => id))
 }
 
 function pointModeLabel(modes: readonly NavigationPoint['mode'][]): string {
@@ -88,20 +93,18 @@ function pointZoomLabel(ranges: readonly Readonly<MapZoomRange>[]): string {
 </script>
 
 <template>
-  <div id="point-filters" tabindex="-1" class="border-b border-[var(--line)] p-18px">
-    <div class="mb-11px flex items-center justify-between gap-10px">
-      <div>
-        <span class="block text-12px min-[1024px]:text-8px text-[#608176] font-800 tracking-[0.18em]">MAP POINT ICONS</span>
-        <div class="mt-4px text-14px text-[#e7f1ec] font-[650]">定位点显示</div>
-      </div>
-      <span class="text-12px min-[1024px]:text-9px text-[var(--accent)]">{{ visiblePointGroupCount }}/{{ pointGroupOptions.length }} 图标</span>
+  <div id="point-filters" class="border-b border-[var(--line)] p-18px">
+    <div class="mb-9px flex min-h-20px items-center justify-between gap-10px">
+      <span class="block text-12px min-[1024px]:text-8px text-[#608176] font-800 tracking-[0.18em]">定位点显示</span>
+      <WuCheckBox
+        class="flex shrink-0 items-center gap-6px text-12px min-[1024px]:text-9px text-[#8fa69d]"
+        :model-value="allCurrentPointGroupsVisible"
+        :indeterminate="someCurrentPointGroupsVisible"
+        :disabled="pointGroupOptions.length === 0"
+        @update:model-value="setCurrentPointGroupsVisible"
+      >{{ visiblePointGroupCount }} / {{ pointGroupOptions.length }}</WuCheckBox>
     </div>
-    <div class="mb-9px flex items-center justify-end gap-5px">
-      <button class="min-h-44px min-[1024px]:min-h-0 cursor-pointer border border-[var(--line)] rounded-5px bg-transparent px-7px py-4px text-12px min-[1024px]:text-9px text-[#9db1a9] font-inherit hover:border-[rgba(101,241,194,0.4)] hover:text-[var(--accent)]" type="button" @click="store.showAllPointGroups">全部显示</button>
-      <button class="min-h-44px min-[1024px]:min-h-0 cursor-pointer border border-[var(--line)] rounded-5px bg-transparent px-7px py-4px text-12px min-[1024px]:text-9px text-[#9db1a9] font-inherit hover:border-[rgba(101,241,194,0.4)] hover:text-[var(--accent)]" type="button" @click="hideAllCurrentPointGroups">全部隐藏</button>
-    </div>
-    <div class="mb-8px text-12px min-[1024px]:text-8px text-[#6f877e] leading-[1.5]">勾选表示允许显示；放大地图后，会逐步显示小型信标、挑战、交通和服务点。</div>
-    <WuScrollArea :unbounded="compact" class="min-[1024px]:max-h-230px" content-class="flex flex-col gap-4px pr-2px">
+    <WuScrollArea :unbounded="compact" class="min-[1024px]:max-h-290px" content-class="flex flex-col gap-4px pr-2px">
       <WuCheckBox
         v-for="pointGroup in pointGroupOptions"
         :key="pointGroup.id"
@@ -111,12 +114,12 @@ function pointZoomLabel(ranges: readonly Readonly<MapZoomRange>[]): string {
         @update:model-value="store.setPointGroupVisible(pointGroup.id, $event)"
       >
         <span class="grid h-26px w-26px place-items-center">
-          <img loading="lazy" decoding="async" v-if="pointGroup.iconUrl" class="h-24px w-24px object-contain" :class="pointModeOpacityClass(pointGroup.modes)" :src="pointGroup.iconUrl" alt="" />
+          <img loading="lazy" decoding="async" v-if="pointGroup.iconUrl" class="h-24px w-24px object-contain" :class="pointModeOpacityClass(pointGroup.modes)" :src="pointGroup.iconUrl" />
           <span v-else class="h-6px w-6px rounded-full bg-[#91a69e]" :class="pointModeOpacityClass(pointGroup.modes)" />
         </span>
         <span class="min-w-0">
           <span class="block overflow-hidden text-ellipsis whitespace-nowrap text-14px min-[1024px]:text-10px text-[#d5e3dd]">{{ pointGroup.name }}</span>
-          <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#6f877e]">{{ pointModeLabel(pointGroup.modes) }} · {{ pointZoomLabel(pointGroup.zoomRanges) }} · {{ pointGroup.typeCount }} 类</span>
+          <span class="mt-2px block text-12px min-[1024px]:text-8px text-[#6f877e]">{{ pointModeLabel(pointGroup.modes) }} · {{ pointZoomLabel(pointGroup.zoomRanges) }}</span>
         </span>
         <span class="text-12px min-[1024px]:text-9px text-[#82988f]">{{ pointGroup.count }}</span>
       </WuCheckBox>

@@ -1,9 +1,10 @@
-import type { GravityType, PointSource } from '../domain/types.ts'
+import type { GravityType, PointSourceFilter } from '../domain/types.ts'
 
 export const DEFAULT_STATE_ID = 8
 export const DEFAULT_ROUTE_Z_WEIGHT = 1.35
 
 export type MobileSheet = 'filters' | 'route' | null
+export type EchoCostFilter = 1 | 3
 
 export interface MapViewportState {
   center: [number, number]
@@ -12,13 +13,14 @@ export interface MapViewportState {
 
 export interface ExplorerUrlState {
   gravityType?: GravityType
-  pointSource?: PointSource
+  pointSourceFilters?: PointSourceFilter[]
   stateId?: number
   countryId?: number
   levelId?: string
   compactFloors?: boolean
   echoIds?: string[]
-  sonataIds?: string[]
+  sonataFilterIds?: string[]
+  echoCostFilters?: EchoCostFilter[]
   hiddenPointGroupIds?: string[]
   showProvisional?: boolean
   controlPanelCollapsed?: boolean
@@ -29,13 +31,14 @@ export interface ExplorerUrlState {
 
 export interface ExplorerUrlSnapshot {
   gravityType?: GravityType
-  pointSource?: PointSource
+  pointSourceFilters?: readonly PointSourceFilter[]
   stateId: number
   countryId: number | null
   levelId: string | null
   compactFloors?: boolean
   echoIds: readonly string[]
-  sonataIds: readonly string[]
+  sonataFilterIds: readonly string[]
+  echoCostFilters: readonly EchoCostFilter[]
   hiddenPointGroupIds: readonly string[]
   showProvisional: boolean
   controlPanelCollapsed: boolean
@@ -48,13 +51,14 @@ export type ExplorerQueryValue = string | string[] | null | undefined
 
 export interface ExplorerQueryValues {
   gravity?: ExplorerQueryValue
-  source?: ExplorerQueryValue
+  sources?: ExplorerQueryValue
   map?: ExplorerQueryValue
   region?: ExplorerQueryValue
   floor?: ExplorerQueryValue
   floorStyle?: ExplorerQueryValue
   echoes?: ExplorerQueryValue
   sonatas?: ExplorerQueryValue
+  costs?: ExplorerQueryValue
   hiddenTypes?: ExplorerQueryValue
   provisional?: ExplorerQueryValue
   panel?: ExplorerQueryValue
@@ -102,6 +106,18 @@ function idList(value: ExplorerQueryValue): string[] | undefined {
   return ids.length > 0 ? ids : undefined
 }
 
+function costList(value: ExplorerQueryValue): EchoCostFilter[] | undefined {
+  const selected = new Set(idList(value))
+  const values = ([1, 3] as const).filter((cost) => selected.has(String(cost)))
+  return values && values.length > 0 ? values : undefined
+}
+
+function pointSourceList(value: ExplorerQueryValue): PointSourceFilter[] | undefined {
+  const selected = new Set(idList(value))
+  const sources = (['manual', 'official'] as const).filter(source => selected.has(source))
+  return sources.length > 0 ? sources : undefined
+}
+
 function compactNumber(value: number, fractionDigits: number): string {
   return String(Number(value.toFixed(fractionDigits)))
 }
@@ -112,14 +128,15 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
   const zoom = finiteNumber(values.zoom)
   const sheet = single(values.sheet)
   return {
-    pointSource: single(values.source) === 'manual' ? 'manual' : ['test', 'official'].includes(single(values.source) ?? '') ? 'official' : 'all',
+    pointSourceFilters: pointSourceList(values.sources),
     stateId: integer(values.map),
     gravityType: single(values.gravity) === '2' ? 2 : 1,
     countryId: integer(values.region),
     levelId: single(values.floor),
     compactFloors: single(values.floorStyle) === 'icons',
     echoIds: idList(values.echoes),
-    sonataIds: idList(values.sonatas),
+    sonataFilterIds: idList(values.sonatas),
+    echoCostFilters: costList(values.costs),
     hiddenPointGroupIds: idList(values.hiddenTypes),
     showProvisional: booleanFlag(values.provisional),
     controlPanelCollapsed: booleanFlag(values.panel),
@@ -133,14 +150,17 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
 
 export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerSerializedQueryValues {
   return {
-    source: state.pointSource && state.pointSource !== 'all' ? state.pointSource : undefined,
+    sources: state.pointSourceFilters && state.pointSourceFilters.length > 0
+      ? state.pointSourceFilters.join(',')
+      : undefined,
     map: state.stateId === DEFAULT_STATE_ID ? undefined : String(state.stateId),
     gravity: state.gravityType === 2 ? '2' : undefined,
     region: state.countryId === null ? undefined : String(state.countryId),
     floor: state.levelId ?? undefined,
     floorStyle: state.compactFloors ? 'icons' : undefined,
     echoes: state.echoIds.length > 0 ? state.echoIds.join(',') : undefined,
-    sonatas: state.sonataIds.length > 0 ? state.sonataIds.join(',') : undefined,
+    sonatas: state.sonataFilterIds.length > 0 ? state.sonataFilterIds.join(',') : undefined,
+    costs: state.echoCostFilters.length > 0 ? state.echoCostFilters.join(',') : undefined,
     hiddenTypes: state.hiddenPointGroupIds.length > 0
       ? [...state.hiddenPointGroupIds].sort().join(',')
       : undefined,

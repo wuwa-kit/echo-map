@@ -14,7 +14,8 @@ describe('explorer query state', () => {
       levelId: null,
       compactFloors: false,
       echoIds: [],
-      sonataIds: [],
+      sonataFilterIds: [],
+      echoCostFilters: [],
       hiddenPointGroupIds: [],
       showProvisional: true,
       controlPanelCollapsed: false,
@@ -50,7 +51,7 @@ describe('explorer query state', () => {
   it('round-trips the compact floor layout and ignores unknown styles', () => {
     const snapshot = {
       stateId: DEFAULT_STATE_ID, countryId: null, levelId: '-1/58', compactFloors: true,
-      echoIds: [], sonataIds: [], hiddenPointGroupIds: [], showProvisional: true,
+      echoIds: [], sonataFilterIds: [], echoCostFilters: [], hiddenPointGroupIds: [], showProvisional: true,
       controlPanelCollapsed: false, mobileSheet: null, routeZWeight: DEFAULT_ROUTE_Z_WEIGHT, viewport: null,
     }
     const query = createExplorerQueryValues(snapshot)
@@ -68,7 +69,8 @@ describe('explorer query state', () => {
       countryId: null,
       levelId: null,
       echoIds: [],
-      sonataIds: [],
+      sonataFilterIds: [],
+      echoCostFilters: [],
       hiddenPointGroupIds: ['IconMap_WYQ', 'CS_02'],
       showProvisional: true,
       controlPanelCollapsed: false,
@@ -86,7 +88,8 @@ describe('explorer query state', () => {
       countryId: null,
       levelId: null,
       echoIds: [],
-      sonataIds: [],
+      sonataFilterIds: [],
+      echoCostFilters: [],
       hiddenPointGroupIds: [],
       showProvisional: true,
       controlPanelCollapsed: true,
@@ -104,5 +107,28 @@ describe('explorer query state', () => {
       mobileSheet: null,
       controlPanelCollapsed: true,
     })
+  })
+
+  it('round-trips candidate filters independently from selected targets', () => {
+    const query = createExplorerQueryValues({
+      stateId: DEFAULT_STATE_ID,
+      countryId: null,
+      levelId: null,
+      echoIds: ['echo-target'],
+      sonataFilterIds: ['set-a', 'set-b'],
+      echoCostFilters: [1, 3],
+      hiddenPointGroupIds: [],
+      showProvisional: true,
+      controlPanelCollapsed: false,
+      mobileSheet: null,
+      routeZWeight: DEFAULT_ROUTE_Z_WEIGHT,
+      viewport: null,
+    })
+
+    expect(query).toMatchObject({ echoes: 'echo-target', sonatas: 'set-a,set-b', costs: '1,3' })
+    expect(parseExplorerQueryValues(query)).toMatchObject({
+      echoIds: ['echo-target'], sonataFilterIds: ['set-a', 'set-b'], echoCostFilters: [1, 3],
+    })
+    expect(parseExplorerQueryValues({ costs: '2,3,3' }).echoCostFilters).toEqual([3])
   })
 })

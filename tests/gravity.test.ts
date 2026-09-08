@@ -42,7 +42,7 @@ function setupPoints() {
   const store = useExplorerStore()
   store.setDataset(referenceDataset)
   store.setPointLibrary({ version: 1, points: [ordinary, negative, unknown, start] })
-  store.setPointSource('manual')
+  store.setPointSourceFilters(['manual'])
   store.selectState(903)
   const member = ordinary.members[0]
   if (!member) throw new Error('缺少测试怪物')
