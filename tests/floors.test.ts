@@ -9,7 +9,7 @@ import LayerGroup from 'ol/layer/Group.js'
 import ImageLayer from 'ol/layer/Image.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import { readMapDataset } from '../scripts/lib/map-data.ts'
-import { createFloorCoverage, floorExtent, floorGroupAtCenter } from '../src/map/floor-coverage.ts'
+import { createFloorCoverage, floorExtent, floorGroupsInViewport } from '../src/map/floor-coverage.ts'
 import { createFloorLayers } from '../src/map/floor-layers.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import type { AuthoredNavigationPoint, MapStateDefinition } from '../src/domain/types.ts'
@@ -30,6 +30,9 @@ const state: MapStateDefinition = {
     { id: 'empty', name: '空区域', coverage: [], floors: [{ id: 'empty', name: '空层', layeredMapId: 'empty', tiles: [] }] },
   ],
 }
+const viewportAt = (x: number, y: number, radius = 1): [number, number, number, number] => (
+  [x - radius, y - radius, x + radius, y + radius]
+)
 
 beforeEach(() => setActivePinia(createPinia()))
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers() })
@@ -108,12 +111,12 @@ describe('floor map context', () => {
   })
 })
 
-describe('one floor group around the map center', () => {
+describe('floor groups in the canvas viewport', () => {
   it('keeps overlapping groups reachable while a different group is selected', () => {
     const store = useExplorerStore()
     store.setDataset(dataset)
     store.selectLevel('-1/57')
-    store.setFloorCenter([-6681.5, 414.5], 1)
+    store.setFloorViewport(viewportAt(-6681.5, 414.5, 64), 1)
     expect(store.displayedFloorGroup?.id).toBe('57')
     expect(store).toHaveProperty('nearbyFloorGroups', expect.arrayContaining([
       expect.objectContaining({ id: '57' }), expect.objectContaining({ id: '58' }),
@@ -129,37 +132,39 @@ describe('one floor group around the map center', () => {
   })
 
   const coverage = createFloorCoverage(state, 1024)
-  it('uses alpha coverage, preserves source order on ties, and handles empty tiles and negative coordinates', () => {
-    expect(floorGroupAtCenter(coverage, [256, 768])).toBe('b')
-    expect(floorGroupAtCenter(coverage, [768, 768])).toBe('a')
-    expect(floorGroupAtCenter(coverage, [1500, 500])).toBeNull()
-    expect(floorGroupAtCenter(coverage, [2500, 500])).toBe('a')
-    expect(floorGroupAtCenter(coverage, [-500, -1500])).toBe('a')
-    expect(floorGroupAtCenter(coverage, [0, 1024])).toBe('b')
-    expect(floorGroupAtCenter(coverage, [1024, 1024])).toBeNull()
-    expect(floorGroupAtCenter(coverage, [0, 0])).toBeNull()
-    expect(floorGroupAtCenter(coverage, [NaN, 0])).toBeNull()
-    expect(floorGroupAtCenter(coverage, null)).toBeNull()
+  it('uses alpha coverage, preserves source order, and handles boundaries and negative coordinates', () => {
+    expect(floorGroupsInViewport(coverage, viewportAt(256, 768))).toEqual(['b'])
+    expect(floorGroupsInViewport(coverage, viewportAt(768, 768))).toEqual(['a'])
+    expect(floorGroupsInViewport(coverage, viewportAt(1500, 500))).toEqual([])
+    expect(floorGroupsInViewport(coverage, viewportAt(2500, 500))).toEqual(['a'])
+    expect(floorGroupsInViewport(coverage, viewportAt(-500, -1500))).toEqual(['a'])
+    expect(floorGroupsInViewport(coverage, [0, 1023, 1, 1024])).toEqual(['b'])
+    expect(floorGroupsInViewport(coverage, [0, 1024, 1, 1025])).toEqual([])
+    expect(floorGroupsInViewport(coverage, [1024, 1023, 1025, 1024])).toEqual([])
+    expect(floorGroupsInViewport(coverage, [0, 0, 1, 1])).toEqual(['a'])
+    expect(floorGroupsInViewport(coverage, [NaN, 0, 1, 1])).toEqual([])
+    expect(floorGroupsInViewport(coverage, [0, 0, 0, 1])).toEqual([])
+    expect(floorGroupsInViewport(coverage, null)).toEqual([])
     expect(createFloorCoverage(null, 1024)).toEqual([])
     expect(floorExtent(undefined, 1024)).toBeNull()
     const overlap = coverage[1]
     if (!overlap) throw new Error('缺少重叠范围')
-    expect(floorGroupAtCenter([overlap, { ...overlap, id: 'tie' }], [256, 768])).toBe('b')
+    expect(floorGroupsInViewport([overlap, { ...overlap, id: 'tie' }], viewportAt(256, 768))).toEqual(['b', 'tie'])
   })
 
   it('pins the selected group without changing the list, viewport or route when panning to another group', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
-    store.setFloorCenter([768, 768])
+    store.setFloorViewport(viewportAt(768, 768))
     const group = store.displayedFloorGroup
     expect(group?.id).toBe('a')
-    store.setFloorCenter([780, 780])
+    store.setFloorViewport(viewportAt(780, 780))
     expect(store.displayedFloorGroup).toBe(group)
     store.setMapViewport({ center: [500, 500], zoom: 5 })
     store.selectLevel('a2')
     store.setRoute({ points: [], totalCost: 2, algorithm: 'exact', startPointId: null })
     const route = store.route
-    store.setFloorCenter([256, 768])
+    store.setFloorViewport(viewportAt(256, 768))
     expect(store.displayedFloorGroup).toBe(group)
     expect(store.displayedFloorGroup?.floors.map(({ id }) => id)).toEqual(['a1', 'a2'])
     expect(store.selectedFloor?.id).toBe('a2')
@@ -170,31 +175,35 @@ describe('one floor group around the map center', () => {
     expect(store.route).toBeNull()
     expect(store.displayedFloorGroup?.id).toBe('b')
     expect(store.mapViewport).toEqual({ center: [500, 500], zoom: 5 })
-    store.setFloorCenter([1500, 500])
+    store.setFloorViewport(viewportAt(1500, 500))
     expect(store.displayedFloorGroup).toBeNull()
   })
 
-  it('holds the requested group during initial loading and restores center selection when cancelled', () => {
+  it('holds the requested group during initial loading and restores viewport selection when cancelled', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
-    store.setFloorCenter([768, 768])
+    store.setFloorViewport(viewportAt(768, 768))
     store.requestLevel('a1')
-    store.setFloorCenter([256, 768])
+    store.setFloorViewport(viewportAt(256, 768))
     expect(store.displayedFloorGroup?.id).toBe('a')
     store.requestLevel(null)
     expect(store.displayedFloorGroup?.id).toBe('b')
   })
 
-  it('uses a screen-sized search radius and keeps the selected group available outside that radius', () => {
+  it('detects the full canvas extent and keeps the selected group available outside it', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
-    store.setFloorCenter([1200, 768], 1)
+    store.setFloorViewport([1100, 700, 1300, 800], 1)
     expect(store.nearbyFloorGroups).toEqual([])
-    store.setFloorCenter([1200, 768], 4)
+    store.setFloorViewport([900, 700, 1300, 800], 1)
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a'])
-    store.selectLevel('b1')
+    expect(store.nearbyFloorGroups[0]?.floors.map(({ id }) => id)).toEqual(['a1', 'a2'])
+    store.setFloorViewport([200, 700, 800, 800], 1)
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a', 'b'])
-    store.setFloorCenter([1200, 768], NaN)
+    store.selectLevel('b1')
+    store.setFloorViewport([900, 700, 1300, 800], 1)
+    expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a', 'b'])
+    store.setFloorViewport([NaN, 700, 1300, 800], 1)
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['b'])
     store.selectState(8)
     expect(store.nearbyFloorGroups).toEqual([])
@@ -204,7 +213,7 @@ describe('one floor group around the map center', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
     expect(store.floorSwitcherVisible).toBe(false)
-    store.setFloorCenter([768, 768], 8)
+    store.setFloorViewport(viewportAt(768, 768), 8)
     expect(store.floorSwitcherVisible).toBe(false)
     expect(store.nearbyFloorGroups).toEqual([])
     store.selectLevel('a2')
@@ -212,18 +221,18 @@ describe('one floor group around the map center', () => {
     store.setRoute({ points: [], totalCost: 2, algorithm: 'exact', startPointId: null })
     const route = store.route
     const viewport = store.mapViewport
-    store.setFloorCenter([768, 768], 4)
+    store.setFloorViewport(viewportAt(768, 768), 4)
     expect(store.floorSwitcherVisible).toBe(true)
-    store.setFloorCenter([768, 768], 4.01)
+    store.setFloorViewport(viewportAt(768, 768), 4.01)
     expect(store.floorSwitcherVisible).toBe(false)
     expect(store.selectedLevelId).toBe('a2')
     expect(store.route).toBe(route)
     expect(store.mapViewport).toBe(viewport)
-    store.setFloorCenter([768, 768], 4)
+    store.setFloorViewport(viewportAt(768, 768), 4)
     expect(store.floorSwitcherVisible).toBe(true)
     expect(store.selectedLevelId).toBe('a2')
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toContain('a')
-    store.setFloorCenter([768, 768], NaN)
+    store.setFloorViewport(viewportAt(768, 768), NaN)
     expect(store.floorSwitcherVisible).toBe(false)
     store.selectState(8)
     expect(store.floorSwitcherVisible).toBe(false)
@@ -233,15 +242,15 @@ describe('one floor group around the map center', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
     store.selectLevel('a1')
-    store.setFloorCenter([768, 768], 2)
+    store.setFloorViewport(viewportAt(768, 768), 2)
     store.requestLevel('a2')
     const request = store.floorRequest
-    store.setFloorCenter([768, 768], 8)
+    store.setFloorViewport(viewportAt(768, 768), 8)
     expect(store.floorSwitcherVisible).toBe(false)
     expect(store.floorRequest).toBe(request)
     store.failFloorRequest(request?.token ?? -1)
     expect(store.floorSwitcherVisible).toBe(false)
-    store.setFloorCenter([768, 768], 2)
+    store.setFloorViewport(viewportAt(768, 768), 2)
     expect(store.floorSwitcherVisible).toBe(true)
     expect(store.selectedLevelId).toBe('a1')
     expect(store.floorRequest?.status).toBe('error')
@@ -251,7 +260,7 @@ describe('one floor group around the map center', () => {
     const store = useExplorerStore()
     store.setDataset(dataset)
     store.restoreUrlState({ stateId: 8, levelId: '-1/58', viewport: { center: [0, 0], zoom: 4 } })
-    store.setFloorCenter([0, 0])
+    store.setFloorViewport(viewportAt(0, 0))
     expect(store.displayedFloorGroup?.id).toBe('58')
     expect(store.displayedFloorGroup?.floors.map(({ id }) => id)).toEqual(['-1/58', '-2/58'])
   })

@@ -24,18 +24,22 @@ export function createFloorCoverage(state: MapStateDefinition | null, tileWidth:
 
 type Coverage = ReturnType<typeof createFloorCoverage>
 
-function tileFocusScore(tile: Coverage[number]['tiles'][number], center: readonly [number, number], radius: number) {
+function tileIntersectsViewport(tile: Coverage[number]['tiles'][number], viewport: readonly [number, number, number, number]): boolean {
   const { extent: [left, bottom, right, top], size, runs } = tile
-  if (center[0] + radius < left || center[0] - radius >= right || center[1] + radius <= bottom || center[1] - radius > top) return null
+  const clippedLeft = Math.max(left, viewport[0])
+  const clippedBottom = Math.max(bottom, viewport[1])
+  const clippedRight = Math.min(right, viewport[2])
+  const clippedTop = Math.min(top, viewport[3])
+  if (clippedLeft >= clippedRight || clippedBottom >= clippedTop) return false
+
   const scale = (right - left) / size
-  const x = (center[0] - left) / scale
-  const y = (top - center[1]) / scale
-  const reach = radius / scale
-  const minX = Math.max(0, x - reach)
-  const maxX = Math.min(size, x + reach)
-  const firstRow = Math.max(0, Math.floor(y - reach))
-  const lastRow = Math.min(size - 1, Math.floor(y + reach))
-  const firstPixel = firstRow * size
+  const firstColumn = Math.max(0, Math.floor((clippedLeft - left) / scale))
+  const lastColumn = Math.min(size, Math.ceil((clippedRight - left) / scale))
+  const firstRow = Math.max(0, Math.floor((top - clippedTop) / scale))
+  const lastRow = Math.min(size, Math.ceil((top - clippedBottom) / scale))
+  if (firstColumn >= lastColumn || firstRow >= lastRow) return false
+
+  const firstPixel = firstRow * size + firstColumn
   let low = 0
   let high = runs.length
   while (low < high) {
@@ -44,47 +48,22 @@ function tileFocusScore(tile: Coverage[number]['tiles'][number], center: readonl
     else high = middle
   }
 
-  let distanceSquared = Infinity
-  let area = 0
-  let containsCenter = false
-  // Intersect compressed intervals with the focus window, never sample image pixels.
-  for (let index = low; index < runs.length; index++) {
-    const run = runs[index]
-    if (!run || run[0] >= (lastRow + 1) * size) break
-    const startRow = Math.max(firstRow, Math.floor(run[0] / size))
-    const endRow = Math.min(lastRow, Math.floor((run[1] - 1) / size))
-    for (let row = startRow; row <= endRow; row++) {
-      const start = Math.max(0, run[0] - row * size)
-      const end = Math.min(size, run[1] - row * size)
-      if (end < minX || start > maxX) continue
-      const dx = Math.max(start - x, 0, x - end)
-      const dy = Math.max(row - y, 0, y - row - 1)
-      distanceSquared = Math.min(distanceSquared, (dx * dx + dy * dy) * scale * scale)
-      area += Math.max(0, Math.min(end, maxX) - Math.max(start, minX))
-        * Math.max(0, Math.min(row + 1, y + reach) - Math.max(row, y - reach)) * scale * scale
-      if (x >= start && x < end && y >= row && y < row + 1) containsCenter = true
-    }
+  let runIndex = low
+  for (let row = firstRow; row < lastRow; row++) {
+    const rowStart = row * size + firstColumn
+    const rowEnd = row * size + lastColumn
+    while (runIndex < runs.length && (runs[runIndex]?.[1] ?? 0) <= rowStart) runIndex++
+    const run = runs[runIndex]
+    if (run && run[0] < rowEnd && run[1] > rowStart) return true
   }
-  if (radius === 0 ? !containsCenter : distanceSquared > radius * radius) return null
-  return { distanceSquared, area }
+  return false
 }
 
-export function floorGroupsNearCenter(coverage: Coverage, center: readonly [number, number] | null, radius: number): string[] {
-  if (!center || !center.every(Number.isFinite) || !Number.isFinite(radius) || radius < 0) return []
-  return coverage.flatMap((group) => {
-    let distanceSquared = Infinity
-    let area = 0
-    for (const tile of group.tiles) {
-      const score = tileFocusScore(tile, center, radius)
-      if (!score) continue
-      distanceSquared = Math.min(distanceSquared, score.distanceSquared)
-      area += score.area
-    }
-    return Number.isFinite(distanceSquared) ? [{ id: group.id, distanceSquared, area }] : []
-  }).sort((left, right) => left.distanceSquared - right.distanceSquared || right.area - left.area)
+export function floorGroupsInViewport(coverage: Coverage, extent: Extent | null): string[] {
+  const [left, bottom, right, top] = extent ?? []
+  if (left === undefined || bottom === undefined || right === undefined || top === undefined
+    || ![left, bottom, right, top].every(Number.isFinite) || left >= right || bottom >= top) return []
+  const viewport: [number, number, number, number] = [left, bottom, right, top]
+  return coverage.filter((group) => group.tiles.some((tile) => tileIntersectsViewport(tile, viewport)))
     .map(({ id }) => id)
-}
-
-export function floorGroupAtCenter(coverage: Coverage, center: readonly [number, number] | null, radius = 0): string | null {
-  return floorGroupsNearCenter(coverage, center, radius)[0] ?? null
 }

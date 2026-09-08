@@ -1,6 +1,7 @@
 import { computed, onScopeDispose, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
+import type { Extent } from 'ol/extent.js'
 import { DEFAULT_ROUTE_Z_WEIGHT, DEFAULT_STATE_ID } from '../url/explorer-url.ts'
 import type { EchoCostFilter, ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
 import { planRouteInWorker } from '../route/worker-client.ts'
@@ -22,11 +23,9 @@ import { resolveExplorerState } from '../url/resolve-explorer-state.ts'
 import { createRoutePlanInput } from '../route/plan-input.ts'
 import type { GravityType, PointLocationBase } from '../domain/types.ts'
 import { hasGravityMap } from '../domain/gravity.ts'
-import { createFloorCoverage, floorGroupsNearCenter } from '../map/floor-coverage.ts'
+import { createFloorCoverage, floorGroupsInViewport } from '../map/floor-coverage.ts'
 import { MAP_ZOOM_LEVELS, mapZoomForResolution } from '../map/point-visibility.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
-
-const FLOOR_FOCUS_RADIUS_PX = 64
 
 function toggleId(values: string[], id: string): string[] {
   return produce(values, (draft) => {
@@ -54,7 +53,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const selectedCountryId = shallowRef<number | null>(null)
   const selectedLevelId = shallowRef<string | null>(null)
   const compactFloors = shallowRef(false)
-  const floorFocus = shallowRef<{ center: [number, number]; radius: number; resolution: number } | null>(null)
+  const floorViewport = shallowRef<{ extent: [number, number, number, number]; resolution: number } | null>(null)
   const floorRequest = shallowRef<{ token: number; levelId: string; status: 'loading' | 'error' } | null>(null)
   let floorRequestToken = 0
   const selectedGravity = shallowRef<GravityType>(1)
@@ -90,10 +89,10 @@ export const useExplorerStore = defineStore('explorer', () => {
     activeState.value?.layeredMaps.flatMap(({ floors: mapFloors }) => mapFloors) ?? []
   ))
   const floorCoverage = computed(() => createFloorCoverage(activeState.value, dataset.value?.source.tileWidth ?? 1024))
-  const floorSwitcherVisible = computed(() => floorFocus.value !== null
-    && mapZoomForResolution(floorFocus.value.resolution) >= MAP_ZOOM_LEVELS.local.minZoom)
+  const floorSwitcherVisible = computed(() => floorViewport.value !== null
+    && mapZoomForResolution(floorViewport.value.resolution) >= MAP_ZOOM_LEVELS.local.minZoom)
   const nearbyFloorGroupIds = useEqualComputed(() => floorSwitcherVisible.value
-    ? floorGroupsNearCenter(floorCoverage.value, floorFocus.value?.center ?? null, floorFocus.value?.radius ?? 0) : [])
+    ? floorGroupsInViewport(floorCoverage.value, floorViewport.value?.extent ?? null) : [])
   const selectedFloor = computed(() => floors.value.find(({ id }) => id === selectedLevelId.value) ?? null)
   const selectedFloorGroup = computed(() => activeState.value?.layeredMaps.find(({ id }) => id === selectedFloor.value?.layeredMapId) ?? null)
   const requestedFloor = computed(() => floors.value.find(({ id }) => id === floorRequest.value?.levelId) ?? null)
@@ -240,13 +239,15 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   function resetFloorContext(): void {
-    floorFocus.value = null
+    floorViewport.value = null
     floorRequest.value = null
   }
 
-  function setFloorCenter(center: [number, number] | null, resolution = 1): void {
-    floorFocus.value = center && center.every(Number.isFinite) && Number.isFinite(resolution) && resolution > 0
-      ? immutableSnapshot({ center: [...center], radius: FLOOR_FOCUS_RADIUS_PX * resolution, resolution }) : null
+  function setFloorViewport(extent: Extent | null, resolution = 1): void {
+    const [left, bottom, right, top] = extent ?? []
+    floorViewport.value = left !== undefined && bottom !== undefined && right !== undefined && top !== undefined
+      && [left, bottom, right, top, resolution].every(Number.isFinite) && left < right && bottom < top && resolution > 0
+      ? immutableSnapshot({ extent: [left, bottom, right, top], resolution }) : null
   }
 
   function requestLevel(id: string | null): void {
@@ -480,7 +481,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     toggleFloorLayout: () => { compactFloors.value = !compactFloors.value },
     floorRequest: shallowReadonly(floorRequest),
     displayedFloorGroup, selectedFloor, selectedFloorGroup, nearbyFloorGroups, floorSwitcherVisible,
-    setFloorCenter, requestLevel, completeFloorRequest, failFloorRequest, reportFloorTileError,
+    setFloorViewport, requestLevel, completeFloorRequest, failFloorRequest, reportFloorTileError,
     selectedGravity: shallowReadonly(selectedGravity),
     supportsGravity, unmarkedGravityCount, selectGravity,
     baseTileError: shallowReadonly(baseTileError),

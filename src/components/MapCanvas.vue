@@ -16,7 +16,6 @@ import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
 import { useMapViewport } from '../map/useMapViewport.ts'
 import { floorExtent } from '../map/floor-coverage.ts'
-import { fitMapPadding } from '../map/viewport-padding.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
 import PointDetails from './PointDetails.vue'
 import FloorSwitcher from './FloorSwitcher.vue'
@@ -82,16 +81,17 @@ useResizeObserver(mapTarget, () => {
   map?.updateSize()
   const [width = 0, height = 0] = map?.getSize() ?? []
   mapSize.value = [width, height]
-  updateFloorCenter()
+  updateFloorViewport()
 })
 
-function updateFloorCenter(): void {
+function updateFloorViewport(): void {
   const [width = 0, height = 0] = map?.getSize() ?? []
-  if (!map || width <= 0 || height <= 0) return
-  const [top, right, bottom, left] = fitMapPadding(width, height, props.padding)
-  const coordinate = map.getCoordinateFromPixel([(left + width - right) / 2, (top + height - bottom) / 2])
-  const [x, y] = coordinate ?? []
-  store.setFloorCenter(x === undefined || y === undefined ? null : [x, y], map.getView().getResolution() ?? 1)
+  if (!map || width <= 0 || height <= 0) {
+    store.setFloorViewport(null)
+    return
+  }
+  const view = map.getView()
+  store.setFloorViewport(view.calculateExtent([width, height]), view.getResolution() ?? Number.NaN)
 }
 
 function onMoveEnd(): void {
@@ -99,7 +99,7 @@ function onMoveEnd(): void {
   const resolution = view?.getResolution()
   if (view && resolution !== undefined) points.finishInteraction(view.calculateExtent(map?.getSize()), resolution, projection)
   viewport.publish()
-  updateFloorCenter()
+  updateFloorViewport()
   if (map) floors.updateViewport(map.getView().calculateExtent(map.getSize()))
 }
 
@@ -134,7 +134,7 @@ function rebuildBaseLayer(): void {
   if (selected) viewport.restoreFloorViewport(floorExtent(selected, manifest.tileWidth))
   rebuildFloorLayers()
   viewport.publish()
-  updateFloorCenter()
+  updateFloorViewport()
 }
 
 function switchGravity(): void {
@@ -217,7 +217,6 @@ watch(floorRequest, async (request, _previous, onCleanup) => {
 })
 watch([mapEchoLocations, mapNavigationPoints, visibleRegionLabels, activeEchoIds, selectedLevelId], rebuildPointLayers)
 watch(route, rebuildRoute, { flush: 'post' })
-watch(() => props.padding, updateFloorCenter, { flush: 'post' })
 watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 
 onBeforeUnmount(() => {

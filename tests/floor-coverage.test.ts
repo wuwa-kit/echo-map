@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { encodeFloorCoverage, mergeFloorAlpha } from '../scripts/lib/map/floor-coverage.ts'
 import { floorCoverageTileSchema, mapDataSchema } from '../src/domain/schema.ts'
-import { createFloorCoverage, floorGroupAtCenter } from '../src/map/floor-coverage.ts'
+import { createFloorCoverage, floorGroupsInViewport } from '../src/map/floor-coverage.ts'
 import { readMapDataset, splitMapDataset } from '../scripts/lib/map-data.ts'
 import type { MapStateDefinition } from '../src/domain/types.ts'
 
 const dataset = await readMapDataset()
 
 describe('generated floor coverage', () => {
-  it('ranks the local footprint rather than global group area and reaches nearby transparent gaps', () => {
+  it('detects every group whose opaque footprint intersects the viewport', () => {
     const reference = dataset.states[0]
     if (!reference) throw new Error('缺少地图数据')
     const state: MapStateDefinition = { ...reference, layeredMaps: [
@@ -16,9 +16,10 @@ describe('generated floor coverage', () => {
       { id: 'small', name: '小区域', floors: [], coverage: [{ tile: '0_1.png', size: 4, runs: [[5, 6]] }] },
     ] }
     const coverage = createFloorCoverage(state, 4)
-    expect(floorGroupAtCenter(coverage, [1.5, 2.5], 1)).toBe('large')
-    expect(floorGroupAtCenter(coverage, [5, 2], 1.1)).toBe('large')
-    expect(floorGroupAtCenter(coverage, [5, 2], 0.5)).toBeNull()
+    expect(floorGroupsInViewport(coverage, [1.25, 2.25, 1.75, 2.75])).toEqual(['large', 'small'])
+    expect(floorGroupsInViewport(coverage, [3.9, 1, 5, 2])).toEqual(['large'])
+    expect(floorGroupsInViewport(coverage, [4, 1, 5, 2])).toEqual([])
+    expect(floorGroupsInViewport(coverage, [0, 3, 1, 4])).toEqual(['large'])
   })
 
   it('unions sibling alpha masks, excludes transparent pixels and keeps interval gaps', () => {
@@ -55,10 +56,11 @@ describe('generated floor coverage', () => {
   it('distinguishes the three real groups sharing tile -7_1 and leaves transparent space unassigned', () => {
     const state = dataset.states.find(({ id }) => id === 8) ?? null
     const coverage = createFloorCoverage(state, dataset.source.tileWidth)
-    expect(floorGroupAtCenter(coverage, [-6502.5, 450.5])).toBe('56')
-    expect(floorGroupAtCenter(coverage, [-6525.5, 455.5])).toBe('57')
-    expect(floorGroupAtCenter(coverage, [-6744.5, -0.5])).toBe('58')
-    expect(floorGroupAtCenter(coverage, [-7160, 1010])).toBeNull()
+    const viewportAt = (x: number, y: number): [number, number, number, number] => [x - 0.1, y - 0.1, x + 0.1, y + 0.1]
+    expect(floorGroupsInViewport(coverage, viewportAt(-6502.5, 450.5))).toEqual(['56'])
+    expect(floorGroupsInViewport(coverage, viewportAt(-6525.5, 455.5))).toEqual(['57'])
+    expect(floorGroupsInViewport(coverage, viewportAt(-6744.5, -0.5))).toEqual(['58'])
+    expect(floorGroupsInViewport(coverage, viewportAt(-7160, 1010))).toEqual([])
     for (const state of dataset.states) {
       for (const group of state.layeredMaps) {
         const tiles = new Set(group.floors.flatMap(({ tiles }) => tiles.map((tile) => tile.split('/').at(-1))))
