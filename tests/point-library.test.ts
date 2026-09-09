@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { parsePointLibrary, libraryLocations, parseCoordinateInput } from '../src/domain/point-library.ts'
+import { editorLibraryLocations, parsePointLibrary, libraryLocations, parseCoordinateInput } from '../src/domain/point-library.ts'
 import { createRoutePlanInput } from '../src/route/plan-input.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import { echoComposition } from '../src/map/echo-composition.ts'
@@ -87,8 +87,10 @@ describe('authored point library', () => {
   })
 
   it('accepts incomplete drafts but never publishes them, and rejects duplicate point IDs', () => {
-    const library = parsePointLibrary({ version: 1, points: [{ ...mixedPoint(), status: 'draft', members: [], coordinate: { x: null, y: null, z: null } }] }, referenceDataset)
+    const draft = { ...mixedPoint(), status: 'draft' as const, members: [], coordinate: { x: 1, y: 2, z: null } }
+    const library = parsePointLibrary({ version: 1, points: [draft] }, referenceDataset)
     expect(libraryLocations(library, referenceDataset).echoLocations).toEqual([])
+    expect(editorLibraryLocations(library.points, referenceDataset).echoLocations[0]?.gameCoordinate).toBeNull()
     expect(() => parsePointLibrary({ version: 1, points: [mixedPoint(), mixedPoint()] }, referenceDataset)).toThrow('重复点位 ID')
   })
 

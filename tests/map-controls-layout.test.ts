@@ -17,7 +17,7 @@ describe('map corner controls layout', () => {
 
     expect(explorerSource).toContain('left-[max(8px,var(--safe-left))] top-[max(8px,var(--safe-top))]')
     expect(explorerSource).toContain('z-90 flex items-start gap-4px')
-    expect(explorerSource).toContain('<GravitySwitcher :compact="compact" />')
+    expect(explorerSource).toContain('<GravitySwitcher :compact="compact" :selected-gravity="store.selectedGravity" :supports-gravity="store.supportsGravity" @gravity-selected="store.selectGravity" />')
     expect(explorerSource).toContain('[--wu-cascader-height:40px] [--wu-cascader-gap:6px] [--wu-cascader-padding:11px]')
     expect(gravitySource).toContain('<button\n    v-if="supportsGravity"')
     expect(gravitySource).not.toContain('WuTooltip')
@@ -25,7 +25,7 @@ describe('map corner controls layout', () => {
     expect(gravitySource).toContain('<span>重力</span>')
     expect(gravitySource).toContain('name="gravity-direction"')
     expect(gravitySource).toContain("selectedGravity === 2 ? 'rotate-180' : ''")
-    expect(gravitySource).toContain('store.selectGravity(selectedGravity.value === 1 ? 2 : 1)')
+    expect(gravitySource).toContain("emit('gravitySelected', props.selectedGravity === 1 ? 2 : 1)")
     expect(floorSource).toContain("compactFloors ? 'h-36px' : 'h-40px'")
     expect(floorSource).toContain("compactFloors ? 'h-36px justify-center' : 'h-40px gap-6px px-10px'")
     expect(floorSource).toContain('h-24px flex items-center bg-[#10231c] px-8px text-11px')

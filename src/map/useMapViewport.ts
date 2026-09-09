@@ -15,6 +15,23 @@ interface MapViewportOptions {
   onViewportChanged: (viewport: MapViewportState | null) => void
 }
 
+export function createMapView(state: MapStateDefinition, projection: Projection): View {
+  const size = Math.max(
+    state.tileExtent.extent[2] - state.tileExtent.extent[0],
+    state.tileExtent.extent[3] - state.tileExtent.extent[1],
+  )
+  return new View({
+    projection,
+    enableRotation: false,
+    center: getCenter(state.tileExtent.extent),
+    extent: state.tileExtent.extent,
+    resolution: Math.max(1, size / 1300),
+    minResolution: 0.14,
+    maxResolution: Math.max(2, size / 500),
+    constrainOnlyCenter: true,
+  })
+}
+
 function matchesViewport(viewport: MapViewportState, reference: MapViewportState | null): boolean {
   return reference !== null
     && Math.abs(viewport.center[0] - reference.center[0]) < 0.01
@@ -46,20 +63,7 @@ export function useMapViewport(options: MapViewportOptions) {
     if (!map) {
       return
     }
-    const size = Math.max(
-      state.tileExtent.extent[2] - state.tileExtent.extent[0],
-      state.tileExtent.extent[3] - state.tileExtent.extent[1],
-    )
-    const view = new View({
-      projection,
-      enableRotation: false,
-      center: getCenter(state.tileExtent.extent),
-      extent: state.tileExtent.extent,
-      resolution: Math.max(1, size / 1300),
-      minResolution: 0.14,
-      maxResolution: Math.max(2, size / 500),
-      constrainOnlyCenter: true,
-    })
+    const view = createMapView(state, projection)
     const center = view.getCenter()
     const x = center?.[0]
     const y = center?.[1]

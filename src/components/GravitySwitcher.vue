@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useExplorerStore } from '../stores/explorer.ts'
+import type { GravityType } from '../domain/types.ts'
 import WuSvg from './base/WuSvg.vue'
 
-defineProps<{ compact: boolean }>()
-
-const store = useExplorerStore()
-const { selectedGravity, supportsGravity } = storeToRefs(store)
+const props = defineProps<{
+  compact: boolean
+  selectedGravity: GravityType
+  supportsGravity: boolean
+}>()
+const emit = defineEmits<{
+  gravitySelected: [value: GravityType]
+}>()
 
 function toggleGravity(): void {
-  store.selectGravity(selectedGravity.value === 1 ? 2 : 1)
+  emit('gravitySelected', props.selectedGravity === 1 ? 2 : 1)
 }
 </script>
 
@@ -25,7 +28,7 @@ function toggleGravity(): void {
     <WuSvg
       name="gravity-direction"
       class="text-[var(--accent)] transition-transform duration-200 [--wu-svg-h:18px]"
-      :class="selectedGravity === 2 ? 'rotate-180' : ''"
+      :class="props.selectedGravity === 2 ? 'rotate-180' : ''"
     />
   </button>
 </template>

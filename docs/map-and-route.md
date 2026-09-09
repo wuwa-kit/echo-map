@@ -37,6 +37,8 @@
 
 每种内容通过 `{ minZoom, maxZoom }` 定义左闭右开的显示范围，`maxZoom: null` 表示放大后持续显示。图标和声骸默认使用此规则，文字定位点按地理层级交接。声骸的显示层级与来源、XYZ 完整度无关。更改阈值只需调整统一配置，筛选说明和 Canvas 渲染共用规则。缩放时由图层样式更新，不重建数据或逐点创建 DOM。
 
+主地图、点位录入地图和路线长图共用 `src/map/point-marker-styles.ts` 与 `src/map/point-layers.ts`。定位点图标、C4 BOSS 菱形头像、周本 BOSS 切角头像、楼层角标、图层顺序、缩放阈值和图片加载生命周期由同一实现维护。录入地图为保证每个已有点可直接选择，不聚合声骸；当前未保存点作为独立的选中覆盖层始终显示，不进入正式地图或路线数据。
+
 地图不显示加减缩放按钮，通过鼠标滚轮、触控板、双击或移动端双指手势缩放。
 
 `MapLocationBase` 表示共享的 XY 地图定位。`RegionLabel` 是文字定位点，数据保存在 `regionLabels`，不添加 Z 或 `gameCoordinate`，不作为传送起点或声骸候选。其大区、地区、小地名分别对应 `level` 1、2、3。尚未提供楼层归属的文字定位点只在主地图显示。字体沿用文鼎方新书，保持纯白、无边框、无描边。
@@ -47,7 +49,7 @@
 
 仅浏览或关闭菜单不会改变地图。点击区域后切换所需底图并定位，同一区域可重复定位，共享底图内的导航不会按大区隐藏点位。菜单路径不写入 URL，定位结果通过地图、楼层和视口恢复。`public/data/map-data.json` 的 `mapNavigation` 保存目录和地区标签引用，由 `pnpm data:sync:map` 同步生成。`mapStateId` 只作为分组 ID，实际地图取目标地区的 `stateId`。
 
-`src/components/base/WuCascader.vue` 接收 `options` 树，包括 `value`、`label`、可选的 `children`、`description` 和 `disabled`。组件仅在选择末级节点时发出 `select(value, path)`，按钮始终显示 `placeholder`，再次打开时从根目录开始。`showHeader` 控制标题和关闭按钮栏，`showPath` 控制桌面列标题与窄屏路径栏，默认均显示。`MapNavigationCascader.vue` 负责将地图数据转换为选项并调用 Store 定位 action，基础组件不依赖地图状态。
+`src/components/base/WuCascader.vue` 接收 `options` 树，包括 `value`、`label`、可选的 `children`、`description` 和 `disabled`。组件仅在选择末级节点时发出 `select(value, path)`，按钮始终显示 `placeholder`，再次打开时从根目录开始。`showHeader` 控制标题和关闭按钮栏，`showPath` 控制桌面列标题与窄屏路径栏，默认均显示。`MapNavigationCascader.vue` 接收数据集、当前地图和中心点，负责生成选项与地区标题，并通过 `regionSelected` 交给主地图或录入地图处理，不直接依赖任一 Store。
 
 `src/components/base/WuPopover.vue` 是 `WuCascader` 和 `WuSelect` 共用的原生 `popover="auto"` 浮层。给组件传入 `id` 和 `anchor`，按钮通过同名 `popovertarget` 打开。内容放在默认插槽，`class` 和 DOM 事件透传到浮层。组件从原生 `toggle` 事件同步只读 `isOpen`，发出 `opened` 和 `closed`，并暴露 `show()`、`hide()`、`toggle()` 和 `updatePosition()`。插槽也提供 `isOpen` 和 `close()`。
 

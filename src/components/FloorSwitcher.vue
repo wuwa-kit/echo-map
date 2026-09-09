@@ -1,14 +1,26 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useExplorerStore } from '../stores/explorer.ts'
+import { computed, toRefs } from 'vue'
+import type { LayeredMapDefinition } from '../domain/types.ts'
 import WuEllipsis from './base/WuEllipsis.vue'
 import WuScrollArea from './base/WuScrollArea.vue'
 import WuSvg from './base/WuSvg.vue'
 import WuTooltip from './base/WuTooltip.vue'
 
-const store = useExplorerStore()
-const { selectedLevelId, floorRequest, nearbyFloorGroups, floorSwitcherVisible, compactFloors } = storeToRefs(store)
+const props = withDefaults(defineProps<{
+  selectedLevelId: string | null
+  floorRequest?: { levelId: string; status: 'loading' | 'error' } | null
+  floorGroups: readonly LayeredMapDefinition[]
+  visible?: boolean
+  compactFloors: boolean
+}>(), {
+  floorRequest: null,
+  visible: true,
+})
+const emit = defineEmits<{
+  levelRequested: [id: string | null]
+  layoutToggled: []
+}>()
+const { selectedLevelId, floorRequest, floorGroups: nearbyFloorGroups, visible: floorSwitcherVisible, compactFloors } = toRefs(props)
 const layoutLabel = computed(() => compactFloors.value ? '切换为楼层文字列表' : '切换为楼层图标列表')
 
 function floorHint(group: string, name: string, id: string): string {
@@ -18,11 +30,11 @@ function floorHint(group: string, name: string, id: string): string {
 }
 
 function selectLevel(id: string | null): void {
-  store.requestLevel(id)
+  emit('levelRequested', id)
 }
 
 function toggleLayout(): void {
-  store.toggleFloorLayout()
+  emit('layoutToggled')
 }
 </script>
 

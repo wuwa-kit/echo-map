@@ -1,15 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
+import CircleStyle from 'ol/style/Circle.js'
 import RegularShape from 'ol/style/RegularShape.js'
 import Icon from 'ol/style/Icon.js'
 import ImageState from 'ol/ImageState.js'
 import { shared as iconImageCache } from 'ol/style/IconImageCache.js'
-import { libraryLocations } from '../src/domain/point-library.ts'
+import { authoredPointMapDisplay, libraryLocations } from '../src/domain/point-library.ts'
 import { createEchoMarkerStyles } from '../src/map/echo-marker.ts'
-import { createEditorMarkerStyles } from '../src/map/editor-marker.ts'
+import { createEditorSelectionStyle } from '../src/map/editor-marker.ts'
 import { createPointLayers } from '../src/map/point-layers.ts'
 import { createPortraitMarkerStyles, PORTRAIT_MARKER_SIZES } from '../src/map/boss-marker.ts'
+import { createPointMarkerStyles } from '../src/map/point-marker-styles.ts'
 import { referenceDataset, smallEcho, eliteEcho, mixedPoint } from './fixtures/point-library.ts'
 
 class MarkerPath {
@@ -198,29 +200,88 @@ describe('echo marker appearance', () => {
     expect(widths[1]).toBeCloseTo((widths[0] ?? 0) * 0.6)
   })
   it('uses a diamond editor selection that cannot hide the portrait during decluttering', () => {
-    const editor = createEditorMarkerStyles(() => {})
-    const point = mixedPoint()
-    const normal = editor.get(point, referenceDataset.echoes, false)
-    const selected = editor.get(point, referenceDataset.echoes, true)
-    const outline = selected[0]?.getImage()
+    const outline = createEditorSelectionStyle().getImage()
     expect(outline?.getDeclutterMode()).toBe('none')
     expect(outline instanceof RegularShape ? outline.getPoints() : null).toBe(4)
-    expect(selected.slice(1)).toEqual(normal)
-    expect(normal[0]?.getImage()).toBeDefined()
-    expect(normal).toHaveLength(1)
-    editor.dispose()
   })
 
-  it('uses a diamond for editor navigation placeholders', () => {
-    const editor = createEditorMarkerStyles(() => {})
-    const [style] = editor.get({
+  it('uses the shared labelled fallback for editor navigation points without artwork', () => {
+    const display = authoredPointMapDisplay({
       gravityType: null,
       id: 'navigation', kind: 'navigation', status: 'draft', name: '', navigationKind: 'beacon', mode: 'fast-travel',
       stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: null }, note: '',
-    }, referenceDataset.echoes, false)
+    }, referenceDataset)
+    if (display?.category !== 'navigation') throw new Error('Missing editor navigation point')
+    const markers = createPointMarkerStyles(() => {})
+    markers.updateEchoes(referenceDataset.echoes)
+    const [style] = markers.navigation(display.location)
     const image = style?.getImage()
-    expect(image instanceof RegularShape ? image.getPoints() : null).toBe(4)
-    editor.dispose()
+    expect(image).toBeInstanceOf(CircleStyle)
+    expect(style?.getText()?.getText()).toBe('共鸣信标')
+    markers.dispose()
+  })
+
+  it('uses the corresponding official icon for editor navigation points', () => {
+    const navigation = referenceDataset.navigationPoints.find(({ kind, iconUrl }) => kind !== 'boss' && iconUrl)
+    if (!navigation) throw new Error('Missing navigation fixture')
+    const display = authoredPointMapDisplay({
+      gravityType: navigation.gravityType,
+      id: `official:${navigation.id}`,
+      status: 'imported',
+      officialIds: [navigation.id],
+      name: navigation.typeName,
+      navigationKind: navigation.kind,
+      mode: navigation.mode,
+      stateId: navigation.stateId,
+      countryId: navigation.countryId,
+      levelId: navigation.levelId,
+      coordinate: { x: 0, y: 0, z: 0 },
+      kind: 'navigation',
+      note: '',
+    }, referenceDataset)
+    if (display?.category !== 'navigation') throw new Error('Missing editor navigation point')
+    const markers = createPointMarkerStyles(() => {})
+    markers.updateEchoes(referenceDataset.echoes)
+    const [style] = markers.navigation(display.location)
+    const image = style?.getImage()
+    expect(display.location.iconUrl).toBe(navigation.iconUrl)
+    expect(image).toBeInstanceOf(Icon)
+    expect(image instanceof Icon ? image.getSrc() : null).toBe(navigation.iconUrl)
+    markers.dispose()
+  })
+
+  it('uses the shared C4 and weekly boss portrait frames in the editor', () => {
+    const bosses = [
+      referenceDataset.navigationPoints.find(({ kind, typeName }) => kind === 'boss' && typeName === '星海迷途之扉'),
+      referenceDataset.navigationPoints.find(({ kind, typeName }) => kind === 'boss' && !/^.{4}之.$/u.test(typeName)),
+    ]
+    const markers = createPointMarkerStyles(() => {})
+    markers.updateEchoes(referenceDataset.echoes)
+    bosses.forEach((navigation, index) => {
+      if (!navigation) throw new Error('Missing boss fixture')
+      const before = painted.length
+      const display = authoredPointMapDisplay({
+        gravityType: navigation.gravityType,
+        id: `official:${navigation.id}`,
+        status: 'imported',
+        officialIds: [navigation.id],
+        name: navigation.typeName,
+        navigationKind: navigation.kind,
+        mode: navigation.mode,
+        stateId: navigation.stateId,
+        countryId: navigation.countryId,
+        levelId: navigation.levelId,
+        coordinate: { x: 0, y: 0, z: 0 },
+        kind: 'navigation',
+        note: '',
+      }, referenceDataset)
+      if (display?.category !== 'navigation') throw new Error('Missing editor boss point')
+      markers.navigation(display.location)
+      expect(display.location.typeName).toBe(navigation.typeName)
+      expect(painted).toHaveLength(before + 1)
+      expect(painted.at(-1)?.[0]?.vertices).toHaveLength(index === 0 ? 8 : 4)
+    })
+    markers.dispose()
   })
 
   it.each([smallEcho, eliteEcho])('keeps the original C$cost diamond and size after conversion to members', (echo) => {

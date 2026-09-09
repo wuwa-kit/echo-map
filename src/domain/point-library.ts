@@ -1,5 +1,5 @@
 import { pointLibrarySchema } from './schema.ts'
-import type { AuthoredCoordinate, AuthoredPoint, EchoMapLocation, AuthoredEchoLocation, GameCoordinate, MapDataset, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointLibrary, PointQuality } from './types.ts'
+import type { AuthoredCoordinate, AuthoredNavigationPoint, AuthoredPoint, EchoMapLocation, AuthoredEchoLocation, GameCoordinate, MapDataset, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointLibrary, PointQuality } from './types.ts'
 import { officialToMapCoordinate } from '../map/projection.ts'
 
 export const NAVIGATION_NAMES: Record<NavigationKind, string> = {
@@ -60,6 +60,70 @@ function completeCoordinate(coordinate: AuthoredCoordinate | undefined): GameCoo
   return { x: coordinate.x, y: coordinate.y, z: coordinate.z }
 }
 
+function navigationSource(
+  point: AuthoredNavigationPoint,
+  navigationPoints: readonly NavigationPoint[],
+  byId: ReadonlyMap<string, NavigationPoint>,
+): NavigationPoint | undefined {
+  const ids = [point.id, ...(point.officialIds ?? []), ...(point.replacesOfficialIds ?? [])]
+  return ids.reduce<NavigationPoint | undefined>((match, id) => (
+    match ?? byId.get(id) ?? byId.get(id.replace(/^official:/u, ''))
+  ), undefined) ?? navigationPoints.find(({ kind, typeName }) => kind === point.navigationKind && typeName === point.name.trim())
+}
+
+type AuthoredMapDisplayPoint =
+  | { category: 'echo'; location: AuthoredEchoLocation }
+  | { category: 'navigation'; location: NavigationPoint }
+
+function authoredPointMapDisplayWithSources(
+  point: AuthoredPoint,
+  dataset: MapDataset,
+  navigationById: ReadonlyMap<string, NavigationPoint>,
+): AuthoredMapDisplayPoint | null {
+  const { x, y } = point.coordinate
+  if (x === null || y === null) return null
+  const quality: PointQuality = point.status === 'imported' ? 'official-provisional' : 'manual-verified'
+  const base = {
+    id: point.id,
+    typeId: `manual:${point.kind}`,
+    typeName: pointTitle(point, dataset),
+    iconUrl: '',
+    stateId: point.stateId,
+    countryId: point.countryId,
+    levelId: point.levelId,
+    gravityType: point.gravityType ?? null,
+    layeredMapId: dataset.states.find(({ id }) => id === point.stateId)?.layeredMaps.find(({ floors }) => floors.some(({ id }) => id === point.levelId))?.id ?? null,
+    coordinate: officialToMapCoordinate(x * 100, y * 100, dataset.source.tileWidth),
+    gameCoordinate: completeCoordinate(point.coordinate) ?? null,
+    quality,
+  }
+  if (point.kind === 'echo') {
+    return { category: 'echo', location: { ...base, members: point.members, note: point.note, compositionStatus: point.compositionStatus ?? 'partial' } }
+  }
+  const source = navigationSource(point, dataset.navigationPoints, navigationById)
+  const teleportCoordinate = completeCoordinate(point.teleportCoordinate)
+  const location: NavigationPoint = source
+    ? { ...source, ...base, typeId: source.typeId, iconUrl: source.iconUrl, kind: point.navigationKind, mode: point.mode, ...(teleportCoordinate ? { teleportCoordinate } : {}) }
+    : { ...base, groupId: `manual:${point.navigationKind}`, kind: point.navigationKind, mode: point.mode, catalogCategoryId: 'manual', catalogCategoryName: '人工定位点', ...(teleportCoordinate ? { teleportCoordinate } : {}) }
+  return { category: 'navigation', location }
+}
+
+export function authoredPointMapDisplay(point: AuthoredPoint, dataset: MapDataset): AuthoredMapDisplayPoint | null {
+  return authoredPointMapDisplayWithSources(point, dataset, new Map(dataset.navigationPoints.map((location) => [location.id, location])))
+}
+
+export function editorLibraryLocations(points: readonly AuthoredPoint[], dataset: MapDataset) {
+  const navigationById = new Map(dataset.navigationPoints.map((location) => [location.id, location]))
+  const displayPoints = points.flatMap((point) => {
+    const display = authoredPointMapDisplayWithSources(point, dataset, navigationById)
+    return display ? [display] : []
+  })
+  return {
+    echoLocations: displayPoints.flatMap((point) => point.category === 'echo' ? [point.location] : []),
+    navigationPoints: displayPoints.flatMap((point) => point.category === 'navigation' ? [point.location] : []),
+  }
+}
+
 export function navigationRouteCoordinate(point: NavigationPoint): GameCoordinate | null {
   return point.teleportCoordinate ?? point.gameCoordinate
 }
@@ -68,32 +132,15 @@ export function libraryLocations(library: PointLibrary, dataset: MapDataset) {
   const echoLocations: AuthoredEchoLocation[] = []
   const navigationPoints: NavigationPoint[] = []
   const navigationPointGroups: NavigationPointGroup[] = []
-  const officialNavigation = new Map(dataset.navigationPoints.map((point) => [point.id, point]))
   const officialGroupIds = new Set<string>()
+  const navigationById = new Map(dataset.navigationPoints.map((location) => [location.id, location]))
   for (const point of library.points) {
-    const { x, y, z } = point.coordinate
-    if (point.status === 'draft' || x === null || y === null || z === null) continue
-    const quality: PointQuality = point.status === 'imported' ? 'official-provisional' : 'manual-verified'
-    const base = {
-      id: point.id, typeId: `manual:${point.kind}`, typeName: pointTitle(point, dataset), iconUrl: '',
-      stateId: point.stateId, countryId: point.countryId, levelId: point.levelId,
-      gravityType: point.gravityType ?? null,
-      layeredMapId: dataset.states.find(({ id }) => id === point.stateId)?.layeredMaps.find(({ floors }) => floors.some(({ id }) => id === point.levelId))?.id ?? null,
-      coordinate: officialToMapCoordinate(x * 100, y * 100, dataset.source.tileWidth),
-      gameCoordinate: { x, y, z }, quality,
-    }
-    if (point.kind === 'echo') {
-      echoLocations.push({ ...base, members: point.members, note: point.note, compositionStatus: point.compositionStatus ?? 'partial' })
-    } else {
-      const teleportCoordinate = completeCoordinate(point.teleportCoordinate)
-      const original = point.status === 'imported' ? officialNavigation.get(point.officialIds?.[0] ?? '') : undefined
-      if (original) {
-        navigationPoints.push({ ...original, ...base, typeId: original.typeId, iconUrl: original.iconUrl, ...(teleportCoordinate ? { teleportCoordinate } : {}) })
-        officialGroupIds.add(original.groupId)
-        continue
-      }
-      const groupId = `manual:${point.navigationKind}`
-      navigationPoints.push({ ...base, typeId: groupId, groupId, kind: point.navigationKind, mode: point.mode, catalogCategoryId: 'manual', catalogCategoryName: '人工定位点', ...(teleportCoordinate ? { teleportCoordinate } : {}) })
+    if (point.status === 'draft' || !completeCoordinate(point.coordinate)) continue
+    const display = authoredPointMapDisplayWithSources(point, dataset, navigationById)
+    if (display?.category === 'echo') echoLocations.push(display.location)
+    else if (display?.category === 'navigation') {
+      navigationPoints.push(display.location)
+      if (!display.location.groupId.startsWith('manual:')) officialGroupIds.add(display.location.groupId)
     }
   }
   for (const kind of Object.keys(NAVIGATION_NAMES) as NavigationKind[]) {

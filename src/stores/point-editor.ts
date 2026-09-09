@@ -325,7 +325,21 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     }
     recovery.value = null
     error.value = ''
+    notice.value = ''
     cacheDraft()
+  }
+
+  function discardEmptyMapDraft(id: string): boolean {
+    const point = draft.value
+    if (!point || busy.value || point.id !== id || library.value.points.some(({ id: savedId }) => savedId === id) || point.replacesOfficialIds?.length) return false
+    const hasMapPosition = point.coordinate.x !== null && point.coordinate.y !== null
+    const hasCommonContent = point.coordinate.z !== null || point.note.trim() !== ''
+    const hasKindContent = point.kind === 'echo'
+      ? point.members.length > 0 || point.compositionStatus === 'complete'
+      : point.name.trim() !== '' || point.navigationKind !== 'beacon' || point.mode !== 'fast-travel' || point.teleportCoordinate !== undefined
+    if (!hasMapPosition || hasCommonContent || hasKindContent) return false
+    discardChanges()
+    return true
   }
 
   function copyPoint(): void {
@@ -468,7 +482,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     versions: shallowReadonly(versions), search: shallowReadonly(search), monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy: shallowReadonly(busy), dirty, filteredPoints, nearbyPoints,
     load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, pickMapPosition, selectState, addMember, setMemberCount, removeMember,
-    saveDraft, discardChanges, copyPoint, deletePoint, undoDelete, recoverDraft, previewImport, applyImport, loadVersions, previewVersion,
+    saveDraft, discardChanges, discardEmptyMapDraft, copyPoint, deletePoint, undoDelete, recoverDraft, previewImport, applyImport, loadVersions, previewVersion,
     setSearch: (value: string) => { search.value = value },
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
@@ -501,6 +515,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     },
     cancelImport: () => { importPreview.value = null },
     reportError: (value: string) => { error.value = value },
+    dismissMessage: () => {
+      error.value = ''
+      notice.value = ''
+    },
     dismissRecovery: () => {
       recovery.value = null
       cacheDraft()

@@ -1,8 +1,7 @@
 import type { GravityType, PointSourceFilter } from '../domain/types.ts'
+import { compactWikiEchoId, parseWikiEchoId } from './wiki-id.ts'
 
 export const DEFAULT_STATE_ID = 8
-const WIKI_ECHO_ID_PREFIX = 'wiki-echo-'
-const WIKI_ECHO_ID_PATTERN = /^wiki-echo-(\d+)$/u
 const WIKI_SONATA_ID_PREFIX = 'wiki-sonata-'
 const WIKI_SONATA_ID_PATTERN = /^wiki-sonata-(\d+)$/u
 
@@ -109,15 +108,15 @@ function sonataIdList(value: ExplorerQueryValue): string[] | undefined {
 }
 
 function echoIdList(value: ExplorerQueryValue): string[] | undefined {
-  const ids = idList(value)?.filter((id) => /^\d+$/u.test(id)).map((id) => `${WIKI_ECHO_ID_PREFIX}${id}`)
+  const ids = idList(value)?.flatMap((id) => {
+    const echoId = parseWikiEchoId(id)
+    return echoId ? [echoId] : []
+  })
   return ids && ids.length > 0 ? ids : undefined
 }
 
 function compactEchoIdList(ids: readonly string[]): string | undefined {
-  const sourceIds = ids.flatMap((id) => {
-    const match = id.match(WIKI_ECHO_ID_PATTERN)
-    return match?.[1] ? [match[1]] : []
-  })
+  const sourceIds = ids.flatMap((id) => compactWikiEchoId(id) ?? [])
   return sourceIds.length > 0 ? [...new Set(sourceIds)].join(',') : undefined
 }
 

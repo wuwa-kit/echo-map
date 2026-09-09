@@ -11,7 +11,7 @@ import Projection from 'ol/proj/Projection.js'
 import { useExplorerStore } from '../stores/explorer.ts'
 import { mapToGameCoordinate } from '../map/projection.ts'
 import { createOfficialBaseLayers } from '../map/official-base-layers.ts'
-import { createPointLayers, mapFeaturePointIds } from '../map/point-layers.ts'
+import { createPointLayers, mapFeaturesPointIds } from '../map/point-layers.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
 import { useMapViewport } from '../map/useMapViewport.ts'
@@ -19,6 +19,7 @@ import { floorExtent } from '../map/floor-coverage.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
 import PointDetails from './PointDetails.vue'
 import FloorSwitcher from './FloorSwitcher.vue'
+import MapCoordinateDisplay from './MapCoordinateDisplay.vue'
 
 const props = defineProps<{
   padding: MapPadding
@@ -35,6 +36,9 @@ const {
   route,
   selectedLevelId,
   floorRequest,
+  nearbyFloorGroups,
+  floorSwitcherVisible,
+  compactFloors,
   selectedGravity,
   baseTileError,
   baseTileRetry,
@@ -160,9 +164,9 @@ function applyMapNavigation(): void {
 
 function selectMapPoint(event: MapBrowserEvent): void {
   updatePointerCoordinate(event)
-  const found = map?.forEachFeatureAtPixel(event.pixel, mapFeaturePointIds, { hitTolerance: 6 })
-  if (found && found.length > 1) store.selectPointCandidates(found)
-  else store.selectPoint(found?.[0] ?? null)
+  const found = map ? mapFeaturesPointIds(map.getFeaturesAtPixel(event.pixel, { hitTolerance: 6 })) : []
+  if (found.length > 1) store.selectPointCandidates(found)
+  else store.selectPoint(found[0] ?? null)
 }
 
 onMounted(() => {
@@ -238,10 +242,12 @@ onBeforeUnmount(() => {
       class="absolute inset-0 [background:linear-gradient(rgba(101,241,194,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(101,241,194,0.025)_1px,transparent_1px),#0c1715] [background-size:32px_32px]"
     />
     <div :style="floorDockStyle" class="pointer-events-none absolute bottom-[var(--floor-dock-bottom)] right-[var(--floor-dock-right)] z-70 max-h-[var(--floor-dock-height)] flex flex-col items-start gap-4px" :class="shortFloorDock ? 'left-[max(60px,env(safe-area-inset-left))]' : 'left-[max(8px,env(safe-area-inset-left))]'">
-      <FloorSwitcher />
-      <div class="h-32px max-w-full shrink-0 select-none overflow-hidden whitespace-nowrap rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-12px text-[var(--muted)] tabular-nums shadow-lg">
-        {{ pointerCoordinateText }}
-      </div>
+      <FloorSwitcher
+        :selected-level-id="selectedLevelId" :floor-request="floorRequest" :floor-groups="nearbyFloorGroups"
+        :visible="floorSwitcherVisible" :compact-floors="compactFloors"
+        @level-requested="store.requestLevel" @layout-toggled="store.toggleFloorLayout"
+      />
+      <MapCoordinateDisplay :text="pointerCoordinateText" />
     </div>
   </div>
 </template>

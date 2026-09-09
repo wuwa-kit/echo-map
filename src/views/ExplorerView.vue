@@ -157,8 +157,12 @@ const loadError = computed(() => {
     >
       <MapCanvas :padding="mapPadding" :dock-bottom="mapDockBottom" />
       <div v-if="!compact || mobileSheet === null" class="absolute left-[max(8px,var(--safe-left))] top-[max(8px,var(--safe-top))] z-90 flex items-start gap-4px">
-        <MapNavigationCascader id="map-navigation-trigger" :class="compact ? '[--wu-cascader-height:44px] [--wu-cascader-gap:4px] [--wu-cascader-padding:9px]' : '[--wu-cascader-height:40px] [--wu-cascader-gap:6px] [--wu-cascader-padding:11px]'" />
-        <GravitySwitcher :compact="compact" />
+        <MapNavigationCascader
+          id="map-navigation-trigger" :dataset="dataset" :state-id="store.selectedStateId" :center="store.mapViewport?.center ?? null"
+          :class="compact ? '[--wu-cascader-height:44px] [--wu-cascader-gap:4px] [--wu-cascader-padding:9px]' : '[--wu-cascader-height:40px] [--wu-cascader-gap:6px] [--wu-cascader-padding:11px]'"
+          @region-selected="store.navigateToRegion"
+        />
+        <GravitySwitcher :compact="compact" :selected-gravity="store.selectedGravity" :supports-gravity="store.supportsGravity" @gravity-selected="store.selectGravity" />
       </div>
       <div
         v-show="controlVisible"

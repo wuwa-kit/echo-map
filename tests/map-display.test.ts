@@ -6,7 +6,7 @@ import Cluster from 'ol/source/Cluster.js'
 import Icon from 'ol/style/Icon.js'
 import RegularShape from 'ol/style/RegularShape.js'
 import Style from 'ol/style/Style.js'
-import { createPointLayers, mapFeaturePointIds } from '../src/map/point-layers.ts'
+import { createPointLayers, mapFeaturePointIds, mapFeaturesPointIds } from '../src/map/point-layers.ts'
 import type { MapDisplayPoint, NavigationPoint, RegionLabel } from '../src/domain/types.ts'
 import { referenceDataset } from './fixtures/point-library.ts'
 
@@ -324,6 +324,27 @@ describe('map display layer integration', () => {
     points.update([], [], [], [])
     expect(layer?.getSource()?.getFeatures()).toEqual([])
     expect(layer?.getSource()?.getFeaturesInExtent([-100000, -100000, 100000, 100000])).toEqual([])
+    points.dispose()
+  })
+
+  it('uses the shared zoom rules with individual editor features and de-duplicates overlapping hits', () => {
+    const points = createPointLayers(() => false, { echoGrouping: 'individual' })
+    const echo = referenceDataset.echoLocations[0]
+    const boss = referenceDataset.navigationPoints.find(({ kind }) => kind === 'boss')
+    if (!echo || !boss) throw new Error('需要声骸与 BOSS 测试数据')
+    points.update([echo], [boss], [], referenceDataset.echoes)
+
+    const echoSource = points.layers[1]?.getSource()
+    expect(echoSource).not.toBeInstanceOf(Cluster)
+    const echoFeature = echoSource?.getFeatures()[0]
+    const bossFeature = points.layers[2]?.getSource()?.getFeatures()[0]
+    if (!echoFeature || !bossFeature) throw new Error('编辑地图需要独立点位 Feature')
+
+    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, 8)).toBeUndefined()
+    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, 4)).toBeDefined()
+    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, 16)).toBeUndefined()
+    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, 8)).toBeDefined()
+    expect(mapFeaturesPointIds([bossFeature, bossFeature, echoFeature])).toEqual([boss.id, echo.id])
     points.dispose()
   })
 })

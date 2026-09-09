@@ -246,4 +246,28 @@ describe('point editor actions', () => {
     expect(store.error).toContain('XYZ')
     expect(saveEditorLibrary).not.toHaveBeenCalled()
   })
+
+  it('discards a coordinate-only draft when its map marker is selected again', async () => {
+    const store = usePointEditorStore()
+    await store.load()
+    const emptyDraftId = store.draft?.id
+    store.pickMapPosition(20.8, -19.3)
+    expect(store.discardEmptyMapDraft(emptyDraftId ?? '')).toBe(true)
+    expect(store.draft?.id).not.toBe(emptyDraftId)
+    expect(store.draft?.coordinate).toEqual({ x: null, y: null, z: null })
+    expect(store.dirty).toBe(false)
+    expect(cache.size).toBe(0)
+  })
+
+  it('keeps map drafts that contain point data', async () => {
+    const store = usePointEditorStore()
+    await store.load()
+    store.addMember(smallEcho.id)
+    store.pickMapPosition(20.8, -19.3)
+    const populatedDraftId = store.draft?.id
+    expect(store.discardEmptyMapDraft(populatedDraftId ?? '')).toBe(false)
+    expect(store.draft?.id).toBe(populatedDraftId)
+    expect(store.draft?.coordinate).toEqual({ x: 21, y: -19, z: null })
+    expect(store.draft?.kind === 'echo' ? store.draft.members : []).toEqual([{ echoId: smallEcho.id, count: 1 }])
+  })
 })
