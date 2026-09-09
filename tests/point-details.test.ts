@@ -22,22 +22,22 @@ describe('point detail quantities', () => {
     expect(details.compositionLabel).toBe('怪物清单已补齐')
   })
 
-  it('never presents official placeholder counts as verified quantities', () => {
+  it('preserves aggregated official member counts with placeholder Z unchanged', () => {
     const official = { ...location, quality: 'official-provisional', compositionStatus: 'complete' } as const
     const details = describeEchoPoint(official, referenceDataset.echoes)
-    expect(details.summary).toBe('2种 · 数量待核验')
+    expect(details.summary).toBe('2种 · 4只')
     expect(details.compositionLabel).toBeNull()
-    expect(details.members.map(({ count }) => count)).toEqual([null, null])
+    expect(details.members.map(({ count }) => count)).toEqual([3, 1])
     expect(details.title).not.toContain('×')
     expect(official.members.map(({ count }) => count)).toEqual([3, 1])
   })
 
-  it('keeps legacy unknown counts unknown and tolerates missing echo definitions', () => {
+  it('treats legacy official points as one and tolerates missing echo definitions', () => {
     const legacy = referenceDataset.echoLocations[0]
     if (!legacy) throw new Error('测试数据缺少旧格式点位')
     const details = describeEchoPoint(legacy, [])
-    expect(details.summary).toContain('数量待核验')
-    expect(details.members[0]?.count).toBeNull()
+    expect(details.summary).toContain('1只')
+    expect(details.members[0]?.count).toBe(1)
     expect(details.members[0]?.name).toBe(legacy.echoId)
   })
 })

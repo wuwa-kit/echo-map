@@ -205,7 +205,7 @@ describe('map display layer integration', () => {
     const points = createPointLayers(() => moving)
     const location = referenceDataset.echoLocations[0]
     if (!location) throw new Error('需要声骸点测试数据')
-    points.update([0, 80, 10000].map((x) => ({
+    points.update([0, 50, 10000].map((x) => ({
       ...location, id: `point-${x}`, coordinate: { ...location.coordinate, mapX: x, mapY: 0 },
     })), [], [], referenceDataset.echoes)
     const clusters = points.layers[1]?.getSource()
@@ -228,6 +228,40 @@ describe('map display layer integration', () => {
     points.finishInteraction(extent, 0.5, projection)
     expect(refresh).toHaveBeenCalledOnce()
     points.dispose()
+  })
+
+  it('uses marker-sized clustering and separates neighboring points before maximum zoom', () => {
+    const points = createPointLayers()
+    const location = referenceDataset.echoLocations[0]
+    if (!location) throw new Error('需要声骸点测试数据')
+    points.update([
+      { ...location, id: 'point-a', coordinate: { ...location.coordinate, mapX: -626, mapY: -8335 } },
+      { ...location, id: 'point-b', coordinate: { ...location.coordinate, mapX: -613, mapY: -8346 } },
+    ], [], [], referenceDataset.echoes)
+    const clusters = points.layers[1]?.getSource()
+    if (!(clusters instanceof Cluster)) throw new Error('需要声骸聚类图层')
+    const projection = new Projection({ code: 'TEST:MAX-ZOOM', units: 'pixels' })
+    const extent = [-1000, -9000, 0, -8000]
+
+    points.finishInteraction(extent, 0.5, projection)
+    expect(clusters.getDistance()).toBe(32)
+    expect(clusters.getFeatures()).toHaveLength(1)
+
+    points.finishInteraction(extent, 0.4, projection)
+    expect(clusters.getDistance()).toBe(32)
+    expect(clusters.getFeatures()).toHaveLength(2)
+
+    points.finishInteraction(extent, 0.248, projection, true)
+    expect(clusters.getDistance()).toBe(0)
+    expect(clusters.getFeatures()).toHaveLength(2)
+
+    points.dispose()
+
+    const exportPoints = createPointLayers(undefined, { exportMode: true })
+    const exportClusters = exportPoints.layers[1]?.getSource()
+    if (!(exportClusters instanceof Cluster)) throw new Error('需要导出声骸聚类图层')
+    expect(exportClusters.getDistance()).toBeCloseTo(32 * 0.6)
+    exportPoints.dispose()
   })
 
   it('builds initial clusters during an interaction and immediately respects changed point filters', () => {

@@ -1,11 +1,17 @@
 import type { AuthoredEchoPoint, AuthoredPoint, EchoMember, PointLibrary, PointSource } from './types.ts'
 
+export function isOfficialPointReplaced(point: Pick<AuthoredPoint, 'id' | 'officialIds'>, replaced: ReadonlySet<string>): boolean {
+  return [point.id, ...(point.officialIds ?? [])].some((id) => replaced.has(id))
+}
+
 export function combinePointLibraries(manual: PointLibrary, official: PointLibrary, source: PointSource = 'all'): PointLibrary {
   if (source === 'manual') return manual
   if (source === 'official') return official
   const replaced = new Set(manual.points.flatMap((point) => point.replacesOfficialIds ?? []))
   const manualIds = new Set(manual.points.map(({ id }) => id))
-  return { version: 1, points: [...manual.points, ...official.points.filter(({ id }) => !replaced.has(id) && !manualIds.has(id))] }
+  return { version: 1, points: [...manual.points, ...official.points.filter((point) => (
+    !manualIds.has(point.id) && !isOfficialPointReplaced(point, replaced)
+  ))] }
 }
 
 export function findNearbyPoints(points: readonly AuthoredPoint[], target: AuthoredPoint, radius = 30, heightTolerance = 8) {
@@ -31,6 +37,11 @@ export function mergeEchoMembers(existing: readonly EchoMember[], incoming: read
 export function appendObservation(target: AuthoredEchoPoint, incoming: AuthoredEchoPoint): AuthoredEchoPoint {
   if ((target.gravityType ?? null) !== (incoming.gravityType ?? null)) throw new Error('不同重力状态的点位不能合并')
   const imported = target.status === 'imported'
+  const replacementIds = [...new Set([
+    ...(target.replacesOfficialIds ?? []),
+    ...(incoming.replacesOfficialIds ?? []),
+    ...(imported ? target.officialIds ?? [target.id] : []),
+  ])]
   return {
     ...target,
     id: imported ? incoming.id : target.id,
@@ -38,7 +49,7 @@ export function appendObservation(target: AuthoredEchoPoint, incoming: AuthoredE
     status: 'draft',
     compositionStatus: 'partial',
     members: mergeEchoMembers(target.members, incoming.members),
-    ...(imported ? { replacesOfficialIds: [...new Set([...(target.replacesOfficialIds ?? []), target.id])] } : {}),
+    ...(replacementIds.length > 0 ? { replacesOfficialIds: replacementIds } : {}),
     note: [...new Set([target.note, incoming.note].filter(Boolean))].join('\n'),
   }
 }

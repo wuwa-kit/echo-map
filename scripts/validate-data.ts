@@ -5,6 +5,7 @@ import { projectPath, readJson } from './lib/files.ts'
 import { parsePointLibrary } from '../src/domain/point-library.ts'
 import { isRouteStart } from '../src/domain/explorer-selectors.ts'
 import { readMapDataset, readOfficialPointData } from './lib/map-data.ts'
+import { inferOfficialEchoCountryId, OFFICIAL_ECHO_MERGE_DIAMETER } from './lib/official-point-library.ts'
 
 const dataset = await readMapDataset()
 wikiCatalogueSchema.parse(await readJson<unknown>(projectPath('data', 'generated', 'wiki.json')))
@@ -33,11 +34,78 @@ for (const state of dataset.states) {
 
 for (const range of Object.values(MAP_POINT_ZOOM_RANGES)) mapZoomRangeSchema.parse(range)
 const officialById = new Map([...dataset.echoLocations, ...dataset.navigationPoints].map((point) => [point.id, point]))
+const officialEchoById = new Map(dataset.echoLocations.map((point) => [point.id, point]))
+const officialNavigationById = new Map(dataset.navigationPoints.map((point) => [point.id, point]))
+const convertedOfficialIds = new Set<string>()
 for (const point of officialLibrary.points) {
-  for (const id of point.officialIds ?? []) {
+  const officialIds = point.officialIds ?? []
+  const expectedPointId = `official:${[...officialIds].sort((left, right) => left.localeCompare(right))[0]}`
+  if (point.id !== expectedPointId) errors.push(`官方点 ${point.id} 未使用最小来源 ID 生成稳定 ID`)
+  for (const id of officialIds) {
+    if (convertedOfficialIds.has(id)) errors.push(`官方来源 ${id} 被多个转换点重复引用`)
+    convertedOfficialIds.add(id)
     const original = officialById.get(id)
     if (!original || original.gravityType !== point.gravityType) errors.push(`官方点 ${point.id} 的重力与来源 ${id} 不一致，请重新转换官方点位`)
   }
+  if (point.kind === 'navigation') {
+    if (officialIds.length !== 1 || !officialNavigationById.has(officialIds[0] ?? '')) errors.push(`官方定位点 ${point.id} 的来源不唯一或类型不正确`)
+    continue
+  }
+
+  const sources = officialIds.flatMap((id) => {
+    const source = officialEchoById.get(id)
+    return source ? [source] : []
+  })
+  if (sources.length !== officialIds.length) {
+    errors.push(`官方声骸点 ${point.id} 引用了非声骸来源`)
+    continue
+  }
+  const firstSource = sources[0]
+  if (!firstSource) continue
+  const firstCountryId = inferOfficialEchoCountryId(firstSource, dataset.regionLabels)
+  if (point.countryId !== firstCountryId) errors.push(`官方声骸点 ${point.id} 未使用最近地区标签归区`)
+  const maximumRawDistanceSquared = (OFFICIAL_ECHO_MERGE_DIAMETER * 100) ** 2
+  for (let leftIndex = 0; leftIndex < sources.length; leftIndex += 1) {
+    const left = sources[leftIndex]
+    if (!left) continue
+    if (
+      left.stateId !== firstSource.stateId
+      || inferOfficialEchoCountryId(left, dataset.regionLabels) !== firstCountryId
+      || left.levelId !== firstSource.levelId
+      || left.gravityType !== firstSource.gravityType
+    ) {
+      errors.push(`官方声骸点 ${point.id} 合并了不同地图、地区、楼层或重力的来源`)
+      break
+    }
+    for (let rightIndex = leftIndex + 1; rightIndex < sources.length; rightIndex += 1) {
+      const right = sources[rightIndex]
+      if (!right) continue
+      const x = left.coordinate.rawX - right.coordinate.rawX
+      const y = left.coordinate.rawY - right.coordinate.rawY
+      if (x * x + y * y > maximumRawDistanceSquared) {
+        errors.push(`官方声骸点 ${point.id} 的来源直径超过 ${OFFICIAL_ECHO_MERGE_DIAMETER}`)
+        break
+      }
+    }
+  }
+  if (!sources.some((source) => (
+    Math.round(source.coordinate.rawX / 100) === point.coordinate.x
+    && Math.round(source.coordinate.rawY / 100) === point.coordinate.y
+  ))) {
+    errors.push(`官方声骸点 ${point.id} 未使用真实来源点作为代表坐标`)
+  }
+  const expectedMembers = new Map<string, number>()
+  for (const source of sources) expectedMembers.set(source.echoId, (expectedMembers.get(source.echoId) ?? 0) + 1)
+  const actualMembers = new Map(point.members.map(({ echoId, count }) => [echoId, count]))
+  if (
+    expectedMembers.size !== actualMembers.size
+    || [...expectedMembers].some(([echoId, count]) => actualMembers.get(echoId) !== count)
+  ) {
+    errors.push(`官方声骸点 ${point.id} 的声骸数量未按每个来源点 1 只汇总`)
+  }
+}
+for (const id of officialById.keys()) {
+  if (!convertedOfficialIds.has(id)) errors.push(`官方来源 ${id} 未转换到点位库`)
 }
 for (const label of dataset.regionLabels) {
   mapZoomRangeSchema.parse(mapPointZoomRange({ category: 'region-name', location: label }))

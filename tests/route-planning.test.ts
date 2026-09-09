@@ -161,16 +161,14 @@ describe('route planning actions', () => {
     expect(store.routeError).toBe('')
     const route = store.route
     if (!route) throw new Error('长路启航之星路线未生成')
-    const first = route.points.findIndex(({ coordinate: { x, y } }) => x === -460 && y === -7940)
+    const first = route.points.findIndex(({ coordinate: { x, y } }) => x === -462 && y === -7939)
     expect(first).toBeGreaterThanOrEqual(0)
-    expect(route.points.slice(first, first + 3).map(({ coordinate }) => coordinate)).toEqual([
-      { x: -460, y: -7940, z: 0 },
+    expect(route.points.slice(first, first + 2).map(({ coordinate }) => coordinate)).toEqual([
       { x: -462, y: -7939, z: 0 },
       { x: -506, y: -8016, z: 0 },
     ])
     expect(route.points[first]?.teleportFrom?.coordinate).toEqual({ x: -333, y: -7803, z: 0 })
     expect(route.points[first + 1]?.teleportFrom).toBeUndefined()
-    expect(route.points[first + 2]?.teleportFrom).toBeUndefined()
     const input = planner.mock.calls[0]?.[0]
     if (!input) throw new Error('路线计算输入缺失')
     expect(route.points).toHaveLength(input.points.length)

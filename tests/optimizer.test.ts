@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks'
 import { describe, expect, it } from 'vitest'
 import { movementCost, optimizeRoute } from '../src/route/optimizer.ts'
 import type { RoutePoint } from '../src/domain/types.ts'
@@ -53,8 +54,8 @@ describe('route optimizer', () => {
     })).toBe(8)
   })
 
-  it('considers every eligible start point for heuristic routes', () => {
-    const points = Array.from({ length: 16 }, (_, index) => point(`target-${index}`, index, 0, 0))
+  it.each([16, 257])('considers every eligible start point for %i heuristic targets', (count) => {
+    const points = Array.from({ length: count }, (_, index) => point(`target-${index}`, index, 0, 0))
     const startPoints = [
       ...Array.from({ length: 32 }, (_, index) => point(`far-${index}`, 1_000 + index, 0, 0)),
       point('nearest', -1, 0, 0),
@@ -63,7 +64,7 @@ describe('route optimizer', () => {
 
     expect(result.algorithm).toBe('nearest-neighbor-2opt')
     expect(result.startPointId).toBe('nearest')
-    expect(result.totalCost).toBe(16)
+    expect(result.totalCost).toBe(count)
   })
 
   it.each([2, 16])('reconsiders fast travel at every stop for %i targets', (count) => {
@@ -134,6 +135,29 @@ describe('route optimizer', () => {
     expect(result.points[0]?.teleportFrom).toBeDefined()
     expect(result.points[1]?.teleportFrom).toBeUndefined()
   })
+
+  it('keeps a large route workload within the worker interaction budget', () => {
+    const points = Array.from({ length: 400 }, (_, index) => point(
+      `target-${index}`,
+      (index * 7919) % 10_000,
+      (index * 1543) % 10_000,
+      (index * 97) % 200,
+    ))
+    const startPoints = Array.from({ length: 296 }, (_, index) => point(
+      `start-${index}`,
+      (index * 3571) % 10_000,
+      (index * 6997) % 10_000,
+      (index * 43) % 200,
+    ))
+
+    const started = performance.now()
+    const result = optimizeRoute({ points, startPoints, connectors: [] })
+    const duration = performance.now() - started
+
+    expect(result.points).toHaveLength(points.length)
+    expect(new Set(result.points.map(({ id }) => id))).toEqual(new Set(points.map(({ id }) => id)))
+    expect(duration).toBeLessThan(5_000)
+  }, 35_000)
 
   it('finds the minimum directed travel cost among all small-route permutations', () => {
     const input = {

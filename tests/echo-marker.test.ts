@@ -325,7 +325,7 @@ describe('echo marker appearance', () => {
     grouped.dispose()
   })
 
-  it('composes visible cluster targets and preserves the individual point selection', () => {
+  it('uses a circular composition for neighboring locations and a diamond for one location', () => {
     let resolution = 4
     const points = createPointLayers()
     const { echoLocations } = libraryLocations({ version: 1, points: [mixedPoint('first'), mixedPoint('second')] }, referenceDataset)
@@ -336,21 +336,24 @@ describe('echo marker appearance', () => {
     points.update(echoLocations, [], [], referenceDataset.echoes)
     const render = points.layers[1]?.getStyleFunction()
     const mixed = render?.(cluster, resolution)
-    expect(Array.isArray(mixed) ? mixed[0]?.getImage()?.getScale() : undefined).toBe(54 / 44 / 2)
+    expect(Array.isArray(mixed) ? mixed[0]?.getImage() : undefined).toBeInstanceOf(Icon)
     expect(Array.isArray(mixed) && mixed.every((style) => style.getText() === null)).toBe(true)
+    expect(painted.at(-1)?.[0]?.vertices).toHaveLength(32)
+    expect(painted.at(-1)?.map((path) => path?.vertices[0]?.[1])).toEqual([1, 2.5, 4])
     expect(portraits.map(({ src }) => src).sort()).toEqual([smallEcho.iconUrl, eliteEcho.iconUrl].sort())
     expect(cluster.get('locations')).toEqual(echoLocations)
 
     points.update(echoLocations, [], [], referenceDataset.echoes, new Set([smallEcho.id]))
     const filtered = render?.(cluster, resolution)
-    expect(Array.isArray(filtered) ? filtered[0]?.getImage()?.getScale() : undefined).toBe(PORTRAIT_MARKER_SIZES[1] / 44 / 2)
     expect(Array.isArray(filtered) && filtered.every((style) => style.getText() === null)).toBe(true)
+    expect(painted.at(-1)?.[0]?.vertices).toHaveLength(32)
     expect(cluster.get('locations')).toEqual(echoLocations)
 
     cluster.set('features', cluster.get('features').slice(0, 1))
     const single = render?.(cluster, resolution)
     expect(Array.isArray(single) ? single.length : undefined).toBe(1)
     expect(Array.isArray(single) && single.every((style) => style.getText() === null)).toBe(true)
+    expect(painted.at(-1)?.[0]?.vertices).toHaveLength(4)
 
     resolution = 8
     expect(render?.(cluster, resolution)).toBeUndefined()

@@ -22,11 +22,84 @@ const MIN_ARROW_LEG_LENGTH = 24
 const MIN_ROUTE_SCALE = 0.4
 const TELEPORT_ARRIVAL_RADIUS = 5
 type Pixel = [number, number]
+type RouteVisit = RouteResult['points'][number]
+
+export interface RouteLegDetails {
+  debugId: string
+  type: 'walk' | 'teleport'
+  pointIndex: number
+  pointCount: number
+  routeAlgorithm: RouteResult['algorithm']
+  routeTotalCost: number
+  from: RoutePoint
+  to: RouteVisit
+  previous: RouteVisit | null
+  distance: number
+  previousDistance: number | null
+}
 
 interface VisibleIcon {
   center: Pixel
   outline: Pixel[]
   diamond: boolean
+}
+
+function coordinateDistance(left: RoutePoint, right: RoutePoint): number {
+  return Math.hypot(
+    left.coordinate.x - right.coordinate.x,
+    left.coordinate.y - right.coordinate.y,
+    left.coordinate.z - right.coordinate.z,
+  )
+}
+
+function squaredSegmentDistance(coordinate: number[], from: RoutePoint, to: RoutePoint): number {
+  const [x = 0, y = 0] = coordinate
+  const [fromX, fromY] = from.mapCoordinate
+  const [toX, toY] = to.mapCoordinate
+  const dx = toX - fromX
+  const dy = toY - fromY
+  const lengthSquared = dx * dx + dy * dy
+  if (lengthSquared === 0) return (x - fromX) ** 2 + (y - fromY) ** 2
+  const progress = Math.max(0, Math.min(1, ((x - fromX) * dx + (y - fromY) * dy) / lengthSquared))
+  const nearestX = fromX + progress * dx
+  const nearestY = fromY + progress * dy
+  return (x - nearestX) ** 2 + (y - nearestY) ** 2
+}
+
+function debugPoint(point: RoutePoint | null) {
+  return point ? {
+    id: point.id,
+    name: point.name,
+    echoId: point.echoId,
+    stateId: point.stateId,
+    levelId: point.levelId,
+    xyz: point.coordinate,
+    mapCoordinate: point.mapCoordinate,
+    isTeleportArrival: point.isTeleportArrival ?? false,
+    members: point.members ?? [],
+  } : null
+}
+
+export function routeLegDebugData(details: RouteLegDetails) {
+  return {
+    version: 1,
+    debugId: details.debugId,
+    route: {
+      algorithm: details.routeAlgorithm,
+      totalCost: details.routeTotalCost,
+      pointCount: details.pointCount,
+    },
+    leg: {
+      type: details.type,
+      fromRouteIndex: details.type === 'walk' ? details.pointIndex - 1 : null,
+      toRouteIndex: details.pointIndex,
+      xyzDistance: details.distance,
+      previousTargetXyzDistance: details.previousDistance,
+    },
+    from: debugPoint(details.from),
+    to: debugPoint(details.to),
+    previousTarget: debugPoint(details.previous),
+  }
 }
 
 function corners(icon: VisibleIcon | undefined, fallback: Pixel): Pixel[] {
@@ -130,7 +203,7 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
   // Keep masking on its own canvas so it cannot erase the map or point layers.
   const layer = new VectorLayer({ source: routeSource, style: null, zIndex: 60, className: 'route-lines', updateWhileAnimating: true, updateWhileInteracting: true })
   let routeExtent = createEmpty()
-  let legs: [RoutePoint, RoutePoint][] = []
+  let legs: RouteLegDetails[] = []
   let teleportArrivals: RoutePoint[] = []
 
   function renderRoute({ context, frameState, inversePixelTransform }: RenderEvent): void {
@@ -165,7 +238,9 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
           const [scaleX = 1, scaleY = 1] = icon.getScaleArray()
           const [x, y] = pixel(geometry.getCoordinates())
           const point = feature.get('mapPoint') as MapDisplayPoint | undefined
-          const shape = point?.category === 'echo' || Array.isArray(feature.get('locations')) ? 'diamond'
+          const locations = feature.get('locations')
+          const shape = point?.category === 'echo' ? 'diamond'
+            : Array.isArray(locations) ? locations.length > 1 ? 'circle' : 'diamond'
             : point?.category === 'navigation' && point.location.iconUrl ? bossMarkerShape(point.location) : null
           const sourceOutline: Pixel[] = shape
             ? portraitMarkerOutline(shape).map(([x, y]) => [x / PORTRAIT_MARKER_CANVAS_SIZE * width, y / PORTRAIT_MARKER_CANVAS_SIZE * height])
@@ -173,7 +248,9 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
           const outline: Pixel[] = sourceOutline.map(([offsetX, offsetY]) => [x + (offsetX - anchorX) * scaleX, y + (offsetY - anchorY) * scaleY])
           const visibleIcon: VisibleIcon = {
             // A convex combination stays inside even when the artwork is off-center.
-            center: [outline.reduce((sum, [x]) => sum + x, 0) / outline.length, outline.reduce((sum, [, y]) => sum + y, 0) / outline.length],
+            center: shape === 'circle'
+              ? [x + (width / 2 - anchorX) * scaleX, y + (height / 2 - anchorY) * scaleY]
+              : [outline.reduce((sum, [x]) => sum + x, 0) / outline.length, outline.reduce((sum, [, y]) => sum + y, 0) / outline.length],
             outline,
             diamond: shape === 'diamond',
           }
@@ -192,7 +269,7 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     context.lineCap = 'round'
     context.setLineDash([9 * scale, 7 * scale])
     const arrows: [Pixel, Pixel, Pixel][] = []
-    for (const [from, to] of legs) {
+    for (const { from, to } of legs) {
       const endpoints = linkEndpoints(pixel([...from.mapCoordinate]), pixel([...to.mapCoordinate]), from.isTeleportArrival ? undefined : iconsByPoint.get(from.id), iconsByPoint.get(to.id), lineWidth)
       if (!endpoints) continue
       context.beginPath()
@@ -260,8 +337,21 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     let coordinates: [number, number][] = []
     const arrivalIds = new Set<string>()
     for (const [index, point] of route.points.entries()) {
-      const from = point.teleportFrom ?? route.points[index - 1]
-      if (from) legs.push([from, point])
+      const previous = route.points[index - 1] ?? null
+      const from = point.teleportFrom ?? previous
+      if (from) legs.push({
+        debugId: `route-leg:${point.teleportFrom ? 'teleport' : 'walk'}:${from.id}->${point.id}`,
+        type: point.teleportFrom ? 'teleport' : 'walk',
+        pointIndex: index,
+        pointCount: route.points.length,
+        routeAlgorithm: route.algorithm,
+        routeTotalCost: route.totalCost,
+        from,
+        to: point,
+        previous,
+        distance: coordinateDistance(from, point),
+        previousDistance: point.teleportFrom && previous ? coordinateDistance(previous, point) : null,
+      })
       for (const candidate of [point, point.teleportFrom]) {
         if (candidate?.isTeleportArrival && !arrivalIds.has(candidate.id)) {
           arrivalIds.add(candidate.id)
@@ -283,6 +373,21 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     }
   }
 
+  function hitTest(coordinate: number[], resolution: number, hitTolerance = 8): RouteLegDetails | null {
+    if (!Number.isFinite(resolution) || resolution <= 0) return null
+    const maximumSquaredDistance = (resolution * hitTolerance) ** 2
+    let nearestSquaredDistance = maximumSquaredDistance
+    let nearest: RouteLegDetails | null = null
+    for (const leg of legs) {
+      const distance = squaredSegmentDistance(coordinate, leg.from, leg.to)
+      if (distance <= nearestSquaredDistance) {
+        nearestSquaredDistance = distance
+        nearest = leg
+      }
+    }
+    return nearest
+  }
+
   function dispose(): void {
     layer.un('postrender', renderRoute)
     outlineCache.dispose()
@@ -291,5 +396,5 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     layer.dispose()
   }
 
-  return { layer, update, getExtent: () => routeExtent, dispose }
+  return { layer, update, hitTest, getExtent: () => routeExtent, dispose }
 }

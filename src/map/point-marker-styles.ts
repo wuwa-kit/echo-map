@@ -45,8 +45,11 @@ export function createPointMarkerStyles(onChange: () => void, options: {
     }) ?? undefined
   }
 
-  function echoGroup(locations: readonly EchoMapLocation[]): Style[] {
-    return echoGroupStyles.get(locations.flatMap(visibleMembers), echoDefinitions, { showText: false }).styles
+  function echoCluster(locations: readonly EchoMapLocation[]): Style[] {
+    return echoGroupStyles.get(locations.flatMap(visibleMembers), echoDefinitions, {
+      shape: 'circle',
+      showText: false,
+    }).styles
   }
 
   function navigation(location: NavigationPoint): Style[] {
@@ -89,7 +92,7 @@ export function createPointMarkerStyles(onChange: () => void, options: {
   return {
     updateEchoes,
     echo,
-    echoGroup,
+    echoCluster,
     navigation,
     dispose,
     ready: async () => {

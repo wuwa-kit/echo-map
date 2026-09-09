@@ -41,6 +41,7 @@ const candidates = computed(() => pointCandidates.value.map((point) => ({ point,
       </div>
       <div v-if="selectedNavigationPoint" class="text-[#cde8dc]">{{ selectedNavigationPoint.typeName }} · {{ MODE_NAMES[selectedNavigationPoint.mode] }}</div>
       <div v-if="selectedEchoLocation" class="mt-14px font-mono text-12px text-[#a0baac]">{{ selectedEchoLocation.gameCoordinate ? `XYZ ${Object.values(selectedEchoLocation.gameCoordinate).join(', ')}` : '官方测试点，未录入 XYZ' }}</div>
+      <div v-if="selectedNavigationPoint" class="mt-14px font-mono text-12px text-[#a0baac]">{{ selectedNavigationPoint.gameCoordinate ? `XYZ ${Object.values(selectedNavigationPoint.gameCoordinate).join(', ')}` : '未录入 XYZ' }}</div>
       <div v-if="selectedNavigationPoint?.mode === 'fast-travel' && selectedNavigationPoint.teleportCoordinate" class="mt-6px font-mono text-12px text-[#78dcb9]">传送落点 {{ Object.values(selectedNavigationPoint.teleportCoordinate).join(', ') }}</div>
       <div v-if="store.supportsGravity" class="mt-8px text-12px text-[#a0baac]">{{ gravityName(location.gravityType) }}</div>
       <div v-if="selectedEchoLocation && selectedEchoLocation.quality !== 'official-provisional' && 'note' in selectedEchoLocation" class="mt-8px whitespace-pre-wrap text-12px text-[#9cb3a7]">{{ selectedEchoLocation.note }}</div>

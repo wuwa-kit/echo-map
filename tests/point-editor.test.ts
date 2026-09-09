@@ -95,7 +95,7 @@ describe('point editor actions', () => {
   })
 
   it('promotes an official candidate into the manual file at observed XYZ and replaces its display', async () => {
-    const official = { ...mixedPoint('official:one'), status: 'imported' as const, officialIds: ['one'], coordinate: { x: -497, y: 449, z: 0 } }
+    const official = { ...mixedPoint('official:one'), status: 'imported' as const, officialIds: ['one', 'two'], coordinate: { x: -497, y: 449, z: 0 } }
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset: referenceDataset, officialLibrary: { version: 1, points: [official] } })
     const store = usePointEditorStore()
     await store.load()
@@ -107,7 +107,7 @@ describe('point editor actions', () => {
     await store.saveDraft('verified')
     expect(disk.points).toHaveLength(1)
     expect(disk.points[0]?.coordinate).toEqual({ x: -496, y: 450, z: 120 })
-    expect(disk.points[0]?.replacesOfficialIds).toEqual(['official:one'])
+    expect(disk.points[0]?.replacesOfficialIds).toEqual(['one', 'two'])
     expect(store.allPoints).toHaveLength(1)
     expect(store.officialLibrary.points[0]).toEqual(official)
     store.setOfficialVisible(false)

@@ -95,7 +95,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (!canSwitch()) return
     const point = allPoints.value.find((point) => point.id === id)
     if (point?.status === 'imported') {
-      openDraft({ ...point, id: crypto.randomUUID(), status: 'draft', replacesOfficialIds: [point.id], coordinate: { ...point.coordinate, z: null } })
+      openDraft({ ...point, id: crypto.randomUUID(), status: 'draft', replacesOfficialIds: point.officialIds ?? [point.id], coordinate: { ...point.coordinate, z: null } })
       notice.value = '正在补录官方点，保存后写入人工文件。请填写实测 XYZ。'
     } else if (point) openDraft(point)
     error.value = ''

@@ -13,6 +13,7 @@ import { defaults as defaultInteractions } from 'ol/interaction/defaults.js'
 import type MapBrowserEvent from 'ol/MapBrowserEvent.js'
 import { createOfficialBaseLayers } from '../map/official-base-layers.ts'
 import { hasGravityMap, matchesGravity } from '../domain/gravity.ts'
+import { isOfficialPointReplaced } from '../domain/point-matching.ts'
 import { authoredPointMapDisplay, editorLibraryLocations } from '../domain/point-library.ts'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
@@ -171,7 +172,7 @@ function matchesContext(point: PointLocationBase): boolean {
 
 function rebuildLibraryPoints(): void {
   const replaced = new Set([props.draft.id, ...(props.draft.officialIds ?? []), ...(props.draft.replacesOfficialIds ?? [])])
-  const locations = editorLibraryLocations(props.points.filter(({ id }) => !replaced.has(id)), props.dataset)
+  const locations = editorLibraryLocations(props.points.filter((point) => !isOfficialPointReplaced(point, replaced)), props.dataset)
   const levelId = props.draft.levelId
   const echoLocations = locations.echoLocations.filter((point) => matchesContext(point)
     && (levelId === null || point.levelId === null || point.levelId === levelId))

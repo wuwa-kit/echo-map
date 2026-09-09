@@ -11,7 +11,7 @@
 - 声骸与合鸣效果：库街区 Wiki 公开目录接口。
 - 地图瓦片、分层、图标和临时 XY：库街区官方地图公开静态资源。
 - 人工点位与精确 XYZ：`data/manual/points.json`，由录入系统维护。
-- 官方点位：`data/generated/official-points.json`，Z=0，占位数量为每种 1 只。原始点位与图标 ID 引用由地图同步写入紧凑的 `data/generated/official-locations.json`，与官方转换点位合并生成 `public/data/official-points.json`。
+- 官方点位：`data/generated/official-points.json`，Z=0，每个原始官方标记的占位数量为 1 只；相邻标记合并后按声骸种类汇总。原始点位与图标 ID 引用由地图同步写入紧凑的 `data/generated/official-locations.json`，与官方转换点位合并生成 `public/data/official-points.json`。
 - 地图类型别名：`data/config/map-echo-aliases.json`，由人工审阅。
 - 定位点收录和传送能力：`data/config/map-navigation-types.json`，由人工审阅。
 - 重复定位点图标的分组名称：`data/config/map-navigation-icon-groups.json`，由人工审阅。
@@ -43,7 +43,7 @@
 
 定位点的 `coordinate` 表示图标点位 XYZ，只有 `mode: "fast-travel"` 可以携带可选的 `teleportCoordinate`。后者表示角色传送后的实际落点 XYZ，不改变地图图标位置；路线起点使用 `teleportCoordinate ?? coordinate`。官方转换不会把图标坐标重复写成落点，未实测时保持字段缺省。
 
-官方点的 XY 取官方坐标除以 100 后四舍五入，Z 固定为 0，状态为 `imported`，并保留原始 ID。每种声骸初始数量为 1，清单默认未补齐。只有原始 XY、地图、楼层完全相同的官方声骸记录会组合为一处，相邻记录保持独立。
+官方点的 XY 取官方坐标除以 100 后四舍五入，Z 固定为 0，状态为 `imported`，并保留全部原始 ID。声骸点的大区根据同地图最近的有效二级或三级地区标签纠正，原始来源记录保持不变。官方声骸记录再按地图、大区、楼层和重力状态分组，使用未取整的原始 XY 进行直径上限为 15 的确定性合并。同一组内任意两个来源点的距离都不得超过 15，避免通过中间点链式合并远处点位。输出坐标选择最靠近组中心的真实来源点，不创建虚构坐标。每个原始官方标记按 1 只计数，合并后的同种声骸数量为其来源标记数，清单默认未补齐。
 
 地图默认同时显示两份数据。“人工点位”和“官方点位”使用独立筛选按钮：均未选或均选时显示两份数据，只选一项时仅显示对应来源；URL 通过 `sources` 保存非默认的按钮组合。录入页另有“显示官方点位”开关。
 

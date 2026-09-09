@@ -2,7 +2,7 @@ import Icon from 'ol/style/Icon.js'
 import Style from 'ol/style/Style.js'
 import type { NavigationPoint } from '../domain/types.ts'
 
-type PortraitMarkerShape = 'diamond' | 'cut-diamond'
+type PortraitMarkerShape = 'circle' | 'diamond' | 'cut-diamond'
 
 export const PORTRAIT_MARKER_SIZES = { 1: 28, 3: 31, 4: 44 }
 
@@ -12,7 +12,6 @@ const CANVAS_SIZE = PORTRAIT_MARKER_CANVAS_SIZE
 const CENTER = CANVAS_SIZE / 2
 const OUTER_BORDER = 1.5
 const WHITE_BORDER = 2.5
-const PORTRAIT_INSET = OUTER_BORDER + WHITE_BORDER + 1
 const CUT_HALF_WIDTH = 5
 
 export function bossMarkerShape(point: Pick<NavigationPoint, 'kind' | 'typeName'>): PortraitMarkerShape | null {
@@ -23,6 +22,13 @@ export function bossMarkerShape(point: Pick<NavigationPoint, 'kind' | 'typeName'
 }
 
 export function portraitMarkerOutline(shape: PortraitMarkerShape, inset = 0): [number, number][] {
+  if (shape === 'circle') {
+    const radius = MARKER_SIZE / 2 - inset
+    return Array.from({ length: 32 }, (_, index) => {
+      const angle = -Math.PI / 2 + index * Math.PI / 16
+      return [CENTER + Math.cos(angle) * radius, CENTER + Math.sin(angle) * radius]
+    })
+  }
   const radius = MARKER_SIZE / 2 - inset * Math.SQRT2
   if (shape === 'diamond') {
     return [[CENTER, CENTER - radius], [CENTER + radius, CENTER], [CENTER, CENTER + radius], [CENTER - radius, CENTER]]
@@ -53,20 +59,22 @@ export function drawPortraitMarker(
   portrait?: HTMLImageElement,
   drawComposition?: (context: CanvasRenderingContext2D, contentSize: number, center: number) => void,
 ): void {
+  const whiteBorder = shape === 'circle' ? 1.5 : WHITE_BORDER
+  const portraitInset = OUTER_BORDER + whiteBorder + 1
   context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
   context.fillStyle = '#000'
   context.fill(markerPath(shape, 0))
   context.fillStyle = '#fff'
   context.fill(markerPath(shape, OUTER_BORDER))
   context.fillStyle = '#000'
-  context.fill(markerPath(shape, OUTER_BORDER + WHITE_BORDER))
+  context.fill(markerPath(shape, OUTER_BORDER + whiteBorder))
   if (!drawComposition && (!portrait || portrait.naturalWidth === 0 || portrait.naturalHeight === 0)) {
     return
   }
 
-  const contentSize = MARKER_SIZE - 2 * PORTRAIT_INSET * (shape === 'diamond' ? Math.SQRT2 : 1)
+  const contentSize = MARKER_SIZE - 2 * portraitInset * (shape === 'diamond' ? Math.SQRT2 : 1)
   context.save()
-  context.clip(markerPath(shape, PORTRAIT_INSET))
+  context.clip(markerPath(shape, portraitInset))
   if (drawComposition) {
     drawComposition(context, contentSize, CENTER)
   } else if (portrait) {

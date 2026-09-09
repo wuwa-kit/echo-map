@@ -19,10 +19,12 @@ import { createPointMarkerStyles } from './point-marker-styles.ts'
 
 class InteractionCluster extends Cluster {
   private readonly isMoving: () => boolean
+  private readonly interactionDistance: number
 
-  constructor(source: VectorSource, isMoving: () => boolean) {
-    super({ source, distance: 64, minDistance: 32 })
+  constructor(source: VectorSource, isMoving: () => boolean, distance: number, minDistance: number) {
+    super({ source, distance, minDistance })
     this.isMoving = isMoving
+    this.interactionDistance = distance
   }
 
   override loadFeatures(extent: Extent, resolution: number, projection: Projection): void {
@@ -30,7 +32,9 @@ class InteractionCluster extends Cluster {
     super.loadFeatures(extent, this.isMoving() ? this.resolution ?? resolution : resolution, projection)
   }
 
-  finishInteraction(extent: Extent, resolution: number, projection: Projection): void {
+  finishInteraction(extent: Extent, resolution: number, projection: Projection, separatePoints: boolean): void {
+    const distance = separatePoints ? 0 : this.interactionDistance
+    if (this.getDistance() !== distance) this.setDistance(distance)
     super.loadFeatures(extent, resolution, projection)
   }
 }
@@ -49,6 +53,8 @@ const FLOOR_BADGE_LAYOUT = {
 }
 
 const NAVIGATION_MARKER_SIZE = 36
+const ECHO_CLUSTER_DISTANCE = 32
+const EXPORT_MARKER_SCALE = 0.6
 
 export function mapFeaturePointIds(feature: FeatureLike): string[] | undefined {
   const locations = feature.get('locations') as EchoMapLocation[] | undefined
@@ -68,19 +74,17 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   onStyleChange?: () => void
 } = {}) {
   const echoSource = new VectorSource()
-  const clusters = options.echoGrouping === 'individual' ? null : new InteractionCluster(echoSource, isMoving)
+  const exportMarkerScale = options.exportMode ? EXPORT_MARKER_SCALE : 1
+  const clusterDistance = ECHO_CLUSTER_DISTANCE * exportMarkerScale
+  const clusterMinDistance = options.exportMode ? 0 : ECHO_CLUSTER_DISTANCE
+  const clusters = options.echoGrouping === 'individual'
+    ? null : new InteractionCluster(echoSource, isMoving, clusterDistance, clusterMinDistance)
   const navigationSource = new VectorSource()
   const backgroundEchoSource = new VectorSource()
-  const backgroundClusters = options.echoGrouping === 'individual' ? null : new InteractionCluster(backgroundEchoSource, isMoving)
-  if (options.exportMode && clusters && backgroundClusters) {
-    clusters.setDistance(18)
-    clusters.setMinDistance(0)
-    backgroundClusters.setDistance(18)
-    backgroundClusters.setMinDistance(0)
-  }
+  const backgroundClusters = options.echoGrouping === 'individual'
+    ? null : new InteractionCluster(backgroundEchoSource, isMoving, clusterDistance, clusterMinDistance)
   const backgroundNavigationSource = new VectorSource()
   const labelSource = new VectorSource()
-  const exportMarkerScale = options.exportMode ? 0.6 : 1
   const badge = FLOOR_BADGE_GEOMETRY
   const floorBadgeStyleCache = new globalThis.Map<string, Style[]>()
   // The stem visible above the official badge belongs to its underlying marker, not to the badge itself.
@@ -225,7 +229,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     if (feature instanceof Feature) feature.set('locations', locations, true)
     if (locations.length === 0) return undefined
     const pointStyles = locations.length === 1 ? markerStyles.echo(locations[0] as EchoMapLocation)
-      : markerStyles.echoGroup(locations)
+      : markerStyles.echoCluster(locations)
     resizeExportMarkers(pointStyles)
     const styles = pointStyles && selectedLevelId === null && locations.some(({ levelId }) => levelId !== null)
       ? [...pointStyles, ...floorBadgeStylesFor(renderedMarkerSize(pointStyles))] : pointStyles
@@ -333,9 +337,9 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     ready: markerStyles.ready,
     styleFor: (point: MapDisplayPoint) => point.category === 'echo' ? markerStyles.echo(point.location)
       : point.category === 'navigation' ? markerStyles.navigation(point.location) : labelStyle(point.location),
-    finishInteraction: (extent: Extent, resolution: number, projection: Projection) => {
-      clusters?.finishInteraction(extent, resolution, projection)
-      backgroundClusters?.finishInteraction(extent, resolution, projection)
+    finishInteraction: (extent: Extent, resolution: number, projection: Projection, separatePoints = false) => {
+      clusters?.finishInteraction(extent, resolution, projection, separatePoints)
+      backgroundClusters?.finishInteraction(extent, resolution, projection, separatePoints)
     },
   }
 }

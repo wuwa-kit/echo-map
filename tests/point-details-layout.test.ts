@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 
 const pointDetailsSourceUrl = new URL('../src/components/PointDetails.vue', import.meta.url)
 const pointEditorSourceUrl = new URL('../src/views/PointEditorView.vue', import.meta.url)
+const routeLegDetailsSourceUrl = new URL('../src/components/RouteLegDetails.vue', import.meta.url)
+const mapCanvasSourceUrl = new URL('../src/components/MapCanvas.vue', import.meta.url)
 
 describe('point detail hints', () => {
   it('omits provisional-height and inferred-arrival notices', async () => {
@@ -18,9 +20,27 @@ describe('point detail hints', () => {
     expect(detailsSource).not.toContain("'点位详情'")
     expect(detailsSource).not.toContain('图标 XYZ')
     expect(detailsSource).not.toContain('图标点位未录入 XYZ')
+    expect(detailsSource).toContain('selectedNavigationPoint.gameCoordinate')
+    expect(detailsSource).toContain("`XYZ ${Object.values(selectedNavigationPoint.gameCoordinate).join(', ')}`")
     expect(detailsSource).toContain('>×</button>')
     expect(editorSource).not.toContain('官方 · Z=0')
     expect(editorSource).not.toContain('Z=0 不代表实际高度')
     expect(editorSource).not.toContain('实际落点留空时按图标点位规划')
+  })
+
+  it('shows copyable route leg identifiers and XYZ after clicking a line', async () => {
+    const [detailsSource, mapSource] = await Promise.all([
+      readFile(routeLegDetailsSourceUrl, 'utf8'),
+      readFile(mapCanvasSourceUrl, 'utf8'),
+    ])
+
+    expect(mapSource).toContain('routeLayer.hitTest(event.coordinate, resolution)')
+    expect(mapSource).toContain('<RouteLegDetailsPopup')
+    expect(detailsSource).toContain('details.debugId')
+    expect(detailsSource).toContain('coordinateText(details.from)')
+    expect(detailsSource).toContain('coordinateText(details.to)')
+    expect(detailsSource).toContain('传送前目标')
+    expect(detailsSource).toContain('复制调试数据')
+    expect(detailsSource).toContain('routeLegDebugData(props.details)')
   })
 })

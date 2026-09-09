@@ -10,7 +10,7 @@ export function describeEchoPoint(location: EchoMapLocation, echoes: readonly Ec
       echoId: member.echoId,
       name: echo?.name ?? member.echoId,
       iconUrl: echo?.iconUrl ?? '',
-      count: official ? null : member.count,
+      count: member.count ?? (official ? 1 : null),
     }
   })
   const total = members.some(({ count }) => count === null)

@@ -8,7 +8,7 @@ import VectorSource from 'ol/source/Vector.js'
 import CircleStyle from 'ol/style/Circle.js'
 import Icon from 'ol/style/Icon.js'
 import Style from 'ol/style/Style.js'
-import { createRouteLayer } from '../src/map/route-layer.ts'
+import { createRouteLayer, routeLegDebugData } from '../src/map/route-layer.ts'
 import type { RoutePoint } from '../src/domain/types.ts'
 
 afterEach(() => vi.unstubAllGlobals())
@@ -90,6 +90,54 @@ describe('route map lines', () => {
 
       routeLayer.update(null)
       expect(routeLayer.layer.getSource()?.getFeatures()).toEqual([])
+    } finally {
+      routeLayer.dispose()
+    }
+  })
+
+  it('hits an individual route leg and exposes copyable identifiers and comparison distances', () => {
+    const routeLayer = createRouteLayer()
+    try {
+      routeLayer.update({
+        points: [
+          { ...point('first', 10), teleportFrom: point('west-beacon', 0) },
+          point('second', 20),
+          { ...point('third', 110), teleportFrom: point('east-beacon', 100) },
+        ],
+        totalCost: 30,
+        startPointId: 'west-beacon',
+        algorithm: 'nearest-neighbor-2opt',
+      })
+
+      const walking = routeLayer.hitTest([15, 1], 1, 2)
+      expect(walking).toMatchObject({
+        debugId: 'route-leg:walk:first->second',
+        type: 'walk',
+        pointIndex: 1,
+        pointCount: 3,
+        distance: 10,
+        previousDistance: null,
+      })
+      if (!walking) throw new Error('没有命中步行线路')
+      expect(routeLegDebugData(walking)).toMatchObject({
+        route: { algorithm: 'nearest-neighbor-2opt', totalCost: 30, pointCount: 3 },
+        leg: { type: 'walk', fromRouteIndex: 0, toRouteIndex: 1, xyzDistance: 10 },
+        from: { id: 'first', xyz: { x: 10, y: 0, z: 0 } },
+        to: { id: 'second', xyz: { x: 20, y: 0, z: 0 } },
+      })
+
+      const teleport = routeLayer.hitTest([105, 1], 1, 2)
+      expect(teleport).toMatchObject({
+        debugId: 'route-leg:teleport:east-beacon->third',
+        type: 'teleport',
+        pointIndex: 2,
+        distance: 10,
+        previousDistance: 90,
+        previous: { id: 'second' },
+      })
+      expect(routeLayer.hitTest([50, 20], 1, 2)).toBeNull()
+      routeLayer.update(null)
+      expect(routeLayer.hitTest([15, 0], 1)).toBeNull()
     } finally {
       routeLayer.dispose()
     }

@@ -37,13 +37,16 @@ export function createEchoMarkerStyles(onChange: () => void, pixelRatio = window
     return image
   }
 
-  function get(members: readonly CompositionMember[], echoes: readonly EchoDefinition[], { showText = false }: { showText?: boolean } = {}) {
+  function get(members: readonly CompositionMember[], echoes: readonly EchoDefinition[], {
+    showText = false,
+    shape = 'diamond',
+  }: { showText?: boolean; shape?: 'circle' | 'diamond' } = {}) {
     if (definitionSource !== echoes) {
       definitionSource = echoes
       definitions = new Map(echoes.map((echo) => [echo.id, echo]))
     }
     const composition = echoComposition(members, echoes, definitions)
-    const key = JSON.stringify([showText, composition.types.map(({ id, iconUrl, cost }) => [id, iconUrl, cost])])
+    const key = JSON.stringify([showText, shape, composition.types.map(({ id, iconUrl, cost }) => [id, iconUrl, cost])])
     const old = cache.get(key)
     if (old) return old
     const count = composition.types.length
@@ -60,10 +63,10 @@ export function createEchoMarkerStyles(onChange: () => void, pixelRatio = window
       context.setTransform(ratio, 0, 0, ratio, 0, 0)
       context.imageSmoothingQuality = 'high'
       if (single) {
-        drawPortraitMarker(context, 'diamond', portraits[0]?.image)
+        drawPortraitMarker(context, shape, portraits[0]?.image)
         return
       }
-      drawPortraitMarker(context, 'diamond', undefined, (context, contentSize, center) => {
+      drawPortraitMarker(context, shape, undefined, (context, contentSize, center) => {
         const cellSize = contentSize * (count === 2 ? 0.5 : 0.42)
         const offset = contentSize / 4
         const positions = count === 2 ? [[-offset, 0], [offset, 0]]

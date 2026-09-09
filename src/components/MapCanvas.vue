@@ -14,10 +14,12 @@ import { createOfficialBaseLayers } from '../map/official-base-layers.ts'
 import { createPointLayers, mapFeaturesPointIds } from '../map/point-layers.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
+import type { RouteLegDetails } from '../map/route-layer.ts'
 import { useMapViewport } from '../map/useMapViewport.ts'
 import { floorExtent } from '../map/floor-coverage.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
 import PointDetails from './PointDetails.vue'
+import RouteLegDetailsPopup from './RouteLegDetails.vue'
 import FloorSwitcher from './FloorSwitcher.vue'
 import MapCoordinateDisplay from './MapCoordinateDisplay.vue'
 
@@ -56,6 +58,7 @@ const floorDockStyle = computed(() => ({
   '--floor-dock-right': `${props.padding[1]}px`,
 }))
 const lastGameCoordinate = shallowRef<[number, number]>([0, 0])
+const selectedRouteLeg = shallowRef<RouteLegDetails | null>(null)
 const pointerCoordinateText = computed(() => {
   const [x, y] = lastGameCoordinate.value
   return `${x} · ${y}`
@@ -96,7 +99,10 @@ function updateFloorViewport(): void {
 function onMoveEnd(): void {
   const view = map?.getView()
   const resolution = view?.getResolution()
-  if (view && resolution !== undefined) points.finishInteraction(view.calculateExtent(map?.getSize()), resolution, projection)
+  if (view && resolution !== undefined) {
+    const atMaximumZoom = resolution <= view.getMinResolution() * 1.000001
+    points.finishInteraction(view.calculateExtent(map?.getSize()), resolution, projection, atMaximumZoom)
+  }
   viewport.publish()
   updateFloorViewport()
   if (map) floors.updateViewport(map.getView().calculateExtent(map.getSize()))
@@ -108,6 +114,7 @@ function rebuildPointLayers(): void {
 
 function rebuildRoute(): void {
   routeLayer.update(route.value)
+  selectedRouteLeg.value = null
 }
 
 function rebuildFloorLayers(): void {
@@ -165,8 +172,15 @@ function applyMapNavigation(): void {
 function selectMapPoint(event: MapBrowserEvent): void {
   updatePointerCoordinate(event)
   const found = map ? mapFeaturesPointIds(map.getFeaturesAtPixel(event.pixel, { hitTolerance: 6 })) : []
-  if (found.length > 1) store.selectPointCandidates(found)
-  else store.selectPoint(found[0] ?? null)
+  if (found.length > 0) {
+    selectedRouteLeg.value = null
+    if (found.length > 1) store.selectPointCandidates(found)
+    else store.selectPoint(found[0] ?? null)
+    return
+  }
+  const resolution = map?.getView().getResolution()
+  selectedRouteLeg.value = resolution === undefined ? null : routeLayer.hitTest(event.coordinate, resolution)
+  store.selectPoint(null)
 }
 
 onMounted(() => {
@@ -233,6 +247,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="relative h-full w-full min-h-0 min-w-0">
     <PointDetails />
+    <RouteLegDetailsPopup v-if="selectedRouteLeg" :details="selectedRouteLeg" @close="selectedRouteLeg = null" />
     <div v-if="baseTileError" class="absolute left-1/2 top-12px z-70 flex max-w-[90%] translate-x--1/2 items-center gap-10px rounded-8px bg-[#35261eed] px-12px py-8px text-12px text-[#f1d7b4]">
       <span>{{ selectedGravity === 2 ? '反重力' : '' }}底图部分加载失败</span>
       <button type="button" class="min-h-32px shrink-0 rounded-5px border border-[#a27f58] bg-transparent px-8px text-inherit" @click="store.retryBaseTiles">重试</button>
