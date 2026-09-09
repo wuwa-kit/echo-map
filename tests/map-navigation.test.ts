@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { normalizeMapNavigation, flattenRegions } from '../scripts/lib/map/normalize.ts'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
-import { mapNavigationOptions } from '../src/components/map-navigation-options.ts'
+import { mapNavigationOptions, mapNavigationSectionAtCenter } from '../src/components/map-navigation-options.ts'
 import { cascaderColumns, resolveCascaderChoice } from '../src/components/base/cascader.ts'
 
 const dataset = await readMapDataset()
@@ -17,6 +17,20 @@ const destination = (name: string) => {
 beforeEach(() => setActivePinia(createPinia()))
 
 describe('map navigation destinations', () => {
+  it('resolves the second Popover level represented by the canvas center', () => {
+    for (const [name, sectionName] of [
+      ['蚀刻平原', '拉海洛'],
+      ['冰原运输港', '冰原地表'],
+      ['今州城', '今州'],
+      ['玄方城', '梦州'],
+      ['黑海岸群岛', '黑海岸群岛'],
+    ] as const) {
+      const region = destination(name)
+      expect(mapNavigationSectionAtCenter(dataset, region.stateId, [region.coordinate.mapX, region.coordinate.mapY])).toBe(sectionName)
+    }
+    expect(mapNavigationSectionAtCenter(dataset, -1, [0, 0])).toBeNull()
+  })
+
   it('preserves official group order and distinct group/map IDs with a shared label destination', () => {
     const countries = [{
       countryId: 4, stateId: 8, name: '罗伊冰原', mapStateId: '5,6,7', mapStateName: '拉海洛,冰原地表,黯原',

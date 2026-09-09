@@ -58,8 +58,7 @@ describe('authored point library', () => {
     store.setPointLibrary(library)
     expect(store.routeEligibleNavigationPoints).toHaveLength(1)
     expect(createRoutePlanInput(referenceDataset, [], store.routeEligibleNavigationPoints, 8).startPoints[0]?.coordinate).toEqual(teleportCoordinate)
-    store.setPointGroupVisible('manual:beacon', false)
-    expect(store.visibleNavigationPoints).toHaveLength(0)
+    expect(store.visibleNavigationPoints).toHaveLength(1)
     expect(store.routeEligibleNavigationPoints).toHaveLength(1)
   })
 
@@ -115,6 +114,6 @@ describe('authored point library', () => {
     expect(parseExplorerQueryValues({ sources: 'manual' }).pointSourceFilters).toEqual(['manual'])
     expect(parseExplorerQueryValues({ sources: 'official,manual' }).pointSourceFilters).toEqual(['manual', 'official'])
     expect(parseExplorerQueryValues({ sources: 'unknown' }).pointSourceFilters).toBeUndefined()
-    expect(createExplorerQueryValues({ stateId: 8, countryId: null, levelId: null, pointSourceFilters: [], echoIds: [], sonataFilterIds: [], echoCostFilters: [], hiddenPointGroupIds: [], showProvisional: true, controlPanelCollapsed: false, mobileSheet: null, viewport: null }).sources).toBeUndefined()
+    expect(createExplorerQueryValues({ stateId: 8, countryId: null, levelId: null, pointSourceFilters: [], echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true, controlPanelCollapsed: false, mobileSheet: null, viewport: null }).sources).toBeUndefined()
   })
 })

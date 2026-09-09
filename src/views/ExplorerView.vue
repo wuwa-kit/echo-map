@@ -3,9 +3,9 @@ import { computed, onBeforeUnmount, shallowRef, useTemplateRef, watch } from 'vu
 import { storeToRefs } from 'pinia'
 import { useAsyncState, useEventListener, useMediaQuery, useResizeObserver, useWindowSize } from '@vueuse/core'
 import ControlPanel from '../components/ControlPanel.vue'
+import GravitySwitcher from '../components/GravitySwitcher.vue'
 import MapCanvas from '../components/MapCanvas.vue'
 import MapNavigationCascader from '../components/MapNavigationCascader.vue'
-import RoutePanel from '../components/RoutePanel.vue'
 import RouteExportDialog from '../components/RouteExportDialog.vue'
 import WuSvg from '../components/base/WuSvg.vue'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
@@ -18,7 +18,7 @@ import type { ExplorerUrlSnapshot, MobileSheet } from '../url/explorer-url.ts'
 
 const store = useExplorerStore()
 onBeforeUnmount(store.clearRoute)
-const { controlPanelCollapsed, dataset, mobileSheet, route, planning, selectedEchoIds } = storeToRefs(store)
+const { controlPanelCollapsed, dataset, mobileSheet, planning, selectedEchoIds } = storeToRefs(store)
 const compact = useMediaQuery('(max-width: 1023px)')
 const shortLandscape = useMediaQuery('(min-width: 500px) and (max-height: 500px)')
 const { height: viewportHeight } = useWindowSize({ type: 'visual' })
@@ -28,12 +28,10 @@ useEventListener(window.visualViewport, ['resize', 'scroll'], () => {
 })
 const stage = useTemplateRef<HTMLElement>('stageRef')
 const controlDock = useTemplateRef<HTMLElement>('controlDockRef')
-const routeDock = useTemplateRef<HTMLElement>('routeDockRef')
 const mobileBar = useTemplateRef<HTMLElement>('mobileBarRef')
 const mapPadding = shallowRef<MapPadding>([16, 16, 16, 16])
 const mapDockBottom = shallowRef(8)
 const controlVisible = computed(() => compact.value ? mobileSheet.value === 'filters' : !controlPanelCollapsed.value)
-const routeVisible = computed(() => !compact.value || mobileSheet.value === 'route')
 const compactPanelClass = computed(() => shortLandscape.value
   ? 'bottom-[var(--mobile-bar-height)] right-[max(12px,env(safe-area-inset-right))] top-[max(12px,env(safe-area-inset-top))] w-[min(360px,calc(100%_-_24px))] rounded-14px'
   : 'bottom-[var(--mobile-bar-height)] inset-x-0 max-h-[min(70%,calc(100%_-_var(--mobile-bar-height)_-_220px))] rounded-t-18px')
@@ -57,7 +55,7 @@ function updateMapPadding(): void {
   if (attribution) {
     padding[2] = Math.max(padding[2], area.bottom - attribution.top + 12)
   }
-  for (const panel of [controlDock.value, routeDock.value]) {
+  for (const panel of [controlDock.value]) {
     if (!panel || panel.getClientRects().length === 0) {
       continue
     }
@@ -73,8 +71,8 @@ function updateMapPadding(): void {
   mapDockBottom.value = dockBottom
 }
 
-useResizeObserver([stage, controlDock, routeDock, mobileBar], updateMapPadding)
-watch([compact, shortLandscape, controlVisible, routeVisible], updateMapPadding, { flush: 'post' })
+useResizeObserver([stage, controlDock, mobileBar], updateMapPadding)
+watch([compact, shortLandscape, controlVisible], updateMapPadding, { flush: 'post' })
 
 function openSheet(sheet: Exclude<MobileSheet, null>): void {
   if (mobileSheet.value === sheet) {
@@ -100,7 +98,6 @@ const urlSnapshot = useEqualComputed<ExplorerUrlSnapshot>(() => ({
   echoIds: store.selectedEchoIds,
   sonataFilterIds: store.sonataFilterIds,
   echoCostFilters: store.echoCostFilters,
-  hiddenPointGroupIds: store.hiddenPointGroupIds,
   showProvisional: store.showProvisional,
   controlPanelCollapsed: store.controlPanelCollapsed,
   mobileSheet: store.mobileSheet,
@@ -159,20 +156,9 @@ const loadError = computed(() => {
       class="relative h-full w-full min-h-0 min-w-0 overflow-hidden bg-[#101c1a] [--control-panel-width:340px] [--mobile-bar-height:calc(72px+env(safe-area-inset-bottom))] [--safe-top:env(safe-area-inset-top)] [--safe-right:env(safe-area-inset-right)] [--safe-bottom:env(safe-area-inset-bottom)] [--safe-left:env(safe-area-inset-left)]"
     >
       <MapCanvas :padding="mapPadding" :dock-bottom="mapDockBottom" />
-      <div v-if="!compact || mobileSheet === null" class="absolute left-[max(14px,var(--safe-left))] top-[max(14px,var(--safe-top))] z-90">
-        <MapNavigationCascader id="map-navigation-trigger" :class="compact ? '[--wu-cascader-height:50px] [--wu-cascader-gap:4px] [--wu-cascader-padding:10px]' : ''" />
-      </div>
-      <div
-        v-show="routeVisible"
-        ref="routeDockRef"
-        class="absolute z-80 min-h-0 flex flex-col overflow-hidden border border-[var(--line)] bg-[var(--panel)] shadow-xl"
-        :class="compact ? compactPanelClass : ['top-18px max-h-[calc(100%_-_76px)] w-315px rounded-9px', controlPanelCollapsed ? 'right-18px' : 'right-[calc(var(--control-panel-width)+56px)]']"
-      >
-        <div v-if="compact" class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-16px py-6px">
-          <span class="text-16px font-600">刷取路线</span>
-          <button type="button" class="min-h-44px cursor-pointer rounded-7px border-0 bg-transparent px-12px text-14px text-[var(--accent)]" @click="closeSheet">返回地图</button>
-        </div>
-        <RoutePanel :compact="compact" />
+      <div v-if="!compact || mobileSheet === null" class="absolute left-[max(8px,var(--safe-left))] top-[max(8px,var(--safe-top))] z-90 flex items-start gap-4px">
+        <MapNavigationCascader id="map-navigation-trigger" :class="compact ? '[--wu-cascader-height:44px] [--wu-cascader-gap:4px] [--wu-cascader-padding:9px]' : '[--wu-cascader-height:40px] [--wu-cascader-gap:6px] [--wu-cascader-padding:11px]'" />
+        <GravitySwitcher :compact="compact" />
       </div>
       <div
         v-show="controlVisible"
@@ -181,7 +167,7 @@ const loadError = computed(() => {
         :class="compact ? compactPanelClass : 'inset-y-0 right-0 w-[var(--control-panel-width)]'"
       >
         <div v-if="compact" class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-16px py-6px">
-          <span class="text-16px font-600">地图筛选</span>
+          <span class="text-16px font-600">筛选与路线</span>
           <button type="button" class="min-h-44px cursor-pointer rounded-7px border-0 bg-transparent px-12px text-14px text-[var(--accent)]" @click="closeSheet">查看地图</button>
         </div>
         <ControlPanel :compact="compact" />
@@ -198,13 +184,10 @@ const loadError = computed(() => {
       <div
         v-if="compact"
         ref="mobileBarRef"
-        class="absolute inset-x-0 bottom-0 z-90 grid h-[var(--mobile-bar-height)] grid-cols-2 items-start gap-10px border-t border-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-10px"
+        class="absolute inset-x-0 bottom-0 z-90 flex h-[var(--mobile-bar-height)] items-start border-t border-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-10px"
       >
-        <button type="button" class="min-h-50px min-w-0 cursor-pointer rounded-9px border border-[var(--line)] px-10px text-14px text-[#eaf4ef]" :class="mobileSheet === 'filters' ? 'bg-[#245442]' : 'bg-[#152b24]'" @click="openSheet('filters')">
-          筛选<span v-if="selectedEchoIds.length" class="ml-6px text-[var(--accent)]">{{ selectedEchoIds.length }}</span>
-        </button>
-        <button type="button" class="min-h-50px min-w-0 cursor-pointer rounded-9px border border-[var(--line)] px-10px text-14px text-[#eaf4ef]" :class="mobileSheet === 'route' ? 'bg-[#245442]' : 'bg-[#152b24]'" @click="openSheet('route')">
-          {{ planning ? '路线优化中…' : route ? `路线 · ${route.points.length} 点` : '路线' }}
+        <button type="button" class="min-h-50px w-full min-w-0 cursor-pointer rounded-9px border border-[var(--line)] px-10px text-14px text-[#eaf4ef]" :class="mobileSheet === 'filters' ? 'bg-[#245442]' : 'bg-[#152b24]'" @click="openSheet('filters')">
+          {{ planning ? '路线优化中…' : '筛选与路线' }}<span v-if="selectedEchoIds.length" class="ml-6px text-[var(--accent)]">{{ selectedEchoIds.length }}</span>
         </button>
       </div>
     </div>

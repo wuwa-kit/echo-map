@@ -51,15 +51,10 @@ const floorDockStyle = computed(() => ({
   '--floor-dock-height': `${floorDockHeight.value}px`,
   '--floor-dock-right': `${props.padding[1]}px`,
 }))
-const pointerCoordinate = shallowRef<[number, number] | null>(null)
+const lastGameCoordinate = shallowRef<[number, number]>([0, 0])
 const pointerCoordinateText = computed(() => {
-  const coordinate = pointerCoordinate.value
-  const tileWidth = dataset.value?.source.tileWidth
-  if (!coordinate || tileWidth === undefined) {
-    return null
-  }
-  const [x, y] = mapToGameCoordinate(coordinate[0], coordinate[1], tileWidth)
-  return `X ${Math.round(x)} · Y ${Math.round(y)}`
+  const [x, y] = lastGameCoordinate.value
+  return `${x} · ${y}`
 })
 let map: Map | null = null
 const baseLayers = createOfficialBaseLayers(store.reportBaseTileError)
@@ -132,6 +127,7 @@ function rebuildBaseLayer(): void {
   viewport.configureBaseView(state, projection)
   const selected = state.layeredMaps.flatMap(({ floors }) => floors).find(({ id }) => id === selectedLevelId.value)
   if (selected) viewport.restoreFloorViewport(floorExtent(selected, manifest.tileWidth))
+  updateLastCoordinate(map.getView().getCenter())
   rebuildFloorLayers()
   viewport.publish()
   updateFloorViewport()
@@ -141,16 +137,17 @@ function switchGravity(): void {
   if (map && activeState.value && dataset.value) baseLayers.update(map, activeState.value, dataset.value.source, selectedGravity.value)
 }
 
+function updateLastCoordinate(coordinate: number[] | undefined): void {
+  const mapX = coordinate?.[0]
+  const mapY = coordinate?.[1]
+  const tileWidth = dataset.value?.source.tileWidth
+  if (mapX === undefined || mapY === undefined || tileWidth === undefined) return
+  const [x, y] = mapToGameCoordinate(mapX, mapY, tileWidth)
+  lastGameCoordinate.value = [Math.round(x), Math.round(y)]
+}
+
 function updatePointerCoordinate(event: MapBrowserEvent): void {
-  if (event.dragging) {
-    return
-  }
-  const x = event.coordinate[0]
-  const y = event.coordinate[1]
-  if (x === undefined || y === undefined) {
-    return
-  }
-  pointerCoordinate.value = [x, y]
+  if (!event.dragging) updateLastCoordinate(event.coordinate)
 }
 
 function applyMapNavigation(): void {
@@ -159,10 +156,6 @@ function applyMapNavigation(): void {
   const region = dataset.value?.regionLabels.find(({ id }) => id === request.regionId)
   if (region) viewport.locate([region.coordinate.mapX, region.coordinate.mapY])
   store.completeMapNavigation()
-}
-
-function clearPointerCoordinate(): void {
-  pointerCoordinate.value = null
 }
 
 function selectMapPoint(event: MapBrowserEvent): void {
@@ -243,11 +236,10 @@ onBeforeUnmount(() => {
     <div
       ref="mapTargetRef"
       class="absolute inset-0 [background:linear-gradient(rgba(101,241,194,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(101,241,194,0.025)_1px,transparent_1px),#0c1715] [background-size:32px_32px]"
-      @mouseleave="clearPointerCoordinate"
     />
-    <div :style="floorDockStyle" class="pointer-events-none absolute bottom-[var(--floor-dock-bottom)] right-[var(--floor-dock-right)] z-70 max-h-[var(--floor-dock-height)] flex flex-col items-start gap-8px" :class="shortFloorDock ? 'left-[max(68px,env(safe-area-inset-left))]' : 'left-[max(8px,env(safe-area-inset-left))]'">
+    <div :style="floorDockStyle" class="pointer-events-none absolute bottom-[var(--floor-dock-bottom)] right-[var(--floor-dock-right)] z-70 max-h-[var(--floor-dock-height)] flex flex-col items-start gap-4px" :class="shortFloorDock ? 'left-[max(60px,env(safe-area-inset-left))]' : 'left-[max(8px,env(safe-area-inset-left))]'">
       <FloorSwitcher />
-      <div class="h-32px max-w-full shrink-0 select-none overflow-hidden whitespace-nowrap rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-12px text-[var(--muted)] tabular-nums shadow-lg" :class="{ invisible: !pointerCoordinateText }">
+      <div class="h-32px max-w-full shrink-0 select-none overflow-hidden whitespace-nowrap rounded-6px border border-[var(--line)] bg-[#07110fe6] px-9px py-6px font-mono text-12px text-[var(--muted)] tabular-nums shadow-lg">
         {{ pointerCoordinateText }}
       </div>
     </div>

@@ -15,7 +15,6 @@ describe('explorer query state', () => {
       echoIds: [],
       sonataFilterIds: [],
       echoCostFilters: [],
-      hiddenPointGroupIds: [],
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
@@ -28,7 +27,6 @@ describe('explorer query state', () => {
   it('parses hook defaults and a complete viewport', () => {
     expect(parseExplorerQueryValues({
       map: String(DEFAULT_STATE_ID),
-      hiddenTypes: 'IconMap_WYQ,CS_02,IconMap_WYQ',
       provisional: '1',
       panel: '0',
       x: '3072',
@@ -36,7 +34,6 @@ describe('explorer query state', () => {
       zoom: '1.3785',
     })).toMatchObject({
       stateId: DEFAULT_STATE_ID,
-      hiddenPointGroupIds: ['IconMap_WYQ', 'CS_02'],
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
@@ -47,7 +44,7 @@ describe('explorer query state', () => {
   it('round-trips the compact floor layout and ignores unknown styles', () => {
     const snapshot = {
       stateId: DEFAULT_STATE_ID, countryId: null, levelId: '-1/58', compactFloors: true,
-      echoIds: [], sonataFilterIds: [], echoCostFilters: [], hiddenPointGroupIds: [], showProvisional: true,
+      echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true,
       controlPanelCollapsed: false, mobileSheet: null, viewport: null,
     }
     const query = createExplorerQueryValues(snapshot)
@@ -59,25 +56,8 @@ describe('explorer query state', () => {
     }
   })
 
-  it('serializes only hidden point groups in stable order', () => {
-    const values = createExplorerQueryValues({
-      stateId: DEFAULT_STATE_ID,
-      countryId: null,
-      levelId: null,
-      echoIds: [],
-      sonataFilterIds: [],
-      echoCostFilters: [],
-      hiddenPointGroupIds: ['IconMap_WYQ', 'CS_02'],
-      showProvisional: true,
-      controlPanelCollapsed: false,
-      mobileSheet: null,
-      viewport: null,
-    })
-
-    expect(values.hiddenTypes).toBe('CS_02,IconMap_WYQ')
-  })
-
-  it.each(['filters', 'route'] as const)('round-trips the %s sheet without changing the desktop panel preference', (mobileSheet) => {
+  it('round-trips the combined filters and route sheet without changing the desktop panel preference', () => {
+    const mobileSheet = 'filters' as const
     const query = createExplorerQueryValues({
       stateId: DEFAULT_STATE_ID,
       countryId: null,
@@ -85,7 +65,6 @@ describe('explorer query state', () => {
       echoIds: [],
       sonataFilterIds: [],
       echoCostFilters: [],
-      hiddenPointGroupIds: [],
       showProvisional: true,
       controlPanelCollapsed: true,
       mobileSheet,
@@ -96,7 +75,7 @@ describe('explorer query state', () => {
     expect(parseExplorerQueryValues(query)).toMatchObject({ mobileSheet, controlPanelCollapsed: true })
   })
 
-  it.each([undefined, null, '', 'unknown', '1'])('ignores invalid or missing sheet values: %s', (sheet) => {
+  it.each([undefined, null, '', 'route', 'unknown', '1'])('ignores invalid or missing sheet values: %s', (sheet) => {
     expect(parseExplorerQueryValues({ sheet, panel: '1' })).toMatchObject({
       mobileSheet: null,
       controlPanelCollapsed: true,
@@ -108,40 +87,40 @@ describe('explorer query state', () => {
       stateId: DEFAULT_STATE_ID,
       countryId: null,
       levelId: null,
-      echoIds: ['echo-target'],
+      echoIds: ['wiki-echo-11105'],
       sonataFilterIds: ['wiki-sonata-11947', 'wiki-sonata-11948'],
       echoCostFilters: [1, 3],
-      hiddenPointGroupIds: [],
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
       viewport: null,
     })
 
-    expect(query).toMatchObject({ echoes: 'echo-target', sonatas: '11947,11948', costs: '1,3' })
+    expect(query).toMatchObject({ echoes: '11105', sonatas: '11947,11948', costs: '1,3' })
     expect(parseExplorerQueryValues(query)).toMatchObject({
-      echoIds: ['echo-target'],
+      echoIds: ['wiki-echo-11105'],
       sonataFilterIds: ['wiki-sonata-11947', 'wiki-sonata-11948'],
       echoCostFilters: [1, 3],
     })
     expect(parseExplorerQueryValues({ costs: '2,3,3' }).echoCostFilters).toEqual([3])
   })
 
-  it('ignores invalid and obsolete long-form sonata IDs', () => {
+  it('ignores invalid and obsolete long-form wiki IDs', () => {
+    expect(parseExplorerQueryValues({ echoes: '11105,wiki-echo-19910,unknown,11105' }).echoIds)
+      .toEqual(['wiki-echo-11105'])
     expect(parseExplorerQueryValues({ sonatas: '11947,wiki-sonata-11948,unknown,11947' }).sonataFilterIds)
       .toEqual(['wiki-sonata-11947'])
     expect(createExplorerQueryValues({
       stateId: DEFAULT_STATE_ID,
       countryId: null,
       levelId: null,
-      echoIds: [],
+      echoIds: ['unknown-echo'],
       sonataFilterIds: ['unknown-sonata'],
       echoCostFilters: [],
-      hiddenPointGroupIds: [],
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
       viewport: null,
-    }).sonatas).toBeUndefined()
+    })).toMatchObject({ echoes: undefined, sonatas: undefined })
   })
 })

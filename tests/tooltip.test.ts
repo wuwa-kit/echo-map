@@ -4,8 +4,10 @@ import { elementHasOverflow } from '../src/components/base/ellipsis.ts'
 import { tooltipPosition } from '../src/components/base/tooltip-position.ts'
 
 const tooltipSourceUrl = new URL('../src/components/base/WuTooltip.vue', import.meta.url)
+const popoverSourceUrl = new URL('../src/components/base/WuPopover.vue', import.meta.url)
 const ellipsisSourceUrl = new URL('../src/components/base/WuEllipsis.vue', import.meta.url)
 const floorSwitcherSourceUrl = new URL('../src/components/FloorSwitcher.vue', import.meta.url)
+const stylesSourceUrl = new URL('../src/styles.css', import.meta.url)
 
 describe('WuTooltip positioning', () => {
   const anchor = { left: 100, top: 100, width: 50, height: 20 }
@@ -45,7 +47,9 @@ describe('WuEllipsis overflow detection', () => {
     const ellipsisSource = await readFile(ellipsisSourceUrl, 'utf8')
     const floorSwitcherSource = await readFile(floorSwitcherSourceUrl, 'utf8')
     expect(tooltipSource).toContain('popover="manual"')
-    expect(tooltipSource).toContain("event?.pointerType === 'touch'")
+    expect(tooltipSource).toContain('useElementHover(trigger, { delayEnter: Math.max(0, props.delayEnter) })')
+    expect(tooltipSource).toContain('delayEnter: 100')
+    expect(tooltipSource).toContain("event.pointerType === 'touch'")
     expect(tooltipSource).not.toMatch(/aria-|\brole=|tabindex/)
     expect(ellipsisSource).toContain(':disabled="!overflowing"')
     expect(ellipsisSource).toContain('elementHasOverflow(element)')
@@ -54,13 +58,28 @@ describe('WuEllipsis overflow detection', () => {
     expect(floorSwitcherSource).toContain("import WuScrollArea from './base/WuScrollArea.vue'")
     expect(floorSwitcherSource).toContain('<WuScrollArea size="sm"')
     expect(floorSwitcherSource).not.toContain('overflow-y-auto overscroll-contain')
-    expect(floorSwitcherSource).toContain("compactFloors ? 'w-56px")
+    expect(floorSwitcherSource).toContain("compactFloors ? 'w-44px")
     expect(floorSwitcherSource).toContain(": 'w-max rounded-9px'")
     expect(floorSwitcherSource).not.toContain('w-176px')
     expect(floorSwitcherSource).not.toContain('w-[calc(100%_-_36px)]')
-    expect(floorSwitcherSource).toContain("'right-4px top-4px h-36px w-32px rounded-6px border-0 bg-transparent'")
+    expect(floorSwitcherSource).toContain("'right-2px top-2px h-36px w-28px rounded-6px border-0 bg-transparent'")
     expect(floorSwitcherSource).toContain(':tooltip-text="floorHint(group.name, floor.name, floor.id)"')
     expect(floorSwitcherSource).not.toContain('flex-1 truncate')
     expect(floorSwitcherSource).not.toContain('showHint')
+  })
+
+  it('animates popovers and tooltips in both directions', async () => {
+    const [tooltipSource, popoverSource, stylesSource] = await Promise.all([
+      readFile(tooltipSourceUrl, 'utf8'),
+      readFile(popoverSourceUrl, 'utf8'),
+      readFile(stylesSourceUrl, 'utf8'),
+    ])
+
+    expect(tooltipSource).toContain('class="wu-floating-motion')
+    expect(popoverSource).toContain('class="wu-floating-motion')
+    expect(stylesSource).toContain('.wu-floating-motion:popover-open')
+    expect(stylesSource).toContain('@starting-style')
+    expect(stylesSource).toContain('overlay 160ms allow-discrete')
+    expect(stylesSource).toContain('display 160ms allow-discrete')
   })
 })

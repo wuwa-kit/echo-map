@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createExportLayout, EXPORT_MARGIN } from '../src/route/export-layout.ts'
-import type { RoutePoint, RouteResult } from '../src/domain/types.ts'
+import type { RoutePlanResult, RoutePoint, RouteResult } from '../src/domain/types.ts'
 
 function point(id: string, x: number, y = 0, levelId: string | null = null): RoutePoint {
   return { id, name: id, echoId: null, stateId: 8, levelId, coordinate: { x, y, z: 0 }, mapCoordinate: [x, y] }
@@ -8,6 +8,25 @@ function point(id: string, x: number, y = 0, levelId: string | null = null): Rou
 function route(points: RouteResult['points']): RouteResult { return { points, startPointId: null, totalCost: 0, algorithm: 'exact' } }
 
 describe('route image layout', () => {
+  it('keeps independently planned maps in labeled export groups', () => {
+    const first = route([point('surface', 0)])
+    const second = route([{ ...point('icefield', 100), stateId: 903 }])
+    const plan: RoutePlanResult = {
+      groups: [
+        { id: '8:base:1', stateId: 8, levelId: null, gravityType: 1, label: '地表地图', mapName: '地表地图', echoCount: 1, matchingLocationCount: 1, incompleteLocationCount: 0, route: first },
+        { id: '903:base:2', stateId: 903, levelId: null, gravityType: 2, label: '阿维纽林 · 反重力', mapName: '阿维纽林', echoCount: 1, matchingLocationCount: 1, incompleteLocationCount: 0, route: second },
+      ],
+      totalCost: 0,
+      totalPoints: 2,
+    }
+    const layout = createExportLayout(plan)
+    expect(layout.sections).toBe(2)
+    expect(layout.cards.map(({ routeGroupId, groupLabel, gravityType }) => ({ routeGroupId, groupLabel, gravityType }))).toEqual([
+      { routeGroupId: '8:base:1', groupLabel: '地表地图', gravityType: 1 },
+      { routeGroupId: '903:base:2', groupLabel: '阿维纽林 · 反重力', gravityType: 2 },
+    ])
+  })
+
   it.each([[1e9, 0], [0, 1e9]])('rejects oversized routes to %s, %s before expanding their intermediate nodes', (x, y) => {
     let reads = 0
     const destination: RoutePoint = {

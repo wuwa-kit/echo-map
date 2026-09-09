@@ -3,15 +3,152 @@ import type Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import Projection from 'ol/proj/Projection.js'
 import Cluster from 'ol/source/Cluster.js'
+import Icon from 'ol/style/Icon.js'
+import RegularShape from 'ol/style/RegularShape.js'
 import Style from 'ol/style/Style.js'
 import { createPointLayers, mapFeaturePointIds } from '../src/map/point-layers.ts'
 import type { MapDisplayPoint, NavigationPoint, RegionLabel } from '../src/domain/types.ts'
 import { referenceDataset } from './fixtures/point-library.ts'
 
-beforeEach(() => vi.stubGlobal('window', { devicePixelRatio: 1 }))
+class MarkerPath {
+  moveTo() {}
+  lineTo() {}
+  closePath() {}
+}
+
+class MarkerImage {
+  complete = false
+  naturalWidth = 0
+  naturalHeight = 0
+  src = ''
+  onload: (() => void) | null = null
+  onerror: (() => void) | null = null
+  decode(): Promise<void> { return Promise.resolve() }
+  removeAttribute() {}
+}
+
+beforeEach(() => {
+  vi.stubGlobal('window', { devicePixelRatio: 1 })
+  vi.stubGlobal('Path2D', MarkerPath)
+  vi.stubGlobal('Image', MarkerImage)
+  vi.stubGlobal('HTMLImageElement', MarkerImage)
+  vi.stubGlobal('document', { createElement: () => ({
+    width: 0,
+    height: 0,
+    getContext: () => ({
+      clearRect() {}, scale() {}, setTransform() {}, fill() {}, save() {}, restore() {}, clip() {}, drawImage() {}, fillText() {},
+      imageSmoothingQuality: 'high', fillStyle: '', font: '', textAlign: 'center', textBaseline: 'middle',
+    }),
+  }) })
+})
 afterEach(() => vi.unstubAllGlobals())
 
 describe('map display layer integration', () => {
+  it('marks floor point icons on the base map with the official-style stacked badge', () => {
+    const points = createPointLayers()
+    const point = referenceDataset.navigationPoints[0]
+    const echo = referenceDataset.echoLocations[0]
+    if (!point || !echo) throw new Error('需要地图点位测试数据')
+    const navigation: NavigationPoint[] = [
+      { ...point, id: 'base', levelId: null, kind: 'beacon', iconUrl: '' },
+      { ...point, id: 'floor', levelId: 'a1', kind: 'beacon', iconUrl: '' },
+    ]
+    points.update([
+      { ...echo, id: 'base-echo', levelId: null },
+      { ...echo, id: 'floor-echo', levelId: 'a1', coordinate: { ...echo.coordinate, mapX: echo.coordinate.mapX + 200 } },
+    ], navigation, [], referenceDataset.echoes, undefined, null)
+    const badgeShapes = (rendered: Style | Style[] | void) => {
+      return (Array.isArray(rendered) ? rendered : rendered ? [rendered] : [])
+        .flatMap((style) => {
+          const image = style.getImage()
+          return image instanceof RegularShape ? [{
+            points: image.getPoints(),
+            angle: image.getAngle(),
+            displacement: image.getDisplacement(),
+            scale: image.getScaleArray(),
+            fill: image.getFill()?.getColor() ?? null,
+            stroke: image.getStroke()?.getColor() ?? null,
+          }] : []
+        })
+        .filter(({ points }) => points === 4 || points === 6)
+    }
+    const expectedBadge = (markerWidth: number, markerHeight: number) => {
+      const layoutScale = Math.min(markerWidth, markerHeight) / 260
+      const flatDistance = 50 * layoutScale
+      const badgeScale = flatDistance / (Math.sqrt(3) * 7)
+      const x = markerWidth / 2 - 70 * layoutScale - flatDistance / 2
+      const y = -(markerHeight / 2 - 30 * layoutScale - 7 * badgeScale)
+      return [
+        { points: 6, angle: 0, displacement: [x, y], scale: [badgeScale, badgeScale], fill: 'rgba(0, 0, 0, 0.72)', stroke: '#e8dd93' },
+        { points: 4, angle: 0, displacement: [x, y - 1.25 * badgeScale], scale: [1.08 * badgeScale, 0.65 * badgeScale], fill: '#7c754e', stroke: null },
+        { points: 4, angle: 0, displacement: [x, y + 2.5 * badgeScale], scale: [1.15 * badgeScale, 0.7 * badgeScale], fill: null, stroke: '#fff' },
+      ]
+    }
+
+    const navigationLayer = points.layers[2]
+    const navigationFeatures = navigationLayer?.getSource()?.getFeatures() ?? []
+    const navigationRender = navigationLayer?.getStyleFunction()
+    const navigationBadges = (id: string) => {
+      const feature = navigationFeatures.find((candidate) => mapFeaturePointIds(candidate)?.[0] === id)
+      return badgeShapes(feature ? navigationRender?.(feature, 2) : undefined)
+    }
+    expect(navigationFeatures.flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual(['base', 'floor'])
+    expect(navigationBadges('base')).toEqual([])
+    expect(navigationBadges('floor')).toEqual(expectedBadge(36, 36))
+
+    const echoClusters = points.layers[1]?.getSource()
+    if (!(echoClusters instanceof Cluster)) throw new Error('需要声骸聚类图层')
+    echoClusters.loadFeatures([-10000, -10000, 10000, 10000], 2, new Projection({ code: 'TEST:FLOOR-BADGE', units: 'pixels' }))
+    const echoRender = points.layers[1]?.getStyleFunction()
+    const pointX = (feature: Feature): number => {
+      const geometry = feature.getGeometry()
+      return geometry instanceof Point ? geometry.getCoordinates()[0] ?? 0 : 0
+    }
+    const echoFeatures = echoClusters.getFeatures().sort((left, right) => pointX(left) - pointX(right))
+    expect(echoFeatures).toHaveLength(2)
+    expect(badgeShapes(echoFeatures[0] ? echoRender?.(echoFeatures[0], 2) : undefined)).toEqual([])
+    const floorEchoStyles = echoFeatures[1] ? echoRender?.(echoFeatures[1], 2) : undefined
+    const floorEchoMarker = Array.isArray(floorEchoStyles) ? floorEchoStyles[0]?.getImage() : undefined
+    expect(floorEchoMarker).toBeInstanceOf(Icon)
+    if (!(floorEchoMarker instanceof Icon)) throw new Error('需要声骸图标样式')
+    const markerWidth = floorEchoMarker.getWidth()
+    const markerHeight = floorEchoMarker.getHeight()
+    if (!markerWidth || !markerHeight) throw new Error('需要声骸图标尺寸')
+    expect(badgeShapes(floorEchoStyles)).toEqual(expectedBadge(markerWidth, markerHeight))
+
+    points.update([], navigation, [], [], undefined, 'a1')
+    expect(navigationBadges('floor')).toEqual([])
+    points.dispose()
+  })
+
+  it('does not duplicate the built-in badge on layered entrance icons', () => {
+    const points = createPointLayers()
+    const point = referenceDataset.navigationPoints[0]
+    if (!point) throw new Error('需要地图点位测试数据')
+    const entrance: NavigationPoint = {
+      ...point,
+      id: 'layered-entrance',
+      levelId: 'a1',
+      typeId: 'FCRK',
+      typeName: '分层入口',
+      kind: 'entrance',
+      mode: 'entrance',
+      iconUrl: 'https://web-static.kurobbs.com/adminConfig/52/props_namephoto/1762501267031.png',
+    }
+    points.update([], [entrance], [], [], undefined, null)
+    const layer = points.layers[2]
+    const feature = layer?.getSource()?.getFeatures()[0]
+    const rendered = feature ? layer?.getStyleFunction()?.(feature, 2) : undefined
+    const styles = Array.isArray(rendered) ? rendered : rendered ? [rendered] : []
+    const badgePartCount = styles.filter((style) => {
+      const image = style.getImage()
+      return style.getText()?.getText() === '◆'
+        || image instanceof RegularShape && (image.getPoints() === 4 || image.getPoints() === 6)
+    }).length
+    expect(badgePartCount).toBe(0)
+    points.dispose()
+  })
+
   it('places base context under the floor mask and keeps current-floor points and teleports above it', () => {
     const points = createPointLayers()
     const echo = referenceDataset.echoLocations[0]

@@ -5,7 +5,7 @@ import type { Extent } from 'ol/extent.js'
 import { DEFAULT_STATE_ID } from '../url/explorer-url.ts'
 import type { EchoCostFilter, ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
 import { planRouteInWorker } from '../route/worker-client.ts'
-import type { EchoMapLocation, MapDataset, MapFloorDefinition, MapStateDefinition, PointLibrary, PointSource, PointSourceFilter, RouteResult } from '../domain/types.ts'
+import type { EchoMapLocation, MapDataset, MapFloorDefinition, MapStateDefinition, PointLibrary, PointSource, PointSourceFilter, RoutePlanResult, RouteResult } from '../domain/types.ts'
 import { echoMembers, emptyPointLibrary, libraryLocations } from '../domain/point-library.ts'
 import { combinePointLibraries } from '../domain/point-matching.ts'
 import {
@@ -26,6 +26,7 @@ import { hasGravityMap } from '../domain/gravity.ts'
 import { createFloorCoverage, floorGroupsInViewport } from '../map/floor-coverage.ts'
 import { MAP_ZOOM_LEVELS, mapZoomForResolution } from '../map/point-visibility.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
+import { createRouteGroupCandidates, mapStateName, routeGroupId } from '../route/route-groups.ts'
 
 function toggleId(values: string[], id: string): string[] {
   return produce(values, (draft) => {
@@ -63,15 +64,17 @@ export const useExplorerStore = defineStore('explorer', () => {
   const sonataFilterIds = shallowRef<string[]>(immutableSnapshot([]))
   const echoCostFilters = shallowRef<EchoCostFilter[]>(immutableSnapshot([]))
   const echoSearch = shallowRef('')
-  const hiddenPointGroupIds = shallowRef<string[]>(immutableSnapshot([]))
   const showProvisional = shallowRef(true)
   const controlPanelCollapsed = shallowRef(false)
   const mobileSheet = shallowRef<MobileSheet>(null)
   const mapViewport = shallowRef<MapViewportState | null>(null)
   const mapNavigationRequest = shallowRef<{ regionId: string } | null>(null)
   const route = shallowRef<RouteResult | null>(null)
+  const routePlan = shallowRef<RoutePlanResult | null>(null)
   const planning = shallowRef(false)
   const routeError = shallowRef('')
+  const planningCompleted = shallowRef(0)
+  const planningTotal = shallowRef(0)
   let activePlan: AbortController | null = null
 
   onScopeDispose(() => activePlan?.abort())
@@ -105,14 +108,8 @@ export const useExplorerStore = defineStore('explorer', () => {
   const supportsGravity = computed(() => hasGravityMap(activeState.value))
   const regions = computed(() => selectRegions(dataset.value?.regionLabels ?? [], selectedStateId.value))
   const activeMapName = computed(() => {
-    const state = activeState.value
-    if (!state) return ''
-    const labels = new Map(dataset.value?.regionLabels.map((label) => [label.id, label]))
-    const matchingGroups = dataset.value?.mapNavigation.flatMap((country) => country.groups.filter((group) => (
-      group.regionIds.length > 0 && group.regionIds.every((id) => labels.get(id)?.stateId === state.id)
-    ))) ?? []
-    return matchingGroups.length === 1 ? matchingGroups[0]?.name ?? state.name
-      : state.id === DEFAULT_STATE_ID ? '地表地图' : state.name
+    const currentDataset = dataset.value
+    return currentDataset ? mapStateName(currentDataset, selectedStateId.value) : ''
   })
   const candidateEchoes = computed(() => selectEchoDefinitions(
     dataset.value?.echoes ?? [], sonataFilterIds.value, echoCostFilters.value, '',
@@ -126,7 +123,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     : { echoLocations: [], navigationPoints: [], navigationPointGroups: [] })
   const allEchoLocations = computed<readonly EchoMapLocation[]>(() => authoredLocations.value.echoLocations)
   const allNavigationPoints = computed(() => authoredLocations.value.navigationPoints)
-  const allNavigationPointGroups = computed(() => authoredLocations.value.navigationPointGroups)
   const mapScope = computed(() => ({
     gravityType: supportsGravity.value ? selectedGravity.value : null,
     stateId: selectedStateId.value,
@@ -136,8 +132,13 @@ export const useExplorerStore = defineStore('explorer', () => {
   const visibleEchoLocations = computed(() => selectEchoLocations(
     allEchoLocations.value, mapScope.value, activeEchoIds.value, showProvisional.value,
   ))
+  const contextEchoLocations = computed(() => allEchoLocations.value.filter((location) => (
+    matchesMapContext(location, mapScope.value)
+    && echoMembers(location).some(({ echoId }) => activeEchoIds.value.has(echoId))
+    && (showProvisional.value || location.gameCoordinate !== null)
+  )))
   // Base-map context remains visible beneath the floor mask; routes keep their exact floor scope.
-  const mapEchoLocations = computed(() => selectedLevelId.value === null ? visibleEchoLocations.value : [
+  const mapEchoLocations = computed(() => selectedLevelId.value === null ? contextEchoLocations.value : [
     ...visibleEchoLocations.value,
     ...selectEchoLocations(allEchoLocations.value, { ...mapScope.value, levelId: null }, activeEchoIds.value, showProvisional.value),
   ])
@@ -148,21 +149,37 @@ export const useExplorerStore = defineStore('explorer', () => {
   const scopedNavigationPoints = computed(() => (
     allNavigationPoints.value.filter((location) => matchesMapScope(location, mapScope.value))
   ))
-  const visibleNavigationPoints = computed(() => (
-    scopedNavigationPoints.value.filter(({ groupId }) => !hiddenPointGroupIds.value.includes(groupId))
-  ))
-  const mapNavigationPoints = computed(() => selectedLevelId.value === null ? visibleNavigationPoints.value
-    : allNavigationPoints.value.filter((location) => matchesMapContext(location, mapScope.value)
-      && !hiddenPointGroupIds.value.includes(location.groupId)
-      && (location.levelId === null || location.levelId === selectedLevelId.value || location.mode === 'fast-travel')))
+  const visibleNavigationPoints = computed(() => scopedNavigationPoints.value)
+  // The base map keeps floor navigation markers visible; the renderer badges them as layered points.
+  const mapNavigationPoints = computed(() => allNavigationPoints.value.filter((location) => (
+    matchesMapContext(location, mapScope.value)
+    && (selectedLevelId.value === null
+      || location.levelId === null
+      || location.levelId === selectedLevelId.value
+      || location.mode === 'fast-travel')
+  )))
   const visibleRegionLabels = computed(() => selectRegionLabels(dataset.value?.regionLabels ?? [], mapScope.value))
   function hasRouteGravity(point: PointLocationBase): boolean {
     return !supportsGravity.value || point.gravityType === selectedGravity.value
   }
   const routeEligibleLocations = computed(() => visibleEchoLocations.value.filter((point) => hasGameCoordinate(point) && hasRouteGravity(point)))
   const routeEligibleNavigationPoints = computed(() => scopedNavigationPoints.value.filter((point) => isRouteStart(point) && hasRouteGravity(point)))
+  const routeGroupCandidates = computed(() => dataset.value ? createRouteGroupCandidates(
+    dataset.value, allEchoLocations.value, allNavigationPoints.value, activeEchoIds.value, showProvisional.value,
+  ) : [])
+  const routePlanEligibleLocations = computed(() => routeGroupCandidates.value.flatMap(({ locations }) => locations))
+  const routePlanEligibleNavigationPoints = computed(() => routeGroupCandidates.value.flatMap(({ navigationPoints }) => navigationPoints))
   const unmarkedGravityCount = computed(() => supportsGravity.value
     ? [...visibleEchoLocations.value, ...scopedNavigationPoints.value].filter(({ gravityType }) => gravityType === null).length : 0)
+
+  function syncRouteFromPlan(): void {
+    const plan = routePlan.value
+    if (!plan) return
+    const gravityType = supportsGravity.value ? selectedGravity.value : 1
+    route.value = plan.groups.find(({ id }) => id === routeGroupId(selectedStateId.value, selectedLevelId.value, gravityType))?.route ?? null
+    selectedPointId.value = null
+    candidateIds.value = immutableSnapshot([])
+  }
 
   function setDataset(value: MapDataset): void {
     clearRoute()
@@ -185,7 +202,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     }
     resetFloorContext()
 
-    const resolved = resolveExplorerState({ ...currentDataset, navigationPoints: allNavigationPoints.value, navigationPointGroups: allNavigationPointGroups.value }, state, selectedStateId.value)
+    const resolved = resolveExplorerState(currentDataset, state, selectedStateId.value)
     pointSourceFilters.value = immutableSnapshot([...(resolved.pointSourceFilters ?? [])])
     selectedStateId.value = resolved.stateId
     selectedCountryId.value = resolved.countryId
@@ -196,7 +213,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectedEchoIds.value = immutableSnapshot([...resolved.echoIds])
     sonataFilterIds.value = immutableSnapshot([...resolved.sonataFilterIds])
     echoCostFilters.value = immutableSnapshot([...resolved.echoCostFilters])
-    hiddenPointGroupIds.value = immutableSnapshot([...resolved.hiddenPointGroupIds])
     showProvisional.value = resolved.showProvisional
     controlPanelCollapsed.value = resolved.controlPanelCollapsed
     mobileSheet.value = resolved.mobileSheet
@@ -213,7 +229,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectedCountryId.value = null
     selectedLevelId.value = null
     mapViewport.value = null
-    clearRoute()
+    if (routePlan.value) syncRouteFromPlan()
+    else clearRoute()
   }
 
   function selectCountry(id: number | null): void {
@@ -223,9 +240,10 @@ export const useExplorerStore = defineStore('explorer', () => {
 
   function selectGravity(gravity: GravityType): void {
     if ((gravity !== 1 && gravity !== 2) || !supportsGravity.value || selectedGravity.value === gravity) return
-    clearRoute()
     selectedGravity.value = gravity
     baseTileError.value = false
+    if (routePlan.value) syncRouteFromPlan()
+    else clearRoute()
   }
 
   function selectLevel(id: string | null): void {
@@ -233,7 +251,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     floorRequest.value = null
     if (selectedLevelId.value === id) return
     selectedLevelId.value = id
-    clearRoute()
+    if (routePlan.value) syncRouteFromPlan()
+    else clearRoute()
   }
 
   function resetFloorContext(): void {
@@ -310,7 +329,7 @@ export const useExplorerStore = defineStore('explorer', () => {
       selectedGravity.value = 1
       baseTileError.value = false
     }
-    if (selectedStateId.value !== destination.stateId || selectedCountryId.value !== null || selectedLevelId.value !== null) clearRoute()
+    if (!routePlan.value && (selectedStateId.value !== destination.stateId || selectedCountryId.value !== null || selectedLevelId.value !== null)) clearRoute()
     else {
       selectedPointId.value = null
       candidateIds.value = immutableSnapshot([])
@@ -322,6 +341,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     mapViewport.value = null
     mapNavigationRequest.value = immutableSnapshot({ regionId: id })
     mobileSheet.value = null
+    if (routePlan.value) syncRouteFromPlan()
   }
 
   function completeMapNavigation(): void {
@@ -338,33 +358,6 @@ export const useExplorerStore = defineStore('explorer', () => {
 
   function setEchoSearch(value: string): void {
     echoSearch.value = value
-  }
-
-  function setPointGroupVisible(groupId: string, visible: boolean): void {
-    hiddenPointGroupIds.value = produce(hiddenPointGroupIds.value, (draft) => {
-      const index = draft.indexOf(groupId)
-      if (visible && index !== -1) {
-        draft.splice(index, 1)
-      } else if (!visible && index === -1) {
-        draft.push(groupId)
-      }
-    })
-  }
-
-  function showAllPointGroups(): void {
-    hiddenPointGroupIds.value = immutableSnapshot([])
-  }
-
-  function hidePointGroups(groupIds: readonly string[]): void {
-    hiddenPointGroupIds.value = produce(hiddenPointGroupIds.value, (draft) => {
-      const hiddenIds = new Set(draft)
-      for (const groupId of groupIds) {
-        if (!hiddenIds.has(groupId)) {
-          draft.push(groupId)
-          hiddenIds.add(groupId)
-        }
-      }
-    })
   }
 
   function setProvisionalVisible(value: boolean): void {
@@ -387,6 +380,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   function setRoute(value: RouteResult): void {
+    routePlan.value = null
     route.value = immutableSnapshot(value)
   }
 
@@ -396,6 +390,9 @@ export const useExplorerStore = defineStore('explorer', () => {
     planning.value = false
     routeError.value = ''
     route.value = null
+    routePlan.value = null
+    planningCompleted.value = 0
+    planningTotal.value = 0
     selectedPointId.value = null
     candidateIds.value = immutableSnapshot([])
   }
@@ -404,6 +401,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     if (planning.value || routeEligibleLocations.value.length === 0) {
       return
     }
+    clearRoute()
     const controller = new AbortController()
     activePlan = controller
     planning.value = true
@@ -430,6 +428,72 @@ export const useExplorerStore = defineStore('explorer', () => {
     }
   }
 
+  function activateRouteGroup(id: string): void {
+    const planned = routePlan.value?.groups.find((candidate) => candidate.id === id)
+    const group = planned ?? routeGroupCandidates.value.find((candidate) => candidate.id === id)
+    if (!group) return
+    resetFloorContext()
+    selectedStateId.value = group.stateId
+    selectedCountryId.value = null
+    selectedLevelId.value = group.levelId
+    selectedGravity.value = group.gravityType
+    baseTileError.value = false
+    mapViewport.value = null
+    route.value = planned?.route ?? null
+    selectedPointId.value = null
+    candidateIds.value = immutableSnapshot([])
+  }
+
+  async function planAllRoutes(): Promise<void> {
+    const currentDataset = dataset.value
+    const currentId = routeGroupId(selectedStateId.value, selectedLevelId.value, supportsGravity.value ? selectedGravity.value : 1)
+    const candidates = routeGroupCandidates.value.filter(({ locations }) => locations.length > 0).sort((left, right) => {
+      const priority = (group: { id: string, stateId: number }) => group.id === currentId ? 0 : group.stateId === selectedStateId.value ? 1 : 2
+      return priority(left) - priority(right)
+    })
+    if (planning.value || !currentDataset || candidates.length === 0) return
+    clearRoute()
+    const controller = new AbortController()
+    activePlan = controller
+    planning.value = true
+    routeError.value = ''
+    planningCompleted.value = 0
+    planningTotal.value = candidates.length
+    try {
+      const groups: RoutePlanResult['groups'] = []
+      for (const [index, candidate] of candidates.entries()) {
+        controller.signal.throwIfAborted()
+        const result = await planRouteInWorker(createRoutePlanInput(
+          currentDataset, candidate.locations, candidate.navigationPoints, candidate.stateId, activeEchoIds.value,
+        ), controller.signal)
+        const { locations: _locations, navigationPoints: _navigationPoints, ...metadata } = candidate
+        groups.push({ ...metadata, route: result })
+        if (activePlan === controller) planningCompleted.value = index + 1
+      }
+      if (activePlan === controller) {
+        routePlan.value = immutableSnapshot({
+          groups,
+          totalCost: groups.reduce((sum, group) => sum + group.route.totalCost, 0),
+          totalPoints: groups.reduce((sum, group) => sum + group.route.points.length, 0),
+        })
+        const gravityType = supportsGravity.value ? selectedGravity.value : 1
+        const activeId = routeGroupId(selectedStateId.value, selectedLevelId.value, gravityType)
+        activateRouteGroup(groups.some(({ id }) => id === activeId) ? activeId : groups[0]?.id ?? '')
+      }
+    } catch (error) {
+      if (activePlan === controller) {
+        route.value = null
+        routePlan.value = null
+        routeError.value = error instanceof Error ? error.message : String(error)
+      }
+    } finally {
+      if (activePlan === controller) {
+        activePlan = null
+        planning.value = false
+      }
+    }
+  }
+
   function resetEchoFilters(): void {
     sonataFilterIds.value = immutableSnapshot([])
     echoCostFilters.value = immutableSnapshot([])
@@ -438,7 +502,7 @@ export const useExplorerStore = defineStore('explorer', () => {
 
   return {
     pointSourceFilters: shallowReadonly(pointSourceFilters),
-    allEchoLocations, allNavigationPoints, allNavigationPointGroups, activeEchoIds, matchingMonsterCount, selectedEchoLocation, selectedNavigationPoint,
+    allEchoLocations, allNavigationPoints, activeEchoIds, matchingMonsterCount, selectedEchoLocation, selectedNavigationPoint,
     setPointLibrary: (value: PointLibrary) => {
       pointLibrary.value = immutableSnapshot(value)
       clearRoute()
@@ -451,7 +515,6 @@ export const useExplorerStore = defineStore('explorer', () => {
       pointSourceFilters.value = immutableSnapshot(
         (['manual', 'official'] as const).filter(source => values.includes(source)),
       )
-      hiddenPointGroupIds.value = immutableSnapshot([])
       clearRoute()
     },
     pointCandidates,
@@ -482,7 +545,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     sonataFilterIds: shallowReadonly(sonataFilterIds),
     echoCostFilters: shallowReadonly(echoCostFilters),
     echoSearch: shallowReadonly(echoSearch),
-    hiddenPointGroupIds: shallowReadonly(hiddenPointGroupIds),
     showProvisional: shallowReadonly(showProvisional),
     controlPanelCollapsed: shallowReadonly(controlPanelCollapsed),
     mobileSheet: shallowReadonly(mobileSheet),
@@ -492,8 +554,11 @@ export const useExplorerStore = defineStore('explorer', () => {
     navigateToRegion,
     completeMapNavigation,
     route: shallowReadonly(route),
+    routePlan: shallowReadonly(routePlan),
     planning: shallowReadonly(planning),
     routeError: shallowReadonly(routeError),
+    planningCompleted: shallowReadonly(planningCompleted),
+    planningTotal: shallowReadonly(planningTotal),
     states,
     activeState,
     floors,
@@ -507,6 +572,9 @@ export const useExplorerStore = defineStore('explorer', () => {
     visibleRegionLabels,
     routeEligibleLocations,
     routeEligibleNavigationPoints,
+    routeGroupCandidates,
+    routePlanEligibleLocations,
+    routePlanEligibleNavigationPoints,
     setDataset,
     restoreUrlState,
     selectState,
@@ -519,13 +587,12 @@ export const useExplorerStore = defineStore('explorer', () => {
     setSonataFilters,
     setEchoCostFilters,
     setEchoSearch,
-    setPointGroupVisible,
-    showAllPointGroups,
-    hidePointGroups,
     setProvisionalVisible,
     toggleControlPanel,
     setMobileSheet,
     planRoute,
+    planAllRoutes,
+    activateRouteGroup,
     setMapViewport,
     setRoute,
     clearRoute,

@@ -10,10 +10,11 @@ import { createFloorLayers } from './floor-layers.ts'
 import { drawExportAnnotations, nearbyExportPlaces } from './export-place-names.ts'
 import { EXPORT_RATIO } from '../route/export-layout.ts'
 import type { ExportCard } from '../route/export-layout.ts'
-import type { EchoMapLocation, GravityType, MapDataset, NavigationPoint, RouteResult } from '../domain/types.ts'
+import type { EchoMapLocation, GravityType, MapDataset, NavigationPoint, RoutePlanResult, RouteResult } from '../domain/types.ts'
 
 export interface RouteExportSnapshot {
   route: RouteResult
+  routePlan?: RoutePlanResult
   dataset: MapDataset
   locations: readonly EchoMapLocation[]
   navigationPoints: readonly NavigationPoint[]
@@ -54,6 +55,7 @@ export function createRouteExportRenderer(snapshot: RouteExportSnapshot) {
   const map = new Map({ target, pixelRatio: EXPORT_RATIO, controls: [], interactions: [], layers: [...points.layers, route.layer], view: createRouteExportView(projection, [0, 0], 1) })
   const activeEchoIds = new Set(snapshot.echoIds)
   let stateId: number | undefined
+  let gravityType: GravityType | undefined
 
   async function renderComplete(signal: AbortSignal): Promise<void> {
     signal.throwIfAborted()
@@ -74,10 +76,11 @@ export function createRouteExportRenderer(snapshot: RouteExportSnapshot) {
       const loading = AbortSignal.any([signal, AbortSignal.timeout(30000)])
       const state = snapshot.dataset.states.find(({ id }) => id === card.stateId)
       if (!state) throw new Error('路线底图不存在')
-      if (stateId !== state.id) {
+      if (stateId !== state.id || gravityType !== card.gravityType) {
         floors.clear()
-        base.update(map, state, snapshot.dataset.source, snapshot.gravity)
+        base.update(map, state, snapshot.dataset.source, card.gravityType ?? snapshot.gravity)
         stateId = state.id
+        gravityType = card.gravityType
       }
       const size = card.mapSize
       target.style.width = `${size[0]}px`

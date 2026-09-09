@@ -98,13 +98,12 @@ describe('floor map context', () => {
     expect(store.pointCandidates).toHaveLength(2)
     store.selectPoint('other-travel')
     expect(store.selectedNavigationPoint?.id).toBe('other-travel')
-    store.setPointGroupVisible('manual:beacon', false)
-    expect(store.mapNavigationPoints).toEqual([])
     expect(store.routeEligibleNavigationPoints.map(({ id }) => id)).toEqual(['floor-travel'])
-    store.setPointGroupVisible('manual:beacon', true)
     store.selectLevel(null)
-    expect(store.mapEchoLocations.map(({ id }) => id)).toEqual(['base-echo'])
-    expect(store.mapNavigationPoints.map(({ id }) => id)).toEqual(['base-ordinary', 'base-travel'])
+    expect(store.mapEchoLocations.map(({ id }) => id)).toEqual(['base-echo', 'floor-echo', 'other-echo'])
+    expect(store.mapNavigationPoints.map(({ id }) => id)).toEqual([
+      'base-ordinary', 'floor-ordinary', 'other-ordinary', 'base-travel', 'floor-travel', 'other-travel',
+    ])
     store.toggleEcho(smallEcho.id)
     store.selectLevel('a1')
     expect(store.mapEchoLocations).toEqual([])

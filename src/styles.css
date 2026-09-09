@@ -30,6 +30,28 @@
   display: none;
 }
 
+.wu-floating-motion {
+  opacity: 0;
+  translate: 0 -4px;
+  transition:
+    opacity 140ms ease,
+    translate 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    overlay 160ms allow-discrete,
+    display 160ms allow-discrete;
+}
+
+.wu-floating-motion:popover-open {
+  opacity: 1;
+  translate: 0 0;
+}
+
+@starting-style {
+  .wu-floating-motion:popover-open {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
+
 html,
 body,
 #app {

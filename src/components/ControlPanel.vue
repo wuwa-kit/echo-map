@@ -5,9 +5,8 @@ import { RouterLink } from 'vue-router'
 import WuScrollArea from './base/WuScrollArea.vue'
 import WuSvg from './base/WuSvg.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
-import MapScopeFilter from './filters/MapScopeFilter.vue'
 import EchoFilter from './filters/EchoFilter.vue'
-import NavigationPointFilter from './filters/NavigationPointFilter.vue'
+import RoutePanel from './RoutePanel.vue'
 import type { PointSourceFilter } from '../domain/types.ts'
 
 defineProps<{ compact: boolean }>()
@@ -29,18 +28,10 @@ function togglePointSourceFilter(source: PointSourceFilter): void {
     .map(({ value }) => value))
 }
 
-function scrollToSection(id: string): void {
-  const target = document.getElementById(id)
-  target?.scrollIntoView({ block: 'start' })
-}
 </script>
 
 <template>
   <div class="min-h-0 flex flex-1 flex-col">
-    <div v-if="compact" class="grid shrink-0 grid-cols-2 gap-6px border-b border-[var(--line)] px-12px">
-      <button type="button" class="min-h-44px cursor-pointer border-0 bg-transparent text-14px text-[var(--accent)]" @click="scrollToSection('echo-filters')">声骸</button>
-      <button type="button" class="min-h-44px cursor-pointer border-0 bg-transparent text-14px text-[var(--accent)]" @click="scrollToSection('point-filters')">定位点</button>
-    </div>
     <WuScrollArea class="min-h-0 flex-1" content-class="pb-16px">
       <div v-if="dataset && !compact" class="border-b border-[var(--line)] p-18px">
         <div class="flex items-center justify-between gap-12px">
@@ -81,12 +72,8 @@ function scrollToSection(id: string): void {
           </div>
         </div>
       </div>
-      <MapScopeFilter />
-
       <EchoFilter :compact="compact" />
-
-      <NavigationPointFilter :compact="compact" />
-
+      <RoutePanel />
     </WuScrollArea>
   </div>
 </template>

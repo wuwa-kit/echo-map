@@ -21,8 +21,6 @@ export function resolveExplorerState(
   const floorIds = new Set(nextState?.layeredMaps.flatMap(({ floors }) => floors.map(({ id }) => id)) ?? [])
   const echoIds = new Set(dataset.echoes.map(({ id }) => id))
   const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
-  const pointGroupIds = new Set(dataset.navigationPointGroups.map(({ id }) => id))
-  const pointGroupIdByTypeId = new Map(dataset.navigationPoints.map(({ typeId, groupId }) => [typeId, groupId]))
 
   return {
     pointSourceFilters: (['manual', 'official'] as const).filter(source => state.pointSourceFilters?.includes(source)),
@@ -34,16 +32,9 @@ export function resolveExplorerState(
     echoIds: (state.echoIds ?? []).filter((id) => echoIds.has(id)),
     sonataFilterIds: (state.sonataFilterIds ?? []).filter((id) => sonataIds.has(id)),
     echoCostFilters: ([1, 3] as const).filter((cost) => state.echoCostFilters?.includes(cost)),
-    hiddenPointGroupIds: [...new Set((state.hiddenPointGroupIds ?? []).flatMap((id) => {
-      if (pointGroupIds.has(id)) {
-        return [id]
-      }
-      const legacyGroupId = pointGroupIdByTypeId.get(id)
-      return legacyGroupId ? [legacyGroupId] : []
-    }))],
     showProvisional: state.showProvisional ?? true,
     controlPanelCollapsed: state.controlPanelCollapsed ?? false,
-    mobileSheet: state.mobileSheet === 'filters' || state.mobileSheet === 'route' ? state.mobileSheet : null,
+    mobileSheet: state.mobileSheet === 'filters' ? state.mobileSheet : null,
     viewport: state.viewport ? { center: [...state.viewport.center], zoom: state.viewport.zoom } : null,
   }
 }

@@ -6,6 +6,7 @@ import { useExplorerStore } from '../src/stores/explorer.ts'
 import { planRouteInWorker } from '../src/route/worker-client.ts'
 import { movementCost, optimizeRoute } from '../src/route/optimizer.ts'
 import type { RouteResult } from '../src/domain/types.ts'
+import { echoMembers } from '../src/domain/point-library.ts'
 
 vi.mock('../src/route/worker-client.ts')
 const planner = vi.mocked(planRouteInWorker)
@@ -35,7 +36,7 @@ describe('route planning actions', () => {
     const pending = Promise.withResolvers<RouteResult>()
     planner.mockReturnValue(pending.promise)
     const store = createStore()
-    store.setMobileSheet('route')
+    store.setMobileSheet('filters')
     const task = store.planRoute()
     expect(store.planning).toBe(true)
     store.setMobileSheet(null)
@@ -48,6 +49,22 @@ describe('route planning actions', () => {
     expect(store.route).toEqual(result)
     expect(store.planning).toBe(false)
     expect(store.mobileSheet).toBeNull()
+  })
+
+  it('clears the previous route as soon as replacement planning starts', async () => {
+    const pending = Promise.withResolvers<RouteResult>()
+    planner.mockReturnValue(pending.promise)
+    const store = createStore()
+    store.setRoute(result)
+
+    const task = store.planRoute()
+
+    expect(store.route).toBeNull()
+    expect(store.routePlan).toBeNull()
+    expect(store.planning).toBe(true)
+    pending.resolve({ ...result, totalCost: 24 })
+    await task
+    expect(store.route?.totalCost).toBe(24)
   })
 
   it('aborts an obsolete plan and ignores late completion while a new plan is running', async () => {
@@ -79,6 +96,57 @@ describe('route planning actions', () => {
     await store.planRoute()
     expect(store.routeError).toBe('')
     expect(store.route).toEqual(result)
+  })
+
+  it('plans every populated map context independently and keeps the plan while switching maps', async () => {
+    const store = useExplorerStore()
+    store.setDataset(dataset)
+    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
+    store.setPointSourceFilters(['official'])
+    const statesByEcho = new Map<string, Set<number>>()
+    for (const location of store.allEchoLocations) {
+      for (const { echoId } of echoMembers(location)) {
+        const states = statesByEcho.get(echoId) ?? new Set<number>()
+        states.add(location.stateId)
+        statesByEcho.set(echoId, states)
+      }
+    }
+    const echoId = [...statesByEcho].find(([, states]) => states.size > 1)?.[0]
+    if (!echoId) throw new Error('测试数据缺少跨地图声骸')
+    store.toggleEcho(echoId)
+    const candidates = store.routeGroupCandidates.filter(({ locations }) => locations.length > 0)
+    expect(new Set(candidates.map(({ stateId }) => stateId)).size).toBeGreaterThan(1)
+    planner.mockImplementation(async (input) => ({
+      points: input.points, totalCost: input.points.length, algorithm: 'exact', startPointId: null,
+    }))
+
+    await store.planAllRoutes()
+
+    expect(planner).toHaveBeenCalledTimes(candidates.length)
+    expect(store.routePlan?.groups.map(({ id }) => id)).toEqual(candidates.map(({ id }) => id))
+    expect(store.routePlan?.totalPoints).toBe(candidates.reduce((sum, group) => sum + group.locations.length, 0))
+    const plan = store.routePlan
+    const destination = plan?.groups.find(({ stateId }) => stateId !== store.selectedStateId) ?? plan?.groups[1]
+    if (!plan || !destination) throw new Error('测试路线缺少可切换地图')
+    store.activateRouteGroup(destination.id)
+    expect(store.routePlan).toBe(plan)
+    expect(store.selectedStateId).toBe(destination.stateId)
+    expect(store.selectedLevelId).toBe(destination.levelId)
+    expect(store.selectedGravity).toBe(destination.gravityType)
+    expect(store.route).toBe(destination.route)
+
+    const replacement = Promise.withResolvers<RouteResult>()
+    planner.mockReset()
+    planner.mockImplementationOnce(() => replacement.promise).mockImplementation(async (input) => ({
+      points: input.points, totalCost: input.points.length, algorithm: 'exact', startPointId: null,
+    }))
+    const replacementTask = store.planAllRoutes()
+    expect(store.routePlan).toBeNull()
+    expect(store.route).toBeNull()
+    expect(store.planning).toBe(true)
+    replacement.resolve(result)
+    await replacementTask
+    expect(store.routePlan).not.toBeNull()
   })
 
   it('keeps the reported neighboring echoes on one walk instead of returning from the same nexus', async () => {
@@ -115,12 +183,12 @@ describe('route planning actions', () => {
     expect(route.totalCost).toBeLessThan(30_000)
   }, 15_000)
 
-  it('restores mutually exclusive sheet state and keeps the desktop preference independent', () => {
+  it('restores the combined mobile sheet and keeps the desktop preference independent', () => {
     const store = createStore()
     store.restoreUrlState({ pointSourceFilters: ['official'], mobileSheet: 'filters', controlPanelCollapsed: true })
     expect(store.mobileSheet).toBe('filters')
-    store.setMobileSheet('route')
-    expect(store.mobileSheet).toBe('route')
+    store.setMobileSheet(null)
+    expect(store.mobileSheet).toBeNull()
     expect(store.controlPanelCollapsed).toBe(true)
     store.restoreUrlState({ pointSourceFilters: ['official'] })
     expect(store.mobileSheet).toBeNull()

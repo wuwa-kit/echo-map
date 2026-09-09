@@ -15,18 +15,12 @@ import type { OfficialAssetCategory } from '../domain/types.ts'
 import { ASSET_PAGE_SIZE, useAssetsStore } from '../stores/assets.ts'
 
 const store = useAssetsStore()
-const { dataset, loading, error, search, filters, assets, filteredAssets, categories, page, pageCount, pageAssets, selectedAsset } = storeToRefs(store)
+const { dataset, loading, error, search, filters, filteredAssets, categories, page, pageCount, pageAssets, selectedAsset } = storeToRefs(store)
 const routeQuery = useAssetsRouteQuery()
 useTitle('官方资产库 · 声巡')
 const details = useTemplateRef<HTMLElement>('detailsRef')
 const results = useTemplateRef<HTMLElement>('resultsRef')
 const activeCategory = computed(() => categories.value.find(({ id }) => id === filters.value.category))
-const summary = computed(() => [
-  { label: '图标资源', count: assets.value.filter(({ category }) => category !== 'tile' && category !== 'floor' && category !== 'gravity').length },
-  { label: '底图瓦片', count: assets.value.filter(({ category }) => category === 'tile' || category === 'floor' || category === 'gravity').length },
-  { label: '地图范围', count: dataset.value?.states.length ?? 0 },
-  { label: '分层楼层', count: dataset.value?.states.reduce((sum, state) => sum + state.layeredMaps.reduce((count, layer) => count + layer.floors.length, 0), 0) ?? 0 },
-])
 const dataDownloads = [
   { file: 'map-data.json', label: '地图数据' },
   { file: 'catalog-data.json', label: '声骸套装与图标' },
@@ -97,13 +91,6 @@ async function selectPage(value: number): Promise<void> {
           </div>
           <div class="flex flex-wrap gap-8px">
             <a v-for="item in dataDownloads" :key="item.file" :href="`/data/${item.file}`" :download="item.file" class="min-h-42px inline-flex items-center rounded-7px border border-[var(--line)] bg-[#13271f] px-16px text-13px text-[#d5e8df] no-underline hover:border-[var(--accent)]">{{ item.label }} ↗</a>
-          </div>
-        </div>
-
-        <div class="mb-28px grid grid-cols-2 gap-10px lg:grid-cols-4">
-          <div v-for="item in summary" :key="item.label" class="rounded-9px border border-[var(--line)] bg-[#0e1f19] px-18px py-16px">
-            <div class="text-11px text-[var(--muted)]">{{ item.label }}</div>
-            <div class="mt-8px text-26px font-500 tabular-nums">{{ item.count.toLocaleString('zh-CN') }}</div>
           </div>
         </div>
 

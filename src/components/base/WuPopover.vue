@@ -120,7 +120,7 @@ defineExpose({ id: popoverId, isOpen, isSupported, show, hide, toggle, updatePos
 <template>
   <div
     v-bind="$attrs" :id="popoverId" ref="panelRef" popover="auto" :hidden="!isSupported"
-    class="fixed inset-auto m-0 min-h-0 box-border flex-col overflow-hidden p-0 [&:popover-open]:flex"
+    class="wu-floating-motion fixed inset-auto m-0 min-h-0 box-border flex-col overflow-hidden p-0 [&:popover-open]:flex"
     @beforetoggle="onBeforeToggle" @toggle="onToggle"
   >
     <slot :is-open="isOpen" :close="hide" />

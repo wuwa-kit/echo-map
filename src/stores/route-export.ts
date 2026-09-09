@@ -8,12 +8,13 @@ import type { RouteExportSnapshot } from '../map/route-export.ts'
 interface ExportArtifacts {
   title: string
   filename: string
-  fullUrl: string
+  fullUrl: string | null
+  maps: { stateId: number, title: string, filename: string, url: string, width: number, height: number, columns: number }[]
   pages: { url: string; height: number }[]
-  width: number
-  height: number
+  width: number | null
+  height: number | null
   pageWidth: number
-  columns: number
+  columns: number | null
 }
 
 export const useRouteExportStore = defineStore('route-export', () => {
@@ -27,6 +28,7 @@ export const useRouteExportStore = defineStore('route-export', () => {
 
   function releaseImages(): void {
     if (artifacts.value?.fullUrl) URL.revokeObjectURL(artifacts.value.fullUrl)
+    for (const map of artifacts.value?.maps ?? []) URL.revokeObjectURL(map.url)
     for (const page of artifacts.value?.pages ?? []) URL.revokeObjectURL(page.url)
     artifacts.value = null
   }
@@ -61,9 +63,14 @@ export const useRouteExportStore = defineStore('route-export', () => {
       if (active !== controller) return
       const filename = `声巡-${value.title.replace(/[<>:"/\\|?*\u0000-\u001f]/gu, '-').slice(0, 60)}-${value.createdAt.replace(/[ :/]/gu, '-')}`
       artifacts.value = {
-        title: value.title, filename, fullUrl: URL.createObjectURL(result.full),
+        title: value.title, filename, fullUrl: result.full ? URL.createObjectURL(result.full) : null,
+        maps: result.maps.map(({ image, ...map }, index) => ({
+          ...map,
+          filename: `${filename}-${String(index + 1).padStart(2, '0')}-${map.title.replace(/[<>:"/\\|?*\u0000-\u001f]/gu, '-').slice(0, 40)}`,
+          url: URL.createObjectURL(image),
+        })),
         pages: result.pages.map((blob, index) => ({ url: URL.createObjectURL(blob), height: result.layout.pageHeights[index] ?? 0 })),
-        width: result.fullSize.width, height: result.fullSize.height,
+        width: result.fullSize?.width ?? null, height: result.fullSize?.height ?? null,
         pageWidth: result.layout.width,
         columns: result.fullColumns,
       }
@@ -79,19 +86,25 @@ export const useRouteExportStore = defineStore('route-export', () => {
 
   async function start(): Promise<void> {
     const explorer = useExplorerStore()
-    if (!explorer.route || !explorer.dataset) return
-    if (snapshot?.route === explorer.route && status.value === 'ready') {
+    const plan = explorer.routePlan
+    const route = explorer.route ?? plan?.groups[0]?.route
+    if (!route || !explorer.dataset) return
+    if ((plan ? snapshot?.routePlan === plan : snapshot?.route === route && !snapshot?.routePlan) && status.value === 'ready') {
       open.value = true
       return
     }
     const echoNames = explorer.dataset.echoes.filter(({ id }) => explorer.selectedEchoIds.includes(id)).map(({ name }) => name)
     const title = echoNames.length <= 3 ? echoNames.join(' · ') : `${echoNames.slice(0, 2).join(' · ')} 等 ${echoNames.length} 种声骸`
     await generate({
-      route: explorer.route, dataset: explorer.dataset,
-      locations: explorer.routeEligibleLocations, navigationPoints: explorer.routeEligibleNavigationPoints,
+      route, ...(plan ? { routePlan: plan } : {}), dataset: explorer.dataset,
+      locations: plan ? explorer.routePlanEligibleLocations : explorer.routeEligibleLocations,
+      navigationPoints: plan ? explorer.routePlanEligibleNavigationPoints : explorer.routeEligibleNavigationPoints,
       echoIds: [...explorer.activeEchoIds], gravity: explorer.selectedGravity,
       title: title || `${explorer.activeMapName}声骸路线`,
-      usesOfficial: [...explorer.routeEligibleLocations, ...explorer.routeEligibleNavigationPoints].some(({ quality }) => quality === 'official-provisional'),
+      usesOfficial: [
+        ...(plan ? explorer.routePlanEligibleLocations : explorer.routeEligibleLocations),
+        ...(plan ? explorer.routePlanEligibleNavigationPoints : explorer.routeEligibleNavigationPoints),
+      ].some(({ quality }) => quality === 'official-provisional'),
       createdAt: new Date().toLocaleString('zh-CN', { hour12: false }),
     })
   }

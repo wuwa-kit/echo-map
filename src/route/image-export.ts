@@ -4,12 +4,14 @@ import { EXPORT_WIDTH, EXPORT_MAX_PIXELS, createExportLayout } from './export-la
 import type { ExportLayout } from './export-layout.ts'
 import { encodeJpeg } from './jpeg-encoder.ts'
 import { createFullExportLayout, EXPORT_SIZE_ERROR, JPEG_MAX_SIDE } from './full-export-layout.ts'
+import { createRegionalExportPlan } from './export-region-groups.ts'
 
 export interface RouteExportProgress { completed: number; total: number; message: string }
 export interface RouteExportImages {
-  full: Blob
-  fullSize: { width: number; height: number }
-  fullColumns: number
+  full: Blob | null
+  fullSize: { width: number; height: number } | null
+  fullColumns: number | null
+  maps: { stateId: number, title: string, image: Blob, width: number, height: number, columns: number }[]
   pages: Blob[]
   layout: ExportLayout
 }
@@ -27,6 +29,24 @@ function drawingCanvas(width: number, height: number) {
   context.fillStyle = '#0b1714'
   context.fillRect(0, 0, width, height)
   return { canvas, context }
+}
+
+function drawBanners(context: CanvasRenderingContext2D, banners: readonly { label: string; x: number; y: number; width: number; height: number }[], offsetY = 0): void {
+  if (!banners.length) return
+  context.save()
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.font = '600 22px "Map FangXinShu", sans-serif'
+  for (const banner of banners) {
+    const y = banner.y - offsetY
+    context.fillStyle = '#163e2e'
+    context.fillRect(banner.x, y, banner.width, banner.height)
+    context.fillStyle = '#65f1c2'
+    context.fillRect(banner.x, y + banner.height - 2, banner.width, 2)
+    context.fillStyle = '#e7f1ec'
+    context.fillText(banner.label, banner.x + banner.width / 2, y + banner.height / 2, banner.width - 32)
+  }
+  context.restore()
 }
 
 async function jpegCanvasSideLimit(signal: AbortSignal): Promise<number> {
@@ -56,8 +76,7 @@ async function jpegCanvasSideLimit(signal: AbortSignal): Promise<number> {
   return low
 }
 
-async function prepareFullCanvas(layout: ExportLayout, signal: AbortSignal) {
-  const maxSide = await jpegCanvasSideLimit(signal)
+async function prepareFullCanvas(layout: ExportLayout, signal: AbortSignal, maxSide: number) {
   let arrangement = createFullExportLayout(layout, { maxSide })
   for (let attempt = 0; attempt < 2; attempt += 1) {
     signal.throwIfAborted()
@@ -81,21 +100,96 @@ async function prepareFullCanvas(layout: ExportLayout, signal: AbortSignal) {
   throw new Error(EXPORT_SIZE_ERROR)
 }
 
+function layoutForCards(layout: ExportLayout, cards: ExportLayout['cards']): ExportLayout {
+  const groupIds = new Set(cards.map(({ routeGroupId }) => routeGroupId))
+  return { ...layout, cards, banners: layout.banners.filter(({ routeGroupId }) => groupIds.has(routeGroupId)), pages: [], pageHeights: [], height: 0, sections: new Set(cards.map(({ section }) => section)).size }
+}
+
 export async function exportRouteImages(snapshot: RouteExportSnapshot, signal: AbortSignal, onProgress: (progress: RouteExportProgress) => void): Promise<RouteExportImages> {
   signal.throwIfAborted()
-  const layout = createExportLayout(snapshot.route)
+  const countryIdByPointId = new Map([...snapshot.locations, ...snapshot.navigationPoints].map(({ id, countryId }) => [id, countryId]))
+  const regionalPlan = createRegionalExportPlan(snapshot.routePlan ?? snapshot.route, snapshot.dataset, countryIdByPointId, snapshot.gravity)
+  const layout = createExportLayout(regionalPlan, snapshot.gravity)
   onProgress({ completed: 0, total: layout.cards.length, message: '正在检查图片尺寸与拼接列数' })
-  const full = await prepareFullCanvas(layout, signal)
+  const maxSide = await jpegCanvasSideLimit(signal)
+  let full: Awaited<ReturnType<typeof prepareFullCanvas>> | null = null
+  try {
+    full = await prepareFullCanvas(layout, signal, maxSide)
+  } catch (error) {
+    signal.throwIfAborted()
+    if (!(error instanceof Error) || error.message !== EXPORT_SIZE_ERROR) throw error
+  }
+  const mapCards = new Map<number, ExportLayout['cards']>()
+  for (const card of layout.cards) {
+    const cards = mapCards.get(card.stateId) ?? []
+    cards.push(card)
+    mapCards.set(card.stateId, cards)
+  }
+  const mapPlans = [...mapCards].map(([stateId, cards]) => ({
+    stateId,
+    title: cards[0]?.mapName || snapshot.dataset.states.find(({ id }) => id === stateId)?.name || `地图 ${stateId}`,
+    cards,
+  }))
   let renderer: ReturnType<typeof createRouteExportRenderer> | null = null
   const pages: Blob[] = []
+  const maps: RouteExportImages['maps'] = []
   let completed = 0
+  interface MapDrawing {
+    stateId: number
+    title: string
+    cardNumbers: Map<number, number>
+    drawing: ReturnType<typeof drawingCanvas>
+    arrangement: ReturnType<typeof createFullExportLayout>
+    bannersDrawn: boolean
+  }
+  let currentMap: MapDrawing | null = null
+  async function finishMap(): Promise<void> {
+    if (!currentMap) return
+    const active = currentMap
+    try {
+      maps.push({
+        stateId: active.stateId, title: active.title,
+        image: await abortable(encodeJpeg(active.drawing.canvas), signal),
+        width: active.arrangement.width, height: active.arrangement.height, columns: active.arrangement.columns,
+      })
+    } catch {
+      signal.throwIfAborted()
+      throw new Error(EXPORT_SIZE_ERROR)
+    } finally {
+      active.drawing.canvas.width = active.drawing.canvas.height = 0
+      currentMap = null
+    }
+  }
+  async function prepareMap(stateId: number): Promise<MapDrawing> {
+    if (currentMap?.stateId === stateId) return currentMap
+    await finishMap()
+    const plan = mapPlans.find((candidate) => candidate.stateId === stateId)
+    if (!plan) throw new Error('路线地图分卷不存在')
+    const prepared = await prepareFullCanvas(layoutForCards(layout, plan.cards), signal, maxSide)
+    const next: MapDrawing = {
+      stateId, title: plan.title, drawing: prepared,
+      arrangement: prepared.arrangement,
+      cardNumbers: new Map(plan.cards.map((card, index) => [card.number, index])),
+      bannersDrawn: false,
+    }
+    currentMap = next
+    return next
+  }
+  function releaseCurrentMap(): void {
+    if (currentMap) currentMap.drawing.canvas.width = currentMap.drawing.canvas.height = 0
+  }
   try {
+    const firstMap = mapPlans[0]
+    if (!firstMap) throw new Error('路线地图分卷不存在')
+    await prepareMap(firstMap.stateId)
     renderer = createRouteExportRenderer(snapshot)
     await abortable(document.fonts.ready, signal)
+    if (full) drawBanners(full.context, full.arrangement.banners)
     for (const page of layout.pages) {
       signal.throwIfAborted()
       const output = drawingCanvas(EXPORT_WIDTH, page.height)
       try {
+        drawBanners(output.context, page.banners, page.y)
         for (const card of page.cards) {
           signal.throwIfAborted()
           onProgress({ completed, total: layout.cards.length, message: `正在绘制路线 ${card.section} · 子图 ${card.part}/${card.parts}` })
@@ -107,9 +201,24 @@ export async function exportRouteImages(snapshot: RouteExportSnapshot, signal: A
           }
           try {
             output.context.drawImage(image, card.x, card.y - page.y)
-            const position = full.arrangement.positions[card.number - 1]
-            if (!position) throw new Error('路线子图位置缺失')
-            try { full.context.drawImage(image, position.x, position.y) }
+            if (full) {
+              const position = full.arrangement.positions[card.number - 1]
+              if (!position) throw new Error('路线子图位置缺失')
+              try { full.context.drawImage(image, position.x, position.y) }
+              catch {
+                full.canvas.width = full.canvas.height = 0
+                full = null
+              }
+            }
+            const mapDrawing = await prepareMap(card.stateId)
+            if (!mapDrawing.bannersDrawn) {
+              drawBanners(mapDrawing.drawing.context, mapDrawing.arrangement.banners)
+              mapDrawing.bannersDrawn = true
+            }
+            const mapIndex = mapDrawing.cardNumbers.get(card.number)
+            const mapPosition = mapIndex === undefined ? undefined : mapDrawing.arrangement.positions[mapIndex]
+            if (!mapPosition) throw new Error('分地图路线子图位置缺失')
+            try { mapDrawing.drawing.context.drawImage(image, mapPosition.x, mapPosition.y) }
             catch { throw new Error(EXPORT_SIZE_ERROR) }
           }
           finally { image.width = image.height = 0 }
@@ -118,16 +227,26 @@ export async function exportRouteImages(snapshot: RouteExportSnapshot, signal: A
         pages.push(await abortable(encodeJpeg(output.canvas), signal))
       } finally { output.canvas.width = output.canvas.height = 0 }
     }
+    await finishMap()
     onProgress({ completed, total: layout.cards.length, message: '正在完成 JPG 长图与手机分卷' })
-    let fullImage: Blob
-    try { fullImage = await abortable(encodeJpeg(full.canvas), signal) }
-    catch {
-      signal.throwIfAborted()
-      throw new Error(EXPORT_SIZE_ERROR)
+    let fullImage: Blob | null = null
+    if (full) {
+      try { fullImage = await abortable(encodeJpeg(full.canvas), signal) }
+      catch {
+        signal.throwIfAborted()
+        full.canvas.width = full.canvas.height = 0
+        full = null
+      }
     }
-    return { full: fullImage, fullSize: { width: full.arrangement.width, height: full.arrangement.height }, fullColumns: full.arrangement.columns, pages, layout }
+    return {
+      full: fullImage,
+      fullSize: full ? { width: full.arrangement.width, height: full.arrangement.height } : null,
+      fullColumns: full?.arrangement.columns ?? null,
+      maps, pages, layout,
+    }
   } finally {
     renderer?.dispose()
-    full.canvas.width = full.canvas.height = 0
+    releaseCurrentMap()
+    if (full) full.canvas.width = full.canvas.height = 0
   }
 }

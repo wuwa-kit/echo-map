@@ -1,10 +1,12 @@
 import type { GravityType, PointSourceFilter } from '../domain/types.ts'
 
 export const DEFAULT_STATE_ID = 8
+const WIKI_ECHO_ID_PREFIX = 'wiki-echo-'
+const WIKI_ECHO_ID_PATTERN = /^wiki-echo-(\d+)$/u
 const WIKI_SONATA_ID_PREFIX = 'wiki-sonata-'
 const WIKI_SONATA_ID_PATTERN = /^wiki-sonata-(\d+)$/u
 
-export type MobileSheet = 'filters' | 'route' | null
+export type MobileSheet = 'filters' | null
 export type EchoCostFilter = 1 | 3
 
 export interface MapViewportState {
@@ -22,7 +24,6 @@ export interface ExplorerUrlState {
   echoIds?: string[]
   sonataFilterIds?: string[]
   echoCostFilters?: EchoCostFilter[]
-  hiddenPointGroupIds?: string[]
   showProvisional?: boolean
   controlPanelCollapsed?: boolean
   mobileSheet?: MobileSheet
@@ -39,7 +40,6 @@ export interface ExplorerUrlSnapshot {
   echoIds: readonly string[]
   sonataFilterIds: readonly string[]
   echoCostFilters: readonly EchoCostFilter[]
-  hiddenPointGroupIds: readonly string[]
   showProvisional: boolean
   controlPanelCollapsed: boolean
   mobileSheet: MobileSheet
@@ -58,7 +58,6 @@ export interface ExplorerQueryValues {
   echoes?: ExplorerQueryValue
   sonatas?: ExplorerQueryValue
   costs?: ExplorerQueryValue
-  hiddenTypes?: ExplorerQueryValue
   provisional?: ExplorerQueryValue
   panel?: ExplorerQueryValue
   sheet?: ExplorerQueryValue
@@ -109,6 +108,19 @@ function sonataIdList(value: ExplorerQueryValue): string[] | undefined {
   return ids && ids.length > 0 ? ids : undefined
 }
 
+function echoIdList(value: ExplorerQueryValue): string[] | undefined {
+  const ids = idList(value)?.filter((id) => /^\d+$/u.test(id)).map((id) => `${WIKI_ECHO_ID_PREFIX}${id}`)
+  return ids && ids.length > 0 ? ids : undefined
+}
+
+function compactEchoIdList(ids: readonly string[]): string | undefined {
+  const sourceIds = ids.flatMap((id) => {
+    const match = id.match(WIKI_ECHO_ID_PATTERN)
+    return match?.[1] ? [match[1]] : []
+  })
+  return sourceIds.length > 0 ? [...new Set(sourceIds)].join(',') : undefined
+}
+
 function compactSonataIdList(ids: readonly string[]): string | undefined {
   const sourceIds = ids.flatMap((id) => {
     const match = id.match(WIKI_SONATA_ID_PATTERN)
@@ -145,13 +157,12 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
     countryId: integer(values.region),
     levelId: single(values.floor),
     compactFloors: single(values.floorStyle) === 'icons',
-    echoIds: idList(values.echoes),
+    echoIds: echoIdList(values.echoes),
     sonataFilterIds: sonataIdList(values.sonatas),
     echoCostFilters: costList(values.costs),
-    hiddenPointGroupIds: idList(values.hiddenTypes),
     showProvisional: booleanFlag(values.provisional),
     controlPanelCollapsed: booleanFlag(values.panel),
-    mobileSheet: sheet === 'filters' || sheet === 'route' ? sheet : null,
+    mobileSheet: sheet === 'filters' ? sheet : null,
     viewport: x !== undefined && y !== undefined && zoom !== undefined
       ? { center: [x, y], zoom }
       : undefined,
@@ -168,12 +179,9 @@ export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerS
     region: state.countryId === null ? undefined : String(state.countryId),
     floor: state.levelId ?? undefined,
     floorStyle: state.compactFloors ? 'icons' : undefined,
-    echoes: state.echoIds.length > 0 ? state.echoIds.join(',') : undefined,
+    echoes: compactEchoIdList(state.echoIds),
     sonatas: compactSonataIdList(state.sonataFilterIds),
     costs: state.echoCostFilters.length > 0 ? state.echoCostFilters.join(',') : undefined,
-    hiddenTypes: state.hiddenPointGroupIds.length > 0
-      ? [...state.hiddenPointGroupIds].sort().join(',')
-      : undefined,
     provisional: state.showProvisional ? undefined : '0',
     panel: state.controlPanelCollapsed ? '1' : undefined,
     sheet: state.mobileSheet ?? undefined,

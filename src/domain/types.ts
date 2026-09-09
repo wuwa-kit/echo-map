@@ -346,3 +346,22 @@ export interface RouteResult {
   algorithm: 'exact' | 'nearest-neighbor-2opt'
   startPointId: string | null
 }
+
+export interface RoutePlanGroup {
+  id: string
+  stateId: number
+  levelId: string | null
+  gravityType: GravityType
+  label: string
+  mapName: string
+  echoCount: number
+  matchingLocationCount: number
+  incompleteLocationCount: number
+  route: RouteResult
+}
+
+export interface RoutePlanResult {
+  groups: RoutePlanGroup[]
+  totalCost: number
+  totalPoints: number
+}

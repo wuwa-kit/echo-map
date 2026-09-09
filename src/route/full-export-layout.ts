@@ -1,4 +1,4 @@
-import { EXPORT_GAP, EXPORT_MARGIN, EXPORT_WIDTH, EXPORT_SIZE_ERROR } from './export-layout.ts'
+import { EXPORT_BANNER_HEIGHT, EXPORT_GAP, EXPORT_MARGIN, EXPORT_WIDTH, EXPORT_SIZE_ERROR } from './export-layout.ts'
 import type { ExportLayout } from './export-layout.ts'
 
 export const JPEG_MAX_SIDE = 65535
@@ -11,6 +11,7 @@ export interface FullExportLayout {
   height: number
   columns: number
   positions: { x: number; y: number }[]
+  banners: { routeGroupId: string; label: string; x: number; y: number; width: number; height: number }[]
 }
 
 // Pack the full image independently of mobile page boundaries, including at
@@ -22,8 +23,19 @@ export function createFullExportLayout(layout: ExportLayout, { minColumns = 2, m
     || layout.cards.reduce((area, card) => area + card.width * card.height, 0) > limit * limit) throw new Error(EXPORT_SIZE_ERROR)
   const maxColumns = Math.floor((limit - EXPORT_MARGIN * 2 + EXPORT_GAP) / COLUMN_STEP)
   for (let columns = Math.max(2, minColumns); columns <= maxColumns; columns += 1) {
+    const width = EXPORT_MARGIN * 2 + columns * COLUMN_STEP - EXPORT_GAP
     const bottoms = Array.from({ length: columns }, () => EXPORT_MARGIN)
+    const banners: FullExportLayout['banners'] = []
+    let activeGroupLabel: string | null = null
     const positions = layout.cards.map((card) => {
+      if (card.groupLabel !== activeGroupLabel) {
+        activeGroupLabel = card.groupLabel
+        if (card.groupLabel) {
+          const y = banners.length ? Math.max(...bottoms) : 0
+          banners.push({ routeGroupId: card.routeGroupId, label: card.groupLabel, x: 0, y, width, height: EXPORT_BANNER_HEIGHT })
+          bottoms.fill(y + EXPORT_BANNER_HEIGHT + EXPORT_GAP)
+        }
+      }
       const span = card.width > COLUMN_WIDTH ? 2 : 1
       let bestColumn = 0, top = Infinity
       for (let column = 0; column <= columns - span; column += 1) {
@@ -33,9 +45,8 @@ export function createFullExportLayout(layout: ExportLayout, { minColumns = 2, m
       for (let column = bestColumn; column < bestColumn + span; column += 1) bottoms[column] = top + card.height + EXPORT_GAP
       return { x: EXPORT_MARGIN + bestColumn * COLUMN_STEP, y: top }
     })
-    const width = EXPORT_MARGIN * 2 + columns * COLUMN_STEP - EXPORT_GAP
     const height = Math.max(...bottoms) - EXPORT_GAP + EXPORT_MARGIN
-    if (height <= limit) return { width, height, columns, positions }
+    if (height <= limit) return { width, height, columns, positions, banners }
   }
   throw new Error(EXPORT_SIZE_ERROR)
 }

@@ -11,6 +11,7 @@ import Fill from 'ol/style/Fill.js'
 import Icon from 'ol/style/Icon.js'
 import ImageState from 'ol/ImageState.js'
 import { shared as iconImageCache } from 'ol/style/IconImageCache.js'
+import RegularShape from 'ol/style/RegularShape.js'
 import Stroke from 'ol/style/Stroke.js'
 import Style from 'ol/style/Style.js'
 import Text from 'ol/style/Text.js'
@@ -38,6 +39,21 @@ class InteractionCluster extends Cluster {
   }
 }
 
+const FLOOR_BADGE_GEOMETRY = {
+  radius: 7,
+  lower: { offsetY: -1.25, radius: 3, scaleX: 1.08, scaleY: 0.65 },
+  upper: { offsetY: 2.5, radius: 3, scaleX: 1.15, scaleY: 0.7 },
+}
+
+const FLOOR_BADGE_LAYOUT = {
+  iconSize: 260,
+  flatDistance: 50,
+  bottom: 30,
+  right: 70,
+}
+
+const NAVIGATION_MARKER_SIZE = 36
+
 export function mapFeaturePointIds(feature: FeatureLike): string[] | undefined {
   const locations = feature.get('locations') as EchoMapLocation[] | undefined
   if (locations?.length) return locations.map(({ id }) => id)
@@ -60,6 +76,70 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   const backgroundNavigationSource = new VectorSource()
   const labelSource = new VectorSource()
   const echoCosts = new globalThis.Map<string, EchoDefinition['cost']>()
+  const exportMarkerScale = options.exportMode ? 0.6 : 1
+  const badge = FLOOR_BADGE_GEOMETRY
+  const floorBadgeStyleCache = new globalThis.Map<string, Style[]>()
+  // The stem visible above the official badge belongs to its underlying marker, not to the badge itself.
+  function floorBadgeStylesFor(markerSize: [number, number]): Style[] {
+    const key = markerSize.map((size) => size.toFixed(3)).join(':')
+    const cached = floorBadgeStyleCache.get(key)
+    if (cached) return cached
+    const layoutScale = Math.min(...markerSize) / FLOOR_BADGE_LAYOUT.iconSize
+    const flatDistance = FLOOR_BADGE_LAYOUT.flatDistance * layoutScale
+    const badgeScale = flatDistance / (Math.sqrt(3) * badge.radius)
+    const scaledBadge = (x: number, y: number): [number, number] => [x * badgeScale, y * badgeScale]
+    const x = markerSize[0] / 2
+      - FLOOR_BADGE_LAYOUT.right * layoutScale - flatDistance / 2
+    const y = -(markerSize[1] / 2
+      - FLOOR_BADGE_LAYOUT.bottom * layoutScale - badge.radius * badgeScale)
+    const styles = [
+      new Style({
+        zIndex: 1,
+        image: new RegularShape({
+          points: 6,
+          radius: badge.radius,
+          displacement: [x, y],
+          scale: scaledBadge(1, 1),
+          fill: new Fill({ color: 'rgba(0, 0, 0, 0.72)' }),
+          stroke: new Stroke({ color: '#e8dd93', width: 1.5 }),
+        }),
+      }),
+      new Style({
+        zIndex: 2,
+        image: new RegularShape({
+          points: 4,
+          radius: badge.lower.radius,
+          displacement: [x, y + badge.lower.offsetY * badgeScale],
+          scale: scaledBadge(badge.lower.scaleX, badge.lower.scaleY),
+          fill: new Fill({ color: '#7c754e' }),
+        }),
+      }),
+      new Style({
+        zIndex: 3,
+        image: new RegularShape({
+          points: 4,
+          radius: badge.upper.radius,
+          displacement: [x, y + badge.upper.offsetY * badgeScale],
+          scale: scaledBadge(badge.upper.scaleX, badge.upper.scaleY),
+          stroke: new Stroke({ color: '#fff', width: 1.2 }),
+        }),
+      }),
+    ]
+    floorBadgeStyleCache.set(key, styles)
+    return styles
+  }
+
+  function renderedMarkerSize(styles: readonly Style[]): [number, number] {
+    for (const style of styles) {
+      const image = style.getImage()
+      if (!(image instanceof Icon)) continue
+      const width = image.getWidth()
+      const height = image.getHeight()
+      if (width && height) return [width, height]
+    }
+    const fallback = NAVIGATION_MARKER_SIZE * exportMarkerScale
+    return [fallback, fallback]
+  }
   let clusterStyleCache = new WeakMap<FeatureLike, { members: Feature<Point>[]; locations: EchoMapLocation[]; styles: Style[] }>()
   const navigationStyleCache = new globalThis.Map<string, Style[]>()
   const labelStyleCache = new globalThis.Map<string, Style>()
@@ -67,6 +147,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   const groupMarkerStyles = createEchoMarkerStyles(redrawEchoLayers, options.pixelRatio)
   let echoDefinitions: readonly EchoDefinition[] = []
   let selectedEchoIds: ReadonlySet<string> | undefined
+  let selectedLevelId: string | null = null
   const bossMarkerStyles = createPortraitMarkerStyles(() => {
     navigationLayer.changed()
     backgroundNavigationLayer.changed()
@@ -144,10 +225,12 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     })
     if (feature instanceof Feature) feature.set('locations', locations, true)
     if (locations.length === 0) return undefined
-    const styles = locations.length === 1 ? echoStyle(locations[0] as EchoMapLocation)
+    const markerStyles = locations.length === 1 ? echoStyle(locations[0] as EchoMapLocation)
       : groupMarkerStyles.get(locations.flatMap((location) => echoMembers(location))
         .filter(({ echoId }) => !selectedEchoIds || selectedEchoIds.has(echoId)), echoDefinitions, { showText: false }).styles
-    resizeExportMarkers(styles)
+    resizeExportMarkers(markerStyles)
+    const styles = markerStyles && selectedLevelId === null && locations.some(({ levelId }) => levelId !== null)
+      ? [...markerStyles, ...floorBadgeStylesFor(renderedMarkerSize(markerStyles))] : markerStyles
     if (styles) clusterStyleCache.set(feature, { members, locations, styles })
     return styles
   }
@@ -166,7 +249,11 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
       : point.category === 'navigation' ? navigationStyle(point.location) : labelStyle(point.location)
     const artworkWidth = point.category === 'navigation' && point.location.iconUrl && !bossMarkerShape(point.location) ? 36 : undefined
     resizeExportMarkers(style, artworkWidth)
-    return style
+    const showFloorBadge = point.category !== 'region-name' && selectedLevelId === null
+      && point.location.levelId !== null
+      && (point.category !== 'navigation' || point.location.typeName !== '分层入口')
+    return showFloorBadge && Array.isArray(style)
+      ? [...style, ...floorBadgeStylesFor(renderedMarkerSize(style))] : style
   }
 
   function labelStyle(label: RegionLabel): Style {
@@ -250,6 +337,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   ): void {
     echoDefinitions = echoes
     selectedEchoIds = activeEchoIds
+    selectedLevelId = levelId
     clusterStyleCache = new WeakMap()
     echoCosts.clear()
     for (const echo of echoes) {
@@ -295,6 +383,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     backgroundClusters.dispose()
     bossMarkerStyles.dispose()
     echoCosts.clear()
+    floorBadgeStyleCache.clear()
     navigationStyleCache.clear()
     labelStyleCache.clear()
     for (const source of [echoSource, navigationSource, labelSource, backgroundEchoSource, backgroundNavigationSource]) {

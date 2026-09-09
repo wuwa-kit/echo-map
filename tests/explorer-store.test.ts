@@ -44,51 +44,6 @@ describe('explorer point group visibility', () => {
     expect(store.visibleEchoLocations.every((point) => echoMembers(point).some(({ echoId }) => sonataEchoIds.has(echoId)))).toBe(true)
   })
 
-  it('hides every point in an icon group without changing route eligibility', async () => {
-    const dataset = await readMapDataset()
-    const store = useExplorerStore()
-    store.setDataset(dataset)
-    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
-    store.setPointSourceFilters(['official'])
-    const multiTypeGroup = dataset.navigationPointGroups.find(({ typeIds }) => typeIds.length > 1)
-    if (!multiTypeGroup) {
-      throw new Error('测试数据缺少多类型图标分组')
-    }
-    const eligibleCount = store.routeEligibleNavigationPoints.length
-    const visibleSnapshot = store.hiddenPointGroupIds
-
-    store.setPointGroupVisible(multiTypeGroup.id, true)
-    expect(store.hiddenPointGroupIds).toBe(visibleSnapshot)
-
-    store.setPointGroupVisible(multiTypeGroup.id, false)
-
-    expect(store.hiddenPointGroupIds).not.toBe(visibleSnapshot)
-    expect(visibleSnapshot).toEqual([])
-    expect(store.hiddenPointGroupIds).toContain(multiTypeGroup.id)
-    expect(store.visibleNavigationPoints.some(({ groupId }) => groupId === multiTypeGroup.id)).toBe(false)
-    expect(store.routeEligibleNavigationPoints).toHaveLength(eligibleCount)
-
-    store.showAllPointGroups()
-    expect(store.hiddenPointGroupIds).toEqual([])
-    expect(store.visibleNavigationPoints.some(({ groupId }) => groupId === multiTypeGroup.id)).toBe(true)
-  })
-
-  it('restores a legacy hidden type id as its icon group', async () => {
-    const dataset = await readMapDataset()
-    const point = dataset.navigationPoints.find(({ stateId }) => stateId === 8)
-    if (!point) {
-      throw new Error('测试数据缺少默认地图定位点')
-    }
-    const store = useExplorerStore()
-    store.setDataset(dataset)
-    store.setOfficialPointLibrary(convertOfficialPoints(dataset))
-    store.setPointSourceFilters(['official'])
-
-    store.restoreUrlState({ pointSourceFilters: ['official'], hiddenPointGroupIds: [point.typeId] })
-
-    expect(store.hiddenPointGroupIds).toEqual([point.groupId])
-  })
-
   it('keeps explicit echo selection independent of sonata and search results', async () => {
     const dataset = await readMapDataset()
     const location = dataset.echoLocations.find(({ stateId, levelId }) => stateId === 8 && levelId === null)
@@ -108,8 +63,7 @@ describe('explorer point group visibility', () => {
   it('validates restored scope and IDs while preserving valid selections', async () => {
     const dataset = await readMapDataset()
     const echo = dataset.echoes[0]
-    const point = dataset.navigationPoints[0]
-    if (!echo || !point) throw new Error('测试数据缺少声骸或定位点')
+    if (!echo) throw new Error('测试数据缺少声骸')
     const store = useExplorerStore()
     store.setDataset(dataset)
     store.setOfficialPointLibrary(convertOfficialPoints(dataset))
@@ -121,7 +75,6 @@ describe('explorer point group visibility', () => {
       echoIds: ['unknown-echo', echo.id],
       sonataFilterIds: ['unknown-sonata', echo.sonataIds[0]],
       echoCostFilters: [echo.cost],
-      hiddenPointGroupIds: ['unknown-group', point.typeId, point.groupId],
     })
     expect(store.selectedStateId).toBe(8)
     expect(store.selectedCountryId).toBeNull()
@@ -129,7 +82,6 @@ describe('explorer point group visibility', () => {
     expect(store.selectedEchoIds).toEqual([echo.id])
     expect(store.sonataFilterIds).toEqual([echo.sonataIds[0]])
     expect(store.echoCostFilters).toEqual([echo.cost])
-    expect(store.hiddenPointGroupIds).toEqual([point.groupId])
   })
 
   it('combines candidate filters and keeps list search outside batch selection', async () => {
@@ -191,4 +143,5 @@ describe('explorer point group visibility', () => {
     store.toggleEcho(echo.id)
     expect(store.route).toBeNull()
   })
+
 })

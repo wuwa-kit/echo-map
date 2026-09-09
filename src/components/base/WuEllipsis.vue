@@ -12,13 +12,13 @@ const props = withDefaults(defineProps<{
   tooltip?: boolean
   tooltipText?: string
   placement?: WuTooltipPlacement
-  delay?: number
+  delayEnter?: number
 }>(), {
   text: '',
   tooltip: true,
   tooltipText: '',
   placement: 'top',
-  delay: 300,
+  delayEnter: 100,
 })
 const content = useTemplateRef<HTMLSpanElement>('contentRef')
 const overflowing = shallowRef(false)
@@ -54,7 +54,7 @@ defineExpose({ isOverflowing: overflowing })
 <template>
   <WuTooltip
     v-if="tooltip" v-bind="$attrs" :content="resolvedTooltipText" :disabled="!overflowing"
-    :placement="placement" :delay="delay" class="block min-w-0 max-w-full"
+    :placement="placement" :delay-enter="delayEnter" class="block min-w-0 max-w-full"
   >
     <span ref="contentRef" class="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap"><slot>{{ text }}</slot></span>
   </WuTooltip>

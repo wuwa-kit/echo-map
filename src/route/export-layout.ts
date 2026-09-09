@@ -1,4 +1,4 @@
-import type { RoutePoint, RouteResult } from '../domain/types.ts'
+import type { GravityType, RoutePlanResult, RoutePoint, RouteResult } from '../domain/types.ts'
 
 // Keep crop geometry and page breaks in reference pixels, independent of the
 // output density. A smaller download must not split routes or change map views.
@@ -6,12 +6,14 @@ const LAYOUT_WIDTH = 2000
 const LAYOUT_RATIO = 5
 const LAYOUT_MARGIN = 12
 const LAYOUT_GAP = 12
+const LAYOUT_BANNER_HEIGHT = 64
 export const EXPORT_RATIO = 4
 const OUTPUT_SCALE = EXPORT_RATIO / LAYOUT_RATIO
 const outputPixel = (value: number) => Math.round(value * OUTPUT_SCALE)
 export const EXPORT_WIDTH = outputPixel(LAYOUT_WIDTH)
 export const EXPORT_MARGIN = outputPixel(LAYOUT_MARGIN)
 export const EXPORT_GAP = outputPixel(LAYOUT_GAP)
+export const EXPORT_BANNER_HEIGHT = outputPixel(LAYOUT_BANNER_HEIGHT)
 export const EXPORT_MAX_PIXELS = 256 * 1024 * 1024
 export const EXPORT_SIZE_ERROR = '图片尺寸过大，生成失败'
 const FULL_WIDTH = LAYOUT_WIDTH - LAYOUT_MARGIN * 2
@@ -37,6 +39,12 @@ export interface ExportCard {
   parts: number
   start: RoutePoint | null
   floorTransition: boolean
+  routeGroupId: string
+  groupNumber: number
+  groupCount: number
+  groupLabel: string
+  mapName: string
+  gravityType: GravityType
   stateId: number
   levelId: string | null
   nodes: ExportNode[]
@@ -51,9 +59,19 @@ export interface ExportCard {
   y: number
 }
 
+export interface ExportBanner {
+  routeGroupId: string
+  label: string
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export interface ExportLayout {
   cards: ExportCard[]
-  pages: { y: number; height: number; cards: ExportCard[] }[]
+  banners: ExportBanner[]
+  pages: { y: number; height: number; cards: ExportCard[]; banners: ExportBanner[] }[]
   pageHeights: number[]
   width: number
   height: number
@@ -97,17 +115,41 @@ function intermediate(from: RoutePoint, to: RoutePoint, t: number): ExportNode {
   }
 }
 
-export function createExportLayout(route: RouteResult): ExportLayout {
-  if (!route.points.length) throw new Error('请先生成路线')
-  const sections: { nodes: ExportNode[]; start: RoutePoint | null; floorTransition: boolean; stateId: number; levelId: string | null }[] = []
-  let previous: RoutePoint | undefined
-  for (const point of route.points) {
-    const floorTransition = Boolean(previous && (previous.levelId !== point.levelId || previous.stateId !== point.stateId))
-    if (point.teleportFrom || floorTransition || !sections.length) {
-      sections.push({ nodes: point.teleportFrom ? [{ point: point.teleportFrom, targetId: null }] : [], start: point.teleportFrom ?? null, floorTransition: floorTransition && !point.teleportFrom, stateId: point.stateId, levelId: point.levelId })
+export function createExportLayout(routeSource: RouteResult | RoutePlanResult, gravityType: GravityType = 1): ExportLayout {
+  const groups = 'groups' in routeSource ? routeSource.groups : [{
+    id: 'current', stateId: routeSource.points[0]?.stateId ?? 0, levelId: routeSource.points[0]?.levelId ?? null,
+    gravityType, label: '', mapName: '', echoCount: 0,
+    matchingLocationCount: routeSource.points.length, incompleteLocationCount: 0, route: routeSource,
+  }]
+  if (!groups.some(({ route }) => route.points.length > 0)) throw new Error('请先生成路线')
+  const sections: {
+    nodes: ExportNode[]
+    start: RoutePoint | null
+    floorTransition: boolean
+    stateId: number
+    levelId: string | null
+    routeGroupId: string
+    groupNumber: number
+    groupLabel: string
+    mapName: string
+    gravityType: GravityType
+  }[] = []
+  for (const [groupIndex, group] of groups.entries()) {
+    let previous: RoutePoint | undefined
+    for (const point of group.route.points) {
+      const floorTransition = Boolean(previous && (previous.levelId !== point.levelId || previous.stateId !== point.stateId))
+      const previousSection = sections.at(-1)
+      if (point.teleportFrom || floorTransition || previousSection?.routeGroupId !== group.id) {
+        sections.push({
+          nodes: point.teleportFrom ? [{ point: point.teleportFrom, targetId: null }] : [], start: point.teleportFrom ?? null,
+          floorTransition: floorTransition && !point.teleportFrom, stateId: point.stateId, levelId: point.levelId,
+          routeGroupId: group.id, groupNumber: groupIndex + 1, groupLabel: group.label,
+          mapName: group.mapName, gravityType: group.gravityType,
+        })
+      }
+      sections.at(-1)?.nodes.push({ point, targetId: point.id })
+      previous = point
     }
-    sections.at(-1)?.nodes.push({ point, targetId: point.id })
-    previous = point
   }
   const cards: ExportCard[] = []
   for (const [sectionIndex, section] of sections.entries()) {
@@ -158,6 +200,8 @@ export function createExportLayout(route: RouteResult): ExportLayout {
       // two columns if its own route cannot fit one at the maximum resolution.
       const cardWidth = right - left > (HALF_WIDTH / LAYOUT_RATIO - MAP_PADDING * 2) * 3 ? FULL_WIDTH : HALF_WIDTH
       cards.push({ number: cards.length + 1, section: sectionIndex + 1, part: index + 1, parts: chunks.length, start: section.start, floorTransition: section.floorTransition,
+        routeGroupId: section.routeGroupId, groupNumber: section.groupNumber, groupCount: groups.length,
+        groupLabel: section.groupLabel, mapName: section.mapName, gravityType: section.gravityType,
         stateId: section.stateId, levelId: section.levelId,
         nodes, targetIds: nodes.flatMap(({ targetId }) => targetId ? [targetId] : []),
         ...fitCard(nodes, cardWidth), x: LAYOUT_MARGIN, y: 0,
@@ -165,7 +209,9 @@ export function createExportLayout(route: RouteResult): ExportLayout {
     }
   }
   const pages: ExportLayout['pages'] = []
+  const banners: ExportBanner[] = []
   let pageCards: ExportCard[] = []
+  let pageBanners: ExportBanner[] = []
   let columns: [number, number] = [LAYOUT_MARGIN, LAYOUT_MARGIN]
   let height = 0
   function finishPage(): void {
@@ -173,15 +219,35 @@ export function createExportLayout(route: RouteResult): ExportLayout {
     const only = pageCards.length === 1 ? pageCards[0] : undefined
     if (only) {
       Object.assign(only, fitCard(only.nodes, FULL_WIDTH))
-      columns = [LAYOUT_MARGIN + only.height + LAYOUT_GAP, LAYOUT_MARGIN]
+      const bottom = only.y - height + only.height + LAYOUT_GAP
+      columns = [bottom, bottom]
     }
     const pageHeight = Math.max(...columns) - LAYOUT_GAP + LAYOUT_MARGIN
-    pages.push({ y: height, height: pageHeight, cards: pageCards })
+    pages.push({ y: height, height: pageHeight, cards: pageCards, banners: pageBanners })
     height += pageHeight
     pageCards = []
+    pageBanners = []
     columns = [LAYOUT_MARGIN, LAYOUT_MARGIN]
   }
+  let activeGroupLabel: string | null = null
   for (const card of cards) {
+    if (card.groupLabel !== activeGroupLabel) {
+      activeGroupLabel = card.groupLabel
+      if (card.groupLabel) {
+        let top = pageCards.length ? Math.max(...columns) : 0
+        if (pageCards.length && top + LAYOUT_BANNER_HEIGHT + LAYOUT_GAP + card.height + LAYOUT_MARGIN > 4000) {
+          finishPage()
+          top = 0
+        }
+        const banner: ExportBanner = {
+          routeGroupId: card.routeGroupId, label: card.groupLabel,
+          x: 0, y: height + top, width: LAYOUT_WIDTH, height: LAYOUT_BANNER_HEIGHT,
+        }
+        banners.push(banner)
+        pageBanners.push(banner)
+        columns = [top + banner.height + LAYOUT_GAP, top + banner.height + LAYOUT_GAP]
+      }
+    }
     const full = card.width === FULL_WIDTH
     let column = columns[0] <= columns[1] ? 0 : 1
     let top = full ? Math.max(...columns) : columns[column] ?? LAYOUT_MARGIN
@@ -208,9 +274,15 @@ export function createExportLayout(route: RouteResult): ExportLayout {
     card.x = outputPixel(card.x)
     card.y = outputPixel(card.y)
   }
+  for (const banner of banners) {
+    banner.width = outputPixel(banner.x + banner.width) - outputPixel(banner.x)
+    banner.height = outputPixel(banner.y + banner.height) - outputPixel(banner.y)
+    banner.x = outputPixel(banner.x)
+    banner.y = outputPixel(banner.y)
+  }
   for (const page of pages) {
     page.height = outputPixel(page.y + page.height) - outputPixel(page.y)
     page.y = outputPixel(page.y)
   }
-  return { width: EXPORT_WIDTH, height: outputPixel(height), cards, pages, pageHeights: pages.map(({ height }) => height), sections: sections.length }
+  return { width: EXPORT_WIDTH, height: outputPixel(height), cards, banners, pages, pageHeights: pages.map(({ height }) => height), sections: sections.length }
 }

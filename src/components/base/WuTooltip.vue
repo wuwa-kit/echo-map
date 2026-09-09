@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onScopeDispose, shallowRef, useSlots, useTemplateRef, watch } from 'vue'
-import { useEventListener, useMutationObserver, useResizeObserver, useSupported } from '@vueuse/core'
+import { useElementHover, useEventListener, useMutationObserver, useResizeObserver, useSupported } from '@vueuse/core'
 import { tooltipPosition } from './tooltip-position.ts'
 import type { WuTooltipPlacement } from './tooltip-position.ts'
 
@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<{
   content?: string
   disabled?: boolean
   placement?: WuTooltipPlacement
-  delay?: number
+  delayEnter?: number
   gap?: number
   viewportMargin?: number
   maxWidth?: number
@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<{
   content: '',
   disabled: false,
   placement: 'top',
-  delay: 300,
+  delayEnter: 100,
   gap: 8,
   viewportMargin: 12,
   maxWidth: 240,
@@ -31,14 +31,9 @@ const openState = shallowRef(false)
 const isOpen = computed(() => openState.value)
 const hasContent = computed(() => props.content.trim().length > 0 || Boolean(slots.content))
 const isSupported = useSupported(() => typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype)
-let showTimer: ReturnType<typeof setTimeout> | null = null
+const hovered = useElementHover(trigger, { delayEnter: Math.max(0, props.delayEnter) })
+const pointerType = shallowRef('')
 let resizeFrame: number | null = null
-
-function clearShowTimer(): void {
-  if (showTimer === null) return
-  clearTimeout(showTimer)
-  showTimer = null
-}
 
 function updatePosition(): void {
   const element = panel.value
@@ -77,23 +72,19 @@ function schedulePositionUpdate(): void {
 
 function open(): void {
   const element = panel.value
-  showTimer = null
   if (!isSupported.value || props.disabled || !hasContent.value || !element?.isConnected || element.matches(':popover-open')) return
   element.showPopover({ source: trigger.value ?? undefined })
   updatePosition()
 }
 
-function show(event?: PointerEvent): void {
-  if (event?.pointerType === 'touch' || props.disabled || !hasContent.value) return
-  clearShowTimer()
-  if (props.delay <= 0) open()
-  else showTimer = setTimeout(open, props.delay)
-}
-
 function hide(): void {
-  clearShowTimer()
   const element = panel.value
   if (isSupported.value && element?.isConnected && element.matches(':popover-open')) element.hidePopover()
+}
+
+function recordPointer(event: PointerEvent): void {
+  pointerType.value = event.pointerType
+  if (event.pointerType === 'touch') hide()
 }
 
 function onToggle(): void {
@@ -105,7 +96,10 @@ function onToggle(): void {
   else emit('closed')
 }
 
-watch([() => props.disabled, hasContent], ([disabled, content]) => { if (disabled || !content) hide() })
+watch([hovered, pointerType, () => props.disabled, hasContent], ([hovering, input, disabled, content]) => {
+  if (hovering && input !== 'touch' && !disabled && content) open()
+  else hide()
+})
 watch(() => [props.content, props.placement, props.gap, props.viewportMargin, props.maxWidth], updatePosition, { flush: 'post' })
 useEventListener(window, 'resize', updatePosition, { passive: true })
 useEventListener(window, 'scroll', updatePosition, { capture: true, passive: true })
@@ -113,21 +107,20 @@ useEventListener(window.visualViewport, ['resize', 'scroll'], updatePosition, { 
 useResizeObserver([trigger, panel], schedulePositionUpdate)
 useMutationObserver(panel, updatePosition, { childList: true, subtree: true, characterData: true })
 onScopeDispose(() => {
-  clearShowTimer()
   if (resizeFrame !== null) cancelAnimationFrame(resizeFrame)
 })
 
-defineExpose({ isOpen, isSupported, show, hide, updatePosition })
+defineExpose({ isOpen, isSupported, show: open, hide, updatePosition })
 </script>
 
 <template>
   <span
     v-bind="$attrs" ref="triggerRef" class="min-w-0"
-    @pointerenter="show" @pointerleave="hide" @pointerdown="hide"
+    @pointerenter="recordPointer" @pointerdown="recordPointer"
   ><slot /></span>
   <span
     ref="panelRef" popover="manual" :hidden="!isSupported"
-    class="pointer-events-none fixed inset-auto m-0 w-max box-border select-none overflow-hidden break-words border-0 rounded-5px bg-[#e5eee7] px-10px py-7px text-13px text-[#263b31] font-600 leading-18px shadow-lg [&:popover-open]:block"
+    class="wu-floating-motion pointer-events-none fixed inset-auto m-0 w-max box-border select-none overflow-hidden break-words border-0 rounded-5px bg-[#e5eee7] px-10px py-7px text-13px text-[#263b31] font-600 leading-18px shadow-lg [&:popover-open]:block"
     @toggle="onToggle"
   ><slot name="content">{{ content }}</slot></span>
 </template>

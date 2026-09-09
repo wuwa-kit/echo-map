@@ -193,7 +193,7 @@ useEventListener(window, 'beforeunload', (event) => {
         <WuScrollArea class="mt-10px min-h-0 flex-1">
           <div v-if="!filteredPoints.length" class="py-24px text-center text-13px text-[#7e9e8d]">{{ library.points.length ? '没有匹配的点位' : '从第一处实测点位开始。' }}</div>
           <button v-for="point in filteredPoints.slice(0, 100)" :key="point.id" type="button" class="mb-7px w-full rounded-8px border border-[var(--line)] bg-[#10241b] p-11px text-left" :class="point.id === draft.id ? 'border-[#65f1c2]' : ''" @click="selectPoint(point.id)">
-            <div class="mb-6px flex items-center justify-between text-10px tracking-wide"><span class="text-[#9ebaac]">{{ point.kind === 'echo' ? '刷取点' : '定位点' }}</span><span :class="point.status === 'verified' ? 'text-[#77e5b6]' : 'text-[#e2bd7f]'">{{ point.status === 'imported' ? '官方 · Z=0' : point.status === 'verified' ? '人工 · 已核验' : '人工 · 草稿' }}</span></div>
+            <div class="mb-6px flex items-center justify-between text-10px tracking-wide"><span class="text-[#9ebaac]">{{ point.kind === 'echo' ? '刷取点' : '定位点' }}</span><span :class="point.status === 'verified' ? 'text-[#77e5b6]' : 'text-[#e2bd7f]'">{{ point.status === 'imported' ? '官方' : point.status === 'verified' ? '人工 · 已核验' : '人工 · 草稿' }}</span></div>
             <div class="text-13px leading-relaxed">{{ pointTitle(point, dataset) }}</div><div class="mt-6px font-mono text-11px text-[#7d9e8c]">{{ Object.values(point.coordinate).map((value) => value ?? '—').join(', ') }}</div>
           </button>
           <div v-if="filteredPoints.length > 100" class="py-10px text-12px text-[#7e9e8d]">共 {{ filteredPoints.length }} 处，显示前 100 处。可搜索或输入 XYZ 查找附近点。</div>
@@ -253,7 +253,7 @@ useEventListener(window, 'beforeunload', (event) => {
           <div v-if="Object.values(draft.coordinate).some((value) => value === null)" class="mt-8px text-12px text-[#91ae9e]">填写完整 XYZ 后自动查找同地图、同楼层的已有刷取点。</div>
           <div v-else-if="!nearbyPoints.length" class="mt-8px text-12px text-[#91ae9e]">附近没有匹配点，可以新建。</div>
           <template v-else>
-            <div class="mt-8px text-12px text-[#e1c18c]">找到 {{ nearbyPoints.length }} 处候选。官方点仅比较 XY，Z=0 不代表实际高度。</div>
+            <div class="mt-8px text-12px text-[#e1c18c]">找到 {{ nearbyPoints.length }} 处候选。</div>
             <div v-for="nearby in nearbyPoints.slice(0, 8)" :key="nearby.point.id" class="mt-8px rounded-7px bg-[#1a3025] p-9px">
               <div class="text-12px leading-relaxed">{{ pointTitle(nearby.point, dataset) }}</div>
               <div class="mt-4px font-mono text-11px text-[#9cb6a6]">XYZ {{ Object.values(nearby.point.coordinate).map((value) => value ?? '—').join(', ') }}</div>
@@ -298,7 +298,7 @@ useEventListener(window, 'beforeunload', (event) => {
         </div>
         <div class="mt-16px block text-12px text-[#91ae9e]">备注<WuInput class="mt-5px" :model-value="draft.note" :disabled="busy" placeholder="入口、地形、核验说明…" @update:model-value="store.setNote" /></div>
         <div class="sticky bottom-0 mt-16px border-t border-[var(--line)] bg-[#0d1e16] pt-12px">
-          <div class="mb-8px text-11px text-[#8daa99]">{{ draft.kind === 'echo' ? '核验 XYZ 和本次已知怪物即可保存；清单不必一次补齐。同种声骸再次追加时取较大数量。' : '核验图标点位 XYZ 和传送能力后保存；实际落点留空时按图标点位规划。' }}</div>
+          <div class="mb-8px text-11px text-[#8daa99]">{{ draft.kind === 'echo' ? '核验 XYZ 和本次已知怪物即可保存；清单不必一次补齐。同种声骸再次追加时取较大数量。' : '核验图标点位 XYZ 和传送能力后保存。' }}</div>
           <div class="grid grid-cols-2 gap-6px"><button :class="buttonClass" :disabled="busy" @click="save('draft')">保存草稿</button><button class="min-h-42px rounded-7px border-0 bg-[#65f1c2] px-8px text-13px text-[#092519] font-600 disabled:opacity-40" :disabled="busy" @click="save('verified')">{{ busy ? '保存中…' : '核验并保存' }}</button></div>
           <button :class="buttonClass" class="mt-6px w-full" :disabled="busy" @click="save('verified', true)">核验保存，继续下一处 →</button>
           <div class="mt-7px flex flex-wrap gap-5px"><button :class="buttonClass" :disabled="busy" @click="runDraftAction(store.copyPoint)">复制到新点</button><button :class="buttonClass" :disabled="busy" @click="runDraftAction(store.discardChanges)">放弃修改</button><button v-if="existing" :class="buttonClass" class="text-[#e5ad9a]" :disabled="busy" @click="runDraftAction(store.deletePoint)">删除点位</button></div>

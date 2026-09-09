@@ -2,12 +2,16 @@ import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 
 const controlPanelSourceUrl = new URL('../src/components/ControlPanel.vue', import.meta.url)
-const mapScopeFilterSourceUrl = new URL('../src/components/filters/MapScopeFilter.vue', import.meta.url)
+const routePanelSourceUrl = new URL('../src/components/RoutePanel.vue', import.meta.url)
+const explorerViewSourceUrl = new URL('../src/views/ExplorerView.vue', import.meta.url)
 
 describe('control panel layout', () => {
   it('omits the dataset counters and current base-map label', async () => {
-    const controlPanelSource = await readFile(controlPanelSourceUrl, 'utf8')
-    const mapScopeFilterSource = await readFile(mapScopeFilterSourceUrl, 'utf8')
+    const [controlPanelSource, routePanelSource, explorerViewSource] = await Promise.all([
+      readFile(controlPanelSourceUrl, 'utf8'),
+      readFile(routePanelSourceUrl, 'utf8'),
+      readFile(explorerViewSourceUrl, 'utf8'),
+    ])
 
     expect(controlPanelSource).not.toContain('dataset.report.includedEchoCount')
     expect(controlPanelSource).not.toContain('grid-cols-3')
@@ -23,8 +27,28 @@ describe('control panel layout', () => {
     expect(controlPanelSource).not.toContain('浏览官方资产 →')
     expect(controlPanelSource).not.toContain('打开点位录入 →')
     expect(controlPanelSource).not.toContain('canEdit')
-    expect(mapScopeFilterSource).not.toContain('当前底图')
-    expect(mapScopeFilterSource).not.toContain('activeMapName')
-    expect(mapScopeFilterSource).toContain('<div v-if="supportsGravity"')
+    expect(controlPanelSource).not.toContain('NavigationPointFilter')
+    expect(controlPanelSource).not.toContain('point-filters')
+    expect(controlPanelSource).not.toContain('>定位点</button>')
+    expect(controlPanelSource).not.toContain('MapScopeFilter')
+    expect(controlPanelSource).not.toContain('重力状态')
+    expect(controlPanelSource.indexOf('<RoutePanel')).toBeGreaterThan(controlPanelSource.indexOf('<EchoFilter'))
+    expect(routePanelSource).not.toContain('三维刷取路线')
+    expect(routePanelSource).not.toContain('ROUTE LAB')
+    expect(routePanelSource).not.toContain('>路线规划</span>')
+    expect(routePanelSource).not.toContain('图可规划')
+    expect(routePanelSource).not.toContain('待补 XYZ')
+    expect(routePanelSource).not.toContain('可用传送点')
+    expect(routePanelSource).not.toContain('距离成本')
+    expect(routePanelSource).not.toContain('清除路线')
+    expect(routePanelSource).toContain("return '生成路线'")
+    expect(routePanelSource).toContain("return '重新生成路线'")
+    expect(routePanelSource).toContain(": '取消生成'")
+    expect(routePanelSource).toContain("return '请选择声骸'")
+    expect(routePanelSource).toContain("return '暂无可规划点位'")
+    expect(routePanelSource).toContain("'导出路线'")
+    expect(explorerViewSource).not.toContain("import RoutePanel from '../components/RoutePanel.vue'")
+    expect(explorerViewSource).not.toContain('routeDockRef')
+    expect(explorerViewSource).not.toContain("openSheet('route')")
   })
 })

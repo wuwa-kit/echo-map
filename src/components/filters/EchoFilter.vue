@@ -7,9 +7,9 @@ import WuCheckBox from '../base/WuCheckBox.vue'
 import WuInput from '../base/WuInput.vue'
 import WuMultiSelect from '../base/WuMultiSelect.vue'
 import WuSvg from '../base/WuSvg.vue'
-import { echoMembers } from '../../domain/point-library.ts'
-import { matchesGravity } from '../../domain/gravity.ts'
+import WuTooltip from '../base/WuTooltip.vue'
 import type { EchoCostFilter } from '../../url/explorer-url.ts'
+import { echoLocationCoverage } from '../../route/route-groups.ts'
 
 defineProps<{ compact: boolean }>()
 
@@ -18,6 +18,13 @@ const { supportsGravity, selectedGravity } = storeToRefs(store)
 const { dataset, allEchoLocations, candidateEchoes, echoCostFilters, echoSearch, filteredEchoes, selectedEchoIds, selectedStateId, sonataFilterIds } = storeToRefs(store)
 
 const selectedEchoIdSet = computed(() => new Set(selectedEchoIds.value))
+const selectedEchoes = computed(() => {
+  const echoesById = new Map(dataset.value?.echoes.map((echo) => [echo.id, echo]) ?? [])
+  return selectedEchoIds.value.flatMap((id) => {
+    const echo = echoesById.get(id)
+    return echo ? [echo] : []
+  })
+})
 const currentSelectedCount = computed(() => candidateEchoes.value.filter(({ id }) => selectedEchoIdSet.value.has(id)).length)
 const allCurrentSelected = computed(() => candidateEchoes.value.length > 0 && currentSelectedCount.value === candidateEchoes.value.length)
 const someCurrentSelected = computed(() => currentSelectedCount.value > 0 && !allCurrentSelected.value)
@@ -38,15 +45,9 @@ function setCurrentSelection(selected: boolean): void {
   else store.deselectCandidateEchoes()
 }
 
-const locationCountByEcho = computed(() => {
-  const counts = new Map<string, number>()
-  for (const location of allEchoLocations.value) {
-    if (location.stateId === selectedStateId.value && matchesGravity(location.gravityType, supportsGravity.value ? selectedGravity.value : null)) {
-      for (const { echoId } of echoMembers(location)) counts.set(echoId, (counts.get(echoId) ?? 0) + 1)
-    }
-  }
-  return counts
-})
+const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCoverage(
+  allEchoLocations.value, selectedStateId.value, selectedGravity.value, dataset.value,
+) : new Map())
 </script>
 
 <template>
@@ -115,10 +116,24 @@ const locationCountByEcho = computed(() => {
         <img loading="lazy" decoding="async" class="h-38px w-38px object-contain" :src="echo.iconUrl" />
         <span class="flex overflow-hidden flex-col items-start gap-3px">
           <span class="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-14px min-[1024px]:text-11px text-[#dce9e3] font-[560]">{{ echo.name }}</span>
-          <span class="text-12px min-[1024px]:text-9px text-[#70877e]">COST {{ echo.cost }} · {{ locationCountByEcho.get(echo.id) ?? 0 }} 处</span>
+          <span
+            class="text-12px min-[1024px]:text-9px"
+            :class="(locationCoverageByEcho.get(echo.id)?.current ?? 0) === 0 && (locationCoverageByEcho.get(echo.id)?.total ?? 0) > 0 ? 'text-[#d3b680]' : 'text-[#70877e]'"
+          >COST {{ echo.cost }} · 当前 {{ locationCoverageByEcho.get(echo.id)?.current ?? 0 }} / 全部 {{ locationCoverageByEcho.get(echo.id)?.total ?? 0 }} 处<span v-if="(locationCoverageByEcho.get(echo.id)?.stateCount ?? 0) > 1"> · {{ locationCoverageByEcho.get(echo.id)?.stateCount }} 图</span></span>
         </span>
         <span class="text-center text-13px text-[var(--accent)]">{{ selectedEchoIds.includes(echo.id) ? '✓' : '+' }}</span>
       </button>
     </WuScrollArea>
+    <div v-if="selectedEchoes.length" class="mt-10px min-w-0 border-t border-[var(--line)] pt-10px">
+      <div class="min-w-0 overflow-x-auto overscroll-x-contain pb-2px">
+        <div class="w-max flex gap-5px">
+          <WuTooltip v-for="echo in selectedEchoes" :key="echo.id" :content="echo.name" placement="top" :gap="6" class="shrink-0">
+            <button type="button" class="h-36px w-36px shrink-0 flex cursor-pointer items-center justify-center rounded-6px border border-[rgba(101,241,194,0.34)] bg-[rgba(34,65,55,0.66)] p-2px hover:border-[rgba(101,241,194,0.72)] hover:bg-[#264b3c]" @click="store.toggleEcho(echo.id)">
+              <img class="h-30px w-30px object-contain" :src="echo.iconUrl" />
+            </button>
+          </WuTooltip>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

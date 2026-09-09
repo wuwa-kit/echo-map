@@ -11,7 +11,11 @@ vi.mock('../src/route/image-export.ts')
 const exporter = vi.mocked(exportRouteImages)
 const dataset = await readMapDataset()
 const route: RouteResult = { points: [{ id: 'a', name: '声骸', echoId: null, stateId: 8, levelId: null, coordinate: { x: 10, y: 20, z: 0 }, mapCoordinate: [10, 20] }], algorithm: 'exact', totalCost: 0, startPointId: null }
-const images = { full: new Blob(['full'], { type: 'image/jpeg' }), fullSize: { width: 2994, height: 1800 }, fullColumns: 3, pages: [new Blob(['page'], { type: 'image/jpeg' })], layout: createExportLayout(route) }
+const images = {
+  full: new Blob(['full'], { type: 'image/jpeg' }), fullSize: { width: 2994, height: 1800 }, fullColumns: 3,
+  maps: [{ stateId: 8, title: '地表地图', image: new Blob(['map'], { type: 'image/jpeg' }), width: 1600, height: 1800, columns: 2 }],
+  pages: [new Blob(['page'], { type: 'image/jpeg' })], layout: createExportLayout(route),
+}
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -41,7 +45,7 @@ describe('route export actions', () => {
     expect(store.open).toBe(true)
     const revoke = vi.spyOn(URL, 'revokeObjectURL')
     store.dispose()
-    expect(revoke).toHaveBeenCalledTimes(2)
+    expect(revoke).toHaveBeenCalledTimes(3)
     revoke.mockRestore()
   })
 
@@ -77,6 +81,17 @@ describe('route export actions', () => {
     expect(store.status).toBe('error')
     expect(store.error).toBe('图片尺寸过大，生成失败')
     expect(store.artifacts).toBeNull()
+    store.dispose()
+  })
+
+  it('keeps per-map downloads when the combined image cannot be created', async () => {
+    exporter.mockResolvedValue({ ...images, full: null, fullSize: null, fullColumns: null })
+    const store = useRouteExportStore()
+    await store.start()
+    expect(store.status).toBe('ready')
+    expect(store.artifacts?.fullUrl).toBeNull()
+    expect(store.artifacts?.maps.map(({ title }) => title)).toEqual(['地表地图'])
+    expect(store.artifacts?.pages).toHaveLength(1)
     store.dispose()
   })
 })
