@@ -27,6 +27,28 @@ describe('route image layout', () => {
     ])
   })
 
+  it('repeats the active area banner at the top of every mobile page', () => {
+    const points = Array.from({ length: 20 }, (_, index) => ({
+      ...point(`target-${index}`, index * 1000),
+      teleportFrom: point(`start-${index}`, index * 1000, -600),
+    }))
+    const result = route(points)
+    const plan: RoutePlanResult = {
+      groups: [{
+        id: 'huanglong-jinzhou', stateId: 8, levelId: null, gravityType: 1,
+        label: '瑝珑-今州', mapName: '地表地图', echoCount: 1,
+        matchingLocationCount: points.length, incompleteLocationCount: 0, route: result,
+      }],
+      totalCost: 0,
+      totalPoints: points.length,
+    }
+    const layout = createExportLayout(plan)
+    expect(layout.pages.length).toBeGreaterThan(1)
+    for (const page of layout.pages) {
+      expect(page.banners[0]).toMatchObject({ routeGroupId: 'huanglong-jinzhou', label: '瑝珑-今州', y: page.y })
+    }
+  })
+
   it.each([[1e9, 0], [0, 1e9]])('rejects oversized routes to %s, %s before expanding their intermediate nodes', (x, y) => {
     let reads = 0
     const destination: RoutePoint = {

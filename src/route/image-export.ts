@@ -1,17 +1,17 @@
 import { abortable, createRouteExportRenderer } from '../map/route-export.ts'
 import type { RouteExportSnapshot } from '../map/route-export.ts'
-import { EXPORT_WIDTH, EXPORT_MAX_PIXELS, createExportLayout } from './export-layout.ts'
+import { EXPORT_WIDTH, createExportLayout } from './export-layout.ts'
 import type { ExportLayout } from './export-layout.ts'
 import { encodeJpeg } from './jpeg-encoder.ts'
-import { createFullExportLayout, EXPORT_SIZE_ERROR, JPEG_MAX_SIDE } from './full-export-layout.ts'
+import { createFullExportLayouts, EXPORT_SIZE_ERROR, JPEG_MAX_SIDE } from './full-export-layout.ts'
+import type { FullExportLayout } from './full-export-layout.ts'
 import { createRegionalExportPlan } from './export-region-groups.ts'
 
 export interface RouteExportProgress { completed: number; total: number; message: string }
+export interface ExportedRouteImage { image: Blob; width: number; height: number; columns: 2 }
 export interface RouteExportImages {
-  full: Blob | null
-  fullSize: { width: number; height: number } | null
-  fullColumns: number | null
-  maps: { stateId: number, title: string, image: Blob, width: number, height: number, columns: number }[]
+  routes: ExportedRouteImage[]
+  maps: (ExportedRouteImage & { stateId: number; title: string; part: number; parts: number })[]
   pages: Blob[]
   layout: ExportLayout
 }
@@ -76,26 +76,23 @@ async function jpegCanvasSideLimit(signal: AbortSignal): Promise<number> {
   return low
 }
 
-async function prepareFullCanvas(layout: ExportLayout, signal: AbortSignal, maxSide: number) {
-  let arrangement = createFullExportLayout(layout, { maxSide })
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+async function prepareRouteLayouts(layout: ExportLayout, signal: AbortSignal, maxHeight: number): Promise<{ layouts: FullExportLayout[]; maxHeight: number }> {
+  let limit = maxHeight
+  for (let attempt = 0; attempt < 8; attempt += 1) {
     signal.throwIfAborted()
+    const layouts = createFullExportLayouts(layout, { maxHeight: limit })
+    const tallest = layouts.reduce((result, candidate) => candidate.height > result.height ? candidate : result)
     let drawing: ReturnType<typeof drawingCanvas> | null = null
     try {
-      // Avoid allocating more than 1 GiB for a single RGBA surface. Changing
-      // columns fixes side limits, but cannot make unlimited pixel area viable.
-      if (arrangement.width * arrangement.height > EXPORT_MAX_PIXELS) throw new Error(EXPORT_SIZE_ERROR)
-      drawing = drawingCanvas(arrangement.width, arrangement.height)
-      // Probe the actual browser encoder before loading/rendering every card.
-      // Canvas and JPEG implementations can have lower limits than the format.
+      // Test the real two-column surface. A one-pixel side probe cannot detect
+      // allocation limits caused by the decoded pixel area.
+      drawing = drawingCanvas(tallest.width, tallest.height)
       await abortable(encodeJpeg(drawing.canvas), signal)
-      return { ...drawing, arrangement }
+      return { layouts, maxHeight: limit }
     } catch {
-      if (drawing) drawing.canvas.width = drawing.canvas.height = 0
       signal.throwIfAborted()
-      if (attempt === 1) break
-      arrangement = createFullExportLayout(layout, { maxSide, minColumns: arrangement.columns + 1 })
-    }
+      limit = Math.floor(Math.min(limit, tallest.height) / 2)
+    } finally { if (drawing) drawing.canvas.width = drawing.canvas.height = 0 }
   }
   throw new Error(EXPORT_SIZE_ERROR)
 }
@@ -105,86 +102,135 @@ function layoutForCards(layout: ExportLayout, cards: ExportLayout['cards']): Exp
   return { ...layout, cards, banners: layout.banners.filter(({ routeGroupId }) => groupIds.has(routeGroupId)), pages: [], pageHeights: [], height: 0, sections: new Set(cards.map(({ section }) => section)).size }
 }
 
+interface PlannedPart {
+  arrangement: FullExportLayout
+  positions: Map<number, { x: number; y: number }>
+}
+
+function plannedParts(layouts: readonly FullExportLayout[]): PlannedPart[] {
+  return layouts.map((arrangement) => ({
+    arrangement,
+    positions: new Map(arrangement.positions.map(({ cardNumber, x, y }) => [cardNumber, { x, y }])),
+  }))
+}
+
+function locatePart(parts: readonly PlannedPart[], cardNumber: number): { index: number; part: PlannedPart; position: { x: number; y: number } } | null {
+  for (const [index, part] of parts.entries()) {
+    const position = part.positions.get(cardNumber)
+    if (position) return { index, part, position }
+  }
+  return null
+}
+
 export async function exportRouteImages(snapshot: RouteExportSnapshot, signal: AbortSignal, onProgress: (progress: RouteExportProgress) => void): Promise<RouteExportImages> {
   signal.throwIfAborted()
   const countryIdByPointId = new Map([...snapshot.locations, ...snapshot.navigationPoints].map(({ id, countryId }) => [id, countryId]))
   const regionalPlan = createRegionalExportPlan(snapshot.routePlan ?? snapshot.route, snapshot.dataset, countryIdByPointId, snapshot.gravity)
   const layout = createExportLayout(regionalPlan, snapshot.gravity)
-  onProgress({ completed: 0, total: layout.cards.length, message: '正在检查图片尺寸与拼接列数' })
+  onProgress({ completed: 0, total: layout.cards.length, message: '正在检查双列路线图尺寸' })
   const maxSide = await jpegCanvasSideLimit(signal)
-  let full: Awaited<ReturnType<typeof prepareFullCanvas>> | null = null
-  try {
-    full = await prepareFullCanvas(layout, signal, maxSide)
-  } catch (error) {
-    signal.throwIfAborted()
-    if (!(error instanceof Error) || error.message !== EXPORT_SIZE_ERROR) throw error
-  }
+  const prepared = await prepareRouteLayouts(layout, signal, maxSide)
+  const routeParts = plannedParts(prepared.layouts)
   const mapCards = new Map<number, ExportLayout['cards']>()
   for (const card of layout.cards) {
     const cards = mapCards.get(card.stateId) ?? []
     cards.push(card)
     mapCards.set(card.stateId, cards)
   }
-  const mapPlans = [...mapCards].map(([stateId, cards]) => ({
-    stateId,
-    title: cards[0]?.mapName || snapshot.dataset.states.find(({ id }) => id === stateId)?.name || `地图 ${stateId}`,
-    cards,
-  }))
+  const mapPlans = [...mapCards].map(([stateId, cards]) => {
+    const parts = plannedParts(createFullExportLayouts(layoutForCards(layout, cards), { maxHeight: prepared.maxHeight }))
+    return {
+      stateId,
+      title: cards[0]?.mapName || snapshot.dataset.states.find(({ id }) => id === stateId)?.name || `地图 ${stateId}`,
+      parts,
+    }
+  })
+  const mapPlansByStateId = new Map(mapPlans.map((plan) => [plan.stateId, plan]))
   let renderer: ReturnType<typeof createRouteExportRenderer> | null = null
+  const routes: RouteExportImages['routes'] = []
   const pages: Blob[] = []
   const maps: RouteExportImages['maps'] = []
   let completed = 0
-  interface MapDrawing {
-    stateId: number
-    title: string
-    cardNumbers: Map<number, number>
+  interface ActiveDrawing {
+    index: number
     drawing: ReturnType<typeof drawingCanvas>
-    arrangement: ReturnType<typeof createFullExportLayout>
-    bannersDrawn: boolean
+    part: PlannedPart
   }
-  let currentMap: MapDrawing | null = null
-  async function finishMap(): Promise<void> {
-    if (!currentMap) return
-    const active = currentMap
+  let activeRoute: ActiveDrawing | null = null
+  let activeMap: (ActiveDrawing & { stateId: number; title: string; parts: number }) | null = null
+  async function finishRoute(): Promise<void> {
+    if (!activeRoute) return
+    const active = activeRoute
     try {
-      maps.push({
-        stateId: active.stateId, title: active.title,
+      routes.push({
         image: await abortable(encodeJpeg(active.drawing.canvas), signal),
-        width: active.arrangement.width, height: active.arrangement.height, columns: active.arrangement.columns,
+        width: active.part.arrangement.width,
+        height: active.part.arrangement.height,
+        columns: active.part.arrangement.columns,
       })
     } catch {
       signal.throwIfAborted()
       throw new Error(EXPORT_SIZE_ERROR)
     } finally {
       active.drawing.canvas.width = active.drawing.canvas.height = 0
-      currentMap = null
+      activeRoute = null
     }
   }
-  async function prepareMap(stateId: number): Promise<MapDrawing> {
-    if (currentMap?.stateId === stateId) return currentMap
-    await finishMap()
-    const plan = mapPlans.find((candidate) => candidate.stateId === stateId)
+  async function prepareRoute(cardNumber: number): Promise<{ drawing: ReturnType<typeof drawingCanvas>; position: { x: number; y: number } }> {
+    const target = locatePart(routeParts, cardNumber)
+    if (!target) throw new Error('路线图片子图位置缺失')
+    if (activeRoute?.index !== target.index) {
+      await finishRoute()
+      const drawing = drawingCanvas(target.part.arrangement.width, target.part.arrangement.height)
+      drawBanners(drawing.context, target.part.arrangement.banners)
+      activeRoute = { index: target.index, drawing, part: target.part }
+    }
+    if (!activeRoute) throw new Error('路线图片分卷不存在')
+    return { drawing: activeRoute.drawing, position: target.position }
+  }
+  async function finishMap(): Promise<void> {
+    if (!activeMap) return
+    const active = activeMap
+    try {
+      maps.push({
+        stateId: active.stateId,
+        title: active.title,
+        part: active.index + 1,
+        parts: active.parts,
+        image: await abortable(encodeJpeg(active.drawing.canvas), signal),
+        width: active.part.arrangement.width,
+        height: active.part.arrangement.height,
+        columns: active.part.arrangement.columns,
+      })
+    } catch {
+      signal.throwIfAborted()
+      throw new Error(EXPORT_SIZE_ERROR)
+    } finally {
+      active.drawing.canvas.width = active.drawing.canvas.height = 0
+      activeMap = null
+    }
+  }
+  async function prepareMap(stateId: number, cardNumber: number): Promise<{ drawing: ReturnType<typeof drawingCanvas>; position: { x: number; y: number } }> {
+    const plan = mapPlansByStateId.get(stateId)
     if (!plan) throw new Error('路线地图分卷不存在')
-    const prepared = await prepareFullCanvas(layoutForCards(layout, plan.cards), signal, maxSide)
-    const next: MapDrawing = {
-      stateId, title: plan.title, drawing: prepared,
-      arrangement: prepared.arrangement,
-      cardNumbers: new Map(plan.cards.map((card, index) => [card.number, index])),
-      bannersDrawn: false,
+    const target = locatePart(plan.parts, cardNumber)
+    if (!target) throw new Error('分地图路线子图位置缺失')
+    if (activeMap?.stateId !== stateId || activeMap.index !== target.index) {
+      await finishMap()
+      const drawing = drawingCanvas(target.part.arrangement.width, target.part.arrangement.height)
+      drawBanners(drawing.context, target.part.arrangement.banners)
+      activeMap = { stateId, title: plan.title, parts: plan.parts.length, index: target.index, drawing, part: target.part }
     }
-    currentMap = next
-    return next
+    if (!activeMap) throw new Error('路线地图分卷不存在')
+    return { drawing: activeMap.drawing, position: target.position }
   }
-  function releaseCurrentMap(): void {
-    if (currentMap) currentMap.drawing.canvas.width = currentMap.drawing.canvas.height = 0
+  function releaseDrawings(): void {
+    if (activeRoute) activeRoute.drawing.canvas.width = activeRoute.drawing.canvas.height = 0
+    if (activeMap) activeMap.drawing.canvas.width = activeMap.drawing.canvas.height = 0
   }
   try {
-    const firstMap = mapPlans[0]
-    if (!firstMap) throw new Error('路线地图分卷不存在')
-    await prepareMap(firstMap.stateId)
     renderer = createRouteExportRenderer(snapshot)
     await abortable(document.fonts.ready, signal)
-    if (full) drawBanners(full.context, full.arrangement.banners)
     for (const page of layout.pages) {
       signal.throwIfAborted()
       const output = drawingCanvas(EXPORT_WIDTH, page.height)
@@ -201,52 +247,22 @@ export async function exportRouteImages(snapshot: RouteExportSnapshot, signal: A
           }
           try {
             output.context.drawImage(image, card.x, card.y - page.y)
-            if (full) {
-              const position = full.arrangement.positions[card.number - 1]
-              if (!position) throw new Error('路线子图位置缺失')
-              try { full.context.drawImage(image, position.x, position.y) }
-              catch {
-                full.canvas.width = full.canvas.height = 0
-                full = null
-              }
-            }
-            const mapDrawing = await prepareMap(card.stateId)
-            if (!mapDrawing.bannersDrawn) {
-              drawBanners(mapDrawing.drawing.context, mapDrawing.arrangement.banners)
-              mapDrawing.bannersDrawn = true
-            }
-            const mapIndex = mapDrawing.cardNumbers.get(card.number)
-            const mapPosition = mapIndex === undefined ? undefined : mapDrawing.arrangement.positions[mapIndex]
-            if (!mapPosition) throw new Error('分地图路线子图位置缺失')
-            try { mapDrawing.drawing.context.drawImage(image, mapPosition.x, mapPosition.y) }
-            catch { throw new Error(EXPORT_SIZE_ERROR) }
-          }
-          finally { image.width = image.height = 0 }
+            const routeDrawing = await prepareRoute(card.number)
+            routeDrawing.drawing.context.drawImage(image, routeDrawing.position.x, routeDrawing.position.y)
+            const mapDrawing = await prepareMap(card.stateId, card.number)
+            mapDrawing.drawing.context.drawImage(image, mapDrawing.position.x, mapDrawing.position.y)
+          } finally { image.width = image.height = 0 }
           completed += 1
         }
         pages.push(await abortable(encodeJpeg(output.canvas), signal))
       } finally { output.canvas.width = output.canvas.height = 0 }
     }
+    await finishRoute()
     await finishMap()
-    onProgress({ completed, total: layout.cards.length, message: '正在完成 JPG 长图与手机分卷' })
-    let fullImage: Blob | null = null
-    if (full) {
-      try { fullImage = await abortable(encodeJpeg(full.canvas), signal) }
-      catch {
-        signal.throwIfAborted()
-        full.canvas.width = full.canvas.height = 0
-        full = null
-      }
-    }
-    return {
-      full: fullImage,
-      fullSize: full ? { width: full.arrangement.width, height: full.arrangement.height } : null,
-      fullColumns: full?.arrangement.columns ?? null,
-      maps, pages, layout,
-    }
+    onProgress({ completed, total: layout.cards.length, message: `正在完成 ${routes.length} 张双列路线图和手机分卷` })
+    return { routes, maps, pages, layout }
   } finally {
     renderer?.dispose()
-    releaseCurrentMap()
-    if (full) full.canvas.width = full.canvas.height = 0
+    releaseDrawings()
   }
 }

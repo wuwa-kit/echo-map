@@ -1,5 +1,5 @@
-import { EXPORT_BANNER_HEIGHT, EXPORT_GAP, EXPORT_MARGIN, EXPORT_WIDTH, EXPORT_SIZE_ERROR } from './export-layout.ts'
-import type { ExportLayout } from './export-layout.ts'
+import { EXPORT_BANNER_HEIGHT, EXPORT_GAP, EXPORT_MARGIN, EXPORT_MAX_PIXELS, EXPORT_WIDTH, EXPORT_SIZE_ERROR } from './export-layout.ts'
+import type { ExportCard, ExportLayout } from './export-layout.ts'
 
 export const JPEG_MAX_SIDE = 65535
 export { EXPORT_SIZE_ERROR } from './export-layout.ts'
@@ -9,44 +9,90 @@ const COLUMN_STEP = COLUMN_WIDTH + EXPORT_GAP
 export interface FullExportLayout {
   width: number
   height: number
-  columns: number
-  positions: { x: number; y: number }[]
+  columns: 2
+  positions: { cardNumber: number; x: number; y: number }[]
   banners: { routeGroupId: string; label: string; x: number; y: number; width: number; height: number }[]
 }
 
-// Pack the full image independently of mobile page boundaries, including at
-// two columns. Page padding and column resets must not interrupt the waterfall.
-// The original cards and mobile pages retain their dimensions and coordinates.
-export function createFullExportLayout(layout: ExportLayout, { minColumns = 2, maxSide = JPEG_MAX_SIDE }: { minColumns?: number; maxSide?: number } = {}): FullExportLayout {
-  const limit = Math.min(maxSide, JPEG_MAX_SIDE)
-  if (layout.cards.some((card) => card.width > limit || card.height > limit)
-    || layout.cards.reduce((area, card) => area + card.width * card.height, 0) > limit * limit) throw new Error(EXPORT_SIZE_ERROR)
-  const maxColumns = Math.floor((limit - EXPORT_MARGIN * 2 + EXPORT_GAP) / COLUMN_STEP)
-  for (let columns = Math.max(2, minColumns); columns <= maxColumns; columns += 1) {
-    const width = EXPORT_MARGIN * 2 + columns * COLUMN_STEP - EXPORT_GAP
-    const bottoms = Array.from({ length: columns }, () => EXPORT_MARGIN)
-    const banners: FullExportLayout['banners'] = []
-    let activeGroupLabel: string | null = null
-    const positions = layout.cards.map((card) => {
-      if (card.groupLabel !== activeGroupLabel) {
-        activeGroupLabel = card.groupLabel
-        if (card.groupLabel) {
-          const y = banners.length ? Math.max(...bottoms) : 0
-          banners.push({ routeGroupId: card.routeGroupId, label: card.groupLabel, x: 0, y, width, height: EXPORT_BANNER_HEIGHT })
-          bottoms.fill(y + EXPORT_BANNER_HEIGHT + EXPORT_GAP)
-        }
-      }
-      const span = card.width > COLUMN_WIDTH ? 2 : 1
-      let bestColumn = 0, top = Infinity
-      for (let column = 0; column <= columns - span; column += 1) {
-        const candidate = Math.max(...bottoms.slice(column, column + span))
-        if (candidate < top) { bestColumn = column; top = candidate }
-      }
-      for (let column = bestColumn; column < bestColumn + span; column += 1) bottoms[column] = top + card.height + EXPORT_GAP
-      return { x: EXPORT_MARGIN + bestColumn * COLUMN_STEP, y: top }
-    })
-    const height = Math.max(...bottoms) - EXPORT_GAP + EXPORT_MARGIN
-    if (height <= limit) return { width, height, columns, positions, banners }
+interface LayoutBuilder extends Omit<FullExportLayout, 'height'> {
+  activeGroupId: string | null
+  bottoms: [number, number]
+}
+
+function emptyLayout(): LayoutBuilder {
+  return {
+    width: EXPORT_WIDTH,
+    columns: 2,
+    positions: [],
+    banners: [],
+    activeGroupId: null,
+    bottoms: [EXPORT_MARGIN, EXPORT_MARGIN],
   }
-  throw new Error(EXPORT_SIZE_ERROR)
+}
+
+function addCard(source: LayoutBuilder, card: ExportCard): LayoutBuilder {
+  const layout: LayoutBuilder = {
+    ...source,
+    positions: [...source.positions],
+    banners: [...source.banners],
+    bottoms: [...source.bottoms],
+  }
+  if (card.routeGroupId !== layout.activeGroupId) {
+    layout.activeGroupId = card.routeGroupId
+    const label = card.groupLabel || card.mapName
+    if (label) {
+      const y = layout.positions.length ? Math.max(...layout.bottoms) : 0
+      layout.banners.push({ routeGroupId: card.routeGroupId, label, x: 0, y, width: EXPORT_WIDTH, height: EXPORT_BANNER_HEIGHT })
+      layout.bottoms = [y + EXPORT_BANNER_HEIGHT + EXPORT_GAP, y + EXPORT_BANNER_HEIGHT + EXPORT_GAP]
+    }
+  }
+  const span = card.width > COLUMN_WIDTH ? 2 : 1
+  const column = span === 2 || layout.bottoms[0] <= layout.bottoms[1] ? 0 : 1
+  const y = span === 2 ? Math.max(...layout.bottoms) : layout.bottoms[column]
+  layout.positions.push({ cardNumber: card.number, x: EXPORT_MARGIN + column * COLUMN_STEP, y })
+  const bottom = y + card.height + EXPORT_GAP
+  if (span === 2) layout.bottoms = [bottom, bottom]
+  else layout.bottoms[column] = bottom
+  return layout
+}
+
+function layoutHeight(layout: LayoutBuilder): number {
+  return Math.max(...layout.bottoms) - EXPORT_GAP + EXPORT_MARGIN
+}
+
+// Preserve a two-column canvas at every route size. When the browser or JPEG
+// height limit is reached, continue in a new image and repeat the active area's
+// banner instead of making the image wider and its contents harder to read.
+export function createFullExportLayouts(layout: ExportLayout, { maxHeight = JPEG_MAX_SIDE }: { maxHeight?: number } = {}): FullExportLayout[] {
+  const limit = Math.min(Math.floor(maxHeight), JPEG_MAX_SIDE, Math.floor(EXPORT_MAX_PIXELS / EXPORT_WIDTH))
+  if (limit <= 0 || layout.cards.some((card) => card.width > EXPORT_WIDTH - EXPORT_MARGIN * 2)) throw new Error(EXPORT_SIZE_ERROR)
+  const result: FullExportLayout[] = []
+  let current = emptyLayout()
+  for (const card of layout.cards) {
+    let candidate = addCard(current, card)
+    if (layoutHeight(candidate) > limit && current.positions.length) {
+      result.push({
+        width: current.width,
+        height: layoutHeight(current),
+        columns: current.columns,
+        positions: current.positions,
+        banners: current.banners,
+      })
+      current = emptyLayout()
+      candidate = addCard(current, card)
+    }
+    if (layoutHeight(candidate) > limit) throw new Error(EXPORT_SIZE_ERROR)
+    current = candidate
+  }
+  if (current.positions.length) {
+    result.push({
+      width: current.width,
+      height: layoutHeight(current),
+      columns: current.columns,
+      positions: current.positions,
+      banners: current.banners,
+    })
+  }
+  if (!result.length) throw new Error(EXPORT_SIZE_ERROR)
+  return result
 }

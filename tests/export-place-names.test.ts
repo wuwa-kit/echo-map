@@ -24,11 +24,11 @@ describe('nearby place references in cropped route images', () => {
     expect(placed[0]?.text).toContain('附近山谷 ↗')
   })
 
-  it('keeps every label in the image and clear of the lone echo', () => {
+  it('does not add nearby names when any label is already inside the image', () => {
     const places = nearbyExportPlaces([label('目标附近', 0, 0), label('邻接地区', 600, 300, 2)], fixture, new Set([1]))
-    expect(places[0]?.outside).toBe(false)
+    expect(places).toEqual([{ name: '目标附近', anchor: [fixture.mapSize[0] / 2, fixture.mapSize[1] / 2 + fixture.center[1] / fixture.resolution], outside: false }])
     const boxes = placeExportNames(places, fixture, measure)
-    expect(boxes.length).toBeGreaterThan(0)
+    expect(boxes).toHaveLength(1)
     const [width, height] = fixture.mapSize
     const pointX = width / 2, pointY = height / 2 + fixture.center[1] / fixture.resolution
     for (const box of boxes) {
@@ -40,6 +40,13 @@ describe('nearby place references in cropped route images', () => {
     }
     const [first, second] = boxes
     if (first && second) expect(first.x + first.width <= second.x || second.x + second.width <= first.x || first.y + first.height <= second.y || second.y + second.height <= first.y).toBe(true)
+  })
+
+  it('uses a smaller font for off-screen nearby names', () => {
+    const [inside] = placeExportNames([{ name: '画面内', anchor: [100, 100], outside: false }], fixture, measure)
+    const [nearby] = placeExportNames([{ name: '附近地区', anchor: [1000, 1000], outside: true }], fixture, measure)
+    expect(inside?.fontSize).toBe(10)
+    expect(nearby?.fontSize).toBe(8)
   })
 
   it('does not borrow a region name from another map when a floor has no labels', () => {

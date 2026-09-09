@@ -229,32 +229,35 @@ export function createExportLayout(routeSource: RouteResult | RoutePlanResult, g
     pageBanners = []
     columns = [LAYOUT_MARGIN, LAYOUT_MARGIN]
   }
-  let activeGroupLabel: string | null = null
+  let activeGroupId: string | null = null
+  function addPageBanner(card: ExportCard): void {
+    activeGroupId = card.routeGroupId
+    const label = card.groupLabel || card.mapName
+    if (!label) return
+    const top = pageCards.length ? Math.max(...columns) : 0
+    const banner: ExportBanner = {
+      routeGroupId: card.routeGroupId, label,
+      x: 0, y: height + top, width: LAYOUT_WIDTH, height: LAYOUT_BANNER_HEIGHT,
+    }
+    banners.push(banner)
+    pageBanners.push(banner)
+    columns = [top + banner.height + LAYOUT_GAP, top + banner.height + LAYOUT_GAP]
+  }
   for (const card of cards) {
-    if (card.groupLabel !== activeGroupLabel) {
-      activeGroupLabel = card.groupLabel
-      if (card.groupLabel) {
-        let top = pageCards.length ? Math.max(...columns) : 0
-        if (pageCards.length && top + LAYOUT_BANNER_HEIGHT + LAYOUT_GAP + card.height + LAYOUT_MARGIN > 4000) {
-          finishPage()
-          top = 0
-        }
-        const banner: ExportBanner = {
-          routeGroupId: card.routeGroupId, label: card.groupLabel,
-          x: 0, y: height + top, width: LAYOUT_WIDTH, height: LAYOUT_BANNER_HEIGHT,
-        }
-        banners.push(banner)
-        pageBanners.push(banner)
-        columns = [top + banner.height + LAYOUT_GAP, top + banner.height + LAYOUT_GAP]
-      }
+    if (!pageCards.length) addPageBanner(card)
+    else if (card.routeGroupId !== activeGroupId) {
+      const bannerHeight = card.groupLabel || card.mapName ? LAYOUT_BANNER_HEIGHT + LAYOUT_GAP : 0
+      if (Math.max(...columns) + bannerHeight + card.height + LAYOUT_MARGIN > 4000) finishPage()
+      addPageBanner(card)
     }
     const full = card.width === FULL_WIDTH
     let column = columns[0] <= columns[1] ? 0 : 1
     let top = full ? Math.max(...columns) : columns[column] ?? LAYOUT_MARGIN
     if (top + card.height + LAYOUT_MARGIN > 4000) {
       finishPage()
+      addPageBanner(card)
       column = 0
-      top = LAYOUT_MARGIN
+      top = full ? Math.max(...columns) : columns[column] ?? LAYOUT_MARGIN
     }
     card.x = LAYOUT_MARGIN + (full ? 0 : column * (HALF_WIDTH + LAYOUT_GAP))
     card.y = height + top

@@ -8,13 +8,10 @@ import type { RouteExportSnapshot } from '../map/route-export.ts'
 interface ExportArtifacts {
   title: string
   filename: string
-  fullUrl: string | null
-  maps: { stateId: number, title: string, filename: string, url: string, width: number, height: number, columns: number }[]
+  routes: { filename: string; url: string; width: number; height: number; columns: 2 }[]
+  maps: { stateId: number, title: string, part: number, parts: number, filename: string, url: string, width: number, height: number, columns: 2 }[]
   pages: { url: string; height: number }[]
-  width: number | null
-  height: number | null
   pageWidth: number
-  columns: number | null
 }
 
 export const useRouteExportStore = defineStore('route-export', () => {
@@ -27,7 +24,7 @@ export const useRouteExportStore = defineStore('route-export', () => {
   let snapshot: RouteExportSnapshot | null = null
 
   function releaseImages(): void {
-    if (artifacts.value?.fullUrl) URL.revokeObjectURL(artifacts.value.fullUrl)
+    for (const route of artifacts.value?.routes ?? []) URL.revokeObjectURL(route.url)
     for (const map of artifacts.value?.maps ?? []) URL.revokeObjectURL(map.url)
     for (const page of artifacts.value?.pages ?? []) URL.revokeObjectURL(page.url)
     artifacts.value = null
@@ -63,16 +60,20 @@ export const useRouteExportStore = defineStore('route-export', () => {
       if (active !== controller) return
       const filename = `声巡-${value.title.replace(/[<>:"/\\|?*\u0000-\u001f]/gu, '-').slice(0, 60)}-${value.createdAt.replace(/[ :/]/gu, '-')}`
       artifacts.value = {
-        title: value.title, filename, fullUrl: result.full ? URL.createObjectURL(result.full) : null,
-        maps: result.maps.map(({ image, ...map }, index) => ({
+        title: value.title,
+        filename,
+        routes: result.routes.map(({ image, ...route }, index) => ({
+          ...route,
+          filename: result.routes.length === 1 ? filename : `${filename}-${String(index + 1).padStart(2, '0')}`,
+          url: URL.createObjectURL(image),
+        })),
+        maps: result.maps.map(({ image, ...map }) => ({
           ...map,
-          filename: `${filename}-${String(index + 1).padStart(2, '0')}-${map.title.replace(/[<>:"/\\|?*\u0000-\u001f]/gu, '-').slice(0, 40)}`,
+          filename: `${filename}-${map.title.replace(/[<>:"/\\|?*\u0000-\u001f]/gu, '-').slice(0, 40)}${map.parts === 1 ? '' : `-${String(map.part).padStart(2, '0')}`}`,
           url: URL.createObjectURL(image),
         })),
         pages: result.pages.map((blob, index) => ({ url: URL.createObjectURL(blob), height: result.layout.pageHeights[index] ?? 0 })),
-        width: result.fullSize?.width ?? null, height: result.fullSize?.height ?? null,
         pageWidth: result.layout.width,
-        columns: result.fullColumns,
       }
       status.value = 'ready'
     } catch (reason) {

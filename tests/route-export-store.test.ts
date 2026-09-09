@@ -5,15 +5,16 @@ import { useExplorerStore } from '../src/stores/explorer.ts'
 import { exportRouteImages } from '../src/route/image-export.ts'
 import { createExportLayout } from '../src/route/export-layout.ts'
 import { readMapDataset } from '../scripts/lib/map-data.ts'
+import type { RouteExportImages } from '../src/route/image-export.ts'
 import type { RouteResult } from '../src/domain/types.ts'
 
 vi.mock('../src/route/image-export.ts')
 const exporter = vi.mocked(exportRouteImages)
 const dataset = await readMapDataset()
 const route: RouteResult = { points: [{ id: 'a', name: '声骸', echoId: null, stateId: 8, levelId: null, coordinate: { x: 10, y: 20, z: 0 }, mapCoordinate: [10, 20] }], algorithm: 'exact', totalCost: 0, startPointId: null }
-const images = {
-  full: new Blob(['full'], { type: 'image/jpeg' }), fullSize: { width: 2994, height: 1800 }, fullColumns: 3,
-  maps: [{ stateId: 8, title: '地表地图', image: new Blob(['map'], { type: 'image/jpeg' }), width: 1600, height: 1800, columns: 2 }],
+const images: RouteExportImages = {
+  routes: [{ image: new Blob(['route'], { type: 'image/jpeg' }), width: 1600, height: 1800, columns: 2 }],
+  maps: [{ stateId: 8, title: '地表地图', part: 1, parts: 1, image: new Blob(['map'], { type: 'image/jpeg' }), width: 1600, height: 1800, columns: 2 }],
   pages: [new Blob(['page'], { type: 'image/jpeg' })], layout: createExportLayout(route),
 }
 
@@ -32,11 +33,9 @@ describe('route export actions', () => {
     const store = useRouteExportStore()
     await store.start()
     expect(store.status).toBe('ready')
-    expect(store.artifacts?.fullUrl).toMatch(/^blob:/u)
+    expect(store.artifacts?.routes[0]?.url).toMatch(/^blob:/u)
     expect(store.artifacts?.pages).toHaveLength(1)
-    expect(store.artifacts?.width).toBe(2994)
-    expect(store.artifacts?.height).toBe(1800)
-    expect(store.artifacts?.columns).toBe(3)
+    expect(store.artifacts?.routes[0]).toMatchObject({ width: 1600, height: 1800, columns: 2 })
     expect(store.artifacts?.pageWidth).toBe(1600)
     expect(useExplorerStore().mapViewport).toEqual({ center: [120, 340], zoom: 5.2 })
     store.close()
@@ -84,12 +83,16 @@ describe('route export actions', () => {
     store.dispose()
   })
 
-  it('keeps per-map downloads when the combined image cannot be created', async () => {
-    exporter.mockResolvedValue({ ...images, full: null, fullSize: null, fullColumns: null })
+  it('publishes multiple fixed-column route images when the export is split', async () => {
+    exporter.mockResolvedValue({
+      ...images,
+      routes: [...images.routes, { image: new Blob(['route-2'], { type: 'image/jpeg' }), width: 1600, height: 1200, columns: 2 }],
+    })
     const store = useRouteExportStore()
     await store.start()
     expect(store.status).toBe('ready')
-    expect(store.artifacts?.fullUrl).toBeNull()
+    expect(store.artifacts?.routes).toHaveLength(2)
+    expect(store.artifacts?.routes.map(({ filename }) => filename.slice(-3))).toEqual(['-01', '-02'])
     expect(store.artifacts?.maps.map(({ title }) => title)).toEqual(['地表地图'])
     expect(store.artifacts?.pages).toHaveLength(1)
     store.dispose()

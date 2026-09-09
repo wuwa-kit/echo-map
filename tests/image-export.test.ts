@@ -32,7 +32,7 @@ class TestCanvas {
     this.encodes += 1
     const failed = this.width > nativeLimit || this.height > nativeLimit
       || (this.width > 1 && this.height > 1 && failure === 'allocation')
-      || (failure === 'finish' && this.encodes > 1)
+      || (failure === 'finish' && this.height > 3200 && this.draws.length > 0)
     callback(failed ? null : new Blob([JSON.stringify({ width: this.width, height: this.height })], { type }))
   }
 }
@@ -131,35 +131,32 @@ describe('full JPG export with browser size limits', () => {
     expect(Math.min(...secondGroupCards.map(({ y }) => y))).toBeGreaterThanOrEqual(secondBanner.y + secondBanner.height)
   })
 
-  it('draws a continuous two-column JPG separately from the mobile pages', async () => {
+  it('keeps a single continuous two-column route image when it fits', async () => {
     nativeLimit = 65535
     const result = await exportRouteImages(snapshot, new AbortController().signal, () => undefined)
-    if (!result.fullSize) throw new Error('完整长图应当生成')
-    expect(result.fullColumns).toBe(2)
-    expect(result.fullSize).toEqual({ width: 1600, height: 36260 })
-    expect(result.fullSize.height).toBeLessThan(result.layout.height)
-    const full = canvases.find(({ draws }) => draws.length === result.layout.cards.length)
-    expect(full?.draws[4]?.coordinates).toEqual([10, 2910])
+    const [route] = result.routes
+    if (!route) throw new Error('完整路线图应当生成')
+    expect(result.routes).toHaveLength(1)
+    expect(route.columns).toBe(2)
+    expect({ width: route.width, height: route.height }).toEqual({ width: 1600, height: 36311 })
+    expect(route.height).toBeLessThan(result.layout.height)
+    expect(JSON.parse(await route.image.text())).toEqual({ width: route.width, height: route.height })
     expect(result.layout.cards[4]?.y).toBeGreaterThan(2910)
     expect(renderer.render).toHaveBeenCalledTimes(result.layout.cards.length)
   })
 
-  it('detects the native limit and reflows the full image while keeping mobile pages at their original size', async () => {
+  it('detects the native limit and adds fixed two-column images while keeping mobile pages unchanged', async () => {
     const result = await exportRouteImages(snapshot, new AbortController().signal, () => undefined)
-    if (!result.fullSize || !result.full) throw new Error('完整长图应当生成')
-    expect(result.fullSize.width).toBe(2395)
-    expect(result.fullColumns).toBe(3)
-    expect(result.fullSize.height).toBeLessThanOrEqual(nativeLimit)
-    expect(JSON.parse(await result.full.text())).toEqual(result.fullSize)
+    expect(result.routes.length).toBeGreaterThan(1)
+    expect(result.routes.every(({ width, height, columns }) => width === 1600 && height <= nativeLimit && columns === 2)).toBe(true)
+    for (const route of result.routes) expect(JSON.parse(await route.image.text())).toEqual({ width: route.width, height: route.height })
     expect(result.pages).toHaveLength(result.layout.pages.length)
-    expect(result.maps).toHaveLength(1)
+    expect(result.maps.length).toBeGreaterThan(1)
+    expect(result.maps.every(({ width, height, columns }) => width === 1600 && height <= nativeLimit && columns === 2)).toBe(true)
     for (const [index, page] of result.pages.entries()) {
       expect(page.type).toBe('image/jpeg')
       expect(JSON.parse(await page.text())).toEqual({ width: 1600, height: result.layout.pageHeights[index] })
     }
-    const full = canvases.find(({ draws }) => draws.length === result.layout.cards.length)
-    expect(full?.draws.map(({ width, height }) => ({ width, height }))).toEqual(result.layout.cards.map(({ width, mapHeight }) => ({ width, height: mapHeight })))
-    expect(full?.draws.every(({ coordinates }) => coordinates.length === 2)).toBe(true)
     expect(renderer.render).toHaveBeenCalledTimes(result.layout.cards.length)
     expect(renderer.dispose).toHaveBeenCalledOnce()
     expect(canvases.every(({ width, height }) => width === 0 && height === 0)).toBe(true)
