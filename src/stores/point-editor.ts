@@ -13,6 +13,13 @@ import type { GravityType } from '../domain/types.ts'
 
 const DRAFT_KEY = 'echo-map:point-editor:draft:v1'
 
+interface PointEditorMapContext {
+  stateId?: number
+  countryId?: number
+  levelId?: string
+  gravityType?: GravityType
+}
+
 export const usePointEditorStore = defineStore('point-editor', () => {
   const dataset = shallowRef<MapDataset | null>(null)
   const library = shallowRef<PointLibrary>(freeze(emptyPointLibrary(), true))
@@ -195,6 +202,29 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (point.kind === 'navigation') delete point.teleportCoordinate
       point.status = 'draft'
     })
+  }
+
+  function initializeMapContext(context: PointEditorMapContext): void {
+    const currentDataset = dataset.value
+    const currentDraft = draft.value
+    if (!currentDataset || !currentDraft || dirty.value || library.value.points.some(({ id }) => id === currentDraft.id)) return
+    const state = currentDataset.states.find(({ id }) => id === context.stateId)
+      ?? currentDataset.states.find(({ id }) => id === currentDraft.stateId)
+      ?? currentDataset.states[0]
+    if (!state) return
+    const countryIds = new Set(currentDataset.regionLabels
+      .filter((label) => label.stateId === state.id && label.level === 1)
+      .map(({ countryId }) => countryId))
+    const floorIds = new Set(state.layeredMaps.flatMap(({ floors }) => floors.map(({ id }) => id)))
+    openDraft(produce(currentDraft, (point) => {
+      point.stateId = state.id
+      point.countryId = context.countryId !== undefined && countryIds.has(context.countryId) ? context.countryId : null
+      point.levelId = context.levelId !== undefined && floorIds.has(context.levelId) ? context.levelId : null
+      point.gravityType = hasGravityMap(state) && (context.gravityType === 1 || context.gravityType === 2)
+        ? context.gravityType
+        : null
+    }))
+    cacheDraft()
   }
 
   function addMember(echoId: string): void {
@@ -481,7 +511,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     recovery: shallowReadonly(recovery), deleted: shallowReadonly(deleted), importPreview: shallowReadonly(importPreview),
     versions: shallowReadonly(versions), search: shallowReadonly(search), monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy: shallowReadonly(busy), dirty, filteredPoints, nearbyPoints,
-    load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, pickMapPosition, selectState, addMember, setMemberCount, removeMember,
+    load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, pickMapPosition, selectState, initializeMapContext, addMember, setMemberCount, removeMember,
     saveDraft, discardChanges, discardEmptyMapDraft, copyPoint, deletePoint, undoDelete, recoverDraft, previewImport, applyImport, loadVersions, previewVersion,
     setSearch: (value: string) => { search.value = value },
     setMonsterSearch: (value: string) => { monsterSearch.value = value },

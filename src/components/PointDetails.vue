@@ -2,49 +2,98 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../stores/explorer.ts'
-import { echoMembers, MODE_NAMES } from '../domain/point-library.ts'
+import { MODE_NAMES } from '../domain/point-library.ts'
 import { describeEchoPoint } from '../domain/point-details.ts'
-import EchoPointIcon from './EchoPointIcon.vue'
+import type { EchoDefinition, GameCoordinate } from '../domain/types.ts'
 import { gravityName } from '../domain/gravity.ts'
+import EchoPointMember from './EchoPointMember.vue'
+import MapPointPopup from './MapPointPopup.vue'
+import WuScrollArea from './base/WuScrollArea.vue'
 
 const store = useExplorerStore()
-const { selectedEchoLocation, selectedNavigationPoint, pointCandidates, activeEchoIds, dataset } = storeToRefs(store)
-const location = computed(() => selectedEchoLocation.value ?? selectedNavigationPoint.value)
-const details = computed(() => selectedEchoLocation.value ? describeEchoPoint(selectedEchoLocation.value, dataset.value?.echoes ?? []) : null)
-const candidates = computed(() => pointCandidates.value.map((point) => ({ point, ...describeEchoPoint(point, dataset.value?.echoes ?? []) })))
+const {
+  selectedEchoLocation,
+  selectedNavigationPoint,
+  pointCandidates,
+  navigationPointCandidates,
+  activeEchoIds,
+  dataset,
+} = storeToRefs(store)
+const details = computed(() => selectedEchoLocation.value
+  ? describeEchoPoint(selectedEchoLocation.value, dataset.value?.echoes ?? [])
+  : null)
+const candidates = computed(() => [
+  ...pointCandidates.value.map((point) => ({
+    point,
+    ...describeEchoPoint(point, dataset.value?.echoes ?? []),
+  })),
+  ...navigationPointCandidates.value.map((point) => ({
+    point,
+    title: point.typeName,
+    summary: MODE_NAMES[point.mode],
+  })),
+])
+const candidateCount = computed(() => candidates.value.length)
+const echoesById = computed(() => new Map(dataset.value?.echoes.map((echo) => [echo.id, echo]) ?? []))
+
+function coordinateTitle(coordinate: GameCoordinate | null): string {
+  return coordinate ? `XYZ ${coordinate.x}, ${coordinate.y}, ${coordinate.z}` : 'XYZ 未录入'
+}
+
+function echoCost(echoId: string): EchoDefinition['cost'] | null {
+  return echoesById.value.get(echoId)?.cost ?? null
+}
 </script>
 
 <template>
-  <div v-if="location || pointCandidates.length" class="absolute left-12px top-64px z-70 max-h-[55%] w-[min(320px,calc(100%_-_24px))] overflow-y-auto rounded-12px border border-[var(--line)] bg-[#0b1b16f5] p-16px text-14px shadow-xl">
-    <div class="mb-10px flex items-center justify-between gap-8px">
-      <span v-if="pointCandidates.length" class="text-[#e7f4ee]">{{ pointCandidates.length }} 处相邻点位</span>
-      <button class="ml-auto h-28px w-28px shrink-0 flex cursor-pointer items-center justify-center rounded-5px border-0 bg-transparent p-0 text-20px text-[#99b8a9] leading-none hover:bg-[#183128] hover:text-[#e7f4ee]" type="button" @click="store.selectPoint(null)">×</button>
-    </div>
-    <button v-for="candidate in candidates" :key="candidate.point.id" type="button" class="mb-8px w-full rounded-8px border border-[var(--line)] bg-[#142a21] p-10px text-left text-[#c4e5d5]" @click="store.selectPoint(candidate.point.id)">
-      <span class="block">{{ candidate.title }}</span>
-      <span class="mt-4px block text-12px text-[#99b8a9]">{{ candidate.summary }}</span>
-      <span class="mt-4px block font-mono text-12px">{{ candidate.point.gameCoordinate ? Object.values(candidate.point.gameCoordinate).join(', ') : '临时 XY' }}</span>
-    </button>
-    <template v-if="location">
-      <div v-if="details" class="flex items-center gap-12px">
-        <EchoPointIcon v-if="selectedEchoLocation && dataset" :members="echoMembers(selectedEchoLocation)" :echoes="dataset.echoes" />
-        <div class="min-w-0">
-          <div class="text-14px text-[#e7f4ee]">{{ details.summary }}</div>
-          <div v-if="details.compositionLabel" class="mt-4px text-12px text-[#9cb3a7]">{{ details.compositionLabel }}</div>
-        </div>
-      </div>
-      <div v-for="member in details?.members ?? []" :key="member.echoId" class="mt-10px flex items-center gap-8px" :class="activeEchoIds.has(member.echoId) ? 'text-[#71ecc0]' : 'text-[#91ab9e]'">
-        <img v-if="member.iconUrl" :src="member.iconUrl" class="h-32px w-32px shrink-0 object-contain" />
-        <span class="min-w-0 flex-1">{{ member.name }}</span>
-        <span v-if="member.count !== null" class="shrink-0 tabular-nums">{{ member.count }}只</span>
-        <span v-if="activeEchoIds.has(member.echoId)" class="shrink-0 rounded-4px bg-[#153b2d] px-5px py-2px text-11px">目标</span>
-      </div>
-      <div v-if="selectedNavigationPoint" class="text-[#cde8dc]">{{ selectedNavigationPoint.typeName }} · {{ MODE_NAMES[selectedNavigationPoint.mode] }}</div>
-      <div v-if="selectedEchoLocation" class="mt-14px font-mono text-12px text-[#a0baac]">{{ selectedEchoLocation.gameCoordinate ? `XYZ ${Object.values(selectedEchoLocation.gameCoordinate).join(', ')}` : '官方测试点，未录入 XYZ' }}</div>
-      <div v-if="selectedNavigationPoint" class="mt-14px font-mono text-12px text-[#a0baac]">{{ selectedNavigationPoint.gameCoordinate ? `XYZ ${Object.values(selectedNavigationPoint.gameCoordinate).join(', ')}` : '未录入 XYZ' }}</div>
-      <div v-if="selectedNavigationPoint?.mode === 'fast-travel' && selectedNavigationPoint.teleportCoordinate" class="mt-6px font-mono text-12px text-[#78dcb9]">传送落点 {{ Object.values(selectedNavigationPoint.teleportCoordinate).join(', ') }}</div>
-      <div v-if="store.supportsGravity" class="mt-8px text-12px text-[#a0baac]">{{ gravityName(location.gravityType) }}</div>
-      <div v-if="selectedEchoLocation && selectedEchoLocation.quality !== 'official-provisional' && 'note' in selectedEchoLocation" class="mt-8px whitespace-pre-wrap text-12px text-[#9cb3a7]">{{ selectedEchoLocation.note }}</div>
+  <MapPointPopup v-if="candidateCount && !selectedEchoLocation && !selectedNavigationPoint" @close="store.selectPoint(null)">
+    <template #title>
+      <span>{{ candidateCount }} 处相邻点位</span>
     </template>
-  </div>
+    <WuScrollArea class="min-h-0 max-h-320px flex-1" content-class="p-12px pb-4px">
+      <button v-for="candidate in candidates" :key="candidate.point.id" type="button" class="mb-8px w-full rounded-8px border border-[var(--line)] bg-[#142a21] p-10px text-left text-[#c4e5d5] hover:border-[#477b68] hover:bg-[#193329]" @click="store.selectPointCandidate(candidate.point.id)">
+        <span class="block">{{ candidate.title }}</span>
+        <span class="mt-4px block text-12px text-[#99b8a9]">{{ candidate.summary }}</span>
+        <span class="mt-4px block font-mono text-12px">{{ coordinateTitle(candidate.point.gameCoordinate) }}</span>
+      </button>
+    </WuScrollArea>
+  </MapPointPopup>
+
+  <MapPointPopup v-else-if="selectedEchoLocation" :show-back="candidateCount > 0" @back="store.returnToPointCandidates()" @close="store.selectPoint(null)">
+    <template #title>
+      <span class="font-mono text-13px">{{ coordinateTitle(selectedEchoLocation.gameCoordinate) }}</span>
+    </template>
+    <WuScrollArea class="min-h-0 max-h-320px flex-1" content-class="grid gap-8px p-12px">
+      <EchoPointMember
+        v-for="member in details?.members ?? []"
+        :key="member.echoId"
+        :active="activeEchoIds.has(member.echoId)"
+        :cost="echoCost(member.echoId)"
+        :count="member.count"
+        :icon-url="member.iconUrl"
+        :name="member.name"
+      />
+      <div v-if="details?.members.length === 0" class="py-12px text-center text-12px text-[#8ea99c]">此处暂无声骸记录</div>
+    </WuScrollArea>
+  </MapPointPopup>
+
+  <MapPointPopup v-else-if="selectedNavigationPoint" :show-back="candidateCount > 0" @back="store.returnToPointCandidates()" @close="store.selectPoint(null)">
+    <template #title>
+      <div class="truncate">{{ selectedNavigationPoint.typeName }}</div>
+    </template>
+    <WuScrollArea class="min-h-0 max-h-240px flex-1" content-class="grid gap-8px p-12px text-12px text-[#a9c4b7]">
+      <div class="flex items-center gap-6px">
+        <span class="font-mono">{{ coordinateTitle(selectedNavigationPoint.gameCoordinate) }}</span>
+        <span v-if="selectedNavigationPoint.mode === 'fast-travel'" class="ml-auto shrink-0 rounded-4px bg-[#174332] px-6px py-2px text-10px text-[#7af0c3]">可传送</span>
+      </div>
+      <div v-if="selectedNavigationPoint.teleportCoordinate" class="flex items-center justify-between gap-12px">
+        <span>传送落点</span>
+        <span class="font-mono text-right text-[#78dcb9]">{{ coordinateTitle(selectedNavigationPoint.teleportCoordinate) }}</span>
+      </div>
+      <div v-if="store.supportsGravity" class="flex items-center justify-between gap-12px">
+        <span>重力方向</span>
+        <span class="text-[#d3e8de]">{{ gravityName(selectedNavigationPoint.gravityType) }}</span>
+      </div>
+    </WuScrollArea>
+  </MapPointPopup>
 </template>

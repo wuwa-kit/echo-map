@@ -39,6 +39,7 @@ const props = defineProps<{
     center: [number, number]
     zoom: number
   } | null
+  preserveViewportPointId: string | null
 }>()
 const emit = defineEmits<{
   pointSelected: [ids: string[]]
@@ -278,6 +279,7 @@ watch([() => props.draft.id, () => props.draft.coordinate.x, () => props.draft.c
   const picked = pendingMapPick
   pendingMapPick = null
   if (picked?.pointId === pointId && picked.x === x && picked.y === y) return
+  if (props.preserveViewportPointId === pointId) return
   focusDraft()
 })
 onBeforeUnmount(() => {

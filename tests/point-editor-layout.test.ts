@@ -53,4 +53,16 @@ describe('point editor progressive disclosure', () => {
     expect(viewSource).not.toContain('>地图</div><WuSelect')
     expect(viewSource).toContain('@floor-layout-toggled="toggleFloorLayout"')
   })
+
+  it('preserves the viewport when an existing point is selected from the map', async () => {
+    const [viewSource, mapSource] = await Promise.all([
+      readFile(pointEditorSourceUrl, 'utf8'),
+      readFile(pointEditorMapSourceUrl, 'utf8'),
+    ])
+
+    expect(viewSource).toContain(':preserve-viewport-point-id="preserveViewportPointId"')
+    expect(viewSource).toContain('preserveViewportForMapSelection(draft.value.id)')
+    expect(mapSource).toContain('if (props.preserveViewportPointId === pointId) return')
+    expect(mapSource).toContain('focusDraft()')
+  })
 })

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   createExplorerQueryValues,
+  createPointEditorQueryValues,
   DEFAULT_STATE_ID,
   parseExplorerQueryValues,
 } from '../src/url/explorer-url.ts'
@@ -124,5 +125,29 @@ describe('explorer query state', () => {
       mobileSheet: null,
       viewport: null,
     })).toMatchObject({ echoes: undefined, sonatas: undefined })
+  })
+
+  it('carries the current map context into the point editor', () => {
+    expect(createPointEditorQueryValues({
+      stateId: 903,
+      countryId: 3,
+      levelId: '-1/58',
+      compactFloors: false,
+      gravityType: 1,
+      pointSourceFilters: ['manual'],
+      selectedEchoIds: ['wiki-echo-11105'],
+      viewport: { center: [3072.125, -1536.5], zoom: 4.12345 },
+    })).toEqual({
+      map: '903',
+      region: '3',
+      floor: '-1/58',
+      floorStyle: 'list',
+      gravity: '1',
+      official: '0',
+      tracking: '11105',
+      x: '3072.13',
+      y: '-1536.5',
+      zoom: '4.1235',
+    })
   })
 })

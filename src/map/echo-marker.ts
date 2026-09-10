@@ -5,6 +5,23 @@ import type { CompositionMember } from './echo-composition.ts'
 import type { EchoDefinition } from '../domain/types.ts'
 import { drawPortraitMarker, PORTRAIT_MARKER_CANVAS_SIZE, PORTRAIT_MARKER_SIZES } from './boss-marker.ts'
 
+export const ECHO_MARKER_SIZES = {
+  singleC1: PORTRAIT_MARKER_SIZES[1],
+  singleC3: PORTRAIT_MARKER_SIZES[3],
+  multipleC1: 36,
+  multipleWithC3: 40,
+} as const
+
+export function echoMarkerSize(types: readonly { cost: EchoDefinition['cost']; count: number | null }[]): number {
+  const count = (cost: EchoDefinition['cost']) => types.reduce((sum, type) => (
+    type.cost === cost ? sum + (type.count ?? 1) : sum
+  ), 0)
+  const c1Count = count(1)
+  const c3Count = count(3)
+  if (c3Count === 0) return c1Count <= 1 ? ECHO_MARKER_SIZES.singleC1 : ECHO_MARKER_SIZES.multipleC1
+  return c1Count === 0 && c3Count === 1 ? ECHO_MARKER_SIZES.singleC3 : ECHO_MARKER_SIZES.multipleWithC3
+}
+
 export function createEchoMarkerStyles(onChange: () => void, pixelRatio = window.devicePixelRatio || 1) {
   const ratio = Math.max(2, Math.ceil(pixelRatio))
   const images = new Map<string, HTMLImageElement>()
@@ -46,12 +63,12 @@ export function createEchoMarkerStyles(onChange: () => void, pixelRatio = window
       definitions = new Map(echoes.map((echo) => [echo.id, echo]))
     }
     const composition = echoComposition(members, echoes, definitions)
-    const key = JSON.stringify([showText, shape, composition.types.map(({ id, iconUrl, cost }) => [id, iconUrl, cost])])
+    const size = echoMarkerSize(composition.types)
+    const key = JSON.stringify([showText, shape, size, composition.types.map(({ id, iconUrl, cost }) => [id, iconUrl, cost])])
     const old = cache.get(key)
     if (old) return old
     const count = composition.types.length
     const single = count === 1 ? composition.types[0] : undefined
-    const size = single ? PORTRAIT_MARKER_SIZES[single.cost] : count === 0 ? 31 : 54
     const canvas = document.createElement('canvas')
     canvas.width = canvas.height = PORTRAIT_MARKER_CANVAS_SIZE * ratio
     // Keep first-use hit detection from forcing a GPU canvas readback.

@@ -7,10 +7,10 @@ import Icon from 'ol/style/Icon.js'
 import ImageState from 'ol/ImageState.js'
 import { shared as iconImageCache } from 'ol/style/IconImageCache.js'
 import { authoredPointMapDisplay, libraryLocations } from '../src/domain/point-library.ts'
-import { createEchoMarkerStyles } from '../src/map/echo-marker.ts'
+import { createEchoMarkerStyles, ECHO_MARKER_SIZES, echoMarkerSize } from '../src/map/echo-marker.ts'
 import { createEditorSelectionStyle } from '../src/map/editor-marker.ts'
 import { createPointLayers } from '../src/map/point-layers.ts'
-import { createPortraitMarkerStyles, PORTRAIT_MARKER_SIZES } from '../src/map/boss-marker.ts'
+import { createPortraitMarkerStyles, PORTRAIT_MARKER_CANVAS_SIZE, PORTRAIT_MARKER_SIZES } from '../src/map/boss-marker.ts'
 import { createPointMarkerStyles } from '../src/map/point-marker-styles.ts'
 import { referenceDataset, smallEcho, eliteEcho, mixedPoint } from './fixtures/point-library.ts'
 
@@ -196,7 +196,7 @@ describe('echo marker appearance', () => {
       points.dispose()
       return width
     })
-    expect(widths[0]).toBeGreaterThan(50)
+    expect(widths[0]).toBeCloseTo(ECHO_MARKER_SIZES.multipleWithC3 * PORTRAIT_MARKER_CANVAS_SIZE / PORTRAIT_MARKER_SIZES[4])
     expect(widths[1]).toBeCloseTo((widths[0] ?? 0) * 0.6)
   })
   it('uses a diamond editor selection that cannot hide the portrait during decluttering', () => {
@@ -295,6 +295,42 @@ describe('echo marker appearance', () => {
     expect(painted[0]).toHaveLength(3)
     expect(painted[1]).toEqual(painted[0])
     original.dispose()
+    grouped.dispose()
+  })
+
+  it('uses four compact size tiers based on C1 and C3 quantities', () => {
+    expect({
+      singleC1: echoMarkerSize([{ cost: 1, count: 1 }]),
+      singleC3: echoMarkerSize([{ cost: 3, count: 1 }]),
+      multipleC1: echoMarkerSize([{ cost: 1, count: 2 }]),
+      multipleC1Types: echoMarkerSize([{ cost: 1, count: 1 }, { cost: 1, count: 2 }]),
+      multipleC3: echoMarkerSize([{ cost: 3, count: 2 }]),
+      mixed: echoMarkerSize([{ cost: 1, count: 1 }, { cost: 3, count: 1 }]),
+    }).toEqual({
+      singleC1: ECHO_MARKER_SIZES.singleC1,
+      singleC3: ECHO_MARKER_SIZES.singleC3,
+      multipleC1: ECHO_MARKER_SIZES.multipleC1,
+      multipleC1Types: ECHO_MARKER_SIZES.multipleC1,
+      multipleC3: ECHO_MARKER_SIZES.multipleWithC3,
+      mixed: ECHO_MARKER_SIZES.multipleWithC3,
+    })
+    expect([
+      ECHO_MARKER_SIZES.singleC1,
+      ECHO_MARKER_SIZES.singleC3,
+      ECHO_MARKER_SIZES.multipleC1,
+      ECHO_MARKER_SIZES.multipleWithC3,
+    ]).toEqual([28, 31, 36, 40])
+  })
+
+  it('changes the rendered marker cache when quantity crosses a size tier', () => {
+    const grouped = createEchoMarkerStyles(() => {})
+    const single = grouped.get([{ echoId: smallEcho.id, count: 1 }], referenceDataset.echoes)
+    const multiple = grouped.get([{ echoId: smallEcho.id, count: 2 }], referenceDataset.echoes)
+    const sameTier = grouped.get([{ echoId: smallEcho.id, count: 3 }], referenceDataset.echoes)
+    expect(multiple).not.toBe(single)
+    expect(sameTier).toBe(multiple)
+    expect(single.styles[0]?.getImage()?.getScale()).toBe(ECHO_MARKER_SIZES.singleC1 / PORTRAIT_MARKER_SIZES[4] / 2)
+    expect(multiple.styles[0]?.getImage()?.getScale()).toBe(ECHO_MARKER_SIZES.multipleC1 / PORTRAIT_MARKER_SIZES[4] / 2)
     grouped.dispose()
   })
 

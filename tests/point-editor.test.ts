@@ -31,6 +31,41 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('point editor actions', () => {
+  it('initializes a pristine draft from validated map context without making it dirty', async () => {
+    const floorState = referenceDataset.states.find(({ layeredMaps }) => layeredMaps.some(({ floors }) => floors.length > 0))
+    const floor = floorState?.layeredMaps.flatMap(({ floors }) => floors)[0]
+    const country = referenceDataset.regionLabels.find(({ level }) => level === 1)
+    const countryState = referenceDataset.states.find(({ id }) => id === country?.stateId)
+    const gravityState = referenceDataset.states.find(({ gravityTiles }) => gravityTiles.length > 0)
+    if (!floorState || !floor || !country || !countryState || !gravityState) throw new Error('测试数据缺少可用于录入上下文的地图')
+    const store = usePointEditorStore()
+    await store.load()
+    store.initializeMapContext({ stateId: countryState.id, countryId: country.countryId })
+    expect(store.draft).toMatchObject({
+      stateId: countryState.id,
+      countryId: country.countryId,
+      levelId: null,
+    })
+    store.initializeMapContext({ stateId: floorState.id, levelId: floor.id })
+    expect(store.draft).toMatchObject({
+      stateId: floorState.id,
+      countryId: null,
+      levelId: floor.id,
+    })
+    store.initializeMapContext({ stateId: gravityState.id, gravityType: 2 })
+    expect(store.draft).toMatchObject({
+      stateId: gravityState.id,
+      countryId: null,
+      levelId: null,
+      gravityType: 2,
+    })
+    expect(store.dirty).toBe(false)
+
+    store.initializeMapContext({ stateId: -1, countryId: -1, levelId: 'unknown', gravityType: 2 })
+    expect(store.draft).toMatchObject({ stateId: gravityState.id, countryId: null, levelId: null, gravityType: 2 })
+    expect(store.dirty).toBe(false)
+  })
+
   it('records an optional teleport arrival and clears it when it no longer applies', async () => {
     const store = usePointEditorStore()
     await store.load()

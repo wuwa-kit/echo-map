@@ -2,14 +2,18 @@ import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 
 const pointDetailsSourceUrl = new URL('../src/components/PointDetails.vue', import.meta.url)
+const mapPointPopupSourceUrl = new URL('../src/components/MapPointPopup.vue', import.meta.url)
+const echoPointMemberSourceUrl = new URL('../src/components/EchoPointMember.vue', import.meta.url)
 const pointEditorSourceUrl = new URL('../src/views/PointEditorView.vue', import.meta.url)
 const routeLegDetailsSourceUrl = new URL('../src/components/RouteLegDetails.vue', import.meta.url)
 const mapCanvasSourceUrl = new URL('../src/components/MapCanvas.vue', import.meta.url)
 
 describe('point detail hints', () => {
   it('omits provisional-height and inferred-arrival notices', async () => {
-    const [detailsSource, editorSource] = await Promise.all([
+    const [detailsSource, popupSource, memberSource, editorSource] = await Promise.all([
       readFile(pointDetailsSourceUrl, 'utf8'),
+      readFile(mapPointPopupSourceUrl, 'utf8'),
+      readFile(echoPointMemberSourceUrl, 'utf8'),
       readFile(pointEditorSourceUrl, 'utf8'),
     ])
 
@@ -21,8 +25,23 @@ describe('point detail hints', () => {
     expect(detailsSource).not.toContain('图标 XYZ')
     expect(detailsSource).not.toContain('图标点位未录入 XYZ')
     expect(detailsSource).toContain('selectedNavigationPoint.gameCoordinate')
-    expect(detailsSource).toContain("`XYZ ${Object.values(selectedNavigationPoint.gameCoordinate).join(', ')}`")
-    expect(detailsSource).toContain('>×</button>')
+    expect(detailsSource).toContain('`XYZ ${coordinate.x}, ${coordinate.y}, ${coordinate.z}`')
+    expect(detailsSource).toContain('<MapPointPopup')
+    expect(detailsSource).toContain('<EchoPointMember')
+    expect(detailsSource).toContain('max-h-320px')
+    expect(detailsSource).toContain('store.selectPointCandidate(candidate.point.id)')
+    expect(detailsSource).toContain('store.returnToPointCandidates()')
+    expect(detailsSource).toContain('navigationPointCandidates.value.map')
+    expect(detailsSource).toContain("selectedNavigationPoint.mode === 'fast-travel'")
+    expect(detailsSource).toContain('>可传送</span>')
+    expect(detailsSource).not.toContain('<span>点位类型</span>')
+    expect(popupSource).toContain('v-if="showBack"')
+    expect(popupSource).toContain('<slot name="title" />')
+    expect(popupSource).toContain('<slot />')
+    expect(popupSource).toContain("$emit('back')")
+    expect(popupSource).toContain("$emit('close')")
+    expect(memberSource).toContain('`C${props.cost}`')
+    expect(memberSource).toContain('`${props.count}只`')
     expect(editorSource).not.toContain('官方 · Z=0')
     expect(editorSource).not.toContain('Z=0 不代表实际高度')
     expect(editorSource).not.toContain('实际落点留空时按图标点位规划')

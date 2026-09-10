@@ -8,16 +8,40 @@ import { useExplorerStore } from '../stores/explorer.ts'
 import EchoFilter from './filters/EchoFilter.vue'
 import RoutePanel from './RoutePanel.vue'
 import type { PointSourceFilter } from '../domain/types.ts'
+import { createPointEditorQueryValues } from '../url/explorer-url.ts'
 
 defineProps<{ compact: boolean }>()
 
 const store = useExplorerStore()
-const { dataset, pointSourceFilters } = storeToRefs(store)
+const {
+  compactFloors,
+  dataset,
+  mapViewport,
+  pointSourceFilters,
+  selectedCountryId,
+  selectedEchoIds,
+  selectedGravity,
+  selectedLevelId,
+  selectedStateId,
+} = storeToRefs(store)
 const pointSourceOptions = [
   { value: 'manual', label: '人工点位' },
   { value: 'official', label: '官方点位' },
 ] as const satisfies readonly { value: PointSourceFilter; label: string }[]
 const activePointSourceFilterSet = computed(() => new Set(pointSourceFilters.value))
+const editorRoute = computed(() => ({
+  path: '/editor',
+  query: createPointEditorQueryValues({
+    stateId: selectedStateId.value,
+    countryId: selectedCountryId.value,
+    levelId: selectedLevelId.value,
+    compactFloors: compactFloors.value,
+    gravityType: store.supportsGravity ? selectedGravity.value : null,
+    pointSourceFilters: pointSourceFilters.value,
+    selectedEchoIds: selectedEchoIds.value,
+    viewport: mapViewport.value,
+  }),
+}))
 
 function togglePointSourceFilter(source: PointSourceFilter): void {
   const next = new Set(activePointSourceFilterSet.value)
@@ -55,7 +79,7 @@ function togglePointSourceFilter(source: PointSourceFilter): void {
       <div class="border-b border-[var(--line)] p-16px">
         <div class="flex items-center justify-between gap-10px">
           <div class="min-w-0 flex items-center gap-12px whitespace-nowrap">
-            <RouterLink to="/editor" class="inline-flex min-h-40px min-[1024px]:min-h-0 items-center text-12px min-[1024px]:text-9px text-[var(--accent)] hover:text-[#b9ffe7]">点位录入</RouterLink>
+            <RouterLink :to="editorRoute" class="inline-flex min-h-40px min-[1024px]:min-h-0 items-center text-12px min-[1024px]:text-9px text-[var(--accent)] hover:text-[#b9ffe7]">点位录入</RouterLink>
             <RouterLink to="/assets" class="inline-flex min-h-40px min-[1024px]:min-h-0 items-center text-12px min-[1024px]:text-9px text-[var(--accent)] hover:text-[#b9ffe7]">资产浏览</RouterLink>
           </div>
           <div class="flex shrink-0 gap-5px">

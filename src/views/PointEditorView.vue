@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, shallowRef, useTemplateRef } from 'vue'
+import { computed, nextTick, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink, onBeforeRouteLeave } from 'vue-router'
 import { useRouteQuery } from '@vueuse/router'
@@ -19,6 +19,7 @@ import WuScrollArea from '../components/base/WuScrollArea.vue'
 import WuSelect from '../components/base/WuSelect.vue'
 import type { WuSelectValue } from '../components/base/select-context.ts'
 import { compactWikiEchoId, parseWikiEchoId } from '../url/wiki-id.ts'
+import { DEFAULT_STATE_ID } from '../url/explorer-url.ts'
 
 const store = usePointEditorStore()
 const compact = useMediaQuery('(max-width: 1023px)')
@@ -38,7 +39,12 @@ const teleportExpanded = shallowRef(false)
 const matchSettingsExpanded = shallowRef(false)
 const noteExpanded = shallowRef(false)
 const mapCandidateIds = shallowRef<string[]>([])
+const preserveViewportPointId = shallowRef<string | null>(null)
 const selectedQuery = useRouteQuery<string | undefined>('point', undefined, { mode: 'replace' })
+const mapQuery = useRouteQuery<string | undefined>('map', undefined, { mode: 'replace' })
+const regionQuery = useRouteQuery<string | undefined>('region', undefined, { mode: 'replace' })
+const floorQuery = useRouteQuery<string | undefined>('floor', undefined, { mode: 'replace' })
+const gravityQuery = useRouteQuery<string | undefined>('gravity', undefined, { mode: 'replace' })
 const xQuery = useRouteQuery<string | undefined>('x', undefined, { mode: 'replace' })
 const yQuery = useRouteQuery<string | undefined>('y', undefined, { mode: 'replace' })
 const zoomQuery = useRouteQuery<string | undefined>('zoom', undefined, { mode: 'replace' })
@@ -47,6 +53,7 @@ const trackingQuery = useRouteQuery<string | undefined>('tracking', undefined, {
 const radiusQuery = useRouteQuery<string | undefined>('radius', undefined, { mode: 'replace' })
 const heightQuery = useRouteQuery<string | undefined>('matchHeight', undefined, { mode: 'replace' })
 const floorStyleQuery = useRouteQuery<string | undefined>('floorStyle', 'icons', { mode: 'replace' })
+let mapContextUrlSyncEnabled = false
 const savedViewport = computed(() => {
   if (xQuery.value === undefined || yQuery.value === undefined || zoomQuery.value === undefined) return null
   const x = Number(xQuery.value), y = Number(yQuery.value), zoom = Number(zoomQuery.value)
@@ -86,7 +93,16 @@ function selectPoint(id: string): void {
 }
 function selectMapPoint(id: string): void {
   if (store.discardEmptyMapDraft(id)) resetDisclosures()
-  else selectPoint(id)
+  else {
+    selectPoint(id)
+    if (draft.value) preserveViewportForMapSelection(draft.value.id)
+  }
+}
+function preserveViewportForMapSelection(id: string): void {
+  preserveViewportPointId.value = id
+  void nextTick(() => {
+    if (preserveViewportPointId.value === id) preserveViewportPointId.value = null
+  })
 }
 function selectMapPoints(ids: string[]): void {
   if (ids.length === 1 && ids[0]) {
@@ -211,21 +227,54 @@ function publishViewport(viewport: {
 function toggleFloorLayout(): void {
   floorStyleQuery.value = compactFloors.value ? 'list' : undefined
 }
+function queryInteger(value: string | undefined): number | undefined {
+  if (value === undefined || value.trim() === '') return undefined
+  const parsed = Number(value)
+  return Number.isInteger(parsed) ? parsed : undefined
+}
+function publishMapContext(): void {
+  if (!draft.value) return
+  mapQuery.value = draft.value.stateId === DEFAULT_STATE_ID ? undefined : String(draft.value.stateId)
+  regionQuery.value = draft.value.countryId === null ? undefined : String(draft.value.countryId)
+  floorQuery.value = draft.value.levelId ?? undefined
+  gravityQuery.value = draft.value.gravityType === null ? undefined : String(draft.value.gravityType)
+}
+watch([
+  () => draft.value?.stateId,
+  () => draft.value?.countryId,
+  () => draft.value?.levelId,
+  () => draft.value?.gravityType,
+], () => {
+  if (mapContextUrlSyncEnabled) publishMapContext()
+})
 onMounted(async () => {
   await store.load()
   store.setOfficialVisible(officialQuery.value !== '0')
   officialQuery.value = showOfficial.value ? undefined : '0'
   store.setMatchingDistance('radius', Number(radiusQuery.value ?? 30))
   store.setMatchingDistance('height', Number(heightQuery.value ?? 8))
+  let selectedExistingPoint = false
   if (selectedQuery.value && !dirty.value) {
-    if (library.value.points.some(({ id }) => id === selectedQuery.value)) store.selectPoint(selectedQuery.value)
-    else selectedQuery.value = undefined
+    if (library.value.points.some(({ id }) => id === selectedQuery.value)) {
+      store.selectPoint(selectedQuery.value)
+      selectedExistingPoint = true
+    } else selectedQuery.value = undefined
+  }
+  if (!selectedExistingPoint) {
+    store.initializeMapContext({
+      stateId: queryInteger(mapQuery.value),
+      countryId: queryInteger(regionQuery.value),
+      levelId: floorQuery.value?.trim() || undefined,
+      gravityType: gravityQuery.value === '1' ? 1 : gravityQuery.value === '2' ? 2 : undefined,
+    })
   }
   store.setTrackingEcho(parseWikiEchoId(trackingQuery.value) ?? '')
   trackingQuery.value = compactWikiEchoId(trackingEchoId.value)
   radiusQuery.value = matchRadius.value === 30 ? undefined : String(matchRadius.value)
   heightQuery.value = heightTolerance.value === 8 ? undefined : String(heightTolerance.value)
   floorStyleQuery.value = compactFloors.value ? undefined : 'list'
+  mapContextUrlSyncEnabled = true
+  publishMapContext()
 })
 onBeforeRouteLeave(() => !dirty.value || window.confirm('当前修改尚未保存到点位库。离开后可恢复浏览器草稿，仍要离开吗？'))
 useEventListener(window, 'beforeunload', (event) => {
@@ -299,6 +348,7 @@ useEventListener(window, 'beforeunload', (event) => {
       </div>
       <PointEditorMap
         :dataset="dataset" :points="allPoints" :draft="draft" :compact="compact" :compact-floors="compactFloors" :saved-viewport="savedViewport"
+        :preserve-viewport-point-id="preserveViewportPointId"
         class="h-340px lg:h-full" @point-selected="selectMapPoints" @position-picked="store.pickMapPosition"
         @viewport-changed="publishViewport" @floor-layout-toggled="toggleFloorLayout"
       />

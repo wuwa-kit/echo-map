@@ -45,6 +45,30 @@ export interface ExplorerUrlSnapshot {
   viewport: MapViewportState | null
 }
 
+export interface PointEditorEntrySnapshot {
+  stateId: number
+  countryId: number | null
+  levelId: string | null
+  compactFloors: boolean
+  gravityType: GravityType | null
+  pointSourceFilters: readonly PointSourceFilter[]
+  selectedEchoIds: readonly string[]
+  viewport: MapViewportState | null
+}
+
+export interface PointEditorSerializedQueryValues extends Record<string, string | undefined> {
+  map: string | undefined
+  region: string | undefined
+  floor: string | undefined
+  floorStyle: string | undefined
+  gravity: string | undefined
+  official: string | undefined
+  tracking: string | undefined
+  x: string | undefined
+  y: string | undefined
+  zoom: string | undefined
+}
+
 export type ExplorerQueryValue = string | string[] | null | undefined
 
 export interface ExplorerQueryValues {
@@ -184,6 +208,25 @@ export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerS
     provisional: state.showProvisional ? undefined : '0',
     panel: state.controlPanelCollapsed ? '1' : undefined,
     sheet: state.mobileSheet ?? undefined,
+    x: state.viewport ? compactNumber(state.viewport.center[0], 2) : undefined,
+    y: state.viewport ? compactNumber(state.viewport.center[1], 2) : undefined,
+    zoom: state.viewport ? compactNumber(state.viewport.zoom, 4) : undefined,
+  }
+}
+
+export function createPointEditorQueryValues(state: PointEditorEntrySnapshot): PointEditorSerializedQueryValues {
+  const trackingEchoId = state.selectedEchoIds.length === 1
+    ? compactWikiEchoId(state.selectedEchoIds[0] ?? '')
+    : undefined
+  const manualOnly = state.pointSourceFilters.length === 1 && state.pointSourceFilters[0] === 'manual'
+  return {
+    map: state.stateId === DEFAULT_STATE_ID ? undefined : String(state.stateId),
+    region: state.countryId === null ? undefined : String(state.countryId),
+    floor: state.levelId ?? undefined,
+    floorStyle: state.compactFloors ? undefined : 'list',
+    gravity: state.gravityType === null ? undefined : String(state.gravityType),
+    official: manualOnly ? '0' : undefined,
+    tracking: trackingEchoId,
     x: state.viewport ? compactNumber(state.viewport.center[0], 2) : undefined,
     y: state.viewport ? compactNumber(state.viewport.center[1], 2) : undefined,
     zoom: state.viewport ? compactNumber(state.viewport.zoom, 4) : undefined,

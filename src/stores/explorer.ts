@@ -145,6 +145,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const selectedEchoLocation = computed(() => mapEchoLocations.value.find(({ id }) => id === selectedPointId.value) ?? null)
   const selectedNavigationPoint = computed(() => mapNavigationPoints.value.find(({ id }) => id === selectedPointId.value) ?? null)
   const pointCandidates = computed(() => mapEchoLocations.value.filter(({ id }) => candidateIds.value.includes(id)))
+  const navigationPointCandidates = computed(() => mapNavigationPoints.value.filter(({ id }) => candidateIds.value.includes(id)))
   const matchingMonsterCount = computed(() => visibleEchoLocations.value.reduce((sum, location) => sum + echoMembers(location).reduce((count, member) => count + (activeEchoIds.value.has(member.echoId) ? member.count ?? 0 : 0), 0), 0))
   const scopedNavigationPoints = computed(() => (
     allNavigationPoints.value.filter((location) => matchesMapScope(location, mapScope.value))
@@ -523,14 +524,30 @@ export const useExplorerStore = defineStore('explorer', () => {
       )
       clearRoute()
     },
-    pointCandidates,
+    pointCandidates, navigationPointCandidates,
     selectPoint: (id: string | null) => {
       selectedPointId.value = id
       candidateIds.value = immutableSnapshot([])
     },
     selectPointCandidates: (ids: string[]) => {
-      candidateIds.value = immutableSnapshot(ids)
+      const availableIds = new Set([
+        ...mapEchoLocations.value.map(({ id }) => id),
+        ...mapNavigationPoints.value.map(({ id }) => id),
+      ])
+      const candidates = [...new Set(ids)].filter(id => availableIds.has(id))
+      if (candidates.length < 2) {
+        selectedPointId.value = candidates[0] ?? null
+        candidateIds.value = immutableSnapshot([])
+        return
+      }
+      candidateIds.value = immutableSnapshot(candidates)
       selectedPointId.value = null
+    },
+    selectPointCandidate: (id: string) => {
+      if (candidateIds.value.includes(id)) selectedPointId.value = id
+    },
+    returnToPointCandidates: () => {
+      if (candidateIds.value.length > 0) selectedPointId.value = null
     },
     dataset: shallowReadonly(dataset),
     selectedStateId: shallowReadonly(selectedStateId),
