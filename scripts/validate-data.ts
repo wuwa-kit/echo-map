@@ -1,8 +1,8 @@
-import { mapZoomRangeSchema, officialAssetSchema, officialPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
+import { mapZoomRangeSchema, officialAssetSchema, officialEchoPointDataSchema, officialNavigationPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
 import { projectPath, readJson } from './lib/files.ts'
-import { parsePointLibrary } from '../src/domain/point-library.ts'
+import { combinePointLibraryKinds, parsePointLibrary } from '../src/domain/point-library.ts'
 import { isRouteStart } from '../src/domain/explorer-selectors.ts'
 import { readMapDataset, readOfficialPointData } from './lib/map-data.ts'
 import { inferOfficialEchoCountryId, OFFICIAL_ECHO_MERGE_DIAMETER } from './lib/official-point-library.ts'
@@ -20,7 +20,10 @@ for (const asset of assets) {
   }
 }
 const pointLibrary = parsePointLibrary(await readJson<unknown>(projectPath('data', 'manual', 'points.json')), dataset, 'manual')
-const { library: officialLibrary } = officialPointDataSchema.parse(await readOfficialPointData(dataset))
+const official = await readOfficialPointData(dataset)
+const officialEcho = officialEchoPointDataSchema.parse(official.echo)
+const officialNavigation = officialNavigationPointDataSchema.parse(official.navigation)
+const officialLibrary = parsePointLibrary(combinePointLibraryKinds(officialEcho.library, officialNavigation.library), dataset, 'official')
 const echoIds = new Set(dataset.echoes.map(({ id }) => id))
 const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []

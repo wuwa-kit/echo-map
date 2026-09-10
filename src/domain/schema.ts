@@ -99,6 +99,14 @@ export const pointLibrarySchema = z.object({
   }
 })
 
+export const echoPointLibrarySchema = pointLibrarySchema.superRefine(({ points }, context) => {
+  if (points.some(({ kind }) => kind !== 'echo')) context.addIssue({ code: 'custom', message: '声骸点位文件不能包含定位点' })
+})
+
+export const navigationPointLibrarySchema = pointLibrarySchema.superRefine(({ points }, context) => {
+  if (points.some(({ kind }) => kind !== 'navigation')) context.addIssue({ code: 'custom', message: '定位点文件不能包含声骸点位' })
+})
+
 export const gameCoordinateSchema = z.object({
   x: finiteNumber,
   y: finiteNumber,
@@ -257,10 +265,14 @@ function validateMapGravity(dataset: Pick<MapDataset, 'states' | 'echoLocations'
   }
 }
 
-function validateNavigationTeleportCoordinates(dataset: { navigationPoints: readonly { mode: string, teleportCoordinate?: unknown }[] }, context: RefinementCtx): void {
+function validateNavigationTeleportCoordinates(
+  dataset: { navigationPoints: readonly { mode: string, teleportCoordinate?: unknown }[] },
+  context: RefinementCtx,
+  path: 'navigationPoints' | 'locations' = 'navigationPoints',
+): void {
   dataset.navigationPoints.forEach((point, index) => {
     if (point.teleportCoordinate && point.mode !== 'fast-travel') context.addIssue({
-      code: 'custom', path: ['navigationPoints', index, 'teleportCoordinate'], message: '只有可直接传送的定位点可以填写传送落点',
+      code: 'custom', path: [path, index, 'teleportCoordinate'], message: '只有可直接传送的定位点可以填写传送落点',
     })
   })
 }
@@ -460,14 +472,23 @@ export const mapCatalogDataSchema = mapDatasetObjectSchema.pick({
   }).strict()).refine((icons) => new Set(icons.map(({ id }) => id)).size === icons.length, { message: '点位图标 ID 不能重复' }),
 }).strict().superRefine(validateSonataEchoIds)
 
+export const mapEchoLocationsSchema = z.array(mapDatasetObjectSchema.shape.echoLocations.element
+  .omit({ iconUrl: true }).strict())
+
+export const mapNavigationPointsSchema = z.array(mapDatasetObjectSchema.shape.navigationPoints.element
+  .omit({ typeId: true, typeName: true, iconUrl: true }).extend({ iconId: z.string().min(1) }).strict())
+
 export const mapPointLocationsSchema = z.object({
-  echoLocations: z.array(mapDatasetObjectSchema.shape.echoLocations.element
-    .omit({ iconUrl: true }).strict()),
-  navigationPoints: z.array(mapDatasetObjectSchema.shape.navigationPoints.element
-    .omit({ typeId: true, typeName: true, iconUrl: true }).extend({ iconId: z.string().min(1) }).strict()),
+  echoLocations: mapEchoLocationsSchema,
+  navigationPoints: mapNavigationPointsSchema,
 }).strict().superRefine(validateNavigationTeleportCoordinates)
 
-export const officialPointDataSchema = z.object({
-  locations: mapPointLocationsSchema,
-  library: pointLibrarySchema,
+export const officialEchoPointDataSchema = z.object({
+  locations: mapEchoLocationsSchema,
+  library: echoPointLibrarySchema,
 }).strict()
+
+export const officialNavigationPointDataSchema = z.object({
+  locations: mapNavigationPointsSchema,
+  library: navigationPointLibrarySchema,
+}).strict().superRefine(({ locations }, context) => validateNavigationTeleportCoordinates({ navigationPoints: locations }, context, 'locations'))

@@ -303,8 +303,13 @@ export interface MapCatalogData extends Pick<MapDataset, 'report' | 'sonatas' | 
   pointIcons: PointIconDefinition[]
 }
 
-export interface OfficialPointData {
-  locations: MapPointLocations
+export interface OfficialEchoPointData {
+  locations: MapPointLocations['echoLocations']
+  library: PointLibrary
+}
+
+export interface OfficialNavigationPointData {
+  locations: MapPointLocations['navigationPoints']
   library: PointLibrary
 }
 

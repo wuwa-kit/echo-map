@@ -5,6 +5,13 @@ import { createPointRepository, PointRepositoryError } from './lib/point-reposit
 import { projectPath } from './lib/files.ts'
 import { readMapDataset, writePublicPointData } from './lib/map-data.ts'
 
+const publicPointPaths = [
+  '/data/official-echo-points.json',
+  '/data/official-navigation-points.json',
+  '/data/custom-echo-points.json',
+  '/data/custom-navigation-points.json',
+] as const
+
 export function isLocalEditorRequest(request: Pick<IncomingMessage, 'headers'> & { socket: { remoteAddress?: string } }): boolean {
   if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.socket.remoteAddress ?? '')) return false
   try {
@@ -41,13 +48,16 @@ export function pointEditorPlugin(): Plugin {
       await writePublicPointData()
       server.middlewares.use((request, response, next) => {
         const path = request.url?.split('?')[0] ?? ''
-        if (!['/data/custom-points.json', '/data/official-points.json'].includes(path) && !path.startsWith('/api/editor/')) return next()
+        if (!publicPointPaths.some((candidate) => candidate === path) && !path.startsWith('/api/editor/')) return next()
         response.setHeader('Content-Type', 'application/json; charset=utf-8')
         response.setHeader('Cache-Control', 'no-store')
         const run = async () => {
-          if (['/data/custom-points.json', '/data/official-points.json'].includes(path) && request.method === 'GET') {
+          if (publicPointPaths.some((candidate) => candidate === path) && request.method === 'GET') {
             const data = await writePublicPointData()
-            return path === '/data/custom-points.json' ? data.manual : data.official
+            if (path === '/data/official-echo-points.json') return data.officialEcho
+            if (path === '/data/official-navigation-points.json') return data.officialNavigation
+            if (path === '/data/custom-echo-points.json') return data.manualEcho
+            return data.manualNavigation
           }
           if (!isLocalEditorRequest(request)) throw new PointRepositoryError('录入系统仅允许通过本机 localhost 访问', 403)
           if (path === '/api/editor/library' && request.method === 'GET') return repository.read()

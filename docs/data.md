@@ -11,7 +11,7 @@
 - 声骸与合鸣效果：库街区 Wiki 公开目录接口。
 - 地图瓦片、分层、图标和临时 XY：库街区官方地图公开静态资源。
 - 人工点位与精确 XYZ：`data/manual/points.json`，由录入系统维护。
-- 官方点位：`data/generated/official-points.json`，Z=0，每个原始官方标记的占位数量为 1 只；相邻标记合并后按声骸种类汇总。原始点位与图标 ID 引用由地图同步写入紧凑的 `data/generated/official-locations.json`，与官方转换点位合并生成 `public/data/official-points.json`。
+- 官方点位：`data/generated/official-points.json`，Z=0，每个原始官方标记的占位数量为 1 只；相邻标记合并后按声骸种类汇总。原始点位与图标 ID 引用由地图同步写入紧凑的 `data/generated/official-locations.json`，发布时按声骸与定位点拆分。
 - 地图类型别名：`data/config/map-echo-aliases.json`，由人工审阅。
 - 定位点收录和传送能力：`data/config/map-navigation-types.json`，由人工审阅。
 - 重复定位点图标的分组名称：`data/config/map-navigation-icon-groups.json`，由人工审阅。
@@ -26,20 +26,22 @@
 
 ## 公开数据文件
 
-`public/data/` 保存四个无缩进、无换行的 JSON 文件：
+`public/data/` 保存六个无缩进、无换行的 JSON 文件：
 
 - `map-data.json`：地图结构、地表与分层瓦片、地区导航、文字标签、楼层连接及地图来源信息。
 - `catalog-data.json`：声骸、合鸣套装、定位点图标分组、定位点类型、图标定义、目录来源和同步统计。声骸按中文名称匹配完整 Wiki 图鉴并兼容已配置别名。点位通过 `echoId` 直接复用图鉴头像，不保存官方地图的声骸图标。传送点、BOSS 等定位点通过 `iconId` 引用 `pointIcons`。
-- `official-points.json`：`locations` 保存官方原始点位信息，`library` 保存官方转换点位。
-- `custom-points.json`：人工已核验记录。
+- `official-echo-points.json`：官方声骸的 `locations` 原始位置和 `library` 转换点位。
+- `official-navigation-points.json`：官方定位点的 `locations` 原始位置和 `library` 转换点位。
+- `custom-echo-points.json`：人工已核验声骸点位。
+- `custom-navigation-points.json`：人工已核验定位点。
 
-地图同步、官方转换、开发服务启动和构建前都会更新公开点位快照。录入保存成功后也会同步更新，内容未变化时不重写文件。`pnpm build` 将这四个文件复制到 `dist/data/`。
+地图同步、官方转换、开发服务启动和构建前都会更新公开点位快照。录入保存成功后也会同步更新，内容未变化时不重写文件。`pnpm build` 将这六个文件复制到 `dist/data/`。
 
-开发服务提供相同路径和结构。地图、图鉴图标与官方数据并行读取，每个文件只请求一次。录入接口、导入导出和历史恢复只写人工库，官方转换命令只写官方库。前端继续复用现有底图、楼层与声骸图鉴素材。
+开发服务提供相同路径和结构。地图、图鉴图标、官方声骸和官方定位点数据并行读取，每个文件只请求一次。录入接口、导入导出和历史恢复仍只写内部人工库，发布快照再按类型拆分；官方转换命令仍只写内部官方库。前端继续复用现有底图、楼层与声骸图鉴素材。
 
 ## 官方点与人工点
 
-两份数据使用相同的点位结构。`data/manual/points.json` 保存人工录入，`data/generated/official-points.json` 保存官方转换数据。
+官方与人工数据使用相同的点位结构。内部仍由 `data/manual/points.json` 保存人工录入、`data/generated/official-points.json` 保存官方转换数据；公开快照各自按声骸和定位点拆成两份。
 
 定位点的 `coordinate` 表示图标点位 XYZ，只有 `mode: "fast-travel"` 可以携带可选的 `teleportCoordinate`。后者表示角色传送后的实际落点 XYZ，不改变地图图标位置；路线起点使用 `teleportCoordinate ?? coordinate`。官方转换不会把图标坐标重复写成落点，未实测时保持字段缺省。
 
@@ -47,7 +49,7 @@
 
 地图默认同时显示两份数据。“人工点位”和“官方点位”使用独立筛选按钮：均未选或均选时显示两份数据，只选一项时仅显示对应来源；URL 通过 `sources` 保存非默认的按钮组合。录入页另有“显示官方点位”开关。
 
-删除 `data/generated/official-points.json` 即可停用官方点位。加载和构建会将缺失文件视为空库，不会回退显示旧地图快照里的点，人工文件不受影响。
+删除 `data/generated/official-points.json` 即可停用官方转换点位。加载和构建会将缺失文件视为空库，不会回退显示旧地图快照里的点，人工文件不受影响。公开的官方声骸与官方定位点文件也可独立缺失，前端会把对应类别视为空数据。
 
 `pnpm data:validate` 同时校验两份点位文件。
 

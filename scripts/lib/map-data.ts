@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto'
 import { mapCatalogDataSchema, mapDataSchema, mapDatasetSchema, mapPointLocationsSchema } from '../../src/domain/schema.ts'
 import { assembleMapDataset } from '../../src/domain/map-data.ts'
-import { parsePointLibrary } from '../../src/domain/point-library.ts'
-import type { MapCatalogData, MapData, MapDataset, MapPointLocations, OfficialPointData, PointIconDefinition, PointLibrary, PointLocationBase, PointWithIconReference } from '../../src/domain/types.ts'
+import { parsePointLibrary, splitPointLibrary } from '../../src/domain/point-library.ts'
+import type { MapCatalogData, MapData, MapDataset, MapPointLocations, OfficialEchoPointData, OfficialNavigationPointData, PointIconDefinition, PointLibrary, PointLocationBase, PointWithIconReference } from '../../src/domain/types.ts'
 import { projectPath, readJson, writeJson } from './files.ts'
 import { readOfficialPointLibrary } from './official-point-library.ts'
 
@@ -50,23 +50,40 @@ export async function writeMapDataset(dataset: MapDataset): Promise<void> {
   await writePublicPointData(dataset)
 }
 
-export async function readOfficialPointData(dataset: MapDataset): Promise<OfficialPointData> {
+export async function readOfficialPointData(dataset: MapDataset): Promise<{
+  echo: OfficialEchoPointData
+  navigation: OfficialNavigationPointData
+}> {
+  const locations = splitMapDataset(dataset).locations
+  const library = splitPointLibrary(await readOfficialPointLibrary(projectPath('data', 'generated', 'official-points.json'), dataset))
   return {
-    locations: splitMapDataset(dataset).locations,
-    library: await readOfficialPointLibrary(projectPath('data', 'generated', 'official-points.json'), dataset),
+    echo: { locations: locations.echoLocations, library: library.echo },
+    navigation: { locations: locations.navigationPoints, library: library.navigation },
   }
 }
 
-export function writePublicPointData(dataset?: MapDataset): Promise<{ official: OfficialPointData, manual: PointLibrary }> {
+export function writePublicPointData(dataset?: MapDataset): Promise<{
+  officialEcho: OfficialEchoPointData
+  officialNavigation: OfficialNavigationPointData
+  manualEcho: PointLibrary
+  manualNavigation: PointLibrary
+}> {
   const work = pendingPublicWrite.then(async () => {
     const reference = dataset ?? await readMapDataset()
     const official = await readOfficialPointData(reference)
     const library = parsePointLibrary(await readJson<unknown>(projectPath('data', 'manual', 'points.json')), reference, 'manual')
-    const manual = { ...library, points: library.points.filter(({ status }) => status === 'verified') }
+    const manual = splitPointLibrary({ ...library, points: library.points.filter(({ status }) => status === 'verified') })
     const options = { compact: true, skipUnchanged: true }
-    await writeJson(projectPath('public', 'data', 'official-points.json'), official, options)
-    await writeJson(projectPath('public', 'data', 'custom-points.json'), manual, options)
-    return { official, manual }
+    await writeJson(projectPath('public', 'data', 'official-echo-points.json'), official.echo, options)
+    await writeJson(projectPath('public', 'data', 'official-navigation-points.json'), official.navigation, options)
+    await writeJson(projectPath('public', 'data', 'custom-echo-points.json'), manual.echo, options)
+    await writeJson(projectPath('public', 'data', 'custom-navigation-points.json'), manual.navigation, options)
+    return {
+      officialEcho: official.echo,
+      officialNavigation: official.navigation,
+      manualEcho: manual.echo,
+      manualNavigation: manual.navigation,
+    }
   })
   pendingPublicWrite = work.catch(() => undefined)
   return work

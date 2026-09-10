@@ -9,7 +9,8 @@ import { splitMapDataset } from '../scripts/lib/map-data.ts'
 
 const assets = buildOfficialAssets(referenceDataset)
 const { map, catalog, locations } = splitMapDataset(referenceDataset)
-const officialData = { locations, library: { version: 1, points: [] } }
+const officialEchoData = { locations: locations.echoLocations, library: { version: 1, points: [] } }
+const officialNavigationData = { locations: locations.navigationPoints, library: { version: 1, points: [] } }
 
 beforeEach(() => { setActivePinia(createPinia()) })
 
@@ -137,10 +138,12 @@ describe('asset browser state', () => {
     const fetchMock = vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(null, { status: 503, statusText: 'Unavailable' }))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
-      .mockResolvedValueOnce(new Response(JSON.stringify(officialData)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(officialEchoData)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(officialNavigationData)))
       .mockResolvedValueOnce(new Response(JSON.stringify(map)))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
-      .mockResolvedValueOnce(new Response(JSON.stringify(officialData)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(officialEchoData)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(officialNavigationData)))
     vi.stubGlobal('fetch', fetchMock)
     try {
       const store = useAssetsStore()
@@ -160,13 +163,14 @@ describe('asset browser state', () => {
     const fetchMock = vi.fn<typeof fetch>()
       .mockReturnValueOnce(response.promise)
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
-      .mockResolvedValueOnce(new Response(JSON.stringify(officialData)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(officialEchoData)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(officialNavigationData)))
     vi.stubGlobal('fetch', fetchMock)
     try {
       const store = useAssetsStore()
       const firstLoad = store.load()
       const secondLoad = store.load()
-      expect(fetchMock).toHaveBeenCalledTimes(3)
+      expect(fetchMock).toHaveBeenCalledTimes(4)
       response.resolve(new Response(JSON.stringify(map)))
       await Promise.all([firstLoad, secondLoad])
       expect(store.loading).toBe(false)

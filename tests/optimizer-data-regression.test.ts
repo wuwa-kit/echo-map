@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises'
 import { expect, it } from 'vitest'
 import { assembleMapDataset } from '../src/domain/map-data.ts'
 import { combinePointLibraries } from '../src/domain/point-matching.ts'
-import { libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
-import { mapCatalogDataSchema, mapDataSchema, officialPointDataSchema } from '../src/domain/schema.ts'
+import { combinePointLibraryKinds, libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
+import { echoPointLibrarySchema, mapCatalogDataSchema, mapDataSchema, navigationPointLibrarySchema, officialEchoPointDataSchema, officialNavigationPointDataSchema } from '../src/domain/schema.ts'
 import type { RoutePoint, RouteResult } from '../src/domain/types.ts'
 import { optimizeRoute } from '../src/route/optimizer.ts'
 import { createRoutePlanInput } from '../src/route/plan-input.ts'
@@ -28,10 +28,16 @@ function walkingSegmentAt(points: RouteResult['points'], index: number): number 
 it('rejoins spatially adjacent full-selection fragments instead of teleporting back to the same area', async () => {
   const map = mapDataSchema.parse(await readJson('../public/data/map-data.json'))
   const catalog = mapCatalogDataSchema.parse(await readJson('../public/data/catalog-data.json'))
-  const officialData = officialPointDataSchema.parse(await readJson('../public/data/official-points.json'))
-  const dataset = assembleMapDataset(map, catalog, officialData.locations)
-  const official = parsePointLibrary(officialData.library, dataset, 'official')
-  const manual = parsePointLibrary(await readJson('../public/data/custom-points.json'), dataset, 'manual')
+  const officialEcho = officialEchoPointDataSchema.parse(await readJson('../public/data/official-echo-points.json'))
+  const officialNavigation = officialNavigationPointDataSchema.parse(await readJson('../public/data/official-navigation-points.json'))
+  const dataset = assembleMapDataset(map, catalog, {
+    echoLocations: officialEcho.locations,
+    navigationPoints: officialNavigation.locations,
+  })
+  const official = parsePointLibrary(combinePointLibraryKinds(officialEcho.library, officialNavigation.library), dataset, 'official')
+  const manualEcho = echoPointLibrarySchema.parse(await readJson('../public/data/custom-echo-points.json'))
+  const manualNavigation = navigationPointLibrarySchema.parse(await readJson('../public/data/custom-navigation-points.json'))
+  const manual = parsePointLibrary(combinePointLibraryKinds(manualEcho, manualNavigation), dataset, 'manual')
   const library = combinePointLibraries({
     ...manual,
     points: manual.points.filter(({ status }) => status === 'verified'),

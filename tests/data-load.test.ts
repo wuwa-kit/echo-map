@@ -6,6 +6,7 @@ import { assembleMapDataset } from '../src/domain/map-data.ts'
 
 const { map, catalog } = splitMapDataset(referenceDataset)
 const official = await readOfficialPointData(referenceDataset)
+const emptyLibrary = { version: 1 as const, points: [] }
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -43,8 +44,10 @@ describe('split application data loading', () => {
     const responses = new Map<string, unknown>([
       ['/data/map-data.json', map],
       ['/data/catalog-data.json', catalog],
-      ['/data/official-points.json', official],
-      ['/data/custom-points.json', { version: 1, points: [mixedPoint()] }],
+      ['/data/official-echo-points.json', official.echo],
+      ['/data/official-navigation-points.json', official.navigation],
+      ['/data/custom-echo-points.json', { version: 1, points: [mixedPoint()] }],
+      ['/data/custom-navigation-points.json', emptyLibrary],
     ])
     const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (url) => {
       const body = responses.get(String(url))
@@ -53,18 +56,24 @@ describe('split application data loading', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
     const pending = loadMapDataset()
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/data/map-data.json', '/data/catalog-data.json', '/data/official-points.json'])
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      '/data/map-data.json', '/data/catalog-data.json', '/data/official-echo-points.json', '/data/official-navigation-points.json',
+    ])
     const { dataset, officialLibrary } = await pending
     expect(dataset).toEqual(referenceDataset)
-    expect(officialLibrary).toEqual(official.library)
+    expect(officialLibrary.points).toEqual([...official.echo.library.points, ...official.navigation.library.points])
     expect(await loadPointLibrary(dataset)).toEqual({ version: 1, points: [mixedPoint()] })
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/data/map-data.json', '/data/catalog-data.json', '/data/official-points.json', '/data/custom-points.json'])
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      '/data/map-data.json', '/data/catalog-data.json', '/data/official-echo-points.json', '/data/official-navigation-points.json',
+      '/data/custom-echo-points.json', '/data/custom-navigation-points.json',
+    ])
   })
 
-  it('allows an absent official file without falling back to old map points', async () => {
+  it('allows absent official files without falling back to old map points', async () => {
     vi.stubGlobal('fetch', vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify(map)))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
       .mockResolvedValueOnce(new Response(null, { status: 404 })))
     const { dataset, officialLibrary } = await loadMapDataset()
     expect(dataset.states).toEqual(referenceDataset.states)
@@ -77,7 +86,8 @@ describe('split application data loading', () => {
     vi.stubGlobal('fetch', vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify(map)))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...official, library: { version: 1, points: [] } }))))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ...official.echo, library: emptyLibrary })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ...official.navigation, library: emptyLibrary }))))
     const { dataset, officialLibrary } = await loadMapDataset()
     expect(dataset).toEqual(referenceDataset)
     expect(officialLibrary.points).toEqual([])
@@ -87,23 +97,26 @@ describe('split application data loading', () => {
     vi.stubGlobal('fetch', vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify(map)))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
-      .mockResolvedValueOnce(new Response(null, { status: 503 })))
-    await expect(loadMapDataset()).rejects.toThrow('官方点位加载失败：503')
+      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(official.navigation))))
+    await expect(loadMapDataset()).rejects.toThrow('官方声骸点位加载失败：503')
   })
 
   it('reports an unavailable catalogue and rejects missing icon references', async () => {
     vi.stubGlobal('fetch', vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify(map)))
       .mockResolvedValueOnce(new Response(null, { status: 404 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(official))))
+      .mockResolvedValueOnce(new Response(JSON.stringify(official.echo)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(official.navigation))))
     await expect(loadMapDataset()).rejects.toThrow('图鉴与图标数据加载失败：404')
 
-    const first = official.locations.navigationPoints[0]
+    const first = official.navigation.locations[0]
     if (!first) throw new Error('测试数据缺少定位点')
-    const invalid = { ...official, locations: { ...official.locations, navigationPoints: [{ ...first, iconId: 'missing-icon' }] } }
+    const invalid = { ...official.navigation, locations: [{ ...first, iconId: 'missing-icon' }] }
     vi.stubGlobal('fetch', vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify(map)))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(official.echo)))
       .mockResolvedValueOnce(new Response(JSON.stringify(invalid))))
     await expect(loadMapDataset()).rejects.toThrow('不存在的图标 missing-icon')
   })
@@ -116,7 +129,8 @@ describe('split application data loading', () => {
     vi.stubGlobal('fetch', vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify(map)))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...official, library: { version: 1, points: [invalid] } }))))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ...official.echo, library: { version: 1, points: [invalid] } })))
+      .mockResolvedValueOnce(new Response(JSON.stringify(official.navigation))))
     await expect(loadMapDataset()).rejects.toThrow('白名单外声骸')
   })
 })

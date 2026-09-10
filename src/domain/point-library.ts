@@ -15,6 +15,17 @@ export function emptyPointLibrary(): PointLibrary {
   return { version: 1, points: [] }
 }
 
+export function splitPointLibrary(library: PointLibrary): { echo: PointLibrary, navigation: PointLibrary } {
+  return {
+    echo: { version: 1, points: library.points.filter(({ kind }) => kind === 'echo') },
+    navigation: { version: 1, points: library.points.filter(({ kind }) => kind === 'navigation') },
+  }
+}
+
+export function combinePointLibraryKinds(echo: PointLibrary, navigation: PointLibrary): PointLibrary {
+  return { version: 1, points: [...echo.points, ...navigation.points] }
+}
+
 export function parsePointLibrary(value: unknown, dataset: Pick<MapDataset, 'states' | 'echoes' | 'regionLabels'>, source?: 'manual' | 'official'): PointLibrary {
   const library = pointLibrarySchema.parse(value)
   const echoIds = new Set(dataset.echoes.map(({ id }) => id))

@@ -24,8 +24,10 @@ const activeCategory = computed(() => categories.value.find(({ id }) => id === f
 const dataDownloads = [
   { file: 'map-data.json', label: '地图数据' },
   { file: 'catalog-data.json', label: '声骸套装与图标' },
-  { file: 'official-points.json', label: '官方点位' },
-  { file: 'custom-points.json', label: '人工点位' },
+  { file: 'official-echo-points.json', label: '官方声骸点位' },
+  { file: 'official-navigation-points.json', label: '官方定位点' },
+  { file: 'custom-echo-points.json', label: '人工声骸点位' },
+  { file: 'custom-navigation-points.json', label: '人工定位点' },
 ]
 
 function categoryName(category: OfficialAssetCategory): string {
