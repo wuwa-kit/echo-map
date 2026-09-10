@@ -114,6 +114,12 @@ describe('route planning actions', () => {
     const echoId = [...statesByEcho].find(([, states]) => states.size > 1)?.[0]
     if (!echoId) throw new Error('测试数据缺少跨地图声骸')
     store.toggleEcho(echoId)
+    const floorLocation = store.allEchoLocations.find(({ stateId, levelId, gravityType, gameCoordinate }) => (
+      stateId === store.selectedStateId && levelId !== null && gravityType === store.selectedGravity && gameCoordinate !== null
+    ))
+    const floorEchoId = floorLocation ? echoMembers(floorLocation)[0]?.echoId : undefined
+    if (!floorEchoId) throw new Error('测试数据缺少当前地图的楼层声骸')
+    if (!store.selectedEchoIds.includes(floorEchoId)) store.toggleEcho(floorEchoId)
     const candidates = store.routeGroupCandidates.filter(({ locations }) => locations.length > 0)
     expect(new Set(candidates.map(({ stateId }) => stateId)).size).toBeGreaterThan(1)
     planner.mockImplementation(async (input) => ({
@@ -123,17 +129,26 @@ describe('route planning actions', () => {
     await store.planAllRoutes()
 
     expect(planner).toHaveBeenCalledTimes(candidates.length)
-    expect(store.routePlan?.groups.map(({ id }) => id)).toEqual(candidates.map(({ id }) => id))
+    expect(new Set(store.routePlan?.groups.map(({ id }) => id))).toEqual(new Set(candidates.map(({ id }) => id)))
     expect(store.routePlan?.totalPoints).toBe(candidates.reduce((sum, group) => sum + group.locations.length, 0))
     const plan = store.routePlan
+    if (!plan) throw new Error('测试路线计划未生成')
+    store.selectLevel(null)
+    const mainMapRoutes = plan.groups.filter(({ stateId, gravityType }) => (
+      stateId === store.selectedStateId && gravityType === store.selectedGravity
+    ))
+    expect(mainMapRoutes.some(({ levelId }) => levelId === null)).toBe(true)
+    expect(mainMapRoutes.some(({ levelId }) => levelId !== null)).toBe(true)
+    expect(store.mapRoutes).toEqual(mainMapRoutes.map(({ route }) => route))
     const destination = plan?.groups.find(({ stateId }) => stateId !== store.selectedStateId) ?? plan?.groups[1]
-    if (!plan || !destination) throw new Error('测试路线缺少可切换地图')
+    if (!destination) throw new Error('测试路线缺少可切换地图')
     store.activateRouteGroup(destination.id)
     expect(store.routePlan).toBe(plan)
     expect(store.selectedStateId).toBe(destination.stateId)
     expect(store.selectedLevelId).toBe(destination.levelId)
     expect(store.selectedGravity).toBe(destination.gravityType)
     expect(store.route).toBe(destination.route)
+    expect(store.mapRoutes).toEqual([destination.route])
 
     const replacement = Promise.withResolvers<RouteResult>()
     planner.mockReset()

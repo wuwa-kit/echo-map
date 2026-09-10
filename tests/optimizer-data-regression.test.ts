@@ -47,7 +47,7 @@ it('rejoins spatially adjacent full-selection fragments instead of teleporting b
   const result = optimizeRoute(createRoutePlanInput(
     dataset, group.locations, group.navigationPoints, group.stateId, activeEchoIds,
   ))
-  const firstEnd = routePointAt(result.points, -856, 2561, 0)
+  const firstEnd = routePointAt(result.points, -858, 2570, 0)
   const adjacentFragment = routePointAt(result.points, -864, 2616, 0)
   const insertionAnchor = routePointAt(result.points, -907, 2701, 0)
   const isolatedPoint = routePointAt(result.points, -942, 2689, 0)

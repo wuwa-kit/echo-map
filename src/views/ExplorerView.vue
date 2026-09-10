@@ -56,13 +56,15 @@ function updateMapPadding(): void {
     padding[2] = Math.max(padding[2], area.bottom - attribution.top + 12)
   }
   for (const panel of [controlDock.value]) {
-    if (!panel || panel.getClientRects().length === 0) {
+    if (!panel || panel.getClientRects().length === 0 || (!compact.value && !controlVisible.value)) {
       continue
     }
     const rect = panel.getBoundingClientRect()
     if (compact.value && !shortLandscape.value) {
       padding[2] = Math.max(padding[2], area.bottom - rect.top + 12)
       dockBottom = Math.max(dockBottom, area.bottom - rect.top + 8)
+    } else if (!compact.value) {
+      padding[1] = Math.max(padding[1], rect.width + 12)
     } else {
       padding[1] = Math.max(padding[1], area.right - rect.left + 12)
     }
@@ -165,10 +167,10 @@ const loadError = computed(() => {
         <GravitySwitcher :compact="compact" :selected-gravity="store.selectedGravity" :supports-gravity="store.supportsGravity" @gravity-selected="store.selectGravity" />
       </div>
       <div
-        v-show="controlVisible"
+        v-show="!compact || controlVisible"
         ref="controlDockRef"
-        class="absolute z-80 min-h-0 flex flex-col overflow-hidden border border-[var(--line)] bg-[var(--panel)] shadow-xl"
-        :class="compact ? compactPanelClass : 'inset-y-0 right-0 w-[var(--control-panel-width)]'"
+        class="absolute z-80 min-h-0 flex flex-col overflow-hidden border border-[var(--line)] bg-[var(--panel)] shadow-xl transition-transform duration-300 ease-out motion-reduce:transition-none"
+        :class="compact ? compactPanelClass : ['inset-y-0 right-0 w-[var(--control-panel-width)]', controlPanelCollapsed ? 'pointer-events-none translate-x-full' : 'translate-x-0']"
       >
         <div v-if="compact" class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-16px py-6px">
           <span class="text-16px font-600">筛选与路线</span>
@@ -179,11 +181,11 @@ const loadError = computed(() => {
       <button
         v-if="!compact"
         type="button"
-        class="absolute top-14px z-90 grid h-44px w-44px cursor-pointer place-items-center rounded-l-9px border border-[var(--line)] bg-[var(--panel)] text-[var(--accent)]"
+        class="absolute top-14px z-90 grid h-44px w-44px cursor-pointer place-items-center rounded-l-9px border border-[var(--line)] bg-[var(--panel)] text-[var(--accent)] transition-[right] duration-300 ease-out motion-reduce:transition-none"
         :class="controlPanelCollapsed ? 'right-0' : 'right-[var(--control-panel-width)]'"
         @click="store.toggleControlPanel"
       >
-        <WuSvg name="chevron-right" class="[--wu-svg-h:18px]" :class="controlPanelCollapsed ? 'rotate-180' : ''" />
+        <WuSvg name="chevron-right" class="transition-transform duration-300 [--wu-svg-h:18px] motion-reduce:transition-none" :class="controlPanelCollapsed ? 'rotate-180' : ''" />
       </button>
       <div
         v-if="compact"

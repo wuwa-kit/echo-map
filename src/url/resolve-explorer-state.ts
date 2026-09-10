@@ -28,7 +28,7 @@ export function resolveExplorerState(
     gravityType: hasGravityMap(nextState) && state.gravityType === 2 ? 2 : 1,
     countryId: state.countryId !== undefined && countryIds.has(state.countryId) ? state.countryId : null,
     levelId: state.levelId !== undefined && floorIds.has(state.levelId) ? state.levelId : null,
-    compactFloors: state.compactFloors === true,
+    compactFloors: state.compactFloors !== false,
     echoIds: (state.echoIds ?? []).filter((id) => echoIds.has(id)),
     sonataFilterIds: (state.sonataFilterIds ?? []).filter((id) => sonataIds.has(id)),
     echoCostFilters: ([1, 3] as const).filter((cost) => state.echoCostFilters?.includes(cost)),

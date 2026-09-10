@@ -14,7 +14,7 @@ export function useExplorerRouteQuery(): {
   const mapQuery = useRouteQuery<string | undefined>('map', String(DEFAULT_STATE_ID))
   const regionQuery = useRouteQuery('region')
   const floorQuery = useRouteQuery<string | undefined>('floor', undefined, { mode: 'replace' })
-  const floorStyleQuery = useRouteQuery<string | undefined>('floorStyle', undefined, { mode: 'replace' })
+  const floorStyleQuery = useRouteQuery<string | undefined>('floorStyle', 'icons', { mode: 'replace' })
   const gravityQuery = useRouteQuery<string | undefined>('gravity', undefined, { mode: 'replace' })
   const echoesQuery = useRouteQuery('echoes')
   const sonatasQuery = useRouteQuery('sonatas')

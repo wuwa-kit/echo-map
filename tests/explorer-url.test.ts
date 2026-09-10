@@ -11,7 +11,7 @@ describe('explorer query state', () => {
       stateId: DEFAULT_STATE_ID,
       countryId: null,
       levelId: null,
-      compactFloors: false,
+      compactFloors: true,
       echoIds: [],
       sonataFilterIds: [],
       echoCostFilters: [],
@@ -34,6 +34,7 @@ describe('explorer query state', () => {
       zoom: '1.3785',
     })).toMatchObject({
       stateId: DEFAULT_STATE_ID,
+      compactFloors: true,
       showProvisional: true,
       controlPanelCollapsed: false,
       mobileSheet: null,
@@ -41,19 +42,20 @@ describe('explorer query state', () => {
     })
   })
 
-  it('round-trips the compact floor layout and ignores unknown styles', () => {
+  it('defaults to the compact floor layout and round-trips the list layout', () => {
     const snapshot = {
-      stateId: DEFAULT_STATE_ID, countryId: null, levelId: '-1/58', compactFloors: true,
+      stateId: DEFAULT_STATE_ID, countryId: null, levelId: '-1/58', compactFloors: false,
       echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true,
       controlPanelCollapsed: false, mobileSheet: null, viewport: null,
     }
     const query = createExplorerQueryValues(snapshot)
-    expect(query.floorStyle).toBe('icons')
-    expect(parseExplorerQueryValues(query)).toMatchObject({ compactFloors: true, levelId: '-1/58' })
-    expect(createExplorerQueryValues({ ...snapshot, compactFloors: false }).floorStyle).toBeUndefined()
-    for (const floorStyle of [undefined, null, '', 'list', 'unknown', '1']) {
-      expect(parseExplorerQueryValues({ floorStyle }).compactFloors).toBe(false)
+    expect(query.floorStyle).toBe('list')
+    expect(parseExplorerQueryValues(query)).toMatchObject({ compactFloors: false, levelId: '-1/58' })
+    expect(createExplorerQueryValues({ ...snapshot, compactFloors: true }).floorStyle).toBeUndefined()
+    for (const floorStyle of [undefined, null, '', 'icons', 'unknown', '1']) {
+      expect(parseExplorerQueryValues({ floorStyle }).compactFloors).toBe(true)
     }
+    expect(parseExplorerQueryValues({ floorStyle: 'list' }).compactFloors).toBe(false)
   })
 
   it('round-trips the combined filters and route sheet without changing the desktop panel preference', () => {

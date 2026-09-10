@@ -48,8 +48,8 @@ describe('official library and incremental observations', () => {
       { ...source, id: 'one', echoId: smallEcho.id },
       { ...source, id: 'two', echoId: eliteEcho.id, coordinate: { ...source.coordinate, rawX: source.coordinate.rawX + 300 } },
       { ...source, id: 'three', echoId: smallEcho.id, coordinate: { ...source.coordinate, rawX: source.coordinate.rawX + 700 } },
-      { ...source, id: 'four', echoId: smallEcho.id, coordinate: { ...source.coordinate, rawX: source.coordinate.rawX + 1_200 } },
-      { ...source, id: 'five', echoId: smallEcho.id, coordinate: { ...source.coordinate, rawX: source.coordinate.rawX + 1_600 } },
+      { ...source, id: 'four', echoId: smallEcho.id, coordinate: { ...source.coordinate, rawX: source.coordinate.rawX + 2_500 } },
+      { ...source, id: 'five', echoId: smallEcho.id, coordinate: { ...source.coordinate, rawX: source.coordinate.rawX + 2_600 } },
       { ...source, id: 'other-country', echoId: smallEcho.id, countryId: (source.countryId ?? 0) + 10_000 },
       { ...source, id: 'other-floor', echoId: smallEcho.id, levelId: 'other-floor' },
       { ...source, id: 'other-gravity', echoId: smallEcho.id, gravityType: null },
@@ -57,7 +57,7 @@ describe('official library and incremental observations', () => {
     expect(library.points).toHaveLength(4)
     const cluster = library.points.find(({ officialIds }) => officialIds?.includes('one'))
     expect(cluster?.officialIds).toEqual(['four', 'one', 'other-country', 'three', 'two'])
-    expect(cluster?.coordinate.x).toBe(Math.round(source.coordinate.rawX / 100) + 3)
+    expect(cluster?.coordinate.x).toBe(Math.round(source.coordinate.rawX / 100) + 7)
     expect(cluster?.kind === 'echo' ? cluster.members : []).toEqual([
       { echoId: eliteEcho.id, count: 1 },
       { echoId: smallEcho.id, count: 4 },

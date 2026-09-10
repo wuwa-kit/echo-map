@@ -35,7 +35,7 @@ const {
   activeEchoIds,
   mapViewport,
   mapNavigationRequest,
-  route,
+  mapRoutes,
   selectedLevelId,
   floorRequest,
   nearbyFloorGroups,
@@ -113,7 +113,7 @@ function rebuildPointLayers(): void {
 }
 
 function rebuildRoute(): void {
-  routeLayer.update(route.value)
+  routeLayer.update(mapRoutes.value)
   selectedRouteLeg.value = null
 }
 
@@ -227,7 +227,7 @@ watch(floorRequest, async (request, _previous, onCleanup) => {
   }
 })
 watch([mapEchoLocations, mapNavigationPoints, visibleRegionLabels, activeEchoIds, selectedLevelId], rebuildPointLayers)
-watch(route, rebuildRoute, { flush: 'post' })
+watch(mapRoutes, rebuildRoute, { flush: 'post' })
 watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 
 onBeforeUnmount(() => {

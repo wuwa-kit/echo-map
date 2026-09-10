@@ -46,13 +46,13 @@ const officialQuery = useRouteQuery<string | undefined>('official', undefined, {
 const trackingQuery = useRouteQuery<string | undefined>('tracking', undefined, { mode: 'replace' })
 const radiusQuery = useRouteQuery<string | undefined>('radius', undefined, { mode: 'replace' })
 const heightQuery = useRouteQuery<string | undefined>('matchHeight', undefined, { mode: 'replace' })
-const floorStyleQuery = useRouteQuery<string | undefined>('floorStyle', undefined, { mode: 'replace' })
+const floorStyleQuery = useRouteQuery<string | undefined>('floorStyle', 'icons', { mode: 'replace' })
 const savedViewport = computed(() => {
   if (xQuery.value === undefined || yQuery.value === undefined || zoomQuery.value === undefined) return null
   const x = Number(xQuery.value), y = Number(yQuery.value), zoom = Number(zoomQuery.value)
   return [x, y, zoom].every(Number.isFinite) && zoom >= 0 && zoom <= 24 ? { center: [x, y] as [number, number], zoom } : null
 })
-const compactFloors = computed(() => floorStyleQuery.value === 'icons')
+const compactFloors = computed(() => floorStyleQuery.value !== 'list')
 const echoes = computed(() => dataset.value?.echoes.filter((echo) => echo.name.includes(monsterSearch.value.trim())).slice(0, 30) ?? [])
 const echoById = computed(() => new Map(dataset.value?.echoes.map((echo) => [echo.id, echo])))
 const verifiedCount = computed(() => library.value.points.filter(({ status }) => status === 'verified').length)
@@ -209,7 +209,7 @@ function publishViewport(viewport: {
   zoomQuery.value = String(Number(viewport.zoom.toFixed(4)))
 }
 function toggleFloorLayout(): void {
-  floorStyleQuery.value = compactFloors.value ? undefined : 'icons'
+  floorStyleQuery.value = compactFloors.value ? 'list' : undefined
 }
 onMounted(async () => {
   await store.load()
@@ -225,7 +225,7 @@ onMounted(async () => {
   trackingQuery.value = compactWikiEchoId(trackingEchoId.value)
   radiusQuery.value = matchRadius.value === 30 ? undefined : String(matchRadius.value)
   heightQuery.value = heightTolerance.value === 8 ? undefined : String(heightTolerance.value)
-  floorStyleQuery.value = compactFloors.value ? 'icons' : undefined
+  floorStyleQuery.value = compactFloors.value ? undefined : 'list'
 })
 onBeforeRouteLeave(() => !dirty.value || window.confirm('当前修改尚未保存到点位库。离开后可恢复浏览器草稿，仍要离开吗？'))
 useEventListener(window, 'beforeunload', (event) => {

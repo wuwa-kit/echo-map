@@ -176,6 +176,24 @@ describe('route map lines', () => {
     }
   })
 
+  it('renders multiple route groups without connecting their endpoints', () => {
+    const routeLayer = createRouteLayer()
+    try {
+      routeLayer.update([
+        { points: [point('first', 1), point('second', 2)], totalCost: 1, startPointId: null, algorithm: 'exact' },
+        { points: [point('third', 101), point('fourth', 102)], totalCost: 1, startPointId: null, algorithm: 'exact' },
+      ])
+      const line = routeLayer.layer.getSource()?.getFeatures().map((feature) => feature.getGeometry()).find((geometry) => geometry instanceof MultiLineString)
+      expect(line?.getCoordinates()).toEqual([
+        [[1, 0], [2, 0]],
+        [[101, 0], [102, 0]],
+      ])
+      expect(routeLayer.hitTest([50, 0], 1)).toBeNull()
+    } finally {
+      routeLayer.dispose()
+    }
+  })
+
   it('preserves the extent of a single target without creating a numbered marker', () => {
     const routeLayer = createRouteLayer()
     try {

@@ -53,7 +53,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const selectedStateId = shallowRef<number>(DEFAULT_STATE_ID)
   const selectedCountryId = shallowRef<number | null>(null)
   const selectedLevelId = shallowRef<string | null>(null)
-  const compactFloors = shallowRef(false)
+  const compactFloors = shallowRef(true)
   const floorViewport = shallowRef<{ extent: [number, number, number, number]; resolution: number } | null>(null)
   const floorRequest = shallowRef<{ token: number; levelId: string; status: 'loading' | 'error' } | null>(null)
   let floorRequestToken = 0
@@ -169,6 +169,12 @@ export const useExplorerStore = defineStore('explorer', () => {
   ) : [])
   const routePlanEligibleLocations = computed(() => routeGroupCandidates.value.flatMap(({ locations }) => locations))
   const routePlanEligibleNavigationPoints = computed(() => routeGroupCandidates.value.flatMap(({ navigationPoints }) => navigationPoints))
+  const mapRoutes = computed<RouteResult[]>(() => {
+    if (!routePlan.value || selectedLevelId.value !== null) return route.value ? [route.value] : []
+    return routePlan.value.groups.filter(({ stateId, gravityType }) => (
+      stateId === selectedStateId.value && gravityType === selectedGravity.value
+    )).map(({ route: groupRoute }) => groupRoute)
+  })
   const unmarkedGravityCount = computed(() => supportsGravity.value
     ? [...visibleEchoLocations.value, ...scopedNavigationPoints.value].filter(({ gravityType }) => gravityType === null).length : 0)
 
@@ -207,7 +213,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectedStateId.value = resolved.stateId
     selectedCountryId.value = resolved.countryId
     selectedLevelId.value = resolved.levelId
-    compactFloors.value = resolved.compactFloors ?? false
+    compactFloors.value = resolved.compactFloors ?? true
     selectedGravity.value = resolved.gravityType ?? 1
     baseTileError.value = false
     selectedEchoIds.value = immutableSnapshot([...resolved.echoIds])
@@ -575,6 +581,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     routeGroupCandidates,
     routePlanEligibleLocations,
     routePlanEligibleNavigationPoints,
+    mapRoutes,
     setDataset,
     restoreUrlState,
     selectState,

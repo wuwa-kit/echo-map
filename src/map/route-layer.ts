@@ -325,48 +325,48 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
 
   layer.on('postrender', renderRoute)
 
-  function update(route: RouteResult | null): void {
+  function update(value: RouteResult | RouteResult[] | null): void {
     routeSource.clear(true)
     routeExtent = createEmpty()
     legs = []
     teleportArrivals = []
-    if (!route || route.points.length === 0) {
-      return
-    }
+    const routes = Array.isArray(value) ? value : value ? [value] : []
     const segments: [number, number][][] = []
-    let coordinates: [number, number][] = []
     const arrivalIds = new Set<string>()
-    for (const [index, point] of route.points.entries()) {
-      const previous = route.points[index - 1] ?? null
-      const from = point.teleportFrom ?? previous
-      if (from) legs.push({
-        debugId: `route-leg:${point.teleportFrom ? 'teleport' : 'walk'}:${from.id}->${point.id}`,
-        type: point.teleportFrom ? 'teleport' : 'walk',
-        pointIndex: index,
-        pointCount: route.points.length,
-        routeAlgorithm: route.algorithm,
-        routeTotalCost: route.totalCost,
-        from,
-        to: point,
-        previous,
-        distance: coordinateDistance(from, point),
-        previousDistance: point.teleportFrom && previous ? coordinateDistance(previous, point) : null,
-      })
-      for (const candidate of [point, point.teleportFrom]) {
-        if (candidate?.isTeleportArrival && !arrivalIds.has(candidate.id)) {
-          arrivalIds.add(candidate.id)
-          teleportArrivals.push(candidate)
+    for (const route of routes) {
+      let coordinates: [number, number][] = []
+      for (const [index, point] of route.points.entries()) {
+        const previous = route.points[index - 1] ?? null
+        const from = point.teleportFrom ?? previous
+        if (from) legs.push({
+          debugId: `route-leg:${point.teleportFrom ? 'teleport' : 'walk'}:${from.id}->${point.id}`,
+          type: point.teleportFrom ? 'teleport' : 'walk',
+          pointIndex: index,
+          pointCount: route.points.length,
+          routeAlgorithm: route.algorithm,
+          routeTotalCost: route.totalCost,
+          from,
+          to: point,
+          previous,
+          distance: coordinateDistance(from, point),
+          previousDistance: point.teleportFrom && previous ? coordinateDistance(previous, point) : null,
+        })
+        for (const candidate of [point, point.teleportFrom]) {
+          if (candidate?.isTeleportArrival && !arrivalIds.has(candidate.id)) {
+            arrivalIds.add(candidate.id)
+            teleportArrivals.push(candidate)
+          }
         }
+        extendCoordinate(routeExtent, point.mapCoordinate)
+        if (point.teleportFrom) {
+          extendCoordinate(routeExtent, point.teleportFrom.mapCoordinate)
+          if (coordinates.length > 1) segments.push(coordinates)
+          coordinates = [point.teleportFrom.mapCoordinate]
+        }
+        coordinates.push(point.mapCoordinate)
       }
-      extendCoordinate(routeExtent, point.mapCoordinate)
-      if (point.teleportFrom) {
-        extendCoordinate(routeExtent, point.teleportFrom.mapCoordinate)
-        if (coordinates.length > 1) segments.push(coordinates)
-        coordinates = [point.teleportFrom.mapCoordinate]
-      }
-      coordinates.push(point.mapCoordinate)
+      if (coordinates.length > 1) segments.push(coordinates)
     }
-    if (coordinates.length > 1) segments.push(coordinates)
     if (segments.length > 0) {
       const line = new Feature({ geometry: new MultiLineString(segments) })
       routeSource.addFeature(line)

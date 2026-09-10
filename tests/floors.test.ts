@@ -48,22 +48,22 @@ describe('floor map context', () => {
     const pending = store.floorRequest
     const route = store.route
     const viewport = store.mapViewport
-    expect(store.compactFloors).toBe(false)
-    store.toggleFloorLayout()
     expect(store.compactFloors).toBe(true)
+    store.toggleFloorLayout()
+    expect(store.compactFloors).toBe(false)
     expect(store.selectedLevelId).toBe('a1')
     expect(store.floorRequest).toBe(pending)
     expect(store.mapViewport).toBe(viewport)
     expect(store.route).toBe(route)
     store.toggleFloorLayout()
-    expect(store.compactFloors).toBe(false)
-    store.restoreUrlState({ compactFloors: true, levelId: 'a2' })
     expect(store.compactFloors).toBe(true)
+    store.restoreUrlState({ compactFloors: false, levelId: 'a2' })
+    expect(store.compactFloors).toBe(false)
     expect(store.selectedLevelId).toBe('a2')
     store.selectState(8)
-    expect(store.compactFloors).toBe(true)
-    store.restoreUrlState({})
     expect(store.compactFloors).toBe(false)
+    store.restoreUrlState({})
+    expect(store.compactFloors).toBe(true)
   })
 
   it('retains base points and cross-floor teleports for display without expanding route scope', () => {

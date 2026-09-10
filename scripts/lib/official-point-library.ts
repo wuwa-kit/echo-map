@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { parsePointLibrary, emptyPointLibrary } from '../../src/domain/point-library.ts'
 import type { AuthoredEchoPoint, AuthoredPoint, MapDataset, PointLibrary } from '../../src/domain/types.ts'
 
-export const OFFICIAL_ECHO_MERGE_DIAMETER = 15
+export const OFFICIAL_ECHO_MERGE_DIAMETER = 25
 
 type OfficialEchoLocation = MapDataset['echoLocations'][number]
 type OfficialRegionLabel = MapDataset['regionLabels'][number]
