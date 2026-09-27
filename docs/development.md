@@ -25,6 +25,7 @@ pnpm data:sync:wiki    # 只同步声骸与合鸣效果
 pnpm data:sync:map     # 使用现有 Wiki 快照同步官方地图
 pnpm data:convert-official # 将现有官方快照转换为独立点位 JSON，Z=0
 pnpm data:validate     # 校验白名单、关联和坐标数据
+pnpm data:check-assets # 联网检查官方图片原图、预览和地图加载 URL
 pnpm typecheck         # Vue + TypeScript 类型检查
 pnpm test              # 单元测试与生成数据契约测试
 pnpm build             # 数据校验、类型检查和生产构建
@@ -36,6 +37,8 @@ pnpm check             # 完整检查
 生产构建不会访问远程 API，会验证已有地图快照和两份点位文件。更新官方点位时显式执行 `pnpm data:sync`、`pnpm data:convert-official`。构建本身不会重新生成已删除的官方点位文件。
 
 部署时需要将前端路由回退到 `index.html`，以便直接访问 `/assets` 等页面。
+
+官方 CDN 的旧版本瓦片可能被清理；本地结构校验无法发现远程 404。遇到部分地图缺图时，运行 `pnpm data:check-assets` 检查资源。如果版本过期，运行 `pnpm data:sync:map`、`pnpm data:convert-official`、`pnpm check` 和 `pnpm data:check-assets`，然后重新部署。同步会一起更新资源版本、瓦片清单和楼层覆盖范围，不应只手改资源 hash。远程检查独立运行，保持普通构建不依赖网络。
 
 项目中的相对 TypeScript 与 Vue 导入都显式包含 `.ts` 或 `.vue` 后缀。第三方包继续使用其公开的包导入路径，例如 OpenLayers 的 `.js` 子路径。
 
