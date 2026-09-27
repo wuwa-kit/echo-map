@@ -32,6 +32,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const heightTolerance = shallowRef(8)
   const separateMatchKey = shallowRef('')
   const revision = shallowRef('')
+  const storage = shallowRef<'project' | 'browser'>('project')
   const draft = shallowRef<AuthoredPoint | null>(null)
   const baseline = shallowRef('')
   const recovery = shallowRef<AuthoredPoint | null>(null)
@@ -283,6 +284,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       library.value = freeze(parsePointLibrary(snapshot.library, reference), true)
       officialLibrary.value = freeze(official, true)
       revision.value = snapshot.revision
+      storage.value = snapshot.storage
       if (!draft.value) {
         try {
           const cached = localStorage.getItem(DRAFT_KEY)
@@ -290,7 +292,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
           if (parsed?.success) recovery.value = freeze(parsed.data, true)
         } catch { recovery.value = null }
       }
-      notice.value = '点位库已载入'
+      notice.value = storage.value === 'browser' ? '点位库已载入；修改将保存在当前浏览器中，请导出 JSON 传回项目。' : '点位库已载入'
     } catch (failure) { error.value = failure instanceof Error ? failure.message : String(failure) }
     finally { busy.value = false }
     if (dataset.value && !draft.value) {
@@ -310,7 +312,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       const snapshot = await saveEditorLibrary(libraryToSave, revision.value)
       library.value = freeze(snapshot.library, true)
       revision.value = snapshot.revision
-      notice.value = '已保存到本机文件'
+      storage.value = snapshot.storage
+      notice.value = storage.value === 'browser' ? '已保存到当前浏览器，请导出 JSON 传回项目。' : '已保存到本机文件'
       return true
     } catch (failure) {
       error.value = failure instanceof Error ? failure.message : String(failure)
@@ -507,7 +510,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     setOfficialVisible: (value: boolean) => { showOfficial.value = value },
     confirmSeparatePoint: () => { separateMatchKey.value = matchKey.value },
     setCompositionComplete: (value: boolean) => edit((point) => { if (point.kind === 'echo') point.compositionStatus = value ? 'complete' : 'partial' }),
-    dataset: shallowReadonly(dataset), library: shallowReadonly(library), draft: shallowReadonly(draft),
+    dataset: shallowReadonly(dataset), library: shallowReadonly(library), draft: shallowReadonly(draft), storage: shallowReadonly(storage),
     recovery: shallowReadonly(recovery), deleted: shallowReadonly(deleted), importPreview: shallowReadonly(importPreview),
     versions: shallowReadonly(versions), search: shallowReadonly(search), monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy: shallowReadonly(busy), dirty, filteredPoints, nearbyPoints,

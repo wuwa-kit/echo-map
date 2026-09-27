@@ -20,12 +20,12 @@ beforeEach(() => {
   disk = { version: 1, points: [] }
   revision = 1
   vi.mocked(loadMapDataset).mockResolvedValue({ dataset: referenceDataset, officialLibrary: { version: 1, points: [] } })
-  vi.mocked(readEditorLibrary).mockImplementation(async () => ({ library: disk, revision: String(revision) }))
+  vi.mocked(readEditorLibrary).mockImplementation(async () => ({ library: disk, revision: String(revision), storage: 'project' }))
   vi.mocked(readEditorVersions).mockResolvedValue([])
   vi.mocked(saveEditorLibrary).mockImplementation(async (library) => {
     disk = library
     revision += 1
-    return { library, revision: String(revision) }
+    return { library, revision: String(revision), storage: 'project' }
   })
 })
 afterEach(() => vi.unstubAllGlobals())

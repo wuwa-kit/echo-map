@@ -8,7 +8,11 @@ export const router = createRouter({
       name: 'official-assets',
       component: () => import('./views/AssetsView.vue'),
     },
-    ...(import.meta.env.DEV ? [{ path: '/editor', name: 'point-editor', component: () => import('./views/PointEditorView.vue') }] : []),
+    {
+      path: '/editor',
+      name: 'point-editor',
+      component: () => import('./views/PointEditorView.vue'),
+    },
     {
       path: '/',
       name: 'explorer',

@@ -23,7 +23,7 @@ import { DEFAULT_STATE_ID } from '../url/explorer-url.ts'
 
 const store = usePointEditorStore()
 const compact = useMediaQuery('(max-width: 1023px)')
-const { dataset, library, officialLibrary, allPoints, showOfficial, trackingEchoId, matchRadius, heightTolerance, requiresMatchDecision, draft, filteredPoints, nearbyPoints, busy, dirty, error, notice, search, monsterSearch, coordinateText, teleportCoordinateText, recovery, deleted, importPreview, versions } = storeToRefs(store)
+const { dataset, library, officialLibrary, allPoints, showOfficial, trackingEchoId, matchRadius, heightTolerance, requiresMatchDecision, draft, filteredPoints, nearbyPoints, busy, dirty, error, notice, search, monsterSearch, coordinateText, teleportCoordinateText, recovery, deleted, importPreview, versions, storage } = storeToRefs(store)
 const importFile = useTemplateRef<HTMLInputElement>('importFileRef')
 const libraryButton = useTemplateRef<HTMLButtonElement>('libraryButtonRef')
 const newButton = useTemplateRef<HTMLButtonElement>('newButtonRef')
@@ -300,7 +300,7 @@ useEventListener(window, 'beforeunload', (event) => {
       </div>
     </WuDialog>
     <div class="flex shrink-0 flex-wrap items-center justify-between gap-8px border-b border-[var(--line)] px-12px py-6px lg:px-16px">
-      <div class="flex min-w-0 flex-wrap items-baseline gap-x-12px gap-y-2px"><RouterLink to="/" class="text-12px text-[#8eae9d]">← 地图</RouterLink><div class="text-16px font-600">点位录入</div><div class="text-11px text-[#7d9e8b]">人工 已核验 {{ verifiedCount }} · 草稿 {{ library.points.length - verifiedCount }} · 官方 {{ officialLibrary.points.length }}</div></div>
+      <div class="flex min-w-0 flex-wrap items-baseline gap-x-12px gap-y-2px"><RouterLink to="/" class="text-12px text-[#8eae9d]">← 地图</RouterLink><div class="text-16px font-600">点位录入</div><div class="text-11px text-[#7d9e8b]">人工 已核验 {{ verifiedCount }} · 草稿 {{ library.points.length - verifiedCount }} · 官方 {{ officialLibrary.points.length }} · {{ storage === 'browser' ? '浏览器存储' : '项目文件' }}</div></div>
       <div class="flex flex-wrap gap-5px">
         <button :class="toolbarButtonClass" :disabled="busy" @click="store.load">刷新</button>
         <button :class="toolbarButtonClass" :disabled="busy || !dataset" @click="exportJson">导出</button>
@@ -416,6 +416,6 @@ useEventListener(window, 'beforeunload', (event) => {
         </div>
       </WuScrollArea>
     </div>
-    <div v-else class="flex flex-1 items-center justify-center p-40px text-14px text-[#91ae9e]">{{ busy ? '正在载入录入系统…' : '请通过本机开发服务打开录入系统，然后重新载入。' }}</div>
+    <div v-else class="flex flex-1 items-center justify-center p-40px text-14px text-[#91ae9e]">{{ busy ? '正在载入录入系统…' : '点位录入加载失败，请检查网络后重新载入。' }}</div>
   </WuScrollArea>
 </template>
