@@ -1,4 +1,5 @@
 import { useRouteQuery } from '@vueuse/router'
+import { saveLastExplorerQuery } from '../url/explorer-history.ts'
 import {
   createExplorerQueryValues,
   DEFAULT_STATE_ID,
@@ -48,6 +49,7 @@ export function useExplorerRouteQuery(): {
 
   function write(state: ExplorerUrlSnapshot): void {
     const values = createExplorerQueryValues(state)
+    saveLastExplorerQuery(values)
     sourcesQuery.value = values.sources
     mapQuery.value = values.map
     regionQuery.value = values.region

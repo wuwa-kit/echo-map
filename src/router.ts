@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { restoreLastExplorerQuery } from './url/explorer-history.ts'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -20,3 +21,5 @@ export const router = createRouter({
     },
   ],
 })
+
+router.beforeEach(restoreLastExplorerQuery)
