@@ -44,7 +44,7 @@ describe('control panel layout', () => {
     expect(routePanelSource).toContain("return '生成路线'")
     expect(routePanelSource).toContain("return '重新生成路线'")
     expect(routePanelSource).toContain(": '取消生成'")
-    expect(routePanelSource).toContain("return '请选择声骸'")
+    expect(routePanelSource).not.toContain('请选择声骸')
     expect(routePanelSource).toContain("return '暂无可规划点位'")
     expect(routePanelSource).toContain("'导出路线'")
     expect(routePanelSource).toContain('class="grid grid-cols-2 gap-8px"')

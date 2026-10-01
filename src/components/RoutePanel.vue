@@ -21,7 +21,6 @@ const generateDisabled = computed(() => !planning.value && (selectedEchoIds.valu
 const exportDisabled = computed(() => planning.value || (!routePlan.value && !route.value) || exportStore.status === 'running')
 const generateLabel = computed(() => {
   if (planning.value) return planningTotal.value > 1 ? `取消生成 · ${planningCompleted.value} / ${planningTotal.value}` : '取消生成'
-  if (selectedEchoIds.value.length === 0) return '请选择声骸'
   if (displayedEligibleCount.value === 0) return '暂无可规划点位'
   if (routePlan.value || route.value) return '重新生成路线'
   return '生成路线'
@@ -38,7 +37,7 @@ function generateRoutes(): void {
 </script>
 
 <template>
-  <div class="p-16px">
+  <div v-if="selectedEchoIds.length > 0" class="p-16px">
     <div class="grid grid-cols-2 gap-8px">
       <button
         class="min-h-44px w-full cursor-pointer rounded-7px border px-12px py-10px text-14px font-700 disabled:cursor-not-allowed disabled:border-transparent disabled:bg-[#1a2b27] disabled:text-[#8ca399]"
