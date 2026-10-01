@@ -1,3 +1,4 @@
+import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
 import { mapZoomRangeSchema, officialAssetSchema, officialEchoPointDataSchema, officialNavigationPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
@@ -9,7 +10,8 @@ import { inferOfficialEchoCountryId, OFFICIAL_ECHO_MERGE_DIAMETER } from './lib/
 
 const dataset = await readMapDataset()
 wikiCatalogueSchema.parse(await readJson<unknown>(projectPath('data', 'generated', 'wiki.json')))
-const assets = buildOfficialAssets(dataset)
+const mapAssets = officialMapAssetCatalogSchema.parse(await readJson<unknown>(projectPath('public', 'data', 'map-asset-catalog.json')))
+const assets = buildOfficialAssets(dataset, mapAssets.assets)
 const assetIds = new Set<string>()
 for (const asset of assets) {
   officialAssetSchema.parse(asset)

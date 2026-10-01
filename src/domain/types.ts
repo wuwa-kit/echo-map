@@ -313,11 +313,12 @@ export interface OfficialNavigationPointData {
   library: PointLibrary
 }
 
-export type OfficialAssetCategory = 'echo' | 'sonata' | 'navigation' | 'tile' | 'floor' | 'gravity'
+export type OfficialAssetCategory = 'echo' | 'sonata' | 'navigation' | 'exploration' | 'challenge' | 'service' | 'tile' | 'floor' | 'gravity'
 
 export interface OfficialAsset {
   id: string
   category: OfficialAssetCategory
+  categories: OfficialAssetCategory[]
   name: string
   url: string
   previewUrl: string
@@ -369,4 +370,10 @@ export interface RoutePlanResult {
   groups: RoutePlanGroup[]
   totalCost: number
   totalPoints: number
+}
+
+export interface OfficialMapAssetCatalog {
+  version: 1
+  resourceHash: string
+  assets: OfficialAsset[]
 }

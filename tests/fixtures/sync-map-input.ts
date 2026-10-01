@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
+import { PNG } from 'pngjs'
 import type { WikiSnapshot } from '../../scripts/lib/wiki.ts'
 
-export const iconBytes = new Uint8Array([1, 2, 3])
+export const iconBytes = PNG.sync.write(new PNG({ width: 1, height: 1 }))
 export const iconHash = createHash('sha256').update(iconBytes).digest('hex')
 export const wiki: WikiSnapshot = {
   fetchedAt: '2026-01-01T00:00:00.000Z', totalEchoCount: 4, excludedEchoNames: ['排除的 BOSS'],
@@ -48,7 +49,11 @@ export const positions = [
 ]
 
 export const catalog = [{
-  id: 'category', name: '挑战', children: [{ id: '21', tableName: 'challenge' }],
+  id: 'category', name: '挑战', children: [{ id: '21', name: '挑战', icon: 'icons/challenge.png', tableName: 'challenge' }],
+}, {
+  id: 'ts', name: '探索', children: [{ id: 'exploration-fixture', name: '探索', icon: 'icons/exploration.png' }],
+}, {
+  id: '9', name: 'NPC及服务点', children: [{ id: 'service-fixture', name: '服务点', icon: 'icons/service.png' }],
 }]
 
 export const layers = [{

@@ -1,3 +1,4 @@
+import { deduplicateMapAssets, normalizeMapAssets } from './lib/map/asset-catalog.ts'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
 import type { MapDataset, MapStateDefinition } from '../src/domain/types.ts'
 import { calculateTileExtent } from '../src/map/projection.ts'
@@ -97,11 +98,13 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
     connectors: manual.connectors,
   }
 
+  const assetCatalog = await deduplicateMapAssets(normalizeMapAssets(statePayloads, configuration.resourceHash, mapFetchedAt))
   mapDatasetSchema.parse(dataset)
   // Rebuild before publishing: Wiki membership changes can remove old echo IDs.
   await writeJson(projectPath('data', 'generated', 'official-points.json'), convertOfficialPoints(dataset))
   await Promise.all([
     writeMapDataset(dataset),
+    writeJson(projectPath('public', 'data', 'map-asset-catalog.json'), assetCatalog, { compact: true }),
     writeJson(projectPath('data', 'generated', 'sync-report.json'), report),
   ])
   console.log(`地图同步完成：${dataset.states.length} 张地图，${dataset.echoLocations.length} 个声骸点，${dataset.navigationPoints.length} 个定位点`)

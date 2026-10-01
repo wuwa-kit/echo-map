@@ -1,3 +1,4 @@
+import { officialMapAssetCatalogSchema } from '../domain/schema.ts'
 import { echoPointLibrarySchema, mapCatalogDataSchema, mapDataSchema, navigationPointLibrarySchema, officialEchoPointDataSchema, officialNavigationPointDataSchema } from '../domain/schema.ts'
 import { assembleMapDataset } from '../domain/map-data.ts'
 import type { MapDataset, OfficialEchoPointData, OfficialNavigationPointData, PointLibrary } from '../domain/types.ts'
@@ -56,4 +57,10 @@ export async function loadPointLibrary(dataset: MapDataset) {
     navigationPointLibrarySchema.parse(await navigationResponse.json()),
   )
   return parsePointLibrary(library, dataset, 'manual')
+}
+
+export async function loadMapAssetCatalog() {
+  const response = await fetch('/data/map-asset-catalog.json')
+  if (!response.ok) throw new Error(`地图资产目录加载失败：${response.status}`)
+  return officialMapAssetCatalogSchema.parse(await response.json())
 }

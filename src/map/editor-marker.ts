@@ -1,6 +1,13 @@
 import RegularShape from 'ol/style/RegularShape.js'
 import Stroke from 'ol/style/Stroke.js'
 import Style from 'ol/style/Style.js'
+import CircleStyle from 'ol/style/Circle.js'
+
+export function createEditorArrivalStyle(): Style {
+  return new Style({
+    image: new CircleStyle({ radius: 9, stroke: new Stroke({ color: '#64e7ed', width: 3 }) }),
+  })
+}
 
 export function createEditorSelectionStyle(): Style {
   return new Style({

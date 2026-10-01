@@ -5,13 +5,23 @@ export const assetCategories: { id: OfficialAssetCategory; name: string; descrip
   { id: 'echo', name: '声骸图鉴', description: '官方 Wiki · C1 / C3 声骸' },
   { id: 'sonata', name: '合鸣效果', description: '官方 Wiki · 套装图标' },
   { id: 'navigation', name: '定位点图标', description: '官方地图 · 传送与功能地标' },
+  { id: 'exploration', name: '探索', description: '官方地图 · 完整探索目录' },
+  { id: 'challenge', name: '挑战', description: '官方地图 · 完整挑战目录' },
+  { id: 'service', name: 'NPC及服务点', description: '官方地图 · 完整 NPC 与服务目录' },
   { id: 'tile', name: '地表瓦片', description: '官方地图 · 地表底图' },
   { id: 'floor', name: '分层瓦片', description: '官方地图 · 楼层底图' },
   { id: 'gravity', name: '反重力瓦片', description: '官方地图 · 反重力底图' },
 ]
 
-export function buildOfficialAssets(dataset: MapDataset): OfficialAsset[] {
+export function buildOfficialAssets(dataset: MapDataset, mapAssets: readonly OfficialAsset[] = []): OfficialAsset[] {
   const assets = new Map<string, OfficialAsset>()
+  // The catalog has already compared image pixels, including alternate CDN URLs.
+  const catalogIdByUrl = new Map<string, string>()
+  for (const asset of mapAssets) {
+    for (const url of [asset.url, ...asset.tags]) {
+      if (URL.parse(url)?.pathname.endsWith('.png')) catalogIdByUrl.set(url, asset.id)
+    }
+  }
   const { source } = dataset
   const stateNames = new Map(dataset.states.map(({ id, name }) => [id, name]))
   const sonataNames = new Map(dataset.sonatas.map(({ id, name }) => [id, name]))
@@ -25,19 +35,20 @@ export function buildOfficialAssets(dataset: MapDataset): OfficialAsset[] {
 
   function add(category: OfficialAssetCategory, name: string, url: string, referenceId: string, stateIds: number[], tags: string[]): void {
     if (URL.parse(url)?.protocol !== 'https:') return
-    // Keep each URL variant, even when the map combines multiple icons into one display group.
-    const id = `${category}:${url}`
+    const id = category === 'navigation' ? catalogIdByUrl.get(url) ?? `${category}:${url}` : `${category}:${url}`
     const existing = assets.get(id)
     if (existing) {
       existing.recordCount += 1
       existing.stateIds = [...new Set([...existing.stateIds, ...stateIds])]
       existing.referenceIds = [...new Set([...existing.referenceIds, referenceId])]
       existing.tags = [...new Set([...existing.tags, name, ...tags])]
+      existing.name = [...new Set([...existing.name.split(' / '), name])].join(' / ')
+      if (category === 'navigation') existing.tags = [...new Set([...existing.tags, url])]
       return
     }
     const isWiki = category === 'echo' || category === 'sonata'
     assets.set(id, {
-      id, category, name, url,
+      id, category, categories: [category], name, url,
       previewUrl: category === 'tile' || category === 'floor' || category === 'gravity' ? tilePreviewUrl(url, 320) : url,
       sourceUrl: category === 'echo' ? source.sourceUrls.echoCatalogue
         : category === 'sonata' ? source.sourceUrls.sonataCatalogue : source.sourceUrls.officialMap,
@@ -79,9 +90,21 @@ export function buildOfficialAssets(dataset: MapDataset): OfficialAsset[] {
       }
     }
   }
+  for (const asset of mapAssets) {
+    const existing = assets.get(asset.id)
+    assets.set(asset.id, existing ? {
+      ...asset,
+      categories: [...new Set([...existing.categories, ...asset.categories])],
+      name: [...new Set([...asset.name.split(' / '), ...existing.name.split(' / ')])].join(' / '),
+      stateIds: [...new Set([...existing.stateIds, ...asset.stateIds])],
+      referenceIds: [...new Set([...existing.referenceIds, ...asset.referenceIds])],
+      tags: [...new Set([...existing.tags, ...asset.tags, existing.url, existing.sourceUrl])],
+      recordCount: existing.recordCount + asset.recordCount,
+    } : asset)
+  }
   return [...assets.values()].map((asset) => ({
     ...asset,
-    stateIds: asset.stateIds.sort((a, b) => a - b),
+    stateIds: asset.stateIds.toSorted((a, b) => a - b),
     tags: [...new Set([...asset.tags, ...asset.stateIds.map((id) => stateNames.get(id) ?? String(id))])],
   }))
 }
@@ -89,7 +112,7 @@ export function buildOfficialAssets(dataset: MapDataset): OfficialAsset[] {
 export function filterOfficialAssets(assets: readonly OfficialAsset[], category: OfficialAssetCategory | 'all', stateId: number | null, search: string): OfficialAsset[] {
   const terms = search.trim().toLocaleLowerCase().split(/\s+/u).filter(Boolean)
   return assets.filter((asset) => {
-    if (category !== 'all' && asset.category !== category) return false
+    if (category !== 'all' && !asset.categories.includes(category)) return false
     if (stateId !== null && !asset.stateIds.includes(stateId)) return false
     const text = [asset.name, asset.url, ...asset.referenceIds, ...asset.tags].join(' ').toLocaleLowerCase()
     return terms.every((term) => text.includes(term))

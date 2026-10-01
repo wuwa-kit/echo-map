@@ -6,11 +6,12 @@ const finiteNumber = z.number().finite()
 const nullableString = z.string().nullable()
 export const gravityTypeSchema = z.union([z.literal(1), z.literal(2)])
 
-export const officialAssetCategorySchema = z.enum(['echo', 'sonata', 'navigation', 'tile', 'floor', 'gravity'])
+export const officialAssetCategorySchema = z.enum(['echo', 'sonata', 'navigation', 'exploration', 'challenge', 'service', 'tile', 'floor', 'gravity'])
 const assetUrlSchema = z.string().url().startsWith('https://')
 export const officialAssetSchema = z.object({
   id: z.string().min(1),
   category: officialAssetCategorySchema,
+  categories: z.array(officialAssetCategorySchema).min(1),
   name: z.string().min(1),
   url: assetUrlSchema,
   previewUrl: assetUrlSchema,
@@ -20,6 +21,22 @@ export const officialAssetSchema = z.object({
   referenceIds: z.array(z.string().min(1)).min(1),
   tags: z.array(z.string().min(1)),
   recordCount: z.number().int().positive(),
+})
+
+export const officialMapAssetCatalogSchema = z.object({
+  version: z.literal(1),
+  resourceHash: z.string().min(1),
+  assets: z.array(officialAssetSchema).min(1),
+}).strict().superRefine(({ assets }, context) => {
+  const ids = new Set<string>()
+  for (const asset of assets) {
+    if (!asset.categories.includes(asset.category) || asset.categories.some((category) => !['exploration', 'challenge', 'service'].includes(category))) context.addIssue({ code: 'custom', message: '地图目录包含未收录分类' })
+    if (ids.has(asset.id)) context.addIssue({ code: 'custom', message: `重复地图目录资产：${asset.id}` })
+    ids.add(asset.id)
+  }
+  for (const category of ['exploration', 'challenge', 'service']) {
+    if (!assets.some((asset) => asset.categories.some((value) => value === category))) context.addIssue({ code: 'custom', message: `地图目录缺少 ${category}` })
+  }
 })
 
 export const navigationKindSchema = z.enum([

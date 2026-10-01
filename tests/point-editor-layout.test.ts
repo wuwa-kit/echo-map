@@ -5,23 +5,22 @@ const pointEditorSourceUrl = new URL('../src/views/PointEditorView.vue', import.
 const pointEditorMapSourceUrl = new URL('../src/components/PointEditorMap.vue', import.meta.url)
 
 describe('point editor progressive disclosure', () => {
-  it('keeps the left rail narrow and opens the library in a popover', async () => {
+  it('separates modes and keeps the library available beside the map', async () => {
     const source = await readFile(pointEditorSourceUrl, 'utf8')
-
-    expect(source).toContain('lg:grid-cols-[72px_minmax(240px,1fr)_340px]')
-    expect(source).toContain('ref="libraryPopoverRef"')
-    expect(source).toContain('@click="openLibrary"')
-    expect(source).toContain('ref="newPopoverRef"')
+    expect(source).toContain('lg:grid-cols-[260px_minmax(240px,1fr)_360px]')
+    expect(source).toContain('声骸录入 · C1 / C3')
+    expect(source).toContain('定位点维护')
+    expect(source).toContain('@click="newPoint(editorMode)"')
+    expect(source).not.toContain('newPopoverRef')
   })
 
-  it('reveals secondary editing controls only when needed', async () => {
+  it('uses independent forms and keeps coordinate verification explicit', async () => {
     const source = await readFile(pointEditorSourceUrl, 'utf8')
-
-    expect(source).toContain("draft.kind === 'echo' && (nearbyPoints.length || matchSettingsExpanded)")
-    expect(source).toContain('v-if="membersExpanded"')
-    expect(source).toContain('v-if="navigationExpanded"')
+    expect(source).toContain('<EchoEditorFields')
+    expect(source).toContain('<NavigationEditorFields')
+    expect(source).toContain('Z=0 为占位高度，尚未实测')
+    expect(source).toContain('v-if="nearbyPoints.length || matchSettingsExpanded"')
     expect(source).toContain('v-if="!noteExpanded && !draft.note"')
-    expect(source).toContain('ref="morePopoverRef"')
   })
 
   it('uses the shared point renderer and map interaction defaults', async () => {
@@ -54,15 +53,16 @@ describe('point editor progressive disclosure', () => {
     expect(viewSource).toContain('@floor-layout-toggled="toggleFloorLayout"')
   })
 
-  it('preserves the viewport when an existing point is selected from the map', async () => {
+  it('provides explicit point location without draft-driven viewport changes', async () => {
     const [viewSource, mapSource] = await Promise.all([
       readFile(pointEditorSourceUrl, 'utf8'),
       readFile(pointEditorMapSourceUrl, 'utf8'),
     ])
 
-    expect(viewSource).toContain(':preserve-viewport-point-id="preserveViewportPointId"')
-    expect(viewSource).toContain('preserveViewportForMapSelection(draft.value.id)')
-    expect(mapSource).toContain('if (props.preserveViewportPointId === pointId) return')
-    expect(mapSource).toContain('focusDraft()')
+    expect(viewSource).toContain('@click="locateCurrentPoint"')
+    expect(viewSource).toContain(':disabled="busy || !hasMapPosition"')
+    expect(mapSource).toContain('defineExpose({ locateDraft })')
+    expect(mapSource).not.toContain('focusDraft')
+    expect(mapSource).not.toContain('watch([() => props.draft.id, () => props.draft.coordinate.x')
   })
 })

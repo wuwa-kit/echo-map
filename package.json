@@ -12,6 +12,7 @@
     "check": "pnpm test && pnpm build",
     "data:sync": "node scripts/sync-all.ts",
     "data:sync:wiki": "node scripts/sync-wiki.ts",
+    "data:sync:assets": "node scripts/sync-map-assets.ts",
     "data:sync:map": "node scripts/sync-map.ts",
     "data:validate": "node scripts/validate-data.ts",
     "data:check-assets": "node scripts/check-assets.ts",

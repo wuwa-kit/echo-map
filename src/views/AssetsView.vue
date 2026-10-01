@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useTitle } from '@vueuse/core'
 import { RouterLink } from 'vue-router'
 import AssetImage from '../components/AssetImage.vue'
+import AssetVirtualGrid from '../components/AssetVirtualGrid.vue'
 import WuInput from '../components/base/WuInput.vue'
 import WuOption from '../components/base/WuOption.vue'
 import WuScrollArea from '../components/base/WuScrollArea.vue'
@@ -12,17 +13,17 @@ import WuSvg from '../components/base/WuSvg.vue'
 import { useAssetsRouteQuery } from '../composables/useAssetsRouteQuery.ts'
 import { assetCategories } from '../domain/official-assets.ts'
 import type { OfficialAssetCategory } from '../domain/types.ts'
-import { ASSET_PAGE_SIZE, useAssetsStore } from '../stores/assets.ts'
+import { useAssetsStore } from '../stores/assets.ts'
 
 const store = useAssetsStore()
-const { dataset, loading, error, search, filters, filteredAssets, categories, page, pageCount, pageAssets, selectedAsset } = storeToRefs(store)
+const { dataset, loading, error, search, filters, filteredAssets, categories, selectedAsset } = storeToRefs(store)
 const routeQuery = useAssetsRouteQuery()
 useTitle('官方资产库 · 声巡')
 const details = useTemplateRef<HTMLElement>('detailsRef')
-const results = useTemplateRef<HTMLElement>('resultsRef')
 const activeCategory = computed(() => categories.value.find(({ id }) => id === filters.value.category))
 const dataDownloads = [
   { file: 'map-data.json', label: '地图数据' },
+  { file: 'map-asset-catalog.json', label: '探索、挑战与 NPC 图标目录' },
   { file: 'catalog-data.json', label: '声骸套装与图标' },
   { file: 'official-echo-points.json', label: '官方声骸点位' },
   { file: 'official-navigation-points.json', label: '官方定位点' },
@@ -50,11 +51,6 @@ async function selectAsset(id: string): Promise<void> {
   details.value?.scrollIntoView({ block: 'nearest' })
 }
 
-async function selectPage(value: number): Promise<void> {
-  change(() => store.selectPage(value))
-  await nextTick()
-  results.value?.scrollIntoView({ block: 'start' })
-}
 </script>
 
 <template>
@@ -89,7 +85,7 @@ async function selectPage(value: number): Promise<void> {
           <div>
             <div class="mb-10px text-10px text-[var(--accent)] font-600 tracking-[0.24em]">WUTHERING WAVES / ASSET ARCHIVE</div>
             <div class="text-28px font-600 tracking-[0.03em] sm:text-34px">官方资产库</div>
-            <div class="mt-10px max-w-660px text-13px text-[var(--muted)] leading-6">浏览已从库街区 Wiki 与官方地图抓取的资源清单。按分类和 URL 整理，每份素材保留来源与关联信息。</div>
+            <div class="mt-10px max-w-660px text-13px text-[var(--muted)] leading-6">浏览已从库街区 Wiki 与官方地图抓取的资源清单。按分类浏览名称、图标与来源，也可搜索探索、挑战和服务点。</div>
           </div>
           <div class="flex flex-wrap gap-8px">
             <a v-for="item in dataDownloads" :key="item.file" :href="`/data/${item.file}`" :download="item.file" class="min-h-42px inline-flex items-center rounded-7px border border-[var(--line)] bg-[#13271f] px-16px text-13px text-[#d5e8df] no-underline hover:border-[var(--accent)]">{{ item.label }} ↗</a>
@@ -106,9 +102,9 @@ async function selectPage(value: number): Promise<void> {
             </div>
             <div class="mt-24px hidden rounded-9px border border-[var(--line)] bg-[#0e1c17] p-14px text-11px text-[var(--muted)] leading-6 lg:block">
               <div class="mb-8px text-12px text-[#d5e8df]">关于这份清单</div>
-              <div>展示当前项目收录的资产；声骸图鉴限定为有合鸣套装的 C1 / C3。</div>
-              <div class="mt-8px">同分类下相同 URL 合并展示。原图来自官方 CDN，预览按需加载。</div>
-              <div class="mt-8px">地图筛选依据快照中的关联点位，不代表游戏中的完整分布。</div>
+              <div>探索、挑战、NPC及服务点收录官方完整目录；声骸图鉴限定为有合鸣套装的 C1 / C3。</div>
+              <div class="mt-8px">相同图标合并展示，保留全部名称与所属分类。原图来自官方 CDN，预览按需加载。</div>
+              <div class="mt-8px">目录资产的地图关联表示该地图提供此目录项，不代表实际点位分布。</div>
             </div>
           </div>
 
@@ -127,7 +123,7 @@ async function selectPage(value: number): Promise<void> {
 
             <div v-if="selectedAsset" ref="detailsRef" class="mb-24px overflow-hidden rounded-9px border border-[#377c60] bg-[#10251c]">
               <div class="flex items-center justify-between gap-12px border-b border-[var(--line)] px-16px py-4px">
-                <span class="text-12px text-[var(--accent)]">资产详情 / {{ categoryName(selectedAsset.category) }}</span>
+                <span class="text-12px text-[var(--accent)]">资产详情 / {{ selectedAsset.categories.map(categoryName).join(' / ') }}</span>
                 <button type="button" class="min-h-40px cursor-pointer rounded-5px border-0 bg-transparent px-8px text-13px text-[#b5cbc0] hover:text-white" @click="change(() => store.selectAsset(null))">收起详情</button>
               </div>
               <div class="grid gap-18px p-16px sm:grid-cols-[180px_minmax(0,1fr)]">
@@ -149,7 +145,7 @@ async function selectPage(value: number): Promise<void> {
               </div>
             </div>
 
-            <div ref="resultsRef" class="mb-16px flex flex-wrap items-end justify-between gap-10px">
+            <div class="mb-16px flex flex-wrap items-end justify-between gap-10px">
               <div>
                 <div class="text-18px font-500">{{ activeCategory?.name }}</div>
                 <div class="mt-4px text-11px text-[var(--muted)]">{{ activeCategory?.description }}</div>
@@ -162,27 +158,8 @@ async function selectPage(value: number): Promise<void> {
               <div class="text-13px text-[var(--muted)]">试试其他关键词，或切换资源分类与地图范围。</div>
               <button type="button" class="min-h-44px cursor-pointer rounded-7px border border-[#377c60] bg-[#173b2d] px-18px text-13px text-[var(--accent)]" @click="change(store.resetFilters)">清除筛选</button>
             </div>
-            <div v-else class="grid grid-cols-2 gap-10px sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
-              <button v-for="item in pageAssets" :key="item.id" type="button" class="group min-w-0 cursor-pointer overflow-hidden rounded-8px border bg-[#0f211a] p-0 text-left transition-colors hover:border-[#4f9d78]" :class="selectedAsset?.id === item.id ? 'border-[var(--accent)]' : 'border-[var(--line)]'" @click="selectAsset(item.id)">
-                <AssetImage :key="item.previewUrl" :src="item.previewUrl" class="aspect-[4/3] w-full" />
-                <div class="p-12px">
-                  <div class="truncate text-13px text-[#dceee3]" :title="item.name">{{ item.name }}</div>
-                  <div class="mt-7px flex items-center justify-between gap-4px text-10px text-[var(--muted)]">
-                    <span>{{ categoryName(item.category) }}</span>
-                    <WuSvg name="chevron-right" class="text-[#6e9a83] [--wu-svg-h:12px] group-hover:text-[var(--accent)]" />
-                  </div>
-                </div>
-              </button>
-            </div>
+            <AssetVirtualGrid v-else :assets="filteredAssets" :selected-id="filters.selectedId" @select="selectAsset" />
 
-            <div v-if="filteredAssets.length" class="mt-20px flex flex-wrap items-center justify-between gap-14px border-t border-[var(--line)] pt-16px text-12px text-[var(--muted)]">
-              <span>第 {{ (page - 1) * ASSET_PAGE_SIZE + 1 }}–{{ Math.min(page * ASSET_PAGE_SIZE, filteredAssets.length) }} 项 / 共 {{ filteredAssets.length }} 项</span>
-              <div class="flex items-center gap-12px">
-                <button type="button" class="min-h-40px cursor-pointer rounded-6px border border-[var(--line)] bg-[#13271f] px-12px text-[#cee5d8] disabled:cursor-not-allowed disabled:opacity-35" :disabled="page === 1" @click="selectPage(page - 1)">上一页</button>
-                <span class="tabular-nums">{{ page }} / {{ pageCount }}</span>
-                <button type="button" class="min-h-40px cursor-pointer rounded-6px border border-[var(--line)] bg-[#13271f] px-12px text-[#cee5d8] disabled:cursor-not-allowed disabled:opacity-35" :disabled="page === pageCount" @click="selectPage(page + 1)">下一页</button>
-              </div>
-            </div>
           </div>
         </div>
 

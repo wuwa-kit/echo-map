@@ -17,8 +17,8 @@ import { isOfficialPointReplaced } from '../domain/point-matching.ts'
 import { authoredPointMapDisplay, editorLibraryLocations } from '../domain/point-library.ts'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
-import { mapToGameCoordinate } from '../map/projection.ts'
-import { createEditorSelectionStyle } from '../map/editor-marker.ts'
+import { mapToGameCoordinate, officialToMapCoordinate } from '../map/projection.ts'
+import { createEditorArrivalStyle, createEditorSelectionStyle } from '../map/editor-marker.ts'
 import { createPointLayers, mapFeaturesPointIds } from '../map/point-layers.ts'
 import { createMapView } from '../map/useMapViewport.ts'
 import { createFloorCoverage, floorGroupsInViewport } from '../map/floor-coverage.ts'
@@ -39,11 +39,9 @@ const props = defineProps<{
     center: [number, number]
     zoom: number
   } | null
-  preserveViewportPointId: string | null
 }>()
 const emit = defineEmits<{
   pointSelected: [ids: string[]]
-  positionPicked: [x: number, y: number]
   viewportChanged: [viewport: {
     center: [number, number]
     zoom: number
@@ -64,11 +62,6 @@ const mapCenter = shallowRef<[number, number] | null>(null)
 const lastGameCoordinate = shallowRef<[number, number]>([0, 0])
 const pointerCoordinateText = computed(() => lastGameCoordinate.value.join(' · '))
 let map: Map | null = null
-let pendingMapPick: {
-  pointId: string
-  x: number
-  y: number
-} | null = null
 let pendingRegionId: string | null = null
 const store = usePointEditorStore()
 const baseLayers = createOfficialBaseLayers(store.reportMapTileError)
@@ -90,6 +83,7 @@ const points = createPointLayers(() => {
   return Boolean(view?.getAnimating() || view?.getInteracting())
 }, { echoGrouping: 'individual', onStyleChange: () => selectionLayer.changed() })
 const selectionStyle = createEditorSelectionStyle()
+const arrivalStyle = createEditorArrivalStyle()
 
 function publish(): void {
   const center = map?.getView().getCenter()
@@ -156,12 +150,16 @@ function selectRegion(id: string): void {
   locateRegion(id)
 }
 
-function focusDraft(): void {
+function locateDraft(): void {
   const display = authoredPointMapDisplay(props.draft, props.dataset)
   if (!display || !map) return
+  map.updateSize()
+  map.getView().cancelAnimations()
   map.getView().setCenter([display.location.coordinate.mapX, display.location.coordinate.mapY])
   map.getView().setResolution(Math.min(map.getView().getResolution() ?? 1, 0.65))
 }
+
+defineExpose({ locateDraft })
 
 function activeGravity(): 1 | 2 | null {
   return hasGravityMap(state.value) ? props.draft.gravityType ?? 1 : null
@@ -194,23 +192,36 @@ function rebuildDraft(): void {
   })
   feature.setStyle([selectionStyle, ...(Array.isArray(styles) ? styles : styles ? [styles] : [])])
   selectionSource.addFeature(feature)
+  if (props.draft.kind === 'navigation' && props.draft.mode === 'fast-travel') {
+    const arrival = props.draft.teleportCoordinate
+    if (arrival && arrival.x !== null && arrival.y !== null) {
+      const coordinate = officialToMapCoordinate(arrival.x * 100, arrival.y * 100, props.dataset.source.tileWidth)
+      const arrivalFeature = new Feature({ geometry: new Point([coordinate.mapX, coordinate.mapY]) })
+      arrivalFeature.setStyle(arrivalStyle)
+      selectionSource.addFeature(arrivalFeature)
+    }
+  }
 }
 
 function rebuildFloor(): void {
   if (!map || !state.value) return
   floors.update(map, state.value, props.dataset.source, props.draft.levelId)
-  const extent = floors.getExtent()
-  if (extent && !props.savedViewport) map.getView().fit(extent, { padding: [50, 50, 50, 50], minResolution: 0.5 })
 }
 
-function rebuildBase(): void {
+function rebuildBase(initial = false): void {
   if (!map || !state.value) return
+  const preserveViewport = !initial
+  const previousCenter = preserveViewport ? map.getView().getCenter() : undefined
+  const previousResolution = preserveViewport ? map.getView().getResolution() : undefined
   baseLayers.update(map, state.value, props.dataset.source, props.draft.gravityType ?? 1)
   const view = createMapView(state.value, projection)
   const center = view.getCenter()
   const zoom = view.getZoom()
   defaultViewport = center && zoom !== undefined ? { center: [...center], zoom } : null
-  if (props.savedViewport) {
+  if (previousCenter && previousResolution !== undefined) {
+    view.setCenter([...previousCenter])
+    view.setResolution(previousResolution)
+  } else if (props.savedViewport) {
     view.setCenter([...props.savedViewport.center])
     view.setZoom(props.savedViewport.zoom)
   }
@@ -238,14 +249,6 @@ function onMoveEnd(): void {
 function select(event: MapBrowserEvent): void {
   const ids = map ? mapFeaturesPointIds(map.getFeaturesAtPixel(event.pixel, { hitTolerance: 6 })) : []
   if (ids.length) emit('pointSelected', ids)
-  else {
-    const [x, y] = event.coordinate
-    if (x !== undefined && y !== undefined) {
-      const [gameX, gameY] = mapToGameCoordinate(x, y, props.dataset.source.tileWidth)
-      pendingMapPick = { pointId: props.draft.id, x: Math.round(gameX), y: Math.round(gameY) }
-      emit('positionPicked', gameX, gameY)
-    }
-  }
 }
 
 useResizeObserver(mapTarget, () => {
@@ -264,10 +267,11 @@ onMounted(() => {
   map.on('singleclick', select)
   map.on('moveend', onMoveEnd)
   map.on('pointermove', updatePointerCoordinate)
-  rebuildBase()
-  if (!props.savedViewport) focusDraft()
+  rebuildBase(true)
+  const extent = floors.getExtent()
+  if (extent && !props.savedViewport) map.getView().fit(extent, { padding: [50, 50, 50, 50], minResolution: 0.5 })
 })
-watch(state, rebuildBase)
+watch(state, () => rebuildBase())
 watch(() => props.draft.gravityType, () => {
   if (map && state.value) baseLayers.update(map, state.value, props.dataset.source, props.draft.gravityType ?? 1)
 })
@@ -275,13 +279,6 @@ watch(() => store.mapTileRetry, () => baseLayers.retry())
 watch(() => props.draft.levelId, rebuildFloor)
 watch([() => props.points, () => props.draft.id, () => props.draft.stateId, () => props.draft.levelId, () => props.draft.gravityType], rebuildLibraryPoints)
 watch(() => props.draft, rebuildDraft)
-watch([() => props.draft.id, () => props.draft.coordinate.x, () => props.draft.coordinate.y], ([pointId, x, y]) => {
-  const picked = pendingMapPick
-  pendingMapPick = null
-  if (picked?.pointId === pointId && picked.x === x && picked.y === y) return
-  if (props.preserveViewportPointId === pointId) return
-  focusDraft()
-})
 onBeforeUnmount(() => {
   map?.un('singleclick', select)
   map?.un('moveend', onMoveEnd)

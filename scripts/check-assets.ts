@@ -1,6 +1,7 @@
+import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
 import { tilePreviewUrl } from '../src/data/official-asset-urls.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
-import { isMainModule } from './lib/files.ts'
+import { isMainModule, projectPath, readJson } from './lib/files.ts'
 import { readMapDataset } from './lib/map-data.ts'
 
 export async function checkAssetUrls(urls: readonly string[]): Promise<{ url: string; error: string }[]> {
@@ -21,7 +22,8 @@ export async function checkAssetUrls(urls: readonly string[]): Promise<{ url: st
 
 if (isMainModule(import.meta.url)) {
   const dataset = await readMapDataset()
-  const assets = buildOfficialAssets(dataset)
+  const mapAssets = officialMapAssetCatalogSchema.parse(await readJson<unknown>(projectPath('public', 'data', 'map-asset-catalog.json')))
+  const assets = buildOfficialAssets(dataset, mapAssets.assets)
   const urls = [...new Set(assets.flatMap((asset) => [
     asset.url,
     asset.previewUrl,

@@ -10,14 +10,17 @@ const props = withDefaults(defineProps<{
   size?: 'md' | 'sm'
   viewportClass?: string
   unbounded?: boolean
+  scrollChaining?: boolean
 }>(), {
   contentClass: '',
   size: 'md',
   viewportClass: '',
   unbounded: false,
+  scrollChaining: false,
 })
 
 const viewport = useTemplateRef<HTMLElement>('viewportRef')
+defineExpose({ viewport })
 const content = useTemplateRef<HTMLElement>('contentRef')
 const track = useTemplateRef<HTMLElement>('trackRef')
 const clientHeight = shallowRef(0)
@@ -154,7 +157,7 @@ onMounted(() => {
     <div
       ref="viewportRef"
       class="min-h-0 min-w-0"
-      :class="[viewportClass, unbounded ? 'overflow-visible' : 'flex-1 overflow-x-hidden overflow-y-auto overscroll-contain']"
+      :class="[viewportClass, unbounded ? 'overflow-visible' : 'flex-1 overflow-x-hidden overflow-y-auto', scrollChaining ? 'overscroll-auto' : 'overscroll-contain']"
     >
       <div ref="contentRef" class="min-w-0" :class="contentClass">
         <slot />

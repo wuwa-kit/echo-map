@@ -318,10 +318,10 @@
       ]
     },
     {
-      "id": "icon:039058c6f2c0cb49",
+      "id": "icon:f19fe636a57e6c50",
       "name": "相同图标",
       "iconUrl": "https://web-static.kurobbs.com/same-b.png",
-      "iconHash": "039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
+      "iconHash": "f19fe636a57e6c5076413efab51d1c36e87686c79f461b7ad8913fe7de4c964e",
       "typeIds": [
         "11",
         "10"
@@ -385,7 +385,7 @@
       "catalogCategoryName": "配置定位点",
       "mode": "fast-travel",
       "kind": "beacon",
-      "groupId": "icon:039058c6f2c0cb49"
+      "groupId": "icon:f19fe636a57e6c50"
     },
     {
       "id": "nav-2",
@@ -409,7 +409,7 @@
       "catalogCategoryName": "配置定位点",
       "mode": "landmark",
       "kind": "service",
-      "groupId": "icon:039058c6f2c0cb49"
+      "groupId": "icon:f19fe636a57e6c50"
     },
     {
       "id": "nav-3",
