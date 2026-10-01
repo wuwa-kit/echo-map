@@ -3,6 +3,7 @@ import type { MapDataset, MapStateDefinition } from '../src/domain/types.ts'
 import { calculateTileExtent } from '../src/map/projection.ts'
 import { isMainModule, projectPath, readJson, writeJson } from './lib/files.ts'
 import { writeMapDataset } from './lib/map-data.ts'
+import { convertOfficialPoints } from './lib/official-point-library.ts'
 import type { WikiSnapshot } from './lib/wiki.ts'
 import { orderSonatasByNames } from './lib/wiki.ts'
 import { flattenRegions, normalizeLayers, normalizeMapNavigation, normalizeGravityTiles } from './lib/map/normalize.ts'
@@ -97,6 +98,8 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
   }
 
   mapDatasetSchema.parse(dataset)
+  // Rebuild before publishing: Wiki membership changes can remove old echo IDs.
+  await writeJson(projectPath('data', 'generated', 'official-points.json'), convertOfficialPoints(dataset))
   await Promise.all([
     writeMapDataset(dataset),
     writeJson(projectPath('data', 'generated', 'sync-report.json'), report),

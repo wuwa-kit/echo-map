@@ -1,6 +1,6 @@
 {
-  "fetchedAt": "2026-09-06T15:01:30.320Z",
-  "totalEchoCount": 199,
+  "fetchedAt": "2026-10-01T07:53:45.747Z",
+  "totalEchoCount": 205,
   "excludedEchoNames": [
     "哀声鸷",
     "焙焙",
@@ -12,6 +12,7 @@
     "共鸣回响·梦魇亚当·重锤",
     "共鸣回响·鸣式·利维亚坦",
     "共鸣回响·鸣式·虚造神型",
+    "共鸣回响·天演溯心",
     "贡多拉",
     "哈德良角斗士的肖像",
     "海维夏",
@@ -28,15 +29,18 @@
     "孪面",
     "罗蕾莱",
     "梦魇·哀声鸷",
+    "梦魇·刺玫菇",
     "梦魇·飞廉之猩",
     "梦魇·赫卡忒",
     "梦魇·辉萤军势",
     "梦魇·凯尔匹",
     "梦魇·燎照之骑",
     "梦魇·朔雷之鳞",
+    "梦魇·呜咔咔",
     "梦魇·无常凶鹭",
     "梦魇·无冠者",
     "梦魇·云闪之鳞",
+    "梦魇·侏侏鸵",
     "鸣钟之龟",
     "墨丘利机",
     "弄臣",
@@ -65,6 +69,55 @@
     "祖渊海触"
   ],
   "sonatas": [
+    {
+      "id": "wiki-sonata-24192",
+      "name": "茜染怀想之花",
+      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/84081be7d0674e19b4712fa8ac5dc12420260929.png",
+      "sourceId": 24192,
+      "c1EchoIds": [
+        "wiki-echo-22804",
+        "wiki-echo-22805",
+        "wiki-echo-22806",
+        "wiki-echo-22808"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-24195",
+        "wiki-echo-24200"
+      ]
+    },
+    {
+      "id": "wiki-sonata-24193",
+      "name": "镜影流电之瞬",
+      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/b11b8e5722b94ea4948374006b17b55b20260929.png",
+      "sourceId": 24193,
+      "c1EchoIds": [
+        "wiki-echo-22807",
+        "wiki-echo-22810",
+        "wiki-echo-22811",
+        "wiki-echo-22812"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-24195",
+        "wiki-echo-24201"
+      ]
+    },
+    {
+      "id": "wiki-sonata-24194",
+      "name": "衔梦照世之心",
+      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/c1c02e83e170498d88c5b3693da4c37920260929.png",
+      "sourceId": 24194,
+      "c1EchoIds": [
+        "wiki-echo-22802",
+        "wiki-echo-22803",
+        "wiki-echo-22809",
+        "wiki-echo-24198",
+        "wiki-echo-24199"
+      ],
+      "c3EchoIds": [
+        "wiki-echo-24200",
+        "wiki-echo-24201"
+      ]
+    },
     {
       "id": "wiki-sonata-22795",
       "name": "冥途夜行之灯",
@@ -133,6 +186,7 @@
         "wiki-echo-19910"
       ],
       "c3EchoIds": [
+        "wiki-echo-19419",
         "wiki-echo-19420",
         "wiki-echo-19424",
         "wiki-echo-21261"
@@ -237,7 +291,6 @@
         "wiki-echo-19421",
         "wiki-echo-19422",
         "wiki-echo-19423",
-        "wiki-echo-19424",
         "wiki-echo-19427"
       ]
     },
@@ -387,7 +440,8 @@
       "c3EchoIds": [
         "wiki-echo-11134",
         "wiki-echo-11233",
-        "wiki-echo-14259"
+        "wiki-echo-14259",
+        "wiki-echo-15683"
       ]
     },
     {
@@ -689,13 +743,13 @@
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/62bd1b3ecbf04044b054edad2c98d56220251114.png",
       "sourceId": 18442,
       "c1EchoIds": [
-        "wiki-echo-16998",
-        "wiki-echo-18440",
-        "wiki-echo-18441"
+        "wiki-echo-16082",
+        "wiki-echo-17650",
+        "wiki-echo-17651"
       ],
       "c3EchoIds": [
-        "wiki-echo-15667",
-        "wiki-echo-18439"
+        "wiki-echo-16079",
+        "wiki-echo-17646"
       ]
     }
   ],
@@ -717,8 +771,8 @@
       "name": "暗夜骑士",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/67c7f66535b5423099d8e0757ef0afd920241229.png",
       "sonataIds": [
-        "wiki-sonata-15755",
-        "wiki-sonata-15753"
+        "wiki-sonata-15753",
+        "wiki-sonata-15755"
       ],
       "cost": 3,
       "sourceId": 15669
@@ -739,9 +793,9 @@
       "name": "冰盈舞者",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/42ad4340530b4d79bcb6b80c3bff4a8a20260203.png",
       "sonataIds": [
-        "wiki-sonata-19922",
+        "wiki-sonata-21262",
         "wiki-sonata-21263",
-        "wiki-sonata-21262"
+        "wiki-sonata-19922"
       ],
       "cost": 1,
       "sourceId": 19910
@@ -761,9 +815,9 @@
       "name": "颤栗战士",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/4cce6a381f514e2fb0787789b8feed7220251225.png",
       "sonataIds": [
-        "wiki-sonata-19451",
+        "wiki-sonata-21263",
         "wiki-sonata-19923",
-        "wiki-sonata-21263"
+        "wiki-sonata-19451"
       ],
       "cost": 1,
       "sourceId": 19425
@@ -785,8 +839,7 @@
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/70fdc81b348b43a698c44694cb672b4a20241229.png",
       "sonataIds": [
         "wiki-sonata-15755",
-        "wiki-sonata-15756",
-        "wiki-sonata-18442"
+        "wiki-sonata-15756"
       ],
       "cost": 3,
       "sourceId": 15667
@@ -796,8 +849,8 @@
       "name": "传道者的遗形",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/bfaf2609c0654bb4bde519fc7cd02b1a20250609.png",
       "sonataIds": [
-        "wiki-sonata-16971",
-        "wiki-sonata-16970"
+        "wiki-sonata-16970",
+        "wiki-sonata-16971"
       ],
       "cost": 3,
       "sourceId": 17000
@@ -807,6 +860,7 @@
       "name": "瓷庭候",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/05d09a8d9c924ce2bf85262f136f5c4c20260709.png",
       "sonataIds": [
+        "wiki-sonata-24193",
         "wiki-sonata-22795"
       ],
       "cost": 1,
@@ -883,8 +937,8 @@
       "name": "风鳞蜃甲",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/30f382b2ca5a4bd9a7a3012fb9363baa20251225.png",
       "sonataIds": [
-        "wiki-sonata-19449",
-        "wiki-sonata-21263"
+        "wiki-sonata-21263",
+        "wiki-sonata-19449"
       ],
       "cost": 3,
       "sourceId": 19426
@@ -962,8 +1016,8 @@
       "name": "格洛犸图",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/2689d9a464b24c4e9296174017d7a57e20260203.png",
       "sonataIds": [
-        "wiki-sonata-19922",
-        "wiki-sonata-21263"
+        "wiki-sonata-21263",
+        "wiki-sonata-19922"
       ],
       "cost": 3,
       "sourceId": 19911
@@ -984,8 +1038,8 @@
       "name": "共鸣回响·冠顶苍隼",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/08b1433a3e274a5f9f822c8d18b02a4220260203.png",
       "sonataIds": [
-        "wiki-sonata-19922",
-        "wiki-sonata-19923"
+        "wiki-sonata-19923",
+        "wiki-sonata-19922"
       ],
       "cost": 3,
       "sourceId": 19912
@@ -1006,8 +1060,8 @@
       "name": "冠顶械隼",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/1b3dea0e7435429f9816a6d590d0c9d920260203.png",
       "sonataIds": [
-        "wiki-sonata-19922",
-        "wiki-sonata-19923"
+        "wiki-sonata-19923",
+        "wiki-sonata-19922"
       ],
       "cost": 3,
       "sourceId": 19913
@@ -1029,8 +1083,8 @@
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/0169f205ae224a5790207540f65fe08d20240426.png",
       "sonataIds": [
         "wiki-sonata-11951",
-        "wiki-sonata-11955",
-        "wiki-sonata-11954"
+        "wiki-sonata-11954",
+        "wiki-sonata-11955"
       ],
       "cost": 1,
       "sourceId": 11118
@@ -1085,6 +1139,7 @@
       "name": "霁息兽尊·身",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/a24be406928a48f08718f2a58bd8aad220260709.png",
       "sonataIds": [
+        "wiki-sonata-24194",
         "wiki-sonata-22797"
       ],
       "cost": 1,
@@ -1095,6 +1150,7 @@
       "name": "霁息兽尊·首",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/7009e27c4f9d4c7aaab24b8d2a73207b20260709.png",
       "sonataIds": [
+        "wiki-sonata-24194",
         "wiki-sonata-22797"
       ],
       "cost": 1,
@@ -1105,8 +1161,8 @@
       "name": "坚岩斗士",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/65d31043ee3f4e96b42239e109d3151a20240426.png",
       "sonataIds": [
-        "wiki-sonata-11955",
-        "wiki-sonata-11954"
+        "wiki-sonata-11954",
+        "wiki-sonata-11955"
       ],
       "cost": 3,
       "sourceId": 11116
@@ -1127,18 +1183,30 @@
       "name": "角鳄",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/8ef3b860f8294bedb5ec2a2856c30f6420250609.png",
       "sonataIds": [
-        "wiki-sonata-16971",
         "wiki-sonata-16970",
+        "wiki-sonata-16971",
         "wiki-sonata-17977"
       ],
       "cost": 3,
       "sourceId": 17001
     },
     {
+      "id": "wiki-echo-24200",
+      "name": "解形煞",
+      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/ec83c9aa45464277bf9cf3a7ad11a07220260929.png",
+      "sonataIds": [
+        "wiki-sonata-24192",
+        "wiki-sonata-24194"
+      ],
+      "cost": 3,
+      "sourceId": 24200
+    },
+    {
       "id": "wiki-echo-22810",
       "name": "金庭候",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/a17c9b80d29a49da8e8d0b00bb29368220260709.png",
       "sonataIds": [
+        "wiki-sonata-24193",
         "wiki-sonata-22796"
       ],
       "cost": 1,
@@ -1182,6 +1250,7 @@
       "name": "巨布偶",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/5ed383ba0bda4dcd908a8097d9aaa1a020241229.png",
       "sonataIds": [
+        "wiki-sonata-11952",
         "wiki-sonata-15699",
         "wiki-sonata-15755"
       ],
@@ -1195,7 +1264,8 @@
       "sonataIds": [
         "wiki-sonata-15756",
         "wiki-sonata-16356",
-        "wiki-sonata-17621"
+        "wiki-sonata-17621",
+        "wiki-sonata-18442"
       ],
       "cost": 3,
       "sourceId": 16079
@@ -1205,12 +1275,23 @@
       "name": "锯袭铁影",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/6169be96c1574982ab95ae56274bd98820251225.png",
       "sonataIds": [
-        "wiki-sonata-19451",
+        "wiki-sonata-19924",
         "wiki-sonata-19450",
-        "wiki-sonata-19924"
+        "wiki-sonata-19451"
       ],
       "cost": 3,
       "sourceId": 19422
+    },
+    {
+      "id": "wiki-echo-24201",
+      "name": "绝息魄",
+      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/c1c663f415c24bf28486ec007b1fad2720260929.png",
+      "sonataIds": [
+        "wiki-sonata-24193",
+        "wiki-sonata-24194"
+      ],
+      "cost": 3,
+      "sourceId": 24201
     },
     {
       "id": "wiki-echo-11122",
@@ -1230,8 +1311,8 @@
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/24a3a5d5955a4a708098d4b18dd9c59020250609.png",
       "sonataIds": [
         "wiki-sonata-16356",
-        "wiki-sonata-16971",
-        "wiki-sonata-16970"
+        "wiki-sonata-16970",
+        "wiki-sonata-16971"
       ],
       "cost": 1,
       "sourceId": 16999
@@ -1241,6 +1322,7 @@
       "name": "矿岩机麋",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/14aa949b0e2c4414b8e1ce082472674220251225.png",
       "sonataIds": [
+        "wiki-sonata-21262",
         "wiki-sonata-19450"
       ],
       "cost": 3,
@@ -1251,10 +1333,10 @@
       "name": "矿岩熊蜂",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/7da2506ceb444a50b8b8b851cdcc8def20251225.png",
       "sonataIds": [
-        "wiki-sonata-19449",
-        "wiki-sonata-19451",
+        "wiki-sonata-21262",
         "wiki-sonata-19924",
-        "wiki-sonata-21262"
+        "wiki-sonata-19451",
+        "wiki-sonata-19449"
       ],
       "cost": 1,
       "sourceId": 19430
@@ -1264,8 +1346,8 @@
       "name": "雷鬃狼",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/036c8baf003b40d48dc77ebdc426099020241229.png",
       "sonataIds": [
-        "wiki-sonata-15755",
-        "wiki-sonata-15753"
+        "wiki-sonata-15753",
+        "wiki-sonata-15755"
       ],
       "cost": 1,
       "sourceId": 15690
@@ -1288,8 +1370,8 @@
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/a4606e65227a4c85a0d7de4aa1a2fcc620240426.png",
       "sonataIds": [
         "wiki-sonata-11952",
-        "wiki-sonata-11955",
-        "wiki-sonata-11954"
+        "wiki-sonata-11954",
+        "wiki-sonata-11955"
       ],
       "cost": 1,
       "sourceId": 11142
@@ -1299,8 +1381,8 @@
       "name": "琉璃刀伶",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/fe33ca9dc9404bd1a94b6831b20a803e20250724.png",
       "sonataIds": [
-        "wiki-sonata-15754",
-        "wiki-sonata-15753"
+        "wiki-sonata-15753",
+        "wiki-sonata-15754"
       ],
       "cost": 3,
       "sourceId": 17519
@@ -1329,16 +1411,6 @@
       "sourceId": 11136
     },
     {
-      "id": "wiki-echo-18439",
-      "name": "梦魇·刺玫菇",
-      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/07870ba6ae1c48aea18e91864dfa29a220251114.png",
-      "sonataIds": [
-        "wiki-sonata-18442"
-      ],
-      "cost": 3,
-      "sourceId": 18439
-    },
-    {
       "id": "wiki-echo-17975",
       "name": "梦魇·刺玫菇（稚形）",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/ffe1e1ecde324e978866641042dfaaa220250930.png",
@@ -1363,7 +1435,8 @@
       "name": "梦魇·惊蛰猎手",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/2b1cb391359a45f2bf304770194e02d720250826.png",
       "sonataIds": [
-        "wiki-sonata-17621"
+        "wiki-sonata-17621",
+        "wiki-sonata-18442"
       ],
       "cost": 1,
       "sourceId": 17650
@@ -1429,21 +1502,12 @@
       "sourceId": 17411
     },
     {
-      "id": "wiki-echo-18440",
-      "name": "梦魇·呜咔咔",
-      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/11457d754cc748a4bb3dfc890c7c05c820251114.png",
-      "sonataIds": [
-        "wiki-sonata-18442"
-      ],
-      "cost": 1,
-      "sourceId": 18440
-    },
-    {
       "id": "wiki-echo-17651",
       "name": "梦魇·巡徊猎手",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/00e427d7aa7f414194a44a308023707e20250826.png",
       "sonataIds": [
-        "wiki-sonata-17621"
+        "wiki-sonata-17621",
+        "wiki-sonata-18442"
       ],
       "cost": 1,
       "sourceId": 17651
@@ -1459,21 +1523,12 @@
       "sourceId": 17410
     },
     {
-      "id": "wiki-echo-18441",
-      "name": "梦魇·侏侏鸵",
-      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/65469080f05442c5ba72bb5cb1399c4020251114.png",
-      "sonataIds": [
-        "wiki-sonata-18442"
-      ],
-      "cost": 1,
-      "sourceId": 18441
-    },
-    {
       "id": "wiki-echo-17646",
       "name": "梦魇·紫羽鹭",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/8b3c38cafabf45299bff60d1871809e420250826.png",
       "sonataIds": [
-        "wiki-sonata-17621"
+        "wiki-sonata-17621",
+        "wiki-sonata-18442"
       ],
       "cost": 3,
       "sourceId": 17646
@@ -1549,10 +1604,10 @@
       "name": "噼啪啪",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/1551339ffefa450bb25097cebf504ed920251225.png",
       "sonataIds": [
-        "wiki-sonata-19449",
-        "wiki-sonata-19450",
+        "wiki-sonata-19924",
         "wiki-sonata-19923",
-        "wiki-sonata-19924"
+        "wiki-sonata-19450",
+        "wiki-sonata-19449"
       ],
       "cost": 1,
       "sourceId": 19428
@@ -1574,11 +1629,21 @@
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/d836773f1df04aa48f2f8a57249d228720241229.png",
       "sonataIds": [
         "wiki-sonata-15699",
-        "wiki-sonata-15755",
-        "wiki-sonata-15753"
+        "wiki-sonata-15753",
+        "wiki-sonata-15755"
       ],
       "cost": 1,
       "sourceId": 15672
+    },
+    {
+      "id": "wiki-echo-24199",
+      "name": "奇绽傀",
+      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/4cd76d444d2146f69bfef5017019e12920260929.png",
+      "sonataIds": [
+        "wiki-sonata-24194"
+      ],
+      "cost": 1,
+      "sourceId": 24199
     },
     {
       "id": "wiki-echo-16080",
@@ -1675,6 +1740,7 @@
       "name": "石庭候",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/7c8d55921df44747823a0170474ea04220260709.png",
       "sonataIds": [
+        "wiki-sonata-24193",
         "wiki-sonata-22795"
       ],
       "cost": 1,
@@ -1696,8 +1762,8 @@
       "name": "莳植机麋",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/b4f1ef1b97aa40cf931b4e0b114309e420251225.png",
       "sonataIds": [
-        "wiki-sonata-19449",
-        "wiki-sonata-21262"
+        "wiki-sonata-21262",
+        "wiki-sonata-19449"
       ],
       "cost": 3,
       "sourceId": 19420
@@ -1707,10 +1773,10 @@
       "name": "莳植熊蜂",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/33aa36f4dd5f47cd83cc303ff06447f720251225.png",
       "sonataIds": [
-        "wiki-sonata-19449",
-        "wiki-sonata-19450",
+        "wiki-sonata-21262",
         "wiki-sonata-19924",
-        "wiki-sonata-21262"
+        "wiki-sonata-19450",
+        "wiki-sonata-19449"
       ],
       "cost": 1,
       "sourceId": 19431
@@ -1720,8 +1786,8 @@
       "name": "双极·星升辉铳",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/0c00bb3113a4417eb66f6c189185d19a20251225.png",
       "sonataIds": [
-        "wiki-sonata-19449",
-        "wiki-sonata-19923"
+        "wiki-sonata-19923",
+        "wiki-sonata-19449"
       ],
       "cost": 3,
       "sourceId": 19418
@@ -1731,9 +1797,9 @@
       "name": "双极·渊陨重锋",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/3e1ade5d856e4ef9bd3a9fce0ddde3e320251225.png",
       "sonataIds": [
-        "wiki-sonata-19449",
+        "wiki-sonata-19924",
         "wiki-sonata-19922",
-        "wiki-sonata-19924"
+        "wiki-sonata-19449"
       ],
       "cost": 3,
       "sourceId": 19417
@@ -1743,8 +1809,8 @@
       "name": "霜鳞蜃甲",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/8aa396442a4a486ca414c017cefe1a8e20251225.png",
       "sonataIds": [
-        "wiki-sonata-19451",
-        "wiki-sonata-21263"
+        "wiki-sonata-21263",
+        "wiki-sonata-19451"
       ],
       "cost": 3,
       "sourceId": 19427
@@ -1787,9 +1853,9 @@
       "name": "探隧重机",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/9feafa395c834f6cbc9083f7950c1cd520251225.png",
       "sonataIds": [
-        "wiki-sonata-19451",
+        "wiki-sonata-19924",
         "wiki-sonata-19923",
-        "wiki-sonata-19924"
+        "wiki-sonata-19451"
       ],
       "cost": 3,
       "sourceId": 19423
@@ -1893,8 +1959,8 @@
       "name": "小翼龙·热熔",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/31cae90d8c77499f95dc9b722cb850b820250609.png",
       "sonataIds": [
-        "wiki-sonata-16971",
-        "wiki-sonata-16970"
+        "wiki-sonata-16970",
+        "wiki-sonata-16971"
       ],
       "cost": 1,
       "sourceId": 16997
@@ -1904,9 +1970,8 @@
       "name": "小翼龙·湮灭",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/34d9bc856f6b42e69c1360f5f30736e220250609.png",
       "sonataIds": [
-        "wiki-sonata-16971",
         "wiki-sonata-16970",
-        "wiki-sonata-18442"
+        "wiki-sonata-16971"
       ],
       "cost": 1,
       "sourceId": 16998
@@ -1916,8 +1981,8 @@
       "name": "小翼龙·衍射",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/cadc22ccdb674d8c8ba91b265725eb4720250609.png",
       "sonataIds": [
-        "wiki-sonata-16971",
-        "wiki-sonata-16970"
+        "wiki-sonata-16970",
+        "wiki-sonata-16971"
       ],
       "cost": 1,
       "sourceId": 16996
@@ -1927,6 +1992,7 @@
       "name": "心傀·悲",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/99a1dfa752ea49dfab81de8749f86dfc20260709.png",
       "sonataIds": [
+        "wiki-sonata-24192",
         "wiki-sonata-22795"
       ],
       "cost": 1,
@@ -1937,6 +2003,7 @@
       "name": "心傀·恐",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/2ba85732d95344cc9e402a4e94ae34ed20260709.png",
       "sonataIds": [
+        "wiki-sonata-24192",
         "wiki-sonata-22795"
       ],
       "cost": 1,
@@ -1947,6 +2014,7 @@
       "name": "心傀·怒",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/0a6272c18a6d4eb4b1dfeaefb5b4235520260709.png",
       "sonataIds": [
+        "wiki-sonata-24192",
         "wiki-sonata-22796"
       ],
       "cost": 1,
@@ -1957,6 +2025,7 @@
       "name": "心傀·思",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/703c16d5d4124da292ab9439f729031d20260709.png",
       "sonataIds": [
+        "wiki-sonata-24192",
         "wiki-sonata-22796"
       ],
       "cost": 1,
@@ -1967,6 +2036,7 @@
       "name": "心傀·喜",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/b5bd9d5d591b4430881a851b95175c9520260709.png",
       "sonataIds": [
+        "wiki-sonata-24194",
         "wiki-sonata-22797"
       ],
       "cost": 1,
@@ -1977,6 +2047,7 @@
       "name": "心傀·忧",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/67f13dcd10294f58a235ed4566703e2420260709.png",
       "sonataIds": [
+        "wiki-sonata-24193",
         "wiki-sonata-22796"
       ],
       "cost": 1,
@@ -2016,6 +2087,17 @@
       "sourceId": 11231
     },
     {
+      "id": "wiki-echo-24195",
+      "name": "巡宵枪卫",
+      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/151fefc217c04bbdad73b42ec4e9001c20260929.png",
+      "sonataIds": [
+        "wiki-sonata-24192",
+        "wiki-sonata-24193"
+      ],
+      "cost": 3,
+      "sourceId": 24195
+    },
+    {
       "id": "wiki-echo-15671",
       "name": "巡游骑士",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/7b75578db92c4709926e81e4e2a941c520241229.png",
@@ -2043,9 +2125,9 @@
       "name": "岩蛛S4型",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/5b4c99510c404bb6b9cffb5289db402c20251225.png",
       "sonataIds": [
-        "wiki-sonata-19451",
+        "wiki-sonata-19922",
         "wiki-sonata-19450",
-        "wiki-sonata-19922"
+        "wiki-sonata-19451"
       ],
       "cost": 1,
       "sourceId": 19429
@@ -2067,9 +2149,9 @@
       "name": "隐迹铁影",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/c2a29cbf64d14868b1953b14998c088220251225.png",
       "sonataIds": [
-        "wiki-sonata-19451",
+        "wiki-sonata-19924",
         "wiki-sonata-19450",
-        "wiki-sonata-19924"
+        "wiki-sonata-19451"
       ],
       "cost": 3,
       "sourceId": 19421
@@ -2079,9 +2161,9 @@
       "name": "影烁者",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/a8740b0f6f044043a638ded45d61c6bb20260203.png",
       "sonataIds": [
-        "wiki-sonata-19922",
+        "wiki-sonata-21263",
         "wiki-sonata-19923",
-        "wiki-sonata-21263"
+        "wiki-sonata-19922"
       ],
       "cost": 1,
       "sourceId": 19909
@@ -2115,8 +2197,8 @@
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/6ca2cbcef1484e81bf2330c698ed27ca20240427.png",
       "sonataIds": [
         "wiki-sonata-11949",
-        "wiki-sonata-11955",
-        "wiki-sonata-11954"
+        "wiki-sonata-11954",
+        "wiki-sonata-11955"
       ],
       "cost": 1,
       "sourceId": 11235
@@ -2139,7 +2221,8 @@
       "sonataIds": [
         "wiki-sonata-15753",
         "wiki-sonata-15756",
-        "wiki-sonata-17621"
+        "wiki-sonata-17621",
+        "wiki-sonata-18442"
       ],
       "cost": 1,
       "sourceId": 16082
@@ -2157,12 +2240,22 @@
       "sourceId": 16081
     },
     {
+      "id": "wiki-echo-24198",
+      "name": "玉冥蛇",
+      "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/cddd1627ce4b424ebe0be32423f7877520260929.png",
+      "sonataIds": [
+        "wiki-sonata-24194"
+      ],
+      "cost": 1,
+      "sourceId": 24198
+    },
+    {
       "id": "wiki-echo-15650",
       "name": "云海妖精",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/6e994dd300574cecb35eba6f0f46f58420241226.png",
       "sonataIds": [
-        "wiki-sonata-15755",
         "wiki-sonata-15753",
+        "wiki-sonata-15755",
         "wiki-sonata-17977"
       ],
       "cost": 1,
@@ -2184,10 +2277,9 @@
       "name": "重工铁蹄",
       "iconUrl": "https://prod-alicdn-community.kurobbs.com/forum/16f94a8288a14714abfc0c151819fe3720251225.png",
       "sonataIds": [
-        "wiki-sonata-19451",
-        "wiki-sonata-19450",
+        "wiki-sonata-21262",
         "wiki-sonata-21263",
-        "wiki-sonata-21262"
+        "wiki-sonata-19450"
       ],
       "cost": 3,
       "sourceId": 19424

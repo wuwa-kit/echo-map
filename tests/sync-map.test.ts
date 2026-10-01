@@ -8,7 +8,8 @@ import { groupNavigationPoints } from '../scripts/lib/map/navigation-groups.ts'
 import { catalog, countries, iconBytes, iconHash, layers, manual, navigationConfig, positions, wiki } from './fixtures/sync-map-input.ts'
 
 vi.mock('../scripts/lib/http.ts')
-vi.mock('../scripts/lib/official-point-library.ts', () => ({
+vi.mock('../scripts/lib/official-point-library.ts', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../scripts/lib/official-point-library.ts')>(),
   readOfficialPointLibrary: vi.fn(async () => ({ version: 1, points: [] })),
 }))
 vi.mock('../scripts/lib/files.ts', () => ({
@@ -112,6 +113,8 @@ describe('map synchronization', () => {
     expect(writeJson).toHaveBeenCalledWith('public/data/custom-echo-points.json', { version: 1, points: [] }, { compact: true, skipUnchanged: true })
     expect(writeJson).toHaveBeenCalledWith('public/data/custom-navigation-points.json', { version: 1, points: [] }, { compact: true, skipUnchanged: true })
     expect(writeJson).toHaveBeenCalledWith('data/generated/sync-report.json', dataset.report)
+    const writes = vi.mocked(writeJson).mock.calls.map(([path]) => path)
+    expect(writes.indexOf('data/generated/official-points.json')).toBeLessThan(writes.indexOf('public/data/map-data.json'))
     expect(fetchBytes).not.toHaveBeenCalledWith(expect.stringContaining('boss.png'))
   })
 

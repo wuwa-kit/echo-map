@@ -1,9 +1,9 @@
 {
-  "wikiEchoCount": 199,
-  "includedEchoCount": 138,
-  "excludedEchoCount": 61,
-  "sonataCount": 34,
-  "exactMatchedEchoCount": 122,
+  "wikiEchoCount": 205,
+  "includedEchoCount": 140,
+  "excludedEchoCount": 65,
+  "sonataCount": 37,
+  "exactMatchedEchoCount": 121,
   "aliasMatchedEchoCount": 3,
   "unmatchedEchoNames": [
     "不熄猎手",
@@ -11,6 +11,7 @@
     "瓷庭候",
     "封庭械囿",
     "金庭候",
+    "绝息魄",
     "石庭候",
     "莳植熊蜂",
     "心傀·悲",
@@ -18,14 +19,16 @@
     "心傀·怒",
     "心傀·思",
     "心傀·喜",
-    "心傀·忧"
+    "心傀·忧",
+    "巡宵枪卫",
+    "玉冥蛇"
   ],
-  "provisionalEchoLocationCount": 6811,
+  "provisionalEchoLocationCount": 6806,
   "routeEligibleEchoLocationCount": 4,
-  "navigationPointCount": 600,
+  "navigationPointCount": 620,
   "navigationPointGroupCount": 52,
-  "bossNavigationPointCount": 43,
-  "challengeNavigationPointCount": 65,
+  "bossNavigationPointCount": 44,
+  "challengeNavigationPointCount": 68,
   "navigationIconFetchFailureCount": 0,
   "routeEligibleNavigationPointCount": 1
 }

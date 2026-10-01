@@ -37,6 +37,7 @@ describe('generated application data', () => {
     const wiki = wikiCatalogueSchema.parse(JSON.parse(await readFile(new URL('../data/generated/wiki.json', import.meta.url), 'utf8')))
     const dataset = await readMapDataset()
     expect(dataset.sonatas.map(({ name }) => name)).toEqual([
+      '茜染怀想之花', '镜影流电之瞬', '衔梦照世之心',
       '冥途夜行之灯', '清邪荡煞之心', '羽落空尘之歌', '碎梦亡鬼之魇', '剪心辑梦之影', '雪落无声之愿',
       '听唤语义之愿', '斑驳粉饰之沫', '长路启航之星', '流金溯真之式', '星构寻辉之环', '逆光跃彩之约',
       '命理崩毁之弦', '焚羽猎魔之影', '息界同调之律', '荣斗铸锋之冠', '失序彼岸之梦', '奔狼燎原之焰',

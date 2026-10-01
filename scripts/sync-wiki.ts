@@ -4,6 +4,7 @@ import { asArray, asNumber, asRecord, asString, nested } from './lib/raw.ts'
 import type { UnknownRecord } from './lib/raw.ts'
 import type { WikiSnapshot } from './lib/wiki.ts'
 import { withSonataEchoIds } from './lib/wiki.ts'
+import { parseSonataMembers, wikiEntryId } from './lib/wiki-membership.ts'
 import { wikiCatalogueSchema } from '../src/domain/schema.ts'
 import type { EchoDefinition, NonEmptyArray, SonataEffect } from '../src/domain/types.ts'
 
@@ -92,18 +93,41 @@ export async function syncWiki(): Promise<WikiSnapshot> {
   ])
   const echoCatalogue = parseRecords(echoResponse)
   const sonataCatalogue = parseRecords(sonataResponse)
-  const setTag = findTag(echoCatalogue.tags, '套装')
   const costTag = findTag(echoCatalogue.tags, 'COST')
-  if (!setTag || setTag.children.length === 0) {
-    throw new Error('声骸目录缺少“套装”标签组，拒绝生成可能污染的数据')
-  }
   if (!costTag || costTag.children.length === 0) {
     throw new Error('声骸目录缺少“COST”标签组，拒绝生成可能污染的数据')
   }
 
   const sonatas = normalizeSonatas(sonataCatalogue.records)
-  const sonataByName = new Map(sonatas.map((sonata) => [sonata.name, sonata]))
-  const setNameByTagId = new Map(setTag.children.map((tag) => [tag.id, tag.name]))
+  const memberships = new Map<string, { cost: 1 | 3; sonataIds: string[] }>()
+  const knownEntries = new Map(echoCatalogue.records.map((record) => [wikiEntryId(record), wikiEntryId(record)]))
+  console.log('正在读取 Wiki 套装详情的对应声骸…')
+  for (let index = 0; index < sonataCatalogue.records.length; index += 5) {
+    const entries = await Promise.all(sonataCatalogue.records.slice(index, index + 5).map(async (record) => {
+      const response = await postFormJson('https://api.kurobbs.com/wiki/core/catalogue/item/getEntryDetail', kuroHeaders(9), { id: wikiEntryId(record) })
+      return { sonataId: `wiki-sonata-${asString(record.id)}`, members: parseSonataMembers(response) }
+    }))
+    for (const { sonataId, members } of entries) {
+      for (const [linkedId, cost] of members) {
+        let entryId = knownEntries.get(linkedId)
+        if (!entryId) {
+          // Some set pages link the enemy article rather than the echo article.
+          const detail = await postFormJson<unknown>('https://api.kurobbs.com/wiki/core/catalogue/item/getEntryDetail', kuroHeaders(9), { id: linkedId })
+          const name = asString(nested(asRecord(detail, 'wiki linked detail'), 'data', 'content', 'title')).replace(/（(?:敌人|声骸)）$/u, '').trim()
+          const matches = echoCatalogue.records.filter((record) => asString(record.name).trim() === name)
+          const match = matches.length === 1 ? matches[0] : undefined
+          if (!match) throw new Error(`Wiki 套装 ${sonataId} 引用了目录外声骸：${linkedId} ${name}`)
+          entryId = wikiEntryId(match)
+          knownEntries.set(linkedId, entryId)
+        }
+        const membership = memberships.get(entryId)
+        if (membership && membership.cost !== cost) throw new Error(`Wiki 套装间 COST 冲突：${entryId}`)
+        if (membership && !membership.sonataIds.includes(sonataId)) membership.sonataIds.push(sonataId)
+        else if (membership) continue
+        else memberships.set(entryId, { cost, sonataIds: [sonataId] })
+      }
+    }
+  }
   const costByTagId = new Map(costTag.children.map((tag) => [tag.id, Number(tag.name.match(/\d+/u)?.[0])]))
   const excludedEchoNames: string[] = []
   const echoes: EchoDefinition[] = []
@@ -111,11 +135,8 @@ export async function syncWiki(): Promise<WikiSnapshot> {
   for (const record of echoCatalogue.records) {
     const name = asString(record.name).trim()
     const relateTagIds = tagIdsOf(record)
-    const sonataIds = relateTagIds
-      .map((tagId) => setNameByTagId.get(tagId))
-      .filter((value): value is string => value !== undefined)
-      .map((setName) => sonataByName.get(setName)?.id)
-      .filter((value): value is string => value !== undefined)
+    const membership = memberships.get(wikiEntryId(record))
+    const sonataIds = membership?.sonataIds ?? []
 
     if (sonataIds.length === 0) {
       excludedEchoNames.push(name)
@@ -123,6 +144,7 @@ export async function syncWiki(): Promise<WikiSnapshot> {
     }
 
     const rawCost = relateTagIds.map((tagId) => costByTagId.get(tagId)).find((value) => value !== undefined)
+    if (rawCost !== membership?.cost) throw new Error(`Wiki 目录与套装详情 COST 不一致：${name}`)
     if (rawCost !== 1 && rawCost !== 3) {
       excludedEchoNames.push(name)
       continue

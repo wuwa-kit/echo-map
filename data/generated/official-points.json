@@ -61202,45 +61202,6 @@
     },
     {
       "gravityType": 1,
-      "id": "official:1440113139902402560",
-      "status": "imported",
-      "officialIds": [
-        "1440113139902402560",
-        "1440113821019623424",
-        "1440114482467074048",
-        "1440114676952756224",
-        "1440115218227687424",
-        "1440115411157282816",
-        "1440115560306733056"
-      ],
-      "stateId": 910,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -5,
-        "y": -82,
-        "z": 0
-      },
-      "note": "官方导入：由 7 个相邻点合并（最大直径 25）；每个来源点按 1 只计数；Z=0 为占位值，待实测。",
-      "kind": "echo",
-      "members": [
-        {
-          "echoId": "wiki-echo-18439",
-          "count": 3
-        },
-        {
-          "echoId": "wiki-echo-18440",
-          "count": 2
-        },
-        {
-          "echoId": "wiki-echo-18441",
-          "count": 2
-        }
-      ],
-      "compositionStatus": "partial"
-    },
-    {
-      "gravityType": 1,
       "id": "official:1451355031732547584",
       "status": "imported",
       "officialIds": [
@@ -84162,6 +84123,56 @@
     },
     {
       "gravityType": 1,
+      "id": "official:1553193612643627008",
+      "status": "imported",
+      "officialIds": [
+        "1553193612643627008"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -332,
+        "y": 183,
+        "z": 0
+      },
+      "note": "官方导入：每个来源点按 1 只计数；Z=0 为占位值，待实测。",
+      "kind": "echo",
+      "members": [
+        {
+          "echoId": "wiki-echo-24199",
+          "count": 1
+        }
+      ],
+      "compositionStatus": "partial"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1553194083690733568",
+      "status": "imported",
+      "officialIds": [
+        "1553194083690733568"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": "-1/65",
+      "coordinate": {
+        "x": -140,
+        "y": -561,
+        "z": 0
+      },
+      "note": "官方导入：每个来源点按 1 只计数；Z=0 为占位值，待实测。",
+      "kind": "echo",
+      "members": [
+        {
+          "echoId": "wiki-echo-24200",
+          "count": 1
+        }
+      ],
+      "compositionStatus": "partial"
+    },
+    {
+      "gravityType": 1,
       "id": "official:1358868362183401472",
       "status": "imported",
       "officialIds": [
@@ -85313,2190 +85324,6 @@
       "kind": "navigation",
       "name": "中枢信标",
       "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451214294512627712",
-      "status": "imported",
-      "officialIds": [
-        "1451214294512627712"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -437,
-        "y": -5421,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "B.1.N.G.O.",
-      "navigationKind": "domain",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458576179823542272",
-      "status": "imported",
-      "officialIds": [
-        "1458576179823542272"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-2/42",
-      "coordinate": {
-        "x": -4156,
-        "y": -6256,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458576536905613312",
-      "status": "imported",
-      "officialIds": [
-        "1458576536905613312"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1/41",
-      "coordinate": {
-        "x": -3913,
-        "y": -6207,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458576896664162304",
-      "status": "imported",
-      "officialIds": [
-        "1458576896664162304"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -3776,
-        "y": -6354,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458577247685464064",
-      "status": "imported",
-      "officialIds": [
-        "1458577247685464064"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -793,
-        "y": -8113,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458577673843527680",
-      "status": "imported",
-      "officialIds": [
-        "1458577673843527680"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -66,
-        "y": -8747,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458577972351631360",
-      "status": "imported",
-      "officialIds": [
-        "1458577972351631360"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 519,
-        "y": -7687,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458578306923384832",
-      "status": "imported",
-      "officialIds": [
-        "1458578306923384832"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -978,
-        "y": -7665,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458579864977297408",
-      "status": "imported",
-      "officialIds": [
-        "1458579864977297408"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1402,
-        "y": -7028,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458580382520344576",
-      "status": "imported",
-      "officialIds": [
-        "1458580382520344576"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -833,
-        "y": -6220,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458580905709948928",
-      "status": "imported",
-      "officialIds": [
-        "1458580905709948928"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2913,
-        "y": -5489,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458597751012085760",
-      "status": "imported",
-      "officialIds": [
-        "1458597751012085760"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2523,
-        "y": -5267,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458598407865257984",
-      "status": "imported",
-      "officialIds": [
-        "1458598407865257984"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1451,
-        "y": -4148,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458601077170143232",
-      "status": "imported",
-      "officialIds": [
-        "1458601077170143232"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -891,
-        "y": -4881,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458601434672156672",
-      "status": "imported",
-      "officialIds": [
-        "1458601434672156672"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -24,
-        "y": -4479,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458602249952579584",
-      "status": "imported",
-      "officialIds": [
-        "1458602249952579584"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 1069,
-        "y": -4492,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458603071759339520",
-      "status": "imported",
-      "officialIds": [
-        "1458603071759339520"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 1570,
-        "y": -5161,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458604527153467392",
-      "status": "imported",
-      "officialIds": [
-        "1458604527153467392"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 208,
-        "y": -5116,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1458605823079645184",
-      "status": "imported",
-      "officialIds": [
-        "1458605823079645184"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 150,
-        "y": -5871,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1514043523748708352",
-      "status": "imported",
-      "officialIds": [
-        "1514043523748708352"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1878,
-        "y": -6842,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1514043693940981760",
-      "status": "imported",
-      "officialIds": [
-        "1514043693940981760"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -332,
-        "y": -8123,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1514043775264342016",
-      "status": "imported",
-      "officialIds": [
-        "1514043775264342016"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -219,
-        "y": -7978,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1514043990527954944",
-      "status": "imported",
-      "officialIds": [
-        "1514043990527954944"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 1560,
-        "y": -4171,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1514044069872254976",
-      "status": "imported",
-      "officialIds": [
-        "1514044069872254976"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 303,
-        "y": -7981,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526359394067664896",
-      "status": "imported",
-      "officialIds": [
-        "1526359394067664896"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 58,
-        "y": -8255,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526359495251705856",
-      "status": "imported",
-      "officialIds": [
-        "1526359495251705856"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1180,
-        "y": -8204,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526359546044727296",
-      "status": "imported",
-      "officialIds": [
-        "1526359546044727296"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1159,
-        "y": -7866,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526359616000872448",
-      "status": "imported",
-      "officialIds": [
-        "1526359616000872448"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -673,
-        "y": -6588,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526359683856973824",
-      "status": "imported",
-      "officialIds": [
-        "1526359683856973824"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 802,
-        "y": -6387,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526359790316797952",
-      "status": "imported",
-      "officialIds": [
-        "1526359790316797952"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 1647,
-        "y": -4817,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526359878266507264",
-      "status": "imported",
-      "officialIds": [
-        "1526359878266507264"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1371,
-        "y": -5028,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526359927738322944",
-      "status": "imported",
-      "officialIds": [
-        "1526359927738322944"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1748,
-        "y": -5216,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526359990329921536",
-      "status": "imported",
-      "officialIds": [
-        "1526359990329921536"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -558,
-        "y": -4623,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526360029421486080",
-      "status": "imported",
-      "officialIds": [
-        "1526360029421486080"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -870,
-        "y": -4200,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526360076225724416",
-      "status": "imported",
-      "officialIds": [
-        "1526360076225724416"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2408,
-        "y": -4412,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526360119053762560",
-      "status": "imported",
-      "officialIds": [
-        "1526360119053762560"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2152,
-        "y": -4983,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526360170333323264",
-      "status": "imported",
-      "officialIds": [
-        "1526360170333323264"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2507,
-        "y": -4952,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1526396752980856832",
-      "status": "imported",
-      "officialIds": [
-        "1526396752980856832"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 674,
-        "y": -4594,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "天帷机兵·跃送型",
-      "navigationKind": "local-transit",
-      "mode": "local-transit"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451248504996687872",
-      "status": "imported",
-      "officialIds": [
-        "1451248504996687872"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1/30",
-      "coordinate": {
-        "x": -636,
-        "y": -5527,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "共鸣医疗科",
-      "navigationKind": "service",
-      "mode": "landmark"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451244979365408768",
-      "status": "imported",
-      "officialIds": [
-        "1451244979365408768"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -639,
-        "y": -5375,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "深空文献中心",
-      "navigationKind": "service",
-      "mode": "landmark"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451251293711708160",
-      "status": "imported",
-      "officialIds": [
-        "1451251293711708160"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -377,
-        "y": -6169,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "拉海洛终声残卷回收",
-      "navigationKind": "service",
-      "mode": "landmark"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451245578274271232",
-      "status": "imported",
-      "officialIds": [
-        "1451245578274271232"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -501,
-        "y": -5352,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "共生武装印造台",
-      "navigationKind": "service",
-      "mode": "landmark"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1455288248783024128",
-      "status": "imported",
-      "officialIds": [
-        "1455288248783024128"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1000000/36",
-      "coordinate": {
-        "x": -494,
-        "y": -8633,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "分层入口",
-      "navigationKind": "entrance",
-      "mode": "entrance"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1455288622829072384",
-      "status": "imported",
-      "officialIds": [
-        "1455288622829072384"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1000000/37",
-      "coordinate": {
-        "x": -707,
-        "y": -7749,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "分层入口",
-      "navigationKind": "entrance",
-      "mode": "entrance"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1455288972317241344",
-      "status": "imported",
-      "officialIds": [
-        "1455288972317241344"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1000000/38",
-      "coordinate": {
-        "x": -865,
-        "y": -7606,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "分层入口",
-      "navigationKind": "entrance",
-      "mode": "entrance"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1455289334688329728",
-      "status": "imported",
-      "officialIds": [
-        "1455289334688329728"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1000000/35",
-      "coordinate": {
-        "x": -858,
-        "y": -6357,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "分层入口",
-      "navigationKind": "entrance",
-      "mode": "entrance"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1455289847345524736",
-      "status": "imported",
-      "officialIds": [
-        "1455289847345524736"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1000000/43",
-      "coordinate": {
-        "x": -5018,
-        "y": -6527,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "分层入口",
-      "navigationKind": "entrance",
-      "mode": "entrance"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1455290017623896064",
-      "status": "imported",
-      "officialIds": [
-        "1455290017623896064"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1000000/42",
-      "coordinate": {
-        "x": -4084,
-        "y": -6151,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "分层入口",
-      "navigationKind": "entrance",
-      "mode": "entrance"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1455290157547859968",
-      "status": "imported",
-      "officialIds": [
-        "1455290157547859968"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1000000/41",
-      "coordinate": {
-        "x": -3897,
-        "y": -6237,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "分层入口",
-      "navigationKind": "entrance",
-      "mode": "entrance"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1455290285570600960",
-      "status": "imported",
-      "officialIds": [
-        "1455290285570600960"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1000000/40",
-      "coordinate": {
-        "x": -3712,
-        "y": -6657,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "分层入口",
-      "navigationKind": "entrance",
-      "mode": "entrance"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451246093754232832",
-      "status": "imported",
-      "officialIds": [
-        "1451246093754232832"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -379,
-        "y": -5572,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "餐能终端机",
-      "navigationKind": "service",
-      "mode": "landmark"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451250505541283840",
-      "status": "imported",
-      "officialIds": [
-        "1451250505541283840"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -904,
-        "y": -5347,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "游牧集市",
-      "navigationKind": "service",
-      "mode": "landmark"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451249697198239744",
-      "status": "imported",
-      "officialIds": [
-        "1451249697198239744"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-3/30",
-      "coordinate": {
-        "x": -775,
-        "y": -5544,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "载具系泊场",
-      "navigationKind": "service",
-      "mode": "landmark"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451252233823006720",
-      "status": "imported",
-      "officialIds": [
-        "1451252233823006720"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -3664,
-        "y": -6546,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "青实归还之碑",
-      "navigationKind": "service",
-      "mode": "landmark"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451217941053108224",
-      "status": "imported",
-      "officialIds": [
-        "1451217941053108224"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1667,
-        "y": -5670,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "复生丘原残象聚落",
-      "navigationKind": "challenge",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451217545689624576",
-      "status": "imported",
-      "officialIds": [
-        "1451217545689624576"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -650,
-        "y": -4985,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "陷足流川残象聚落",
-      "navigationKind": "challenge",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451180252066951168",
-      "status": "imported",
-      "officialIds": [
-        "1451180252066951168"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 493,
-        "y": -8072,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "炉芯机骸",
-      "navigationKind": "boss",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1536148948723515392",
-      "status": "imported",
-      "officialIds": [
-        "1536148948723515392"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -137,
-        "y": -6683,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "梦魇亚当·重锤",
-      "navigationKind": "boss",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451173550991028224",
-      "status": "imported",
-      "officialIds": [
-        "1451173550991028224"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2737,
-        "y": -8224,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "海维夏",
-      "navigationKind": "boss",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451220825069121536",
-      "status": "imported",
-      "officialIds": [
-        "1451220825069121536"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2904,
-        "y": -4935,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "无音区",
-      "navigationKind": "tacet-field",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451222078694043648",
-      "status": "imported",
-      "officialIds": [
-        "1451222078694043648"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 624,
-        "y": -3966,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "无音区",
-      "navigationKind": "tacet-field",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451186320660819968",
-      "status": "imported",
-      "officialIds": [
-        "1451186320660819968"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -524,
-        "y": -5547,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "全息战略·同步",
-      "navigationKind": "challenge",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451322779218685952",
-      "status": "imported",
-      "officialIds": [
-        "1451322779218685952"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -390,
-        "y": -6898,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451323564144930816",
-      "status": "imported",
-      "officialIds": [
-        "1451323564144930816"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1234,
-        "y": -8187,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451324575309950976",
-      "status": "imported",
-      "officialIds": [
-        "1451324575309950976"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -440,
-        "y": -6119,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451325333574987776",
-      "status": "imported",
-      "officialIds": [
-        "1451325333574987776"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 460,
-        "y": -5721,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451326173333368832",
-      "status": "imported",
-      "officialIds": [
-        "1451326173333368832"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 100,
-        "y": -5132,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451327183948935168",
-      "status": "imported",
-      "officialIds": [
-        "1451327183948935168"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -262,
-        "y": -4691,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451328126455181312",
-      "status": "imported",
-      "officialIds": [
-        "1451328126455181312"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -361,
-        "y": -5863,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451329468705746944",
-      "status": "imported",
-      "officialIds": [
-        "1451329468705746944"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1/30",
-      "coordinate": {
-        "x": -607,
-        "y": -5733,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451330794856591360",
-      "status": "imported",
-      "officialIds": [
-        "1451330794856591360"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-3/30",
-      "coordinate": {
-        "x": -763,
-        "y": -5597,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451331483355787264",
-      "status": "imported",
-      "officialIds": [
-        "1451331483355787264"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1/30",
-      "coordinate": {
-        "x": -670,
-        "y": -5584,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451332783044767744",
-      "status": "imported",
-      "officialIds": [
-        "1451332783044767744"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1/30",
-      "coordinate": {
-        "x": -379,
-        "y": -5530,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451334233370193920",
-      "status": "imported",
-      "officialIds": [
-        "1451334233370193920"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-3/30",
-      "coordinate": {
-        "x": -590,
-        "y": -5465,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451335452654366720",
-      "status": "imported",
-      "officialIds": [
-        "1451335452654366720"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -853,
-        "y": -5319,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451337059787812864",
-      "status": "imported",
-      "officialIds": [
-        "1451337059787812864"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -3003,
-        "y": -6441,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451338353915146240",
-      "status": "imported",
-      "officialIds": [
-        "1451338353915146240"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -3818,
-        "y": -6230,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451339164831510528",
-      "status": "imported",
-      "officialIds": [
-        "1451339164831510528"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -4004,
-        "y": -6489,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451341318864449536",
-      "status": "imported",
-      "officialIds": [
-        "1451341318864449536"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1/39",
-      "coordinate": {
-        "x": -4099,
-        "y": -6566,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451342137059913728",
-      "status": "imported",
-      "officialIds": [
-        "1451342137059913728"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1/40",
-      "coordinate": {
-        "x": -3763,
-        "y": -6654,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451342960429166592",
-      "status": "imported",
-      "officialIds": [
-        "1451342960429166592"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1/43",
-      "coordinate": {
-        "x": -4933,
-        "y": -6458,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451344104127787008",
-      "status": "imported",
-      "officialIds": [
-        "1451344104127787008"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2475,
-        "y": -5426,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451345197335375872",
-      "status": "imported",
-      "officialIds": [
-        "1451345197335375872"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2153,
-        "y": -4529,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451345604147097600",
-      "status": "imported",
-      "officialIds": [
-        "1451345604147097600"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1181,
-        "y": -4357,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451346173993627648",
-      "status": "imported",
-      "officialIds": [
-        "1451346173993627648"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2235,
-        "y": -6881,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451347871715880960",
-      "status": "imported",
-      "officialIds": [
-        "1451347871715880960"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1337,
-        "y": -6632,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451349224534110208",
-      "status": "imported",
-      "officialIds": [
-        "1451349224534110208"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1301,
-        "y": -5797,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451350368111095808",
-      "status": "imported",
-      "officialIds": [
-        "1451350368111095808"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": "-1/35",
-      "coordinate": {
-        "x": -1537,
-        "y": -6073,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451351850780782592",
-      "status": "imported",
-      "officialIds": [
-        "1451351850780782592"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 1004,
-        "y": -5677,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451352850589609984",
-      "status": "imported",
-      "officialIds": [
-        "1451352850589609984"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 1233,
-        "y": -4082,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "小型信标",
-      "navigationKind": "beacon",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451201942622892032",
-      "status": "imported",
-      "officialIds": [
-        "1451201942622892032"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 2,
-        "y": -6201,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "残照终课",
-      "navigationKind": "domain",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451201283479629824",
-      "status": "imported",
-      "officialIds": [
-        "1451201283479629824"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 478,
-        "y": -4707,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "虚诞终课",
-      "navigationKind": "domain",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451198716768890880",
-      "status": "imported",
-      "officialIds": [
-        "1451198716768890880"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1062,
-        "y": -8743,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "中枢信标",
-      "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1452430493617434624",
-      "status": "imported",
-      "officialIds": [
-        "1452430493617434624"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -713,
-        "y": -7486,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "中枢信标",
-      "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1452431182619947008",
-      "status": "imported",
-      "officialIds": [
-        "1452431182619947008"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -4,
-        "y": -6601,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "中枢信标",
-      "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1452431961271513088",
-      "status": "imported",
-      "officialIds": [
-        "1452431961271513088"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1232,
-        "y": -6155,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "中枢信标",
-      "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1452432364822278144",
-      "status": "imported",
-      "officialIds": [
-        "1452432364822278144"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -488,
-        "y": -5694,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "中枢信标",
-      "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1452433124045828096",
-      "status": "imported",
-      "officialIds": [
-        "1452433124045828096"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 726,
-        "y": -5159,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "中枢信标",
-      "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1452433716506062848",
-      "status": "imported",
-      "officialIds": [
-        "1452433716506062848"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": 554,
-        "y": -4104,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "中枢信标",
-      "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1452434816676196352",
-      "status": "imported",
-      "officialIds": [
-        "1452434816676196352"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -1878,
-        "y": -4809,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "中枢信标",
-      "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1452435373664972800",
-      "status": "imported",
-      "officialIds": [
-        "1452435373664972800"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -3696,
-        "y": -6482,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "中枢信标",
-      "navigationKind": "nexus",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451200385743384576",
-      "status": "imported",
-      "officialIds": [
-        "1451200385743384576"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -2888,
-        "y": -5781,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "余烬终课",
-      "navigationKind": "domain",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451189782542872576",
-      "status": "imported",
-      "officialIds": [
-        "1451189782542872576"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -246,
-        "y": -6789,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "荒萋旧殿",
-      "navigationKind": "domain",
-      "mode": "fast-travel"
-    },
-    {
-      "gravityType": 1,
-      "id": "official:1451184353290956800",
-      "status": "imported",
-      "officialIds": [
-        "1451184353290956800"
-      ],
-      "stateId": 906,
-      "countryId": null,
-      "levelId": null,
-      "coordinate": {
-        "x": -365,
-        "y": -8320,
-        "z": 0
-      },
-      "note": "官方导入：Z=0 为占位值，待实测。",
-      "kind": "navigation",
-      "name": "灾逆旧殿",
-      "navigationKind": "domain",
       "mode": "fast-travel"
     },
     {
@@ -96758,6 +94585,2610 @@
       "kind": "navigation",
       "name": "梦魇聚落",
       "navigationKind": "challenge",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551929806676811776",
+      "status": "imported",
+      "officialIds": [
+        "1551929806676811776"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 14,
+        "y": -445,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "梦枢天罗残象聚落",
+      "navigationKind": "challenge",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551930883572752384",
+      "status": "imported",
+      "officialIds": [
+        "1551930883572752384"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -673,
+        "y": -654,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551931304655708160",
+      "status": "imported",
+      "officialIds": [
+        "1551931304655708160"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -200,
+        "y": -534,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551931873675960320",
+      "status": "imported",
+      "officialIds": [
+        "1551931873675960320"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -492,
+        "y": 2,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551932597025628160",
+      "status": "imported",
+      "officialIds": [
+        "1551932597025628160"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -488,
+        "y": 390,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551932955567316992",
+      "status": "imported",
+      "officialIds": [
+        "1551932955567316992"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -300,
+        "y": 458,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551933903457681408",
+      "status": "imported",
+      "officialIds": [
+        "1551933903457681408"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -180,
+        "y": 295,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551937509686706176",
+      "status": "imported",
+      "officialIds": [
+        "1551937509686706176"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -57,
+        "y": -37,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551937926249570304",
+      "status": "imported",
+      "officialIds": [
+        "1551937926249570304"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 488,
+        "y": -125,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551938348733423616",
+      "status": "imported",
+      "officialIds": [
+        "1551938348733423616"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 413,
+        "y": 403,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551930453319680000",
+      "status": "imported",
+      "officialIds": [
+        "1551930453319680000"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -411,
+        "y": -210,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1554793791742242816",
+      "status": "imported",
+      "officialIds": [
+        "1554793791742242816"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 0,
+        "y": 2,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "定序诸理之律",
+      "navigationKind": "boss",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551928110600937472",
+      "status": "imported",
+      "officialIds": [
+        "1551928110600937472"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -87,
+        "y": 438,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1551929187407429632",
+      "status": "imported",
+      "officialIds": [
+        "1551929187407429632"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -70,
+        "y": -604,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1552042513858027520",
+      "status": "imported",
+      "officialIds": [
+        "1552042513858027520"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": "-1000000/60",
+      "coordinate": {
+        "x": -617,
+        "y": 347,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1552042765520461824",
+      "status": "imported",
+      "officialIds": [
+        "1552042765520461824"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": "-1000000/61",
+      "coordinate": {
+        "x": -360,
+        "y": 197,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1552042906573537280",
+      "status": "imported",
+      "officialIds": [
+        "1552042906573537280"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": "-1000000/62",
+      "coordinate": {
+        "x": -327,
+        "y": 455,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1552043731077234688",
+      "status": "imported",
+      "officialIds": [
+        "1552043731077234688"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": "-1000000/63",
+      "coordinate": {
+        "x": -166,
+        "y": 477,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1552044200591818752",
+      "status": "imported",
+      "officialIds": [
+        "1552044200591818752"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": "-1000000/64",
+      "coordinate": {
+        "x": 358,
+        "y": 15,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1552044457485918208",
+      "status": "imported",
+      "officialIds": [
+        "1552044457485918208"
+      ],
+      "stateId": 912,
+      "countryId": null,
+      "levelId": "-1000000/65",
+      "coordinate": {
+        "x": -142,
+        "y": -513,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451214294512627712",
+      "status": "imported",
+      "officialIds": [
+        "1451214294512627712"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -437,
+        "y": -5421,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "B.1.N.G.O.",
+      "navigationKind": "domain",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458576179823542272",
+      "status": "imported",
+      "officialIds": [
+        "1458576179823542272"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-2/42",
+      "coordinate": {
+        "x": -4156,
+        "y": -6256,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458576536905613312",
+      "status": "imported",
+      "officialIds": [
+        "1458576536905613312"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1/41",
+      "coordinate": {
+        "x": -3913,
+        "y": -6207,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458576896664162304",
+      "status": "imported",
+      "officialIds": [
+        "1458576896664162304"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -3776,
+        "y": -6354,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458577247685464064",
+      "status": "imported",
+      "officialIds": [
+        "1458577247685464064"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -793,
+        "y": -8113,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458577673843527680",
+      "status": "imported",
+      "officialIds": [
+        "1458577673843527680"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -66,
+        "y": -8747,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458577972351631360",
+      "status": "imported",
+      "officialIds": [
+        "1458577972351631360"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 519,
+        "y": -7687,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458578306923384832",
+      "status": "imported",
+      "officialIds": [
+        "1458578306923384832"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -978,
+        "y": -7665,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458579864977297408",
+      "status": "imported",
+      "officialIds": [
+        "1458579864977297408"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1402,
+        "y": -7028,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458580382520344576",
+      "status": "imported",
+      "officialIds": [
+        "1458580382520344576"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -833,
+        "y": -6220,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458580905709948928",
+      "status": "imported",
+      "officialIds": [
+        "1458580905709948928"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2913,
+        "y": -5489,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458597751012085760",
+      "status": "imported",
+      "officialIds": [
+        "1458597751012085760"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2523,
+        "y": -5267,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458598407865257984",
+      "status": "imported",
+      "officialIds": [
+        "1458598407865257984"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1451,
+        "y": -4148,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458601077170143232",
+      "status": "imported",
+      "officialIds": [
+        "1458601077170143232"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -891,
+        "y": -4881,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458601434672156672",
+      "status": "imported",
+      "officialIds": [
+        "1458601434672156672"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -24,
+        "y": -4479,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458602249952579584",
+      "status": "imported",
+      "officialIds": [
+        "1458602249952579584"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 1069,
+        "y": -4492,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458603071759339520",
+      "status": "imported",
+      "officialIds": [
+        "1458603071759339520"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 1570,
+        "y": -5161,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458604527153467392",
+      "status": "imported",
+      "officialIds": [
+        "1458604527153467392"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 208,
+        "y": -5116,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1458605823079645184",
+      "status": "imported",
+      "officialIds": [
+        "1458605823079645184"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 150,
+        "y": -5871,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1514043523748708352",
+      "status": "imported",
+      "officialIds": [
+        "1514043523748708352"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1878,
+        "y": -6842,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1514043693940981760",
+      "status": "imported",
+      "officialIds": [
+        "1514043693940981760"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -332,
+        "y": -8123,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1514043775264342016",
+      "status": "imported",
+      "officialIds": [
+        "1514043775264342016"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -219,
+        "y": -7978,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1514043990527954944",
+      "status": "imported",
+      "officialIds": [
+        "1514043990527954944"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 1560,
+        "y": -4171,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1514044069872254976",
+      "status": "imported",
+      "officialIds": [
+        "1514044069872254976"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 303,
+        "y": -7981,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526359394067664896",
+      "status": "imported",
+      "officialIds": [
+        "1526359394067664896"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 58,
+        "y": -8255,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526359495251705856",
+      "status": "imported",
+      "officialIds": [
+        "1526359495251705856"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1180,
+        "y": -8204,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526359546044727296",
+      "status": "imported",
+      "officialIds": [
+        "1526359546044727296"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1159,
+        "y": -7866,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526359616000872448",
+      "status": "imported",
+      "officialIds": [
+        "1526359616000872448"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -673,
+        "y": -6588,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526359683856973824",
+      "status": "imported",
+      "officialIds": [
+        "1526359683856973824"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 802,
+        "y": -6387,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526359790316797952",
+      "status": "imported",
+      "officialIds": [
+        "1526359790316797952"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 1647,
+        "y": -4817,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526359878266507264",
+      "status": "imported",
+      "officialIds": [
+        "1526359878266507264"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1371,
+        "y": -5028,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526359927738322944",
+      "status": "imported",
+      "officialIds": [
+        "1526359927738322944"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1748,
+        "y": -5216,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526359990329921536",
+      "status": "imported",
+      "officialIds": [
+        "1526359990329921536"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -558,
+        "y": -4623,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526360029421486080",
+      "status": "imported",
+      "officialIds": [
+        "1526360029421486080"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -870,
+        "y": -4200,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526360076225724416",
+      "status": "imported",
+      "officialIds": [
+        "1526360076225724416"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2408,
+        "y": -4412,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526360119053762560",
+      "status": "imported",
+      "officialIds": [
+        "1526360119053762560"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2152,
+        "y": -4983,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526360170333323264",
+      "status": "imported",
+      "officialIds": [
+        "1526360170333323264"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2507,
+        "y": -4952,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1526396752980856832",
+      "status": "imported",
+      "officialIds": [
+        "1526396752980856832"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 674,
+        "y": -4594,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "local-transit",
+      "mode": "local-transit"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451248504996687872",
+      "status": "imported",
+      "officialIds": [
+        "1451248504996687872"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1/30",
+      "coordinate": {
+        "x": -636,
+        "y": -5527,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "共鸣医疗科",
+      "navigationKind": "service",
+      "mode": "landmark"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451244979365408768",
+      "status": "imported",
+      "officialIds": [
+        "1451244979365408768"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -639,
+        "y": -5375,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "深空文献中心",
+      "navigationKind": "service",
+      "mode": "landmark"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451251293711708160",
+      "status": "imported",
+      "officialIds": [
+        "1451251293711708160"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -377,
+        "y": -6169,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "拉海洛终声残卷回收",
+      "navigationKind": "service",
+      "mode": "landmark"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451245578274271232",
+      "status": "imported",
+      "officialIds": [
+        "1451245578274271232"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -501,
+        "y": -5352,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "共生武装印造台",
+      "navigationKind": "service",
+      "mode": "landmark"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1455288248783024128",
+      "status": "imported",
+      "officialIds": [
+        "1455288248783024128"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1000000/36",
+      "coordinate": {
+        "x": -494,
+        "y": -8633,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1455288622829072384",
+      "status": "imported",
+      "officialIds": [
+        "1455288622829072384"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1000000/37",
+      "coordinate": {
+        "x": -707,
+        "y": -7749,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1455288972317241344",
+      "status": "imported",
+      "officialIds": [
+        "1455288972317241344"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1000000/38",
+      "coordinate": {
+        "x": -865,
+        "y": -7606,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1455289334688329728",
+      "status": "imported",
+      "officialIds": [
+        "1455289334688329728"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1000000/35",
+      "coordinate": {
+        "x": -858,
+        "y": -6357,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1455289847345524736",
+      "status": "imported",
+      "officialIds": [
+        "1455289847345524736"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1000000/43",
+      "coordinate": {
+        "x": -5018,
+        "y": -6527,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1455290017623896064",
+      "status": "imported",
+      "officialIds": [
+        "1455290017623896064"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1000000/42",
+      "coordinate": {
+        "x": -4084,
+        "y": -6151,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1455290157547859968",
+      "status": "imported",
+      "officialIds": [
+        "1455290157547859968"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1000000/41",
+      "coordinate": {
+        "x": -3897,
+        "y": -6237,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1455290285570600960",
+      "status": "imported",
+      "officialIds": [
+        "1455290285570600960"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1000000/40",
+      "coordinate": {
+        "x": -3712,
+        "y": -6657,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "分层入口",
+      "navigationKind": "entrance",
+      "mode": "entrance"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451246093754232832",
+      "status": "imported",
+      "officialIds": [
+        "1451246093754232832"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -379,
+        "y": -5572,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "餐能终端机",
+      "navigationKind": "service",
+      "mode": "landmark"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451250505541283840",
+      "status": "imported",
+      "officialIds": [
+        "1451250505541283840"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -904,
+        "y": -5347,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "游牧集市",
+      "navigationKind": "service",
+      "mode": "landmark"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451249697198239744",
+      "status": "imported",
+      "officialIds": [
+        "1451249697198239744"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-3/30",
+      "coordinate": {
+        "x": -775,
+        "y": -5544,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "载具系泊场",
+      "navigationKind": "service",
+      "mode": "landmark"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451252233823006720",
+      "status": "imported",
+      "officialIds": [
+        "1451252233823006720"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -3664,
+        "y": -6546,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "青实归还之碑",
+      "navigationKind": "service",
+      "mode": "landmark"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451217941053108224",
+      "status": "imported",
+      "officialIds": [
+        "1451217941053108224"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1667,
+        "y": -5670,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "复生丘原残象聚落",
+      "navigationKind": "challenge",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451217545689624576",
+      "status": "imported",
+      "officialIds": [
+        "1451217545689624576"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -650,
+        "y": -4985,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "陷足流川残象聚落",
+      "navigationKind": "challenge",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451180252066951168",
+      "status": "imported",
+      "officialIds": [
+        "1451180252066951168"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 493,
+        "y": -8072,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "炉芯机骸",
+      "navigationKind": "boss",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1536148948723515392",
+      "status": "imported",
+      "officialIds": [
+        "1536148948723515392"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -137,
+        "y": -6683,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "梦魇亚当·重锤",
+      "navigationKind": "boss",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451173550991028224",
+      "status": "imported",
+      "officialIds": [
+        "1451173550991028224"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2737,
+        "y": -8224,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "海维夏",
+      "navigationKind": "boss",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451220825069121536",
+      "status": "imported",
+      "officialIds": [
+        "1451220825069121536"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2904,
+        "y": -4935,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451222078694043648",
+      "status": "imported",
+      "officialIds": [
+        "1451222078694043648"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 624,
+        "y": -3966,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451186320660819968",
+      "status": "imported",
+      "officialIds": [
+        "1451186320660819968"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -524,
+        "y": -5547,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "全息战略·同步",
+      "navigationKind": "challenge",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451322779218685952",
+      "status": "imported",
+      "officialIds": [
+        "1451322779218685952"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -390,
+        "y": -6898,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451323564144930816",
+      "status": "imported",
+      "officialIds": [
+        "1451323564144930816"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1234,
+        "y": -8187,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451324575309950976",
+      "status": "imported",
+      "officialIds": [
+        "1451324575309950976"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -440,
+        "y": -6119,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451325333574987776",
+      "status": "imported",
+      "officialIds": [
+        "1451325333574987776"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 460,
+        "y": -5721,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451326173333368832",
+      "status": "imported",
+      "officialIds": [
+        "1451326173333368832"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 100,
+        "y": -5132,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451327183948935168",
+      "status": "imported",
+      "officialIds": [
+        "1451327183948935168"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -262,
+        "y": -4691,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451328126455181312",
+      "status": "imported",
+      "officialIds": [
+        "1451328126455181312"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -361,
+        "y": -5863,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451329468705746944",
+      "status": "imported",
+      "officialIds": [
+        "1451329468705746944"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1/30",
+      "coordinate": {
+        "x": -607,
+        "y": -5733,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451330794856591360",
+      "status": "imported",
+      "officialIds": [
+        "1451330794856591360"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-3/30",
+      "coordinate": {
+        "x": -763,
+        "y": -5597,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451331483355787264",
+      "status": "imported",
+      "officialIds": [
+        "1451331483355787264"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1/30",
+      "coordinate": {
+        "x": -670,
+        "y": -5584,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451332783044767744",
+      "status": "imported",
+      "officialIds": [
+        "1451332783044767744"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1/30",
+      "coordinate": {
+        "x": -379,
+        "y": -5530,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451334233370193920",
+      "status": "imported",
+      "officialIds": [
+        "1451334233370193920"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-3/30",
+      "coordinate": {
+        "x": -590,
+        "y": -5465,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451335452654366720",
+      "status": "imported",
+      "officialIds": [
+        "1451335452654366720"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -853,
+        "y": -5319,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451337059787812864",
+      "status": "imported",
+      "officialIds": [
+        "1451337059787812864"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -3003,
+        "y": -6441,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451338353915146240",
+      "status": "imported",
+      "officialIds": [
+        "1451338353915146240"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -3818,
+        "y": -6230,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451339164831510528",
+      "status": "imported",
+      "officialIds": [
+        "1451339164831510528"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -4004,
+        "y": -6489,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451341318864449536",
+      "status": "imported",
+      "officialIds": [
+        "1451341318864449536"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1/39",
+      "coordinate": {
+        "x": -4099,
+        "y": -6566,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451342137059913728",
+      "status": "imported",
+      "officialIds": [
+        "1451342137059913728"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1/40",
+      "coordinate": {
+        "x": -3763,
+        "y": -6654,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451342960429166592",
+      "status": "imported",
+      "officialIds": [
+        "1451342960429166592"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1/43",
+      "coordinate": {
+        "x": -4933,
+        "y": -6458,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451344104127787008",
+      "status": "imported",
+      "officialIds": [
+        "1451344104127787008"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2475,
+        "y": -5426,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451345197335375872",
+      "status": "imported",
+      "officialIds": [
+        "1451345197335375872"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2153,
+        "y": -4529,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451345604147097600",
+      "status": "imported",
+      "officialIds": [
+        "1451345604147097600"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1181,
+        "y": -4357,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451346173993627648",
+      "status": "imported",
+      "officialIds": [
+        "1451346173993627648"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2235,
+        "y": -6881,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451347871715880960",
+      "status": "imported",
+      "officialIds": [
+        "1451347871715880960"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1337,
+        "y": -6632,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451349224534110208",
+      "status": "imported",
+      "officialIds": [
+        "1451349224534110208"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1301,
+        "y": -5797,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451350368111095808",
+      "status": "imported",
+      "officialIds": [
+        "1451350368111095808"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": "-1/35",
+      "coordinate": {
+        "x": -1537,
+        "y": -6073,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451351850780782592",
+      "status": "imported",
+      "officialIds": [
+        "1451351850780782592"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 1004,
+        "y": -5677,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451352850589609984",
+      "status": "imported",
+      "officialIds": [
+        "1451352850589609984"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 1233,
+        "y": -4082,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451201942622892032",
+      "status": "imported",
+      "officialIds": [
+        "1451201942622892032"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 2,
+        "y": -6201,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "残照终课",
+      "navigationKind": "domain",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451201283479629824",
+      "status": "imported",
+      "officialIds": [
+        "1451201283479629824"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 478,
+        "y": -4707,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "虚诞终课",
+      "navigationKind": "domain",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451198716768890880",
+      "status": "imported",
+      "officialIds": [
+        "1451198716768890880"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1062,
+        "y": -8743,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1452430493617434624",
+      "status": "imported",
+      "officialIds": [
+        "1452430493617434624"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -713,
+        "y": -7486,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1452431182619947008",
+      "status": "imported",
+      "officialIds": [
+        "1452431182619947008"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -4,
+        "y": -6601,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1452431961271513088",
+      "status": "imported",
+      "officialIds": [
+        "1452431961271513088"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1232,
+        "y": -6155,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1452432364822278144",
+      "status": "imported",
+      "officialIds": [
+        "1452432364822278144"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -488,
+        "y": -5694,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1452433124045828096",
+      "status": "imported",
+      "officialIds": [
+        "1452433124045828096"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 726,
+        "y": -5159,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1452433716506062848",
+      "status": "imported",
+      "officialIds": [
+        "1452433716506062848"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": 554,
+        "y": -4104,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1452434816676196352",
+      "status": "imported",
+      "officialIds": [
+        "1452434816676196352"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -1878,
+        "y": -4809,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1452435373664972800",
+      "status": "imported",
+      "officialIds": [
+        "1452435373664972800"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -3696,
+        "y": -6482,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451200385743384576",
+      "status": "imported",
+      "officialIds": [
+        "1451200385743384576"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -2888,
+        "y": -5781,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "余烬终课",
+      "navigationKind": "domain",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451189782542872576",
+      "status": "imported",
+      "officialIds": [
+        "1451189782542872576"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -246,
+        "y": -6789,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "荒萋旧殿",
+      "navigationKind": "domain",
+      "mode": "fast-travel"
+    },
+    {
+      "gravityType": 1,
+      "id": "official:1451184353290956800",
+      "status": "imported",
+      "officialIds": [
+        "1451184353290956800"
+      ],
+      "stateId": 906,
+      "countryId": null,
+      "levelId": null,
+      "coordinate": {
+        "x": -365,
+        "y": -8320,
+        "z": 0
+      },
+      "note": "官方导入：Z=0 为占位值，待实测。",
+      "kind": "navigation",
+      "name": "灾逆旧殿",
+      "navigationKind": "domain",
       "mode": "fast-travel"
     }
   ]

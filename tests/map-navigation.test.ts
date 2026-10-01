@@ -23,6 +23,7 @@ describe('map navigation destinations', () => {
       ['冰原运输港', '冰原地表'],
       ['今州城', '今州'],
       ['玄方城', '梦州'],
+      ['梦枢天罗', '梦州'],
       ['黑海岸群岛', '黑海岸群岛'],
     ] as const) {
       const region = destination(name)
@@ -68,7 +69,7 @@ describe('map navigation destinations', () => {
 
   it.each([
     ['蚀刻平原', 906], ['冰原运输港', 8], ['恒黯之原', 909],
-    ['玄方城', 8], ['今州城', 8], ['下层金库', 902], ['阿维纽林', 903],
+    ['玄方城', 8], ['梦枢天罗', 912], ['今州城', 8], ['下层金库', 902], ['阿维纽林', 903],
   ])('navigates to %s using its resource map %s and preserves echo selection', (name, stateId) => {
     const store = useExplorerStore()
     store.setDataset(structuredClone(dataset))
@@ -84,6 +85,25 @@ describe('map navigation destinations', () => {
     expect(store.mapNavigationRequest).toEqual({ regionId: region.id })
     expect(store.mobileSheet).toBeNull()
     expect(store.selectedEchoIds).toHaveLength(1)
+  })
+
+  it('includes Mengshu Tianluo under Mengzhou with independent tiles, floors and points', () => {
+    const region = destination('梦枢天罗')
+    const options = mapNavigationOptions(dataset)
+    const columns = cascaderColumns(options, ['country:1', 'group:1:8'])
+    expect(columns.at(-1)?.options).toContainEqual({ value: region.id, label: '梦枢天罗' })
+    const state = dataset.states.find(({ id }) => id === region.stateId)
+    expect(state?.id).toBe(912)
+    expect(state?.tileIds.length).toBeGreaterThan(0)
+    expect(state?.tileIds.every((id) => id.startsWith('912_'))).toBe(true)
+    const floors = new Set(state?.layeredMaps.flatMap(({ floors }) => floors.map(({ id }) => id)))
+    expect(floors.size).toBeGreaterThan(0)
+    const echoes = dataset.echoLocations.filter(({ stateId }) => stateId === 912)
+    expect(echoes.length).toBeGreaterThan(0)
+    expect(echoes.some(({ levelId }) => levelId !== null && floors.has(levelId))).toBe(true)
+    const points = dataset.navigationPoints.filter(({ stateId }) => stateId === 912)
+    expect(new Set(points.map(({ kind }) => kind))).toEqual(new Set(['beacon', 'nexus', 'boss', 'challenge', 'tacet-field', 'entrance']))
+    expect(points.filter(({ kind }) => kind === 'boss' || kind === 'challenge').every(({ mode }) => mode === 'fast-travel')).toBe(true)
   })
 
   it('allows repeat actions on the same shared map after panning, without retaining a selected destination', () => {
