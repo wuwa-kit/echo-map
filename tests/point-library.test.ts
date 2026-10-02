@@ -65,6 +65,22 @@ describe('authored point library', () => {
     expect(store.routeEligibleNavigationPoints).toHaveLength(1)
   })
 
+  it('persists explicit icons without inheriting the source point position or teleport behavior', () => {
+    const source = referenceDataset.navigationPoints.find(({ kind, iconUrl }) => kind === 'beacon' && iconUrl)
+    if (!source) throw new Error('测试数据缺少信标图标')
+    const point = {
+      gravityType: null, id: 'custom-icon', kind: 'navigation' as const, status: 'verified' as const,
+      stateId: 8, countryId: null, levelId: null, coordinate: { x: 15, y: 25, z: 35 },
+      name: '独立名称', navigationKind: 'beacon' as const, mode: 'landmark' as const, note: '', iconSourceId: source.id,
+    }
+    const library = parsePointLibrary({ version: 1, points: [point] }, referenceDataset, 'manual')
+    const dataset = { ...referenceDataset, navigationPoints: referenceDataset.navigationPoints.map((entry) => entry.id === source.id ? { ...entry, teleportCoordinate: { x: 999, y: 999, z: 999 } } : entry) }
+    const rendered = libraryLocations(library, dataset).navigationPoints[0]
+    expect(rendered).toMatchObject({ id: 'custom-icon', typeName: '独立名称', iconUrl: source.iconUrl, mode: 'landmark', gameCoordinate: { x: 15, y: 25, z: 35 } })
+    expect(rendered?.teleportCoordinate).toBeUndefined()
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconSourceId: 'missing-icon' }] }, referenceDataset)).toThrow('未知图标')
+  })
+
   it('requires complete teleport XYZ for verified fast-travel points and rejects it for other modes', () => {
     const navigation = {
       gravityType: null, id: 'beacon', kind: 'navigation' as const, status: 'verified' as const,
@@ -121,4 +137,17 @@ describe('authored point library', () => {
     expect(parseExplorerQueryValues({ sources: 'unknown' }).pointSourceFilters).toBeUndefined()
     expect(createExplorerQueryValues({ stateId: 8, countryId: null, levelId: null, pointSourceFilters: [], echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true, controlPanelCollapsed: false, mobileSheet: null, viewport: null }).sources).toBeUndefined()
   })
+})
+
+it('validates all optional navigation point types and rejects unknown values', () => {
+  const navigation = {
+    gravityType: null, id: 'typed-navigation', kind: 'navigation', status: 'verified',
+    stateId: 8, countryId: null, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
+    name: '测试', navigationKind: 'landmark', mode: 'landmark', note: '',
+  }
+  for (const pointType of ['central-beacon', 'small-beacon', 'tacet-field', 'echo-settlement', 'weekly-boss', 'normal-boss', 'material-domain']) {
+    expect(parsePointLibrary({ version: 1, points: [{ ...navigation, pointType }] }, referenceDataset).points[0]).toHaveProperty('pointType', pointType)
+  }
+  expect(parsePointLibrary({ version: 1, points: [navigation] }, referenceDataset).points[0]).not.toHaveProperty('pointType')
+  expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, pointType: 'invalid' }] }, referenceDataset)).toThrow()
 })

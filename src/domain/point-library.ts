@@ -26,7 +26,7 @@ export function combinePointLibraryKinds(echo: PointLibrary, navigation: PointLi
   return { version: 1, points: [...echo.points, ...navigation.points] }
 }
 
-export function parsePointLibrary(value: unknown, dataset: Pick<MapDataset, 'states' | 'echoes' | 'regionLabels'>, source?: 'manual' | 'official'): PointLibrary {
+export function parsePointLibrary(value: unknown, dataset: Pick<MapDataset, 'states' | 'echoes' | 'regionLabels' | 'navigationPoints'>, source?: 'manual' | 'official'): PointLibrary {
   const library = pointLibrarySchema.parse(value)
   const echoIds = new Set(dataset.echoes.map(({ id }) => id))
   const replacements = new Set<string>()
@@ -36,6 +36,9 @@ export function parsePointLibrary(value: unknown, dataset: Pick<MapDataset, 'sta
     for (const id of point.replacesOfficialIds ?? []) {
       if (replacements.has(id)) throw new Error(`官方点 ${id} 已有人工替代点，请追加到已有点位`)
       replacements.add(id)
+    }
+    if (point.kind === 'navigation' && point.iconSourceId && !dataset.navigationPoints.some(({ id }) => id === point.iconSourceId)) {
+      throw new Error(`点位 ${point.id} 引用了未知图标`)
     }
     const state = dataset.states.find(({ id }) => id === point.stateId)
     if (!state) throw new Error(`点位 ${point.id} 引用了未知地图`)
@@ -76,6 +79,7 @@ function navigationSource(
   navigationPoints: readonly NavigationPoint[],
   byId: ReadonlyMap<string, NavigationPoint>,
 ): NavigationPoint | undefined {
+  if (point.iconSourceId) return byId.get(point.iconSourceId)
   const ids = [point.id, ...(point.officialIds ?? []), ...(point.replacesOfficialIds ?? [])]
   return ids.reduce<NavigationPoint | undefined>((match, id) => (
     match ?? byId.get(id) ?? byId.get(id.replace(/^official:/u, ''))
@@ -116,6 +120,8 @@ function authoredPointMapDisplayWithSources(
   const location: NavigationPoint = source
     ? { ...source, ...base, typeId: source.typeId, iconUrl: source.iconUrl, kind: point.navigationKind, mode: point.mode, ...(teleportCoordinate ? { teleportCoordinate } : {}) }
     : { ...base, groupId: `manual:${point.navigationKind}`, kind: point.navigationKind, mode: point.mode, catalogCategoryId: 'manual', catalogCategoryName: '人工定位点', ...(teleportCoordinate ? { teleportCoordinate } : {}) }
+  if (point.iconUrl) location.iconUrl = point.iconUrl
+  if (!teleportCoordinate) delete location.teleportCoordinate
   return { category: 'navigation', location }
 }
 

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 const pointDetailsSourceUrl = new URL('../src/components/PointDetails.vue', import.meta.url)
 const mapPointPopupSourceUrl = new URL('../src/components/MapPointPopup.vue', import.meta.url)
 const echoPointMemberSourceUrl = new URL('../src/components/EchoPointMember.vue', import.meta.url)
-const pointEditorSourceUrl = new URL('../src/views/PointEditorView.vue', import.meta.url)
+const pointEditorSourceUrl = new URL('../src/components/PointEditorPanel.vue', import.meta.url)
 const routeLegDetailsSourceUrl = new URL('../src/components/RouteLegDetails.vue', import.meta.url)
 const mapCanvasSourceUrl = new URL('../src/components/MapCanvas.vue', import.meta.url)
 

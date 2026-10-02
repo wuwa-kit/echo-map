@@ -144,10 +144,15 @@ export interface AuthoredEchoPoint extends AuthoredPointBase {
   compositionStatus?: 'partial' | 'complete'
 }
 
+export type NavigationPointType = 'central-beacon' | 'small-beacon' | 'tacet-field' | 'echo-settlement' | 'weekly-boss' | 'normal-boss' | 'material-domain'
+
 export interface AuthoredNavigationPoint extends AuthoredPointBase {
   kind: 'navigation'
   name: string
   navigationKind: NavigationKind
+  pointType?: NavigationPointType
+  iconSourceId?: string
+  iconUrl?: string
   mode: NavigationMode
   teleportCoordinate?: AuthoredCoordinate
 }

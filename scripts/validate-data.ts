@@ -1,5 +1,6 @@
 import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
 import { mapZoomRangeSchema, officialAssetSchema, officialEchoPointDataSchema, officialNavigationPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
+import { navigationIconAssets } from '../src/domain/navigation-icons.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
 import { projectPath, readJson } from './lib/files.ts'
@@ -29,6 +30,10 @@ const officialLibrary = parsePointLibrary(combinePointLibraryKinds(officialEcho.
 const echoIds = new Set(dataset.echoes.map(({ id }) => id))
 const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []
+const selectableIconUrls = new Set(navigationIconAssets(assets).map(({ url }) => url))
+for (const point of pointLibrary.points) {
+  if (point.kind === 'navigation' && point.iconUrl && !selectableIconUrls.has(point.iconUrl)) errors.push(`点位 ${point.id} 引用了资产目录外图标`)
+}
 
 for (const state of dataset.states) {
   for (const group of state.layeredMaps) {
@@ -212,6 +217,8 @@ console.log([
   `定位点 ${dataset.navigationPoints.length}`,
   `文字定位点 ${dataset.regionLabels.length}`,
   `图标分组 ${dataset.navigationPointGroups.length}`,
+  `已分类定位点 ${pointLibrary.points.filter((point) => point.kind === 'navigation' && point.pointType).length}`,
+  `自选图标点位 ${pointLibrary.points.filter((point) => point.kind === 'navigation' && (point.iconSourceId || point.iconUrl)).length}`,
   `BOSS ${dataset.report.bossNavigationPointCount}`,
   `挑战 ${dataset.report.challengeNavigationPointCount}`,
   `路线起点 ${routeEligibleNavigationPoints.length}`,

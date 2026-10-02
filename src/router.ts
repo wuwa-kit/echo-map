@@ -10,11 +10,6 @@ export const router = createRouter({
       component: () => import('./views/AssetsView.vue'),
     },
     {
-      path: '/editor',
-      name: 'point-editor',
-      component: () => import('./views/PointEditorView.vue'),
-    },
-    {
       path: '/',
       name: 'explorer',
       component: () => import('./views/ExplorerView.vue'),

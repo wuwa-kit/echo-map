@@ -16,7 +16,7 @@ describe('control panel layout', () => {
     expect(controlPanelSource).not.toContain('dataset.report.includedEchoCount')
     expect(controlPanelSource).not.toContain('grid-cols-3')
     expect(controlPanelSource).not.toContain('官方点 Z=0、数量为初始值')
-    expect(controlPanelSource).toContain('>点位录入</RouterLink>')
+    expect(controlPanelSource).toContain('>点位录入</button>')
     expect(controlPanelSource).toContain('>资产浏览</RouterLink>')
     expect(controlPanelSource).toContain("{ value: 'manual', label: '人工点位' }")
     expect(controlPanelSource).toContain("{ value: 'official', label: '官方点位' }")

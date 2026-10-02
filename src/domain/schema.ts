@@ -43,6 +43,7 @@ export const navigationKindSchema = z.enum([
   'nexus', 'beacon', 'tacet-field', 'training-ground', 'hologram', 'boss', 'domain',
   'endgame', 'challenge', 'service', 'local-transit', 'entrance', 'landmark', 'unknown',
 ])
+export const navigationPointTypeSchema = z.enum(['central-beacon', 'small-beacon', 'tacet-field', 'echo-settlement', 'weekly-boss', 'normal-boss', 'material-domain'])
 export const navigationModeSchema = z.enum(['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown'])
 
 const authoredCoordinateSchema = z.object({
@@ -76,6 +77,9 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     kind: z.literal('navigation'),
     name: z.string().max(100),
     navigationKind: navigationKindSchema,
+    pointType: navigationPointTypeSchema.optional(),
+    iconSourceId: z.string().min(1).optional(),
+    iconUrl: z.url({ protocol: /^https$/u }).optional(),
     mode: navigationModeSchema,
     teleportCoordinate: authoredCoordinateSchema.optional(),
   }).strict(),

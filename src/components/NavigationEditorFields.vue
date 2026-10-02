@@ -1,35 +1,79 @@
 <script setup lang="ts">
-import { computed, shallowRef } from 'vue'
+import { computed, shallowRef, useTemplateRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { usePointEditorStore } from '../stores/point-editor.ts'
-import { authoredPointMapDisplay, MODE_NAMES, NAVIGATION_NAMES } from '../domain/point-library.ts'
-import { navigationKindSchema, navigationModeSchema } from '../domain/schema.ts'
-import WuInput from './base/WuInput.vue'
+import { authoredPointMapDisplay } from '../domain/point-library.ts'
 import WuSelect from './base/WuSelect.vue'
 import WuOption from './base/WuOption.vue'
-import type { WuSelectValue } from './base/select-context.ts'
+import { navigationPointTypeNames } from '../domain/navigation-point-types.ts'
+import WuInput from './base/WuInput.vue'
+import WuCheckBox from './base/WuCheckBox.vue'
+import WuPopover from './base/WuPopover.vue'
+import { useAssetsStore } from '../stores/assets.ts'
+import { navigationIconAssets } from '../domain/navigation-icons.ts'
+import WuScrollArea from './base/WuScrollArea.vue'
+import PointCoordinateFields from './PointCoordinateFields.vue'
+
 const store = usePointEditorStore()
-const { dataset, draft, busy, teleportCoordinateText } = storeToRefs(store)
-const iconUrl = computed(() => draft.value && dataset.value ? authoredPointMapDisplay(draft.value, dataset.value)?.location.iconUrl : '')
-const teleportExpanded = shallowRef(false)
-function setNavigationKind(value: WuSelectValue): void {
-  const parsed = navigationKindSchema.safeParse(value)
-  if (parsed.success) store.setNavigationKind(parsed.data)
+const { dataset, draft, busy, inputErrors } = storeToRefs(store)
+const assetsStore = useAssetsStore()
+const iconAnchor = useTemplateRef<HTMLButtonElement>('iconAnchorRef')
+const iconPopover = useTemplateRef<InstanceType<typeof WuPopover>>('iconPopoverRef')
+const iconSearch = shallowRef('')
+const filteredIcons = computed(() => navigationIconAssets(assetsStore.assets, iconSearch.value))
+function openIcons(): void {
+  iconPopover.value?.toggle()
+  if (!assetsStore.assets.length && !assetsStore.loading) void assetsStore.load()
 }
-function setMode(value: WuSelectValue): void {
-  const parsed = navigationModeSchema.safeParse(value)
-  if (parsed.success) store.setMode(parsed.data)
+const iconUrl = computed(() => {
+  const point = draft.value
+  if (!point || point.kind !== 'navigation' || !dataset.value) return ''
+  const chosen = dataset.value.navigationPoints.find(({ id }) => id === point.iconSourceId)
+  return point.iconUrl || chosen?.iconUrl || authoredPointMapDisplay({ ...point, coordinate: { x: 0, y: 0, z: 0 } }, dataset.value)?.location.iconUrl || ''
+})
+const fixedTeleport = computed(() => draft.value?.kind === 'navigation' && ['boss', 'domain', 'challenge'].includes(draft.value.navigationKind))
+function selectIcon(id: string): void {
+  store.setAssetIcon(id)
+  iconPopover.value?.hide()
 }
 </script>
 
 <template>
-  <div v-if="draft?.kind === 'navigation'" class="mt-8px rounded-8px border border-[var(--line)] p-9px">
-    <img v-if="iconUrl" :src="iconUrl" class="mb-8px h-36px w-36px object-contain" />
-    <div class="text-11px text-[#91ae9e]">名称<WuInput class="mt-4px" :model-value="draft.name" :disabled="busy" @update:model-value="store.setName" /></div>
-    <div class="mt-7px grid grid-cols-2 gap-7px"><div><div class="mb-4px text-10px text-[#91ae9e]">定位点类型</div><WuSelect :model-value="draft.navigationKind" :disabled="busy" @update:model-value="setNavigationKind"><WuOption v-for="(name, kind) in NAVIGATION_NAMES" :key="kind" :value="kind">{{ name }}</WuOption></WuSelect></div><div><div class="mb-4px text-10px text-[#91ae9e]">传送能力</div><WuSelect :model-value="draft.mode" :disabled="busy || ['boss', 'domain', 'challenge'].includes(draft.navigationKind)" @update:model-value="setMode"><WuOption v-for="(name, mode) in MODE_NAMES" :key="mode" :value="mode">{{ name }}</WuOption></WuSelect></div></div>
-    <template v-if="draft.mode === 'fast-travel'"><div class="mt-8px text-11px text-[#91ae9e]">{{ draft.teleportCoordinate ? '青色空心圆为传送落点；完整核验后用于路线' : '未录入实测落点，路线从图标坐标起算' }}</div><button type="button" class="mt-7px border-0 bg-transparent p-0 text-11px text-[#83b69e]" @click="teleportExpanded = !teleportExpanded">{{ teleportExpanded || draft.teleportCoordinate ? '实际传送落点 XYZ（可选）' : '＋ 添加实际传送落点' }}</button><div v-if="teleportExpanded || draft.teleportCoordinate" class="mt-6px"><div class="flex gap-5px"><WuInput :model-value="teleportCoordinateText" :disabled="busy" placeholder="粘贴落点 XYZ" @update:model-value="store.setTeleportCoordinateText" @confirm="store.applyTeleportCoordinateText" /><button type="button" class="min-h-36px shrink-0 rounded-6px border border-[var(--line)] bg-[#173328] px-9px text-12px text-[#c7dfd2]" :disabled="busy" @click="store.applyTeleportCoordinateText">应用</button></div><div class="mt-6px grid grid-cols-3 gap-6px"><div v-for="axis in (['x', 'y', 'z'] as const)" :key="axis" class="text-10px text-[#789788]">{{ axis.toUpperCase() }}<WuInput class="mt-2px font-mono" size="sm" inputmode="numeric" :model-value="draft.teleportCoordinate?.[axis] ?? ''" :disabled="busy" @update:model-value="store.setTeleportCoordinate(axis, $event)" /></div></div></div></template>
-    <div class="mt-10px border-t border-[var(--line)] pt-8px text-11px text-[#91ae9e]">{{ draft.mode !== 'fast-travel' ? '此点不作为直接传送起点' : draft.status === 'verified' ? '已核验，可作为路线起点' : '完成 XYZ 与传送能力核验后，可作为路线起点' }}</div>
-    <div v-if="draft.replacesOfficialIds?.length" class="mt-6px break-all text-10px text-[#789788]">官方来源：{{ draft.replacesOfficialIds.join('、') }}</div>
+  <div v-if="draft?.kind === 'navigation'" class="mt-24px">
+    <div class="mb-6px text-13px font-600">类型</div>
+    <WuSelect :model-value="draft.pointType ?? null" :disabled="busy" @update:model-value="store.setPointType">
+      <WuOption :value="null">未设置</WuOption>
+      <WuOption v-for="(name, value) in navigationPointTypeNames" :key="value" :value="value">{{ name }}</WuOption>
+    </WuSelect>
+    <div class="mb-6px mt-18px text-13px font-600">名称与图标</div>
+    <div class="flex items-start gap-8px">
+      <button ref="iconAnchorRef" type="button" class="h-40px w-40px flex shrink-0 items-center justify-center rounded-7px border bg-[#12271f] text-10px text-[#c7dfd2] disabled:opacity-50" :class="inputErrors.icon ? 'border-[#ff8d7e]' : 'border-[var(--line)]'" :title="iconUrl ? '更换图标' : '选择图标'" :disabled="busy" @click="openIcons">
+        <img v-if="iconUrl" :src="iconUrl" class="h-30px w-30px object-contain" /><span v-else>图标</span>
+      </button>
+      <WuInput class="min-w-0 flex-1" :model-value="draft.name" :invalid="Boolean(inputErrors.name)" :disabled="busy" placeholder="输入定位点名称" @update:model-value="store.setName" />
+    </div>
+    <div v-if="inputErrors.name" class="mt-4px text-11px text-[#ffad9f]">{{ inputErrors.name }}</div>
+    <div v-if="inputErrors.icon" class="mt-4px text-11px text-[#ffad9f]">{{ inputErrors.icon }}</div>
+    <WuPopover ref="iconPopoverRef" :anchor="iconAnchor" :disabled="busy" :width="360" :max-height="420" class="border border-[var(--line)] rounded-9px bg-[#102019] text-[#c7dfd2] shadow-xl">
+      <div class="shrink-0 p-10px"><WuInput v-model="iconSearch" placeholder="搜索定位点、探索、挑战、NPC及服务点" /></div>
+      <div v-if="assetsStore.loading" class="p-16px text-12px">正在加载图标…</div>
+      <div v-else-if="assetsStore.error" class="p-12px text-12px">
+        <div>{{ assetsStore.error }}</div><button type="button" class="mt-8px border-0 bg-transparent text-[var(--accent)]" @click="assetsStore.load">重试</button>
+      </div>
+      <WuScrollArea v-else class="min-h-0 flex-1" content-class="grid grid-cols-2 gap-6px p-10px pt-0">
+        <button v-for="icon in filteredIcons" :key="icon.id" type="button" class="min-w-0 flex items-center gap-8px border border-[var(--line)] rounded-6px bg-[#12271f] p-8px text-left text-11px hover:bg-[#1c3b2d]" :title="icon.name" :disabled="busy" @click="selectIcon(icon.id)">
+          <img :src="icon.url" class="h-32px w-32px shrink-0 object-contain" loading="lazy" /><span class="min-w-0 flex-1 truncate">{{ icon.name }}</span>
+        </button>
+        <div v-if="!filteredIcons.length" class="col-span-2 p-12px text-center text-12px text-[#91ae9e]">没有匹配的图标</div>
+      </WuScrollArea>
+    </WuPopover>
+    <WuCheckBox class="mt-20px flex min-h-40px items-center gap-8px text-13px" :model-value="draft.mode === 'fast-travel'" :disabled="busy || fixedTeleport" @update:model-value="store.setMode($event ? 'fast-travel' : 'landmark')">可传送</WuCheckBox>
+    <template v-if="draft.mode === 'fast-travel'">
+      <div class="mt-16px">
+        <div class="mb-8px flex items-center justify-between"><span class="text-13px">实际传送位置</span><button type="button" class="border-0 bg-transparent text-12px text-[#a1b6aa]" :disabled="busy" @click="store.clearTeleportCoordinate">清除</button></div>
+        <PointCoordinateFields teleport />
+      </div>
+      <div class="mt-6px text-11px text-[#789788]">留空时使用点位位置</div>
+    </template>
   </div>
-
 </template>

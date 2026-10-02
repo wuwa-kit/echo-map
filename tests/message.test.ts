@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 
 const messageSourceUrl = new URL('../src/components/base/WuMessage.vue', import.meta.url)
-const editorViewSourceUrl = new URL('../src/views/PointEditorView.vue', import.meta.url)
+const editorViewSourceUrl = new URL('../src/components/PointEditorPanel.vue', import.meta.url)
 
 describe('WuMessage', () => {
   it('renders editor feedback as a dismissible overlay instead of a layout banner', async () => {

@@ -2,6 +2,9 @@
 import { computed, onBeforeUnmount, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAsyncState, useEventListener, useMediaQuery, useResizeObserver, useWindowSize } from '@vueuse/core'
+import { useRouteQuery } from '@vueuse/router'
+import { usePointEditorStore } from '../stores/point-editor.ts'
+import PointEditorPanel from '../components/PointEditorPanel.vue'
 import ControlPanel from '../components/ControlPanel.vue'
 import GravitySwitcher from '../components/GravitySwitcher.vue'
 import MapCanvas from '../components/MapCanvas.vue'
@@ -12,11 +15,34 @@ import { useEqualComputed } from '../composables/useEqualComputed.ts'
 import { useExplorerRouteQuery } from '../composables/useExplorerRouteQuery.ts'
 import { loadMapDataset, loadPointLibrary } from '../data/load.ts'
 import { useExplorerStore } from '../stores/explorer.ts'
-import type { MapDataset } from '../domain/types.ts'
+import type { AuthoredPoint, MapDataset } from '../domain/types.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
 import type { ExplorerUrlSnapshot, MobileSheet } from '../url/explorer-url.ts'
 
 const store = useExplorerStore()
+const editor = usePointEditorStore()
+const modeQuery = useRouteQuery<string>('mode', 'use', { mode: 'replace' })
+const editingMode = computed(() => modeQuery.value === 'edit')
+const editorPanel = useTemplateRef<InstanceType<typeof PointEditorPanel>>('editorPanelRef')
+const mapCanvas = useTemplateRef<InstanceType<typeof MapCanvas>>('mapCanvasRef')
+function enterEditor(): void {
+  store.selectPoint(null)
+  modeQuery.value = 'edit'
+}
+function leaveEditor(): void {
+  modeQuery.value = 'use'
+  store.setPointLibrary(editor.library)
+}
+function addEditorPoint(request: { kind: AuthoredPoint['kind'], coordinate: [number, number] }): void {
+  editorPanel.value?.addPointAt(request)
+  if (compact.value) store.setMobileSheet('filters')
+  else if (store.controlPanelCollapsed) store.toggleControlPanel()
+}
+function selectEditorPoints(ids: string[]): void {
+  editorPanel.value?.selectMapPoints(ids)
+  if (compact.value) store.setMobileSheet('filters')
+  else if (store.controlPanelCollapsed) store.toggleControlPanel()
+}
 onBeforeUnmount(store.clearRoute)
 const { controlPanelCollapsed, dataset, mobileSheet, planning, selectedEchoIds } = storeToRefs(store)
 const compact = useMediaQuery('(max-width: 1023px)')
@@ -116,6 +142,7 @@ const { error: loadFailure, isLoading: loading, execute: reloadDataset } = useAs
     const manual = await loadPointLibrary(value)
     store.setPointLibrary(manual)
     store.setOfficialPointLibrary(official)
+    editor.setReferenceData(value, official)
     return value
   },
   null,
@@ -157,7 +184,7 @@ const loadError = computed(() => {
       ref="stageRef"
       class="relative h-full w-full min-h-0 min-w-0 overflow-hidden bg-[#101c1a] [--control-panel-width:340px] [--mobile-bar-height:calc(72px+env(safe-area-inset-bottom))] [--safe-top:env(safe-area-inset-top)] [--safe-right:env(safe-area-inset-right)] [--safe-bottom:env(safe-area-inset-bottom)] [--safe-left:env(safe-area-inset-left)]"
     >
-      <MapCanvas :padding="mapPadding" :dock-bottom="mapDockBottom" />
+      <MapCanvas ref="mapCanvasRef" :padding="mapPadding" :dock-bottom="mapDockBottom" :editing="editingMode" @editor-points-selected="selectEditorPoints" @point-add-requested="addEditorPoint" />
       <div v-if="!compact || mobileSheet === null" class="absolute left-[max(8px,var(--safe-left))] top-[max(8px,var(--safe-top))] z-90 flex items-start gap-4px">
         <MapNavigationCascader
           id="map-navigation-trigger" :dataset="dataset" :state-id="store.selectedStateId" :center="store.mapViewport?.center ?? null"
@@ -173,10 +200,11 @@ const loadError = computed(() => {
         :class="compact ? compactPanelClass : ['inset-y-0 right-0 w-[var(--control-panel-width)]', controlPanelCollapsed ? 'pointer-events-none translate-x-full' : 'translate-x-0']"
       >
         <div v-if="compact" class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-16px py-6px">
-          <span class="text-16px font-600">筛选与路线</span>
+          <span v-if="!editingMode" class="text-16px font-600">筛选与路线</span>
           <button type="button" class="min-h-44px cursor-pointer rounded-7px border-0 bg-transparent px-12px text-14px text-[var(--accent)]" @click="closeSheet">查看地图</button>
         </div>
-        <ControlPanel :compact="compact" />
+        <PointEditorPanel v-if="editingMode" ref="editorPanelRef" @returned="leaveEditor" @locate-requested="mapCanvas?.locateDraft()" />
+        <ControlPanel v-else :compact="compact" @edit-requested="enterEditor" />
       </div>
       <button
         v-if="!compact"
@@ -193,7 +221,7 @@ const loadError = computed(() => {
         class="absolute inset-x-0 bottom-0 z-90 flex h-[var(--mobile-bar-height)] items-start border-t border-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-10px"
       >
         <button type="button" class="min-h-50px w-full min-w-0 cursor-pointer rounded-9px border border-[var(--line)] px-10px text-14px text-[#eaf4ef]" :class="mobileSheet === 'filters' ? 'bg-[#245442]' : 'bg-[#152b24]'" @click="openSheet('filters')">
-          {{ planning ? '路线优化中…' : '筛选与路线' }}<span v-if="selectedEchoIds.length" class="ml-6px text-[var(--accent)]">{{ selectedEchoIds.length }}</span>
+          {{ editingMode ? '点位录入' : planning ? '路线优化中…' : '筛选与路线' }}<span v-if="!editingMode && selectedEchoIds.length" class="ml-6px text-[var(--accent)]">{{ selectedEchoIds.length }}</span>
         </button>
       </div>
     </div>
