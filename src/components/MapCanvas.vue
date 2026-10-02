@@ -273,7 +273,7 @@ onMounted(() => {
   }
   map = new Map({
     target: mapTarget.value,
-    controls: defaultControls({ rotate: false, zoom: false }),
+    controls: defaultControls({ rotate: false, zoom: false, attribution: false }),
     interactions: defaultInteractions({ pinchRotate: false, altShiftDragRotate: false }),
     layers: [...points.layers, ...editorPoints.layers, routeLayer.layer, selectionLayer],
     view: new View({ projection, enableRotation: false, center: [0, 0], resolution: 4 }),

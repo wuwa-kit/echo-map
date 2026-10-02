@@ -70,16 +70,12 @@ function updateMapPadding(): void {
   const style = getComputedStyle(stage.value)
   const safe = (edge: string): number => Number.parseFloat(style.getPropertyValue(`--safe-${edge}`)) || 0
   const padding: MapPadding = [safe('top') + 16, safe('right') + 16, safe('bottom') + 16, safe('left') + 16]
-  // The bottom-left dock clears panels and the toolbar independently of right-side attribution.
+  // The bottom-left dock clears panels and the toolbar.
   let dockBottom = safe('bottom') + 8
   if (compact.value && mobileBar.value) {
     const coveredBottom = area.bottom - mobileBar.value.getBoundingClientRect().top
     padding[2] = coveredBottom + 12
     dockBottom = Math.max(dockBottom, coveredBottom + 8)
-  }
-  const attribution = stage.value.querySelector('.ol-attribution')?.getBoundingClientRect()
-  if (attribution) {
-    padding[2] = Math.max(padding[2], area.bottom - attribution.top + 12)
   }
   for (const panel of [controlDock.value]) {
     if (!panel || panel.getClientRects().length === 0 || (!compact.value && !controlVisible.value)) {

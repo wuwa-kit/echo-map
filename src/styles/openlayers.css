@@ -14,17 +14,6 @@
   background: transparent !important;
 }
 
-.ol-attribution {
-  right: 12px !important;
-  bottom: 12px !important;
-  color: #7b9088;
-  font-size: 9px;
-}
-
-.ol-attribution a {
-  color: #8db7a7;
-}
-
 .ol-zoom {
   top: max(8px, env(safe-area-inset-top)) !important;
   left: max(8px, env(safe-area-inset-left)) !important;
@@ -38,9 +27,3 @@
   }
 }
 
-@media (max-width: 1023px) {
-  .ol-attribution {
-    bottom: calc(var(--mobile-bar-height) + 12px) !important;
-    right: max(12px, env(safe-area-inset-right)) !important;
-  }
-}
