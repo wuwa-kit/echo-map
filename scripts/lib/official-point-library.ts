@@ -1,46 +1,20 @@
-import { readFile } from 'node:fs/promises'
-import { parsePointLibrary, emptyPointLibrary } from '../../src/domain/point-library.ts'
-import { echoPointLibrarySchema } from '../../src/domain/schema.ts'
+import { pointRegionResolver } from '../../src/domain/point-region.ts'
+import { selectOfficialEchoLocations } from '../../src/domain/official-echo-scope.ts'
+import { readPointLibrary } from './point-files.ts'
+import { parsePointLibrary } from '../../src/domain/point-library.ts'
 import type { AuthoredEchoPoint, MapDataset, PointLibrary } from '../../src/domain/types.ts'
 
 export const OFFICIAL_ECHO_MERGE_DIAMETER = 25
 
 type OfficialEchoLocation = MapDataset['echoLocations'][number]
-type OfficialRegionLabel = MapDataset['regionLabels'][number]
 
 interface OfficialEchoCluster {
   id: string
   locations: OfficialEchoLocation[]
 }
 
-export function inferOfficialEchoCountryId(
-  location: OfficialEchoLocation,
-  regionLabels: readonly OfficialRegionLabel[],
-): number | null {
-  const validCountryIds = new Set(regionLabels.flatMap((label) => (
-    label.stateId === location.stateId && label.level === 1 && label.countryId !== null
-      ? [label.countryId]
-      : []
-  )))
-  let nearest: OfficialRegionLabel | undefined
-  let nearestDistanceSquared = Number.POSITIVE_INFINITY
-  for (const label of regionLabels) {
-    if (label.stateId !== location.stateId || label.level < 2) continue
-    const x = label.coordinate.mapX - location.coordinate.mapX
-    const y = label.coordinate.mapY - location.coordinate.mapY
-    const distanceSquared = x * x + y * y
-    if (
-      distanceSquared < nearestDistanceSquared
-      || (distanceSquared === nearestDistanceSquared && label.id.localeCompare(nearest?.id ?? '') < 0)
-    ) {
-      nearest = label
-      nearestDistanceSquared = distanceSquared
-    }
-  }
-  if (nearest?.countryId !== null && nearest?.countryId !== undefined && validCountryIds.has(nearest.countryId)) {
-    return nearest.countryId
-  }
-  return location.countryId !== null && validCountryIds.has(location.countryId) ? location.countryId : null
+export function inferOfficialEchoCountryId(location: OfficialEchoLocation, dataset: Pick<MapDataset, 'mapNavigation' | 'regionLabels'>): number | null {
+  return pointRegionResolver(dataset)(location.stateId, [location.coordinate.mapX, location.coordinate.mapY])?.countryId ?? null
 }
 
 function officialEchoScopeKey(location: OfficialEchoLocation): string {
@@ -118,19 +92,16 @@ function clusterRepresentative(cluster: OfficialEchoCluster): OfficialEchoLocati
 
 export function convertOfficialPoints(dataset: MapDataset): PointLibrary {
   const points: AuthoredEchoPoint[] = []
-  const validCountries = new Set(dataset.regionLabels.filter(({ level }) => level === 1).map(({ stateId, countryId }) => `${stateId}:${countryId}`))
-  const echoLocations = dataset.echoLocations.map((location) => {
-    const countryId = inferOfficialEchoCountryId(location, dataset.regionLabels)
+  const echoLocations = selectOfficialEchoLocations(dataset).map((location) => {
+    const countryId = inferOfficialEchoCountryId(location, dataset)
     return countryId === location.countryId ? location : { ...location, countryId }
   })
   const makeBase = (point: MapDataset['echoLocations'][number]) => {
     return {
       id: `official:${point.id}`,
-      status: 'imported' as const,
       officialIds: [point.id],
       stateId: point.stateId,
       gravityType: point.gravityType,
-      countryId: validCountries.has(`${point.stateId}:${point.countryId}`) ? point.countryId : null,
       levelId: point.levelId,
       coordinate: { x: Math.round(point.coordinate.rawX / 100), y: Math.round(point.coordinate.rawY / 100), z: 0 },
     }
@@ -141,30 +112,18 @@ export function convertOfficialPoints(dataset: MapDataset): PointLibrary {
     const memberCounts = new Map<string, number>()
     for (const { echoId } of cluster.locations) memberCounts.set(echoId, (memberCounts.get(echoId) ?? 0) + 1)
     const members = [...memberCounts].sort(([left], [right]) => left.localeCompare(right)).map(([echoId, count]) => ({ echoId, count }))
-    const sourceDescription = cluster.locations.length === 1
-      ? '每个来源点按 1 只计数'
-      : `由 ${cluster.locations.length} 个相邻点合并（最大直径 ${OFFICIAL_ECHO_MERGE_DIAMETER}）；每个来源点按 1 只计数`
     const point: AuthoredEchoPoint = {
       ...makeBase(representative),
       id: `official:${officialIds[0]}`,
       officialIds,
       kind: 'echo',
-      compositionStatus: 'partial',
       members,
-      note: `官方导入：${sourceDescription}；Z=0 为占位值，待实测。`,
     }
     points.push(point)
   }
   return parsePointLibrary({ version: 1, points }, dataset, 'official')
 }
 
-export async function readOfficialPointLibrary(path: string, dataset: MapDataset): Promise<PointLibrary> {
-  let text: string
-  try {
-    text = await readFile(path, 'utf8')
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return emptyPointLibrary()
-    throw error
-  }
-  return parsePointLibrary(echoPointLibrarySchema.parse(JSON.parse(text)), dataset, 'official')
+export function readOfficialPointLibrary(path: string, dataset: MapDataset): Promise<PointLibrary> {
+  return readPointLibrary(path, dataset, 'official')
 }

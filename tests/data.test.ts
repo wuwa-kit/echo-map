@@ -1,7 +1,7 @@
 import { access, readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { mapCatalogDataSchema, mapDataSchema, mapPointLocationsSchema, officialMapAssetCatalogSchema, officialEchoPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
-import { readMapDataset } from '../scripts/lib/map-data.ts'
+import { readMapDataset, readPublicPointData } from '../scripts/lib/map-data.ts'
 import { buildOfficialAssets, filterOfficialAssets } from '../src/domain/official-assets.ts'
 
 describe('generated application data', () => {
@@ -12,7 +12,7 @@ describe('generated application data', () => {
     for (const name of ['中枢信标', '小型信标', '罗蕾莱']) {
       expect(filterOfficialAssets(assets, 'navigation', null, name).length, name).toBeGreaterThan(0)
     }
-    const official = officialEchoPointDataSchema.parse(JSON.parse(await readFile(new URL('../public/data/official-echo-points.json', import.meta.url), 'utf8')))
+    const official = officialEchoPointDataSchema.parse((await readPublicPointData(dataset)).officialEcho)
     expect(official.library.points.length).toBeGreaterThan(0)
     expect(official.library.points.every(({ kind }) => kind === 'echo')).toBe(true)
     await expect(access(new URL('../public/data/official-navigation-points.json', import.meta.url))).rejects.toMatchObject({ code: 'ENOENT' })

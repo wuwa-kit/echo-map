@@ -18,9 +18,9 @@ describe('control panel layout', () => {
     expect(controlPanelSource).not.toContain('官方点 Z=0、数量为初始值')
     expect(controlPanelSource).toContain('>点位录入</WuButton>')
     expect(controlPanelSource).toContain('>资产浏览</RouterLink>')
-    expect(controlPanelSource).toContain("{ value: 'manual', label: '人工点位' }")
-    expect(controlPanelSource).toContain("{ value: 'official', label: '官方点位' }")
-    expect(controlPanelSource).toContain('@click="togglePointSourceFilter(option.value)"')
+    expect(controlPanelSource).not.toContain('人工点位')
+    expect(controlPanelSource).not.toContain('官方点位')
+
     expect(controlPanelSource).not.toContain('全部点位')
     expect(controlPanelSource).not.toContain('仅人工')
     expect(controlPanelSource).not.toContain('仅官方')

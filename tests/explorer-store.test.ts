@@ -22,7 +22,6 @@ describe('explorer point group visibility', () => {
     const store = useExplorerStore()
     store.setDataset(dataset)
     store.setOfficialPointLibrary(convertOfficialPoints(dataset))
-    store.setPointSourceFilters(['official'])
 
     expect(store.visibleEchoLocations).toEqual([])
 
@@ -51,7 +50,6 @@ describe('explorer point group visibility', () => {
     const store = useExplorerStore()
     store.setDataset(dataset)
     store.setOfficialPointLibrary(convertOfficialPoints(dataset))
-    store.setPointSourceFilters(['official'])
     store.toggleEcho(location.echoId)
     const locations = store.visibleEchoLocations
     store.setSonataFilters(['unmatched-sonata'])
@@ -67,8 +65,7 @@ describe('explorer point group visibility', () => {
     const store = useExplorerStore()
     store.setDataset(dataset)
     store.setOfficialPointLibrary(convertOfficialPoints(dataset))
-    store.setPointSourceFilters(['official'])
-    store.restoreUrlState({ pointSourceFilters: ['official'],
+    store.restoreUrlState({
       stateId: -999,
       countryId: -999,
       levelId: 'unknown-floor',

@@ -6,7 +6,7 @@ import { useRouteQuery } from '@vueuse/router'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { useEventListener, useTimeoutFn } from '@vueuse/core'
 import { usePointEditorStore } from '../stores/point-editor.ts'
-import { pointTitle } from '../domain/point-library.ts'
+import { isOfficialPoint, pointTitle } from '../domain/point-library.ts'
 import type { AuthoredPoint } from '../domain/types.ts'
 import EchoEditorFields from './EchoEditorFields.vue'
 import NavigationEditorFields from './NavigationEditorFields.vue'
@@ -19,6 +19,7 @@ import WuSelect from './base/WuSelect.vue'
 import WuOption from './base/WuOption.vue'
 import WuScrollArea from './base/WuScrollArea.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
+import { serializeJson } from '../utils/json.ts'
 
 const props = defineProps<{
   locatePosition: (coordinate: [number, number]) => boolean
@@ -48,7 +49,7 @@ function syncLibrary(): void {
   explorer.setPointLibrary(store.library)
 }
 function exportJson(): void {
-  const url = URL.createObjectURL(new Blob([`${JSON.stringify(library.value, null, 2)}\n`], { type: 'application/json' }))
+  const url = URL.createObjectURL(new Blob([`${serializeJson(library.value, 2)}\n`], { type: 'application/json' }))
   const link = document.createElement('a')
   link.href = url
   link.download = 'echo-map-points.json'
@@ -102,7 +103,7 @@ function selectPoint(id: string): void {
   if (editing.value && id === draft.value?.id) return
   const point = allPoints.value.find((point) => point.id === id)
   if (!point) return
-  if (point.status === 'imported') {
+  if (isOfficialPoint(point)) {
     store.selectPoint(id)
     return
   }
@@ -152,7 +153,7 @@ function addPoint(kind: AuthoredPoint['kind'] = editorMode.value, coordinate?: [
   switchTab(kind)
   requestAction(() => {
     store.newPoint(kind)
-    store.initializeMapContext({ stateId: explorer.selectedStateId, countryId: explorer.selectedCountryId ?? undefined, levelId: explorer.selectedLevelId ?? undefined, gravityType: explorer.supportsGravity ? explorer.selectedGravity : undefined })
+    store.initializeMapContext({ stateId: explorer.selectedStateId, levelId: explorer.selectedLevelId ?? undefined, gravityType: explorer.supportsGravity ? explorer.selectedGravity : undefined })
     if (coordinate) {
       store.setCoordinate('x', String(coordinate[0]))
       store.setCoordinate('y', String(coordinate[1]))
@@ -167,7 +168,7 @@ async function loadEditor(): Promise<void> {
   await store.load(tabQuery.value === 'echo' ? 'echo' : 'navigation')
   if (!active || store.error) return
   tabQuery.value = editorMode.value
-  store.initializeMapContext({ stateId: explorer.selectedStateId, countryId: explorer.selectedCountryId ?? undefined, levelId: explorer.selectedLevelId ?? undefined, gravityType: explorer.supportsGravity ? explorer.selectedGravity : undefined })
+  store.initializeMapContext({ stateId: explorer.selectedStateId, levelId: explorer.selectedLevelId ?? undefined, gravityType: explorer.supportsGravity ? explorer.selectedGravity : undefined })
 }
 onMounted(loadEditor)
 onBeforeRouteUpdate((to) => {
@@ -230,6 +231,6 @@ useEventListener(window, 'beforeunload', (event) => {
     </WuDialog>
     <WuDialog :open="pending !== null" :dismissible="!busy" @dismiss-requested="cancelPending"><div class="p-20px"><div class="mb-16px text-14px">当前修改尚未保存</div><div class="flex flex-wrap justify-end gap-8px"><WuButton :disabled="busy" @click="cancelPending">继续编辑</WuButton><WuButton :disabled="busy" @click="continuePending(false)">不保存</WuButton><WuButton variant="solid" tone="accent" :disabled="busy" :loading="operation === 'save'" @click="continuePending(true)">保存并继续</WuButton></div></div></WuDialog>
     <WuDialog :open="recovery !== null" @dismiss-requested="store.dismissRecovery"><div class="p-20px"><div class="mb-16px text-14px">发现上次未保存的编辑</div><div class="flex justify-end gap-8px"><WuButton :disabled="busy" @click="store.dismissRecovery">忽略</WuButton><WuButton variant="solid" tone="accent" :disabled="busy" @click="store.recoverDraft">继续编辑</WuButton></div></div></WuDialog>
-    <WuDialog :open="candidates.length > 1" @dismiss-requested="candidates = []"><div class="p-16px"><div class="mb-12px text-14px">选择此处点位</div><WuScrollArea class="max-h-320px"><button v-for="point in candidatePoints" :key="point.id" type="button" class="mb-6px min-h-40px w-full cursor-pointer rounded-7px border border-[var(--line)] bg-[#142a22] px-12px text-left text-12px text-[#c7dfd2] hover:bg-[#1c3b2d]" @click="selectPoint(point.id)">{{ dataset ? pointTitle(point, dataset) : '' }}{{ point.status === 'imported' ? ' · 官方只读' : '' }}</button></WuScrollArea></div></WuDialog>
+    <WuDialog :open="candidates.length > 1" @dismiss-requested="candidates = []"><div class="p-16px"><div class="mb-12px text-14px">选择此处点位</div><WuScrollArea class="max-h-320px"><button v-for="point in candidatePoints" :key="point.id" type="button" class="mb-6px min-h-40px w-full cursor-pointer rounded-7px border border-[var(--line)] bg-[#142a22] px-12px text-left text-12px text-[#c7dfd2] hover:bg-[#1c3b2d]" @click="selectPoint(point.id)">{{ dataset ? pointTitle(point, dataset) : '' }}{{ isOfficialPoint(point) ? ' · 官方只读' : '' }}</button></WuScrollArea></div></WuDialog>
   </div>
 </template>

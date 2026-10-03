@@ -72,8 +72,8 @@ describe('floor map context', () => {
       coordinate: { rawX: 0, rawY: 0, mapX: 0, mapY: 0 } }
     store.setDataset({ ...dataset, states: [state], regionLabels: [label] })
     const navigation = (id: string, levelId: string | null, mode: AuthoredNavigationPoint['mode']): AuthoredNavigationPoint => ({
-      id, levelId, mode, kind: 'navigation', name: id, navigationKind: 'beacon', status: 'verified',
-      stateId: 8, countryId: null, gravityType: null, coordinate: { x: 0, y: 0, z: 10 }, note: '',
+      id, levelId, mode, kind: 'navigation', name: id, navigationKind: 'beacon',
+      stateId: 8, gravityType: null, coordinate: { x: 0, y: 0, z: 10 }, note: '',
     })
     store.setPointLibrary({ ...emptyPointLibrary(), points: [
       mixedPoint('base-echo'), { ...mixedPoint('floor-echo'), levelId: 'a1' },

@@ -1,9 +1,11 @@
+import { pointFileRevisionsSchema, pointLibraryChangesSchema } from '../src/domain/point-changes.ts'
 import type { IncomingMessage } from 'node:http'
 import { z } from 'zod'
 import type { Plugin } from 'vite'
 import { createPointRepository, PointRepositoryError } from './lib/point-repository.ts'
 import { projectPath } from './lib/files.ts'
-import { readMapDataset, writePublicPointData } from './lib/map-data.ts'
+import { readMapDataset, readPublicPointData, writePublicPointData } from './lib/map-data.ts'
+import { serializeJson } from '../src/utils/json.ts'
 
 const publicPointPaths = [
   '/data/official-echo-points.json',
@@ -37,14 +39,17 @@ async function requestBody(request: IncomingMessage): Promise<unknown> {
 
 export function pointEditorPlugin(): Plugin {
   const getDataset = readMapDataset
-  const repository = createPointRepository(projectPath('data', 'manual', 'points.json'), projectPath('data', 'cache', 'point-history'), getDataset)
+  const repository = createPointRepository(projectPath('data', 'manual'), projectPath('data', 'cache', 'point-history'), getDataset)
+  let build = false
   return {
     name: 'point-editor',
-    async buildStart() {
-      await writePublicPointData()
+    configResolved(config) {
+      build = config.command === 'build'
     },
-    async configureServer(server) {
-      await writePublicPointData()
+    async buildStart() {
+      if (build) await writePublicPointData()
+    },
+    configureServer(server) {
       server.middlewares.use((request, response, next) => {
         const path = request.url?.split('?')[0] ?? ''
         if (!publicPointPaths.some((candidate) => candidate === path) && !path.startsWith('/api/editor/')) return next()
@@ -52,7 +57,7 @@ export function pointEditorPlugin(): Plugin {
         response.setHeader('Cache-Control', 'no-store')
         const run = async () => {
           if (publicPointPaths.some((candidate) => candidate === path) && request.method === 'GET') {
-            const data = await writePublicPointData()
+            const data = await readPublicPointData()
             if (path === '/data/official-echo-points.json') return data.officialEcho
             if (path === '/data/custom-echo-points.json') return data.manualEcho
             return data.manualNavigation
@@ -60,18 +65,16 @@ export function pointEditorPlugin(): Plugin {
           if (!isLocalEditorRequest(request)) throw new PointRepositoryError('录入系统仅允许通过本机 localhost 访问', 403)
           if (path === '/api/editor/library' && request.method === 'GET') return repository.read()
           if (path === '/api/editor/library' && request.method === 'PUT') {
-            const body = z.object({ library: z.unknown(), revision: z.string().regex(/^[a-f0-9]{64}$/u) }).strict().parse(await requestBody(request))
-            const snapshot = await repository.save(body.library, body.revision)
-            await writePublicPointData()
-            return snapshot
+            const body = z.object({ changes: pointLibraryChangesSchema, revision: pointFileRevisionsSchema }).strict().parse(await requestBody(request))
+            return repository.save(body.changes, body.revision)
           }
           if (path === '/api/editor/versions' && request.method === 'GET') return repository.versions()
           if (path.startsWith('/api/editor/versions/') && request.method === 'GET') return repository.version(path.slice('/api/editor/versions/'.length))
           throw new PointRepositoryError('不存在的录入接口', 404)
         }
-        void run().then((body) => response.end(JSON.stringify(body))).catch((error: unknown) => {
+        void run().then((body) => response.end(serializeJson(body))).catch((error: unknown) => {
           response.statusCode = error instanceof PointRepositoryError ? error.status : 400
-          response.end(JSON.stringify({ error: error instanceof Error ? error.message : '点位操作失败' }))
+          response.end(serializeJson({ error: error instanceof Error ? error.message : '点位操作失败' }))
         })
       })
     },

@@ -3,15 +3,21 @@
   "includedEchoCount": 140,
   "excludedEchoCount": 65,
   "sonataCount": 37,
-  "exactMatchedEchoCount": 121,
+  "exactMatchedEchoCount": 115,
   "aliasMatchedEchoCount": 3,
   "unmatchedEchoNames": [
     "不熄猎手",
     "颤栗战士",
     "瓷庭候",
     "封庭械囿",
+    "霁息兽尊",
+    "霁息兽尊·身",
+    "霁息兽尊·首",
+    "解形煞",
     "金庭候",
     "绝息魄",
+    "奇绽傀",
+    "融躯战士",
     "石庭候",
     "莳植熊蜂",
     "心傀·悲",
@@ -23,6 +29,6 @@
     "巡宵枪卫",
     "玉冥蛇"
   ],
-  "provisionalEchoLocationCount": 6806,
+  "provisionalEchoLocationCount": 6675,
   "routeEligibleEchoLocationCount": 4
 }

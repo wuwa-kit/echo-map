@@ -124,8 +124,8 @@ function locatePart(parts: readonly PlannedPart[], cardNumber: number): { index:
 
 export async function exportRouteImages(snapshot: RouteExportSnapshot, signal: AbortSignal, onProgress: (progress: RouteExportProgress) => void): Promise<RouteExportImages> {
   signal.throwIfAborted()
-  const countryIdByPointId = new Map([...snapshot.locations, ...snapshot.navigationPoints].map(({ id, countryId }) => [id, countryId]))
-  const regionalPlan = createRegionalExportPlan(snapshot.routePlan ?? snapshot.route, snapshot.dataset, countryIdByPointId, snapshot.gravity)
+  const sourcePointIds = new Set([...snapshot.locations, ...snapshot.navigationPoints].map(({ id }) => id))
+  const regionalPlan = createRegionalExportPlan(snapshot.routePlan ?? snapshot.route, snapshot.dataset, sourcePointIds, snapshot.gravity)
   const layout = createExportLayout(regionalPlan, snapshot.gravity)
   onProgress({ completed: 0, total: layout.cards.length, message: '正在检查双列路线图尺寸' })
   const maxSide = await jpegCanvasSideLimit(signal)

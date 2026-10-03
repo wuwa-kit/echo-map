@@ -276,7 +276,7 @@ describe('point editor actions', () => {
   it('keeps echoes hidden throughout the initial navigation session and a cached reopen', async () => {
     const store = usePointEditorStore()
     store.setReferenceData(referenceDataset, { version: 1, points: [{
-      ...mixedPoint('official:source'), status: 'imported', officialIds: ['source'], coordinate: { x: 1, y: 2, z: 0 },
+      ...mixedPoint('official:source'), officialIds: ['source'], coordinate: { x: 1, y: 2, z: 0 },
     }] })
     const echoCounts: number[] = []
     const stop = watchEffect(() => {
@@ -414,29 +414,26 @@ describe('point editor actions', () => {
     if (!floorState || !floor || !country || !countryState || !gravityState) throw new Error('测试数据缺少可用于录入上下文的地图')
     const store = usePointEditorStore()
     await store.load('echo')
-    store.initializeMapContext({ stateId: countryState.id, countryId: country.countryId })
+    store.initializeMapContext({ stateId: countryState.id })
     expect(store.draft).toMatchObject({
       stateId: countryState.id,
-      countryId: country.countryId,
       levelId: null,
     })
     store.initializeMapContext({ stateId: floorState.id, levelId: floor.id })
     expect(store.draft).toMatchObject({
       stateId: floorState.id,
-      countryId: null,
       levelId: floor.id,
     })
     store.initializeMapContext({ stateId: gravityState.id, gravityType: 2 })
     expect(store.draft).toMatchObject({
       stateId: gravityState.id,
-      countryId: null,
       levelId: null,
       gravityType: 2,
     })
     expect(store.dirty).toBe(false)
 
-    store.initializeMapContext({ stateId: -1, countryId: -1, levelId: 'unknown', gravityType: 2 })
-    expect(store.draft).toMatchObject({ stateId: gravityState.id, countryId: null, levelId: null, gravityType: 2 })
+    store.initializeMapContext({ stateId: -1, levelId: 'unknown', gravityType: 2 })
+    expect(store.draft).toMatchObject({ stateId: gravityState.id, levelId: null, gravityType: 2 })
     expect(store.dirty).toBe(false)
   })
 
@@ -477,7 +474,7 @@ describe('point editor actions', () => {
       expect(store.draft?.id).toBe(id)
       store.newPoint()
       expect(store.draft?.id).not.toBe(id)
-      expect(store.draft).toMatchObject({ kind, status: 'draft', coordinate: { x: null, y: null, z: null } })
+      expect(store.draft).toMatchObject({ kind, coordinate: { x: null, y: null, z: null } })
       expect(store.dirty).toBe(false)
     }
     expect(disk.points).toHaveLength(2)
@@ -672,11 +669,11 @@ describe('point editor actions', () => {
       const savedId = store.draft?.id
       expect(await store.savePoint()).toBe(true)
       expect(disk.points.find(({ id }) => id === savedId)).toMatchObject({
-        status: 'verified', pointType, coordinate: { x, y: 2, z: 3 }, teleportCoordinate: { x: x + 1, y: 2, z: 3 },
+        pointType, coordinate: { x, y: 2, z: 3 }, teleportCoordinate: { x: x + 1, y: 2, z: 3 },
       })
       expect(store.draft?.id).not.toBe(savedId)
       expect(store.draft).toMatchObject({
-        kind: 'navigation', status: 'draft', pointType, name: rule.names[0] ?? '', iconId: rule.icons[0],
+        kind: 'navigation', pointType, name: rule.names[0] ?? '', iconId: rule.icons[0],
         mode: rule.defaultMode, stateId: state.id, levelId: floor.id, note: '', coordinate: { x: null, y: null, z: null },
       })
       expect(store.draft).not.toHaveProperty('teleportCoordinate')
@@ -789,13 +786,14 @@ describe('point editor actions', () => {
     const id = store.draft?.id
     expect(await (reason === 'leave-editor' ? store.saveAllForms() : store.savePoint({ continueAdding: false }))).toBe(true)
     expect(store.draft?.id).toBe(id)
-    expect(store.draft?.status).toBe('verified')
+    expect(disk.points[0]).not.toHaveProperty('status')
+    expect(store.draft).toEqual(disk.points[0])
     expect(store.hasUnsavedChanges).toBe(false)
     expect(disk.points).toHaveLength(1)
   })
 
   it('keeps official points read-only without replacing or discarding either editing form', async () => {
-    const official = { ...mixedPoint('official:one'), status: 'imported' as const, officialIds: ['one', 'two'], coordinate: { x: -497, y: 449, z: 0 } }
+    const official = { ...mixedPoint('official:one'), officialIds: ['one', 'two'], coordinate: { x: -497, y: 449, z: 0 } }
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset: referenceDataset, officialLibrary: { version: 1, points: [official] } })
     const store = usePointEditorStore()
     await store.load('echo')
@@ -839,6 +837,24 @@ describe('point editor actions', () => {
     expect(store.inputErrors.x).toBeTruthy()
     store.discardChanges()
     expect(store.draft?.coordinate.x).toBe(-497)
+    expect(store.dirty).toBe(false)
+  })
+
+  it('keeps saved records separate from edits and becomes clean when the original value is restored', async () => {
+    disk = { version: 1, points: [mixedPoint()] }
+    const store = usePointEditorStore()
+    await store.load('echo')
+    store.selectPoint('mixed-point')
+    store.setCoordinate('x', '100')
+    expect(store.dirty).toBe(true)
+    expect(store.library.points).toEqual([mixedPoint()])
+    expect(disk.points).toEqual([mixedPoint()])
+    store.setCoordinate('x', '-497')
+    expect(store.dirty).toBe(false)
+    expect(cache.size).toBe(0)
+    store.setCoordinate('x', '200')
+    expect(await store.savePoint()).toBe(true)
+    expect(disk.points[0]).toEqual({ ...mixedPoint(), coordinate: { x: 200, y: 449, z: 18 } })
     expect(store.dirty).toBe(false)
   })
 

@@ -31,8 +31,8 @@ describe('local navigation icon picker', () => {
     const icon = navigationTypeIcons('small-beacon')[0]
     if (!icon) throw new Error('需要信标图标')
     const point = {
-      gravityType: null, id: 'local-icon', kind: 'navigation' as const, status: 'verified' as const,
-      stateId: 8, countryId: null, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
+      gravityType: null, id: 'local-icon', kind: 'navigation' as const,
+      stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
       name: '小型信标', pointType: 'small-beacon' as const, navigationKind: 'beacon' as const, mode: 'fast-travel' as const, note: '', iconId: icon.id,
     }
     const library = parsePointLibrary({ version: 1, points: [point] }, emptyNavigationDataset, 'manual')
@@ -46,8 +46,8 @@ describe('local navigation icon picker', () => {
 
   it('keeps custom URL images independent from the catalogue and official points', () => {
     const point = {
-      gravityType: null, id: 'custom-icon', kind: 'navigation' as const, status: 'verified' as const,
-      stateId: 8, countryId: null, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
+      gravityType: null, id: 'custom-icon', kind: 'navigation' as const,
+      stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
       name: '自定义名称', pointType: 'service' as const, navigationKind: 'service' as const, mode: 'landmark' as const, note: '', iconUrl: 'https://example.com/custom.png',
     }
     expect(navigationIconById('missing')).toBeUndefined()

@@ -1,3 +1,5 @@
+import { writePointLibrary } from './lib/point-files.ts'
+import { selectOfficialEchoLocations } from '../src/domain/official-echo-scope.ts'
 import { deduplicateMapAssets, normalizeMapAssets } from './lib/map/asset-catalog.ts'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
 import type { MapDataset, MapStateDefinition } from '../src/domain/types.ts'
@@ -43,9 +45,12 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
   const states = await buildFloorCoverage(normalizedStates, configuration.resourceHash)
 
   const locations = normalizeLocations(wiki, manual, aliases, statePayloads)
-  const { exactMatchedEchoIds, aliasMatchedEchoIds } = locations
+  const geography = { mapNavigation: normalizeMapNavigation(countryData), regionLabels: flattenRegions(countryData) }
+  const normalizedEchoLocations = selectOfficialEchoLocations({ ...geography, echoLocations: locations.echoLocations })
+  const includedEchoIds = new Set(normalizedEchoLocations.map(({ echoId }) => echoId))
+  const exactMatchedEchoIds = new Set([...locations.exactMatchedEchoIds].filter((id) => includedEchoIds.has(id)))
+  const aliasMatchedEchoIds = new Set([...locations.aliasMatchedEchoIds].filter((id) => includedEchoIds.has(id)))
   const matchedEchoIds = new Set([...exactMatchedEchoIds, ...aliasMatchedEchoIds])
-  const normalizedEchoLocations = locations.echoLocations
   const report = {
     wikiEchoCount: wiki.totalEchoCount,
     includedEchoCount: wiki.echoes.length,
@@ -77,8 +82,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
     sonatas,
     echoes: wiki.echoes,
     states,
-    mapNavigation: normalizeMapNavigation(countryData),
-    regionLabels: flattenRegions(countryData),
+    ...geography,
     echoLocations: normalizedEchoLocations,
     navigationPointGroups: [],
     navigationPoints: [],
@@ -88,7 +92,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
   const assetCatalog = await deduplicateMapAssets(normalizeMapAssets(statePayloads, configuration.resourceHash, mapFetchedAt, navigationConfig))
   mapDatasetSchema.parse(dataset)
   // Rebuild before publishing: Wiki membership changes can remove old echo IDs.
-  await writeJson(projectPath('data', 'generated', 'official-points.json'), convertOfficialPoints(dataset))
+  await writePointLibrary(projectPath('data', 'generated', 'official-echo'), convertOfficialPoints(dataset), dataset, 'official')
   await Promise.all([
     writeMapDataset(dataset),
     writeJson(projectPath('public', 'data', 'map-asset-catalog.json'), assetCatalog, { compact: true }),

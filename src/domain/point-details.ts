@@ -16,7 +16,7 @@ export function describeEchoPoint(location: EchoMapLocation, echoes: readonly Ec
   const total = members.some(({ count }) => count === null)
     ? null
     : members.reduce((sum, { count }) => sum + (count ?? 0), 0)
-  const quantity = total === null ? '数量待核验' : `${total}只`
+  const quantity = total === null ? '数量未知' : `${total}只`
   return {
     members,
     title: members.map(({ name }) => name).join(' · '),

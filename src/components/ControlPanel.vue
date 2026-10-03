@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { buttonClasses } from './base/button-styles.ts'
 import WuButton from './base/WuButton.vue'
-import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
 import WuScrollArea from './base/WuScrollArea.vue'
@@ -9,31 +8,12 @@ import WuSvg from './base/WuSvg.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
 import EchoFilter from './filters/EchoFilter.vue'
 import RoutePanel from './RoutePanel.vue'
-import type { PointSourceFilter } from '../domain/types.ts'
 
 defineProps<{ compact: boolean }>()
 defineEmits<{ editRequested: [] }>()
 
 const store = useExplorerStore()
-const {
-  dataset,
-  pointSourceFilters,
-  selectedEchoIds,
-} = storeToRefs(store)
-const pointSourceOptions = [
-  { value: 'manual', label: '人工点位' },
-  { value: 'official', label: '官方点位' },
-] as const satisfies readonly { value: PointSourceFilter; label: string }[]
-const activePointSourceFilterSet = computed(() => new Set(pointSourceFilters.value))
-function togglePointSourceFilter(source: PointSourceFilter): void {
-  const next = new Set(activePointSourceFilterSet.value)
-  if (next.has(source)) next.delete(source)
-  else next.add(source)
-  store.setPointSourceFilters(pointSourceOptions
-    .filter(({ value }) => next.has(value))
-    .map(({ value }) => value))
-}
-
+const { dataset } = storeToRefs(store)
 </script>
 
 <template>
@@ -59,14 +39,9 @@ function togglePointSourceFilter(source: PointSourceFilter): void {
       </div>
 
       <div class="border-b border-[var(--line)] p-16px">
-        <div class="flex flex-wrap items-center justify-between gap-10px">
-          <div class="min-w-0 flex items-center gap-4px whitespace-nowrap">
-            <WuButton variant="ghost" tone="accent" :size="compact ? 'lg' : 'xs'" @click="$emit('editRequested')">点位录入</WuButton>
-            <RouterLink to="/assets" target="_blank" rel="noopener" :class="buttonClasses({ variant: 'ghost', tone: 'accent', size: compact ? 'lg' : 'xs' })">资产浏览</RouterLink>
-          </div>
-          <div class="flex shrink-0 gap-5px">
-            <WuButton v-for="option in pointSourceOptions" :key="option.value" :size="compact ? 'lg' : 'xs'" :tone="activePointSourceFilterSet.has(option.value) ? 'accent' : 'neutral'" @click="togglePointSourceFilter(option.value)">{{ option.label }}</WuButton>
-          </div>
+        <div class="min-w-0 flex items-center gap-4px whitespace-nowrap">
+          <WuButton variant="ghost" tone="accent" :size="compact ? 'lg' : 'xs'" @click="$emit('editRequested')">点位录入</WuButton>
+          <RouterLink to="/assets" target="_blank" rel="noopener" :class="buttonClasses({ variant: 'ghost', tone: 'accent', size: compact ? 'lg' : 'xs' })">资产浏览</RouterLink>
         </div>
       </div>
       <EchoFilter :compact="compact" />

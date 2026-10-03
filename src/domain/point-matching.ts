@@ -1,12 +1,11 @@
-import type { AuthoredEchoPoint, AuthoredPoint, EchoMember, PointLibrary, PointSource } from './types.ts'
+import type { AuthoredEchoPoint, AuthoredPoint, EchoMember, PointLibrary } from './types.ts'
+import { isOfficialPoint } from './point-library.ts'
 
 export function isOfficialPointReplaced(point: Pick<AuthoredPoint, 'id' | 'officialIds'>, replaced: ReadonlySet<string>): boolean {
   return [point.id, ...(point.officialIds ?? [])].some((id) => replaced.has(id))
 }
 
-export function combinePointLibraries(manual: PointLibrary, official: PointLibrary, source: PointSource = 'all'): PointLibrary {
-  if (source === 'manual') return manual
-  if (source === 'official') return official
+export function combinePointLibraries(manual: PointLibrary, official: PointLibrary): PointLibrary {
   const replaced = new Set(manual.points.flatMap((point) => point.replacesOfficialIds ?? []))
   const manualIds = new Set(manual.points.map(({ id }) => id))
   return { version: 1, points: [...manual.points, ...official.points.filter((point) => (
@@ -22,10 +21,10 @@ export function findNearbyPoints(points: readonly AuthoredPoint[], target: Autho
     if ((point.gravityType ?? null) !== (target.gravityType ?? null)) return []
     if (point.id === target.id || point.kind !== target.kind || point.stateId !== target.stateId || point.levelId !== target.levelId || coordinate.x === null || coordinate.y === null) return []
     const distance = Math.hypot(coordinate.x - x, coordinate.y - y)
-    const heightDifference = point.status === 'imported' || coordinate.z === null ? null : Math.abs(coordinate.z - z)
+    const heightDifference = isOfficialPoint(point) || coordinate.z === null ? null : Math.abs(coordinate.z - z)
     if (distance > radius || (heightDifference !== null && heightDifference > heightTolerance)) return []
     return [{ point, distance, heightDifference }]
-  }).sort((left, right) => Number(left.point.status === 'imported') - Number(right.point.status === 'imported') || left.distance - right.distance)
+  }).sort((left, right) => Number(isOfficialPoint(left.point)) - Number(isOfficialPoint(right.point)) || left.distance - right.distance)
 }
 
 export function mergeEchoMembers(existing: readonly EchoMember[], incoming: readonly EchoMember[]): EchoMember[] {
@@ -36,17 +35,17 @@ export function mergeEchoMembers(existing: readonly EchoMember[], incoming: read
 
 export function appendObservation(target: AuthoredEchoPoint, incoming: AuthoredEchoPoint): AuthoredEchoPoint {
   if ((target.gravityType ?? null) !== (incoming.gravityType ?? null)) throw new Error('不同重力状态的点位不能合并')
-  const imported = target.status === 'imported'
+  const imported = isOfficialPoint(target)
+  const { officialIds: _officialIds, ...manualTarget } = target
   const replacementIds = [...new Set([
     ...(target.replacesOfficialIds ?? []),
     ...(incoming.replacesOfficialIds ?? []),
     ...(imported ? target.officialIds ?? [target.id] : []),
   ])]
   return {
-    ...target,
+    ...manualTarget,
     id: imported ? incoming.id : target.id,
     coordinate: imported ? { ...incoming.coordinate } : { ...target.coordinate },
-    status: 'draft',
     compositionStatus: 'partial',
     members: mergeEchoMembers(target.members, incoming.members),
     ...(replacementIds.length > 0 ? { replacesOfficialIds: replacementIds } : {}),

@@ -11,7 +11,7 @@ export function navigationPoint(pointType: NavigationPointType = 'small-beacon',
     pointType, kind: rule.kind, mode: rule.defaultMode, iconUrl: navigationTypeIcons(pointType)[0]?.url ?? '',
     groupId: `test:${rule.kind}`, catalogCategoryId: 'test', catalogCategoryName: '测试定位点',
     stateId: 8, countryId: null, layeredMapId: null, levelId: null, gravityType: null,
-    coordinate: officialToMapCoordinate(100, 200), gameCoordinate: { x: 1, y: 2, z: 3 }, quality: 'manual-verified',
+    coordinate: officialToMapCoordinate(100, 200), gameCoordinate: { x: 1, y: 2, z: 3 }, quality: 'manual',
   }
 }
 

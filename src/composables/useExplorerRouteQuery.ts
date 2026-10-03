@@ -11,7 +11,6 @@ export function useExplorerRouteQuery(): {
   read: () => ExplorerUrlState
   write: (state: ExplorerUrlSnapshot) => void
 } {
-  const sourcesQuery = useRouteQuery<string | undefined>('sources', undefined, { mode: 'replace' })
   const mapQuery = useRouteQuery<string | undefined>('map', String(DEFAULT_STATE_ID))
   const regionQuery = useRouteQuery('region')
   const floorQuery = useRouteQuery<string | undefined>('floor', undefined, { mode: 'replace' })
@@ -29,7 +28,6 @@ export function useExplorerRouteQuery(): {
 
   function read(): ExplorerUrlState {
     return parseExplorerQueryValues({
-      sources: sourcesQuery.value,
       map: mapQuery.value,
       region: regionQuery.value,
       floor: floorQuery.value,
@@ -50,7 +48,6 @@ export function useExplorerRouteQuery(): {
   function write(state: ExplorerUrlSnapshot): void {
     const values = createExplorerQueryValues(state)
     saveLastExplorerQuery(values)
-    sourcesQuery.value = values.sources
     mapQuery.value = values.map
     regionQuery.value = values.region
     floorQuery.value = values.floor

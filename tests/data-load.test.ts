@@ -3,6 +3,7 @@ import { loadMapDataset, loadPointLibrary } from '../src/data/load.ts'
 import { readOfficialPointData, splitMapDataset } from '../scripts/lib/map-data.ts'
 import { referenceDataset, mixedPoint } from './fixtures/point-library.ts'
 import { assembleMapDataset } from '../src/domain/map-data.ts'
+import { serializeJson } from '../src/utils/json.ts'
 
 const { map, catalog } = splitMapDataset(referenceDataset)
 const official = await readOfficialPointData(referenceDataset)
@@ -35,7 +36,7 @@ describe('split application data loading', () => {
     const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (url) => {
       const body = responses.get(String(url))
       if (!body) throw new Error(`Unexpected data request: ${String(url)}`)
-      return new Response(JSON.stringify(body))
+      return new Response(serializeJson(body))
     })
     vi.stubGlobal('fetch', fetchMock)
     const pending = loadMapDataset()
@@ -92,7 +93,7 @@ describe('split application data loading', () => {
 
   it('rejects official points that reference an unknown echo after merging the map data', async () => {
     const invalid = {
-      ...mixedPoint(), status: 'imported', officialIds: ['source'], coordinate: { x: 1, y: 2, z: 0 },
+      ...mixedPoint(), officialIds: ['source'], coordinate: { x: 1, y: 2, z: 0 },
       members: [{ echoId: 'unknown-echo', count: 1 }],
     }
     vi.stubGlobal('fetch', vi.fn<typeof fetch>()

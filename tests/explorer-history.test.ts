@@ -72,7 +72,7 @@ describe('last explorer query', () => {
   )
 
   it('only restores supported query fields', () => {
-    stored = '{"map":"9","unknown":"1"}'
+    stored = '{"map":"9","unknown":"1","sources":"official"}'
     expect(readLastExplorerQuery()).toEqual({ map: '9' })
   })
 

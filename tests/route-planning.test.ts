@@ -17,7 +17,6 @@ function createStore() {
   const store = useExplorerStore()
   store.setDataset(dataset)
     store.setOfficialPointLibrary(convertOfficialPoints(dataset))
-    store.setPointSourceFilters(['official'])
   const target = dataset.echoLocations.find(({ stateId, levelId, gameCoordinate }) => stateId === 8 && levelId === null && gameCoordinate !== null)
   if (!target) {
     throw new Error('测试数据缺少可规划声骸')
@@ -102,7 +101,6 @@ describe('route planning actions', () => {
     const store = useExplorerStore()
     store.setDataset(dataset)
     store.setOfficialPointLibrary(convertOfficialPoints(dataset))
-    store.setPointSourceFilters(['official'])
     const statesByEcho = new Map<string, Set<number>>()
     for (const location of store.allEchoLocations) {
       for (const { echoId } of echoMembers(location)) {
@@ -198,12 +196,12 @@ describe('route planning actions', () => {
 
   it('restores the combined mobile sheet and keeps the desktop preference independent', () => {
     const store = createStore()
-    store.restoreUrlState({ pointSourceFilters: ['official'], mobileSheet: 'filters', controlPanelCollapsed: true })
+    store.restoreUrlState({ mobileSheet: 'filters', controlPanelCollapsed: true })
     expect(store.mobileSheet).toBe('filters')
     store.setMobileSheet(null)
     expect(store.mobileSheet).toBeNull()
     expect(store.controlPanelCollapsed).toBe(true)
-    store.restoreUrlState({ pointSourceFilters: ['official'] })
+    store.restoreUrlState({})
     expect(store.mobileSheet).toBeNull()
     expect(store.controlPanelCollapsed).toBe(false)
   })

@@ -209,8 +209,8 @@ describe('echo marker appearance', () => {
   it('uses the shared labelled fallback for editor navigation points without artwork', () => {
     const display = authoredPointMapDisplay({
       gravityType: null,
-      id: 'navigation', kind: 'navigation', status: 'draft', name: '', navigationKind: 'beacon', mode: 'fast-travel',
-      stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: null }, note: '',
+      id: 'navigation', kind: 'navigation', name: '', navigationKind: 'beacon', mode: 'fast-travel',
+      stateId: 8, levelId: null, coordinate: { x: 0, y: 0, z: null }, note: '',
     }, referenceDataset)
     if (display?.category !== 'navigation') throw new Error('Missing editor navigation point')
     const markers = createPointMarkerStyles(() => {})
@@ -228,14 +228,12 @@ describe('echo marker appearance', () => {
     const display = authoredPointMapDisplay({
       gravityType: navigation.gravityType,
       id: navigation.id,
-      status: 'verified',
       pointType: navigation.pointType,
       iconUrl: navigation.iconUrl,
       name: navigation.typeName,
       navigationKind: navigation.kind,
       mode: navigation.mode,
       stateId: navigation.stateId,
-      countryId: navigation.countryId,
       levelId: navigation.levelId,
       coordinate: { x: 0, y: 0, z: 0 },
       kind: 'navigation',
@@ -266,14 +264,12 @@ describe('echo marker appearance', () => {
       const display = authoredPointMapDisplay({
         gravityType: navigation.gravityType,
         id: navigation.id,
-        status: 'verified',
         pointType: navigation.pointType,
         iconUrl: navigation.iconUrl,
         name,
         navigationKind: navigation.kind,
         mode: navigation.mode,
         stateId: navigation.stateId,
-        countryId: navigation.countryId,
         levelId: navigation.levelId,
         coordinate: { x: 0, y: 0, z: 0 },
         kind: 'navigation',

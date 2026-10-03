@@ -1,8 +1,10 @@
-import { pointLibrarySchema } from './schema.ts'
+import { authoredPointSchema, pointLibrarySchema } from './schema.ts'
 import type { AuthoredCoordinate, AuthoredPoint, EchoMapLocation, AuthoredEchoLocation, GameCoordinate, MapDataset, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointLibrary, PointQuality } from './types.ts'
-import { officialToMapCoordinate } from '../map/projection.ts'
+import { gameToMapCoordinate, officialToMapCoordinate } from '../map/projection.ts'
 import { navigationPointTypes } from './navigation-point-types.ts'
 import { navigationPointIconUrl } from './navigation-icons.ts'
+import { pointRegionResolver } from './point-region.ts'
+import { isOfficialEchoMapIncluded } from './official-echo-scope.ts'
 
 export const NAVIGATION_NAMES: Record<NavigationKind, string> = {
   nexus: '中枢信标', beacon: '小型信标', 'tacet-field': '无音区', 'training-ground': '模拟领域',
@@ -28,31 +30,50 @@ export function combinePointLibraryKinds(echo: PointLibrary, navigation: PointLi
   return { version: 1, points: [...echo.points, ...navigation.points] }
 }
 
-export function parsePointLibrary(value: unknown, dataset: Pick<MapDataset, 'states' | 'echoes' | 'regionLabels'>, source?: 'manual' | 'official'): PointLibrary {
-  const library = pointLibrarySchema.parse(value)
+export function isOfficialPoint(point: Pick<AuthoredPoint, 'officialIds'>): boolean {
+  return point.officialIds !== undefined
+}
+
+type PointReferenceDataset = Pick<MapDataset, 'states' | 'echoes' | 'regionLabels' | 'mapNavigation' | 'source'>
+
+function validatePointReferences(points: readonly AuthoredPoint[], dataset: PointReferenceDataset, source?: 'manual' | 'official'): void {
   const echoIds = new Set(dataset.echoes.map(({ id }) => id))
   const replacements = new Set<string>()
-  for (const point of library.points) {
+  for (const point of points) {
     if (source === 'official' && point.kind !== 'echo') throw new Error('官方文件只能包含声骸点位')
-    if (source === 'official' && point.status !== 'imported') throw new Error('官方文件只能包含官方导入点')
-    if (source === 'manual' && point.status === 'imported') throw new Error('官方导入点应保存于官方文件，请先录入实测坐标再保存到人工库')
+    if (source === 'official' && !isOfficialPoint(point)) throw new Error('官方点位必须保留来源 ID')
+    if (source === 'manual' && isOfficialPoint(point)) throw new Error('官方导入点应保存于官方文件，请先录入实测坐标再保存到人工库')
     for (const id of point.replacesOfficialIds ?? []) {
       if (replacements.has(id)) throw new Error(`官方点 ${id} 已有人工替代点，请追加到已有点位`)
       replacements.add(id)
     }
     const state = dataset.states.find(({ id }) => id === point.stateId)
     if (!state) throw new Error(`点位 ${point.id} 引用了未知地图`)
-    if (point.gravityType === 2 && state.gravityTiles.length === 0) throw new Error(`点位 ${point.id} 的地图没有反重力资源`)
-    if (point.status !== 'imported' && point.levelId !== null && !state.layeredMaps.some(({ floors }) => floors.some(({ id }) => id === point.levelId))) {
-      throw new Error(`点位 ${point.id} 的楼层不属于当前地图`)
+    if (source === 'official') {
+      const { x, y } = point.coordinate
+      if (x === null || y === null || !isOfficialEchoMapIncluded(dataset, point.stateId, gameToMapCoordinate(x, y, dataset.source.tileWidth))) {
+        throw new Error(`官方声骸点 ${point.id} 不在收录地图范围内`)
+      }
     }
-    if (point.countryId !== null && !dataset.regionLabels.some((label) => label.stateId === point.stateId && label.level === 1 && label.countryId === point.countryId)) {
-      throw new Error(`点位 ${point.id} 的地区不属于当前地图`)
+    if (point.gravityType === 2 && state.gravityTiles.length === 0) throw new Error(`点位 ${point.id} 的地图没有反重力资源`)
+    if (!isOfficialPoint(point) && point.levelId !== null && !state.layeredMaps.some(({ floors }) => floors.some(({ id }) => id === point.levelId))) {
+      throw new Error(`点位 ${point.id} 的楼层不属于当前地图`)
     }
     if (point.kind === 'echo' && point.members.some(({ echoId }) => !echoIds.has(echoId))) {
       throw new Error(`点位 ${point.id} 引用了白名单外声骸`)
     }
   }
+}
+
+export function parsePointDraft(value: unknown, dataset: PointReferenceDataset): AuthoredPoint {
+  const point = authoredPointSchema.parse(value)
+  validatePointReferences([point], dataset, 'manual')
+  return point
+}
+
+export function parsePointLibrary(value: unknown, dataset: PointReferenceDataset, source?: 'manual' | 'official'): PointLibrary {
+  const library = pointLibrarySchema.parse(value)
+  validatePointReferences(library.points, dataset, source)
   return library
 }
 
@@ -84,23 +105,24 @@ export function authoredPointMapDisplay(
 ): AuthoredMapDisplayPoint | null {
   const { x, y } = point.coordinate
   if (x === null || y === null) return null
-  const quality: PointQuality = point.status === 'imported' ? 'official-provisional' : 'manual-verified'
+  const quality: PointQuality = isOfficialPoint(point) ? 'official-provisional' : 'manual'
+  const coordinate = officialToMapCoordinate(x * 100, y * 100, dataset.source.tileWidth)
   const base = {
     id: point.id,
     typeId: `manual:${point.kind}`,
     typeName: pointTitle(point, dataset),
     iconUrl: '',
     stateId: point.stateId,
-    countryId: point.countryId,
+    countryId: pointRegionResolver(dataset)(point.stateId, [coordinate.mapX, coordinate.mapY])?.countryId ?? null,
     levelId: point.levelId,
     gravityType: point.gravityType ?? null,
     layeredMapId: dataset.states.find(({ id }) => id === point.stateId)?.layeredMaps.find(({ floors }) => floors.some(({ id }) => id === point.levelId))?.id ?? null,
-    coordinate: officialToMapCoordinate(x * 100, y * 100, dataset.source.tileWidth),
+    coordinate,
     gameCoordinate: completeCoordinate(point.coordinate) ?? null,
     quality,
   }
   if (point.kind === 'echo') {
-    return { category: 'echo', location: { ...base, members: point.members, note: point.note, compositionStatus: point.compositionStatus ?? 'partial' } }
+    return { category: 'echo', location: { ...base, members: point.members, note: point.note ?? '', compositionStatus: point.compositionStatus ?? 'partial' } }
   }
   const teleportCoordinate = completeCoordinate(point.teleportCoordinate)
   const location: NavigationPoint = {
@@ -136,7 +158,7 @@ export function libraryLocations(library: PointLibrary, dataset: MapDataset) {
   const navigationPoints: NavigationPoint[] = []
   const navigationPointGroups: NavigationPointGroup[] = []
   for (const point of library.points) {
-    if (point.status === 'draft' || !completeCoordinate(point.coordinate)) continue
+    if (!completeCoordinate(point.coordinate)) continue
     const display = authoredPointMapDisplay(point, dataset)
     if (display?.category === 'echo') echoLocations.push(display.location)
     else if (display?.category === 'navigation') {

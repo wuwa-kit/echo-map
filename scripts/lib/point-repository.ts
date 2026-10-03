@@ -1,8 +1,10 @@
-import { createHash, randomUUID } from 'node:crypto'
-import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { pointFileRevisionsSchema, pointLibraryChangesSchema } from '../../src/domain/point-changes.ts'
+import { pointFilePath, pointFileRevision, pointLibraryFiles, readPointFiles, replacePointFiles, withPointFilesLock } from './point-files.ts'
+import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { parsePointLibrary } from '../../src/domain/point-library.ts'
 import type { MapDataset, PointLibrary } from '../../src/domain/types.ts'
+import { serializeJson } from '../../src/utils/json.ts'
 
 export class PointRepositoryError extends Error {
   status: number
@@ -13,35 +15,59 @@ export class PointRepositoryError extends Error {
 }
 
 export function createPointRepository(path: string, historyPath: string, getDataset: () => Promise<MapDataset>) {
-  let queue: Promise<unknown> = Promise.resolve()
-  const revisionOf = (text: string) => createHash('sha256').update(text).digest('hex')
+  const revisionOf = pointFileRevision
+  const conflict = () => new PointRepositoryError('相关地区文件已被其他页面修改。请重新载入点位库，核对后再保存；当前编辑内容已保留。', 409)
 
-  async function read() {
-    const text = await readFile(path, 'utf8')
-    return { library: parsePointLibrary(JSON.parse(text), await getDataset(), 'manual'), revision: revisionOf(text) }
+  function read() {
+    return withPointFilesLock(path, async () => {
+      const { library, revision } = await readPointFiles(path, await getDataset(), 'manual')
+      return { library, revision }
+    })
   }
 
-  async function save(value: unknown, revision: string) {
-    const work = queue.then(async () => {
-      const library = parsePointLibrary(value, await getDataset(), 'manual')
-      const previous = await readFile(path, 'utf8')
-      const currentRevision = revisionOf(previous)
-      if (revision !== currentRevision) throw new PointRepositoryError('数据已被其他页面修改。请重新载入点位库，核对后再保存；当前编辑内容已保留。', 409)
-      await mkdir(historyPath, { recursive: true })
-      await writeFile(join(historyPath, `${currentRevision}.json`), previous, 'utf8')
-      const text = `${JSON.stringify(library, null, 2)}\n`
-      await mkdir(dirname(path), { recursive: true })
-      const temporary = `${path}.${randomUUID()}.tmp`
-      try {
-        await writeFile(temporary, text, 'utf8')
-        await rename(temporary, path)
-      } finally {
-        await rm(temporary, { force: true }).catch(() => undefined)
+  function save(value: unknown, revisionValue: unknown) {
+    return withPointFilesLock(path, async () => {
+      const changes = pointLibraryChangesSchema.parse(value)
+      const revision = pointFileRevisionsSchema.parse(revisionValue)
+      const dataset = await getDataset()
+      const current = await readPointFiles(path, dataset, 'manual')
+      const check = (file: string) => {
+        if (revision[file] !== current.revision[file]) throw conflict()
       }
-      return { library, revision: revisionOf(text) }
+      if (changes.replaceAll) {
+        for (const file of new Set([...Object.keys(revision), ...Object.keys(current.revision)])) check(file)
+      }
+      const points = new Map(current.library.points.map((point) => [point.id, point]))
+      const affected = new Set<string>()
+      for (const { before, after } of changes.edits) {
+        const id = before?.id ?? after?.id
+        if (!id) throw new Error('无效的点位修改')
+        if (JSON.stringify(points.get(id) ?? null) !== JSON.stringify(before)) throw conflict()
+        const oldFile = current.fileByPointId.get(id)
+        if (oldFile) affected.add(oldFile)
+        if (after) {
+          affected.add(pointFilePath(after, dataset, 'manual'))
+          points.set(id, after)
+        } else points.delete(id)
+      }
+      for (const file of affected) check(file)
+      const library = parsePointLibrary({ version: 1, points: [...points.values()] }, dataset, 'manual')
+      const grouped = pointLibraryFiles(library, dataset, 'manual')
+      const next = new Map(current.texts)
+      for (const file of affected) {
+        const text = grouped.get(file)
+        if (text === undefined) next.delete(file)
+        else next.set(file, text)
+      }
+      if (affected.size) {
+        const previous = `${serializeJson(current.library, 2)}\n`
+        await mkdir(historyPath, { recursive: true })
+        await writeFile(join(historyPath, `${revisionOf(previous)}.json`), previous, 'utf8')
+        await replacePointFiles(path, current.texts, next)
+      }
+      const saved = await readPointFiles(path, dataset, 'manual')
+      return { library: saved.library, revision: saved.revision }
     })
-    queue = work.catch(() => undefined)
-    return work
   }
 
   async function versions() {

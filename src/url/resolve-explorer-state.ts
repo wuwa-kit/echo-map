@@ -23,7 +23,6 @@ export function resolveExplorerState(
   const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 
   return {
-    pointSourceFilters: (['manual', 'official'] as const).filter(source => state.pointSourceFilters?.includes(source)),
     stateId,
     gravityType: hasGravityMap(nextState) && state.gravityType === 2 ? 2 : 1,
     countryId: state.countryId !== undefined && countryIds.has(state.countryId) ? state.countryId : null,

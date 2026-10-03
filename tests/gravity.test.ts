@@ -35,14 +35,13 @@ function setupPoints() {
   const negative: AuthoredEchoPoint = { ...ordinary, id: 'negative', gravityType: 2 }
   const unknown: AuthoredEchoPoint = { ...ordinary, id: 'unknown', gravityType: null }
   const start: AuthoredNavigationPoint = {
-    gravityType: 2, id: 'start', kind: 'navigation', status: 'verified', stateId: 903,
-    countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: 22 }, name: '信标',
+    gravityType: 2, id: 'start', kind: 'navigation', stateId: 903,
+    levelId: null, coordinate: { x: 0, y: 0, z: 22 }, name: '信标',
     navigationKind: 'beacon', mode: 'fast-travel', note: '',
   }
   const store = useExplorerStore()
   store.setDataset(referenceDataset)
   store.setPointLibrary({ version: 1, points: [ordinary, negative, unknown, start] })
-  store.setPointSourceFilters(['manual'])
   store.selectState(903)
   const member = ordinary.members[0]
   if (!member) throw new Error('缺少测试怪物')

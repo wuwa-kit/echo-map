@@ -5,7 +5,7 @@ export function hasGravityMap(state: MapStateDefinition | null | undefined): boo
 }
 
 export function gravityName(gravity: GravityType | null | undefined): string {
-  return gravity === 2 ? '反重力' : gravity === 1 ? '普通重力' : '重力待核验'
+  return gravity === 2 ? '反重力' : gravity === 1 ? '普通重力' : '重力未设置'
 }
 
 export function matchesGravity(gravity: GravityType | null | undefined, selected: GravityType | null | undefined): boolean {

@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { appendObservation, combinePointLibraries, findNearbyPoints } from '../src/domain/point-matching.ts'
-import { OFFICIAL_ECHO_MERGE_DIAMETER, convertOfficialPoints, readOfficialPointLibrary } from '../scripts/lib/official-point-library.ts'
+import { convertOfficialPoints, readOfficialPointLibrary } from '../scripts/lib/official-point-library.ts'
 import { parsePointLibrary, libraryLocations } from '../src/domain/point-library.ts'
 import { referenceDataset, mixedPoint, smallEcho, eliteEcho } from './fixtures/point-library.ts'
 
@@ -12,7 +12,7 @@ describe('official library and incremental observations', () => {
     const library = convertOfficialPoints(referenceDataset)
     expect(library.points.filter(({ kind }) => kind === 'echo').length).toBeLessThan(referenceDataset.echoLocations.length)
     expect(library.points.filter(({ kind }) => kind === 'navigation')).toHaveLength(referenceDataset.navigationPoints.length)
-    expect(library.points.every(({ coordinate, status, officialIds }) => coordinate.z === 0 && Number.isSafeInteger(coordinate.x) && Number.isSafeInteger(coordinate.y) && status === 'imported' && officialIds?.length)).toBe(true)
+    expect(library.points.every(({ coordinate, officialIds }) => coordinate.z === 0 && Number.isSafeInteger(coordinate.x) && Number.isSafeInteger(coordinate.y) && officialIds?.length)).toBe(true)
     expect(library.points.filter((point) => point.kind === 'echo').flatMap(({ members }) => members).reduce((sum, { count }) => sum + count, 0)).toBe(referenceDataset.echoLocations.length)
     const source = referenceDataset.echoLocations[0]
     if (!source) throw new Error('Missing reference point')
@@ -63,13 +63,14 @@ describe('official library and incremental observations', () => {
       { echoId: smallEcho.id, count: 4 },
     ].sort((left, right) => left.echoId.localeCompare(right.echoId)))
     expect(library.points.find(({ officialIds }) => officialIds?.includes('five'))?.officialIds).toEqual(['five'])
-    expect(cluster?.note).toContain(`最大直径 ${OFFICIAL_ECHO_MERGE_DIAMETER}`)
+    expect(cluster).not.toHaveProperty('note')
+    expect(cluster).not.toHaveProperty('compositionStatus')
   })
 
   it('uses nearby region labels to correct erroneous official echo countries before clustering', () => {
     const library = convertOfficialPoints(referenceDataset)
     const cluster = library.points.find(({ officialIds }) => officialIds?.includes('1467288883984715776'))
-    expect(cluster?.countryId).toBe(4)
+    expect(libraryLocations(library, referenceDataset).echoLocations.find(({ id }) => id === cluster?.id)?.countryId).toBe(4)
     expect(cluster?.officialIds).toEqual([
       '1467288883984715776',
       '1467288919757934592',
@@ -80,7 +81,7 @@ describe('official library and incremental observations', () => {
 
   it('requires matching map, floor and XY radius, uses real height only for manual points', () => {
     const target = mixedPoint('observed')
-    const points = [mixedPoint(), { ...mixedPoint('upstairs'), coordinate: { ...target.coordinate, z: 80 } }, { ...mixedPoint('other-map'), stateId: 999 }, { ...mixedPoint('other-floor'), levelId: 'underground' }, { ...mixedPoint('far'), coordinate: { ...target.coordinate, x: 1000 } }, { ...mixedPoint('official'), status: 'imported' as const, coordinate: { ...target.coordinate, z: 0 } }]
+    const points = [mixedPoint(), { ...mixedPoint('upstairs'), coordinate: { ...target.coordinate, z: 80 } }, { ...mixedPoint('other-map'), stateId: 999 }, { ...mixedPoint('other-floor'), levelId: 'underground' }, { ...mixedPoint('far'), coordinate: { ...target.coordinate, x: 1000 } }, { ...mixedPoint('official'), officialIds: ['source'], coordinate: { ...target.coordinate, z: 0 } }]
     expect(findNearbyPoints(points, target).map(({ point }) => point.id)).toEqual(['mixed-point', 'official'])
     expect(findNearbyPoints(points, { ...target, coordinate: { ...target.coordinate, z: null } })).toEqual([])
   })
@@ -92,11 +93,11 @@ describe('official library and incremental observations', () => {
     const twice = appendObservation(once, incoming)
     expect(twice.members).toEqual(target.members)
     expect(twice.coordinate).toEqual(target.coordinate)
-    expect(target.status).toBe('verified')
+    expect(target).toEqual(mixedPoint())
   })
 
   it('keeps independently usable manual overrides when official data is hidden or removed', () => {
-    const imported = { ...mixedPoint('official'), status: 'imported' as const, officialIds: ['source-a', 'source-b'] }
+    const imported = { ...mixedPoint('official'), officialIds: ['source-a', 'source-b'] }
     const authored = appendObservation(imported, mixedPoint('manual'))
     const manual = { version: 1 as const, points: [authored] }
     const official = { version: 1 as const, points: [imported] }
@@ -109,11 +110,11 @@ describe('official library and incremental observations', () => {
       replacesOfficialIds: ['source-a', 'source-b'],
     })
     expect(authored.replacesOfficialIds).toEqual(['source-a', 'source-b'])
+    expect(authored).not.toHaveProperty('officialIds')
+    expect(parsePointLibrary(manual, referenceDataset, 'manual').points).toEqual([authored])
     expect(mergedIntoManual.replacesOfficialIds).toEqual(['source-a', 'source-b'])
     expect(combinePointLibraries(manual, official).points).toEqual([authored])
     expect(combinePointLibraries(manual, regroupedOfficial).points).toEqual([authored])
-    expect(combinePointLibraries(manual, official, 'manual').points).toEqual([authored])
-    expect(combinePointLibraries(manual, official, 'official').points).toEqual([imported])
     expect(combinePointLibraries(manual, { version: 1, points: [] }).points).toEqual([authored])
   })
 })

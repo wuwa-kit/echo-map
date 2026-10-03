@@ -47,7 +47,7 @@ describe('navigation classification', () => {
     expect(navigationTypeIcons('material-domain')).toHaveLength(1)
     expect(officialNavigationTypeIds['material-domain']).toHaveLength(20)
     const points = icon.name.split(' / ').map((name, index) => ({
-      id: `material:${index}`, kind: 'navigation', status: 'verified', gravityType: null, stateId: 8, countryId: null, levelId: null,
+      id: `material:${index}`, kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
       coordinate: { x: 1, y: 2, z: 3 }, name, pointType: 'material-domain', navigationKind: 'domain', mode: 'fast-travel', note: '', iconId: icon.id,
     }))
     expect(parsePointLibrary({ version: 1, points }, referenceDataset).points).toEqual(points)
@@ -63,7 +63,7 @@ describe('navigation classification', () => {
 
   it.each(['landmark', 'fast-travel'] as const)('accepts each hologram icon in %s mode when saving, importing and rendering', (mode) => {
     const points = navigationTypeIcons('hologram').map((icon) => ({
-      id: `hologram:${icon.id}`, kind: 'navigation', status: 'verified', gravityType: null, stateId: 8, countryId: null, levelId: null,
+      id: `hologram:${icon.id}`, kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
       coordinate: { x: 1, y: 2, z: 3 }, name: icon.name, pointType: 'hologram', navigationKind: 'hologram', mode, note: '', iconId: icon.id,
     }))
     const library = parsePointLibrary({ version: 1, points }, referenceDataset)
@@ -78,7 +78,7 @@ describe('navigation classification', () => {
     const boss = navigationTypeIcons('weekly-boss')[0]
     if (!beacon || !boss) throw new Error('需要信标和首领')
     const point = {
-      id: 'test', kind: 'navigation', status: 'verified', gravityType: null, stateId: 8, countryId: null, levelId: null,
+      id: 'test', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
       coordinate: { x: 1, y: 2, z: 3 }, name: '小型信标', pointType: 'small-beacon', navigationKind: 'beacon', mode: 'fast-travel', note: '',
     }
     expect(authoredPointSchema.safeParse({ ...point, mode: 'landmark' }).success).toBe(false)
@@ -93,7 +93,7 @@ describe('navigation classification', () => {
     const normal = navigationTypeIcons('normal-boss')[0]
     if (!nightmare || !normal) throw new Error('需要普通和梦魇图标')
     const point = {
-      id: 'nightmare-test', kind: 'navigation', status: 'verified', gravityType: null, stateId: 8, countryId: null, levelId: null,
+      id: 'nightmare-test', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
       coordinate: { x: 1, y: 2, z: 3 }, name: '我记录的梦魇首领', pointType: 'nightmare-boss', navigationKind: 'boss', mode: 'fast-travel', note: '', iconId: nightmare.id,
     }
     const dataset = { ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }
@@ -108,7 +108,7 @@ describe('navigation classification', () => {
     expect(rule).toMatchObject({ defaultMode: 'fast-travel', teleportLocked: false })
     for (const mode of ['landmark', 'fast-travel'] as const) {
       const points = navigationTypeIcons(pointType).map((icon) => ({
-        id: `${pointType}:${icon.id}`, kind: 'navigation', status: 'verified', gravityType: null, stateId: 8, countryId: null, levelId: null,
+        id: `${pointType}:${icon.id}`, kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
         coordinate: { x: 1, y: 2, z: 3 }, name: rule.names[0] ?? icon.name, pointType, navigationKind: rule.kind, mode, note: '', iconId: icon.id,
       }))
       const library = parsePointLibrary({ version: 1, points }, referenceDataset)
@@ -124,34 +124,32 @@ describe('navigation classification', () => {
   it.each(['central-beacon', 'small-beacon', 'material-domain', 'remnant-settlement', 'nightmare-settlement', 'weekly-boss', 'tower-of-adversity', 'challenge'] as const)('still requires teleport for %s', (pointType) => {
     const rule = navigationPointTypes[pointType]
     const point = {
-      id: 'locked-test', kind: 'navigation', status: 'verified', gravityType: null, stateId: 8, countryId: null, levelId: null,
+      id: 'locked-test', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
       coordinate: { x: 1, y: 2, z: 3 }, name: rule.name, pointType, navigationKind: rule.kind, mode: 'fast-travel', note: '',
     }
     expect(authoredPointSchema.safeParse(point).success).toBe(true)
     expect(authoredPointSchema.safeParse({ ...point, mode: 'landmark' }).success).toBe(false)
   })
 
-  it.each(['central-beacon', 'small-beacon'] as const)('rejects custom %s names in drafts, saved points and official imports', (pointType) => {
+  it.each(['central-beacon', 'small-beacon'] as const)('rejects custom %s names while editing and saving', (pointType) => {
     const rule = navigationPointTypes[pointType]
     const source = referenceDataset.navigationPoints.find((point) => point.pointType === pointType)
     if (!source) throw new Error('需要信标数据')
-    for (const status of ['draft', 'verified', 'imported'] as const) {
-      const point = {
-        id: 'name-test', kind: 'navigation', status, gravityType: null, stateId: source.stateId, countryId: null, levelId: null,
-        officialIds: status === 'imported' ? [source.id] : undefined,
-        coordinate: { x: 1, y: 2, z: 0 }, name: rule.name, pointType, navigationKind: rule.kind, mode: rule.defaultMode, note: '',
-      }
-      expect(authoredPointSchema.safeParse(point).success).toBe(true)
-      expect(() => parsePointLibrary({ version: 1, points: [{ ...point, name: '自定义信标' }] }, referenceDataset, status === 'imported' ? 'official' : 'manual')).toThrow('不允许自定义')
-      expect(authoredPointSchema.safeParse({ ...point, name: '' }).success).toBe(false)
+    const point = {
+      id: 'name-test', kind: 'navigation', gravityType: null, stateId: source.stateId, levelId: null,
+      coordinate: { x: 1, y: 2, z: 0 }, name: rule.name, pointType, navigationKind: rule.kind, mode: rule.defaultMode, note: '', iconId: rule.icons[0],
     }
+    expect(authoredPointSchema.safeParse(point).success).toBe(true)
+    expect(parsePointLibrary({ version: 1, points: [point] }, referenceDataset, 'manual').points).toEqual([point])
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, name: '自定义信标' }] }, referenceDataset, 'manual')).toThrow('不允许自定义')
+    expect(authoredPointSchema.safeParse({ ...point, name: '' }).success).toBe(false)
   })
 
   it('accepts custom names independently from the allowed icon list', () => {
     const source = navigationTypeIcons('normal-boss')[0]
     if (!source) throw new Error('需要首领数据')
     const point = {
-      id: 'list-test', kind: 'navigation', status: 'verified', gravityType: null, stateId: 8, countryId: null, levelId: null,
+      id: 'list-test', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
       coordinate: { x: 1, y: 2, z: 3 }, name: '自行命名的首领点', pointType: 'normal-boss', navigationKind: 'boss', mode: 'fast-travel', note: '', iconId: source.id,
     }
     expect(() => parsePointLibrary({ version: 1, points: [point] }, referenceDataset)).not.toThrow()

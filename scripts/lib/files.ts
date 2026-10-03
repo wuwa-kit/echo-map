@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { serializeJson } from '../../src/utils/json.ts'
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -13,7 +14,7 @@ export async function readJson<T>(path: string): Promise<T> {
 }
 
 export async function writeJson(path: string, value: unknown, options: { compact?: boolean, skipUnchanged?: boolean } = {}): Promise<void> {
-  const text = options.compact ? JSON.stringify(value) : `${JSON.stringify(value, null, 2)}\n`
+  const text = options.compact ? serializeJson(value) : `${serializeJson(value, 2)}\n`
   if (options.skipUnchanged) {
     try {
       if (await readFile(path, 'utf8') === text) return

@@ -24,7 +24,7 @@ describe('map navigation destinations', () => {
       ['今州城', '今州'],
       ['玄方城', '梦州'],
       ['梦枢天罗', '梦州'],
-      ['黑海岸群岛', '黑海岸群岛'],
+      ['黑海岸群岛', '黑海岸'],
     ] as const) {
       const region = destination(name)
       const section = mapNavigationSectionAtCenter(dataset, region.stateId, [region.coordinate.mapX, region.coordinate.mapY])
@@ -92,7 +92,7 @@ describe('map navigation destinations', () => {
     expect(store.selectedEchoIds).toHaveLength(1)
   })
 
-  it('includes Mengshu Tianluo under Mengzhou with independent tiles, floors and points', () => {
+  it('keeps Mengshu Tianluo navigation, tiles and floors without importing its official echoes', () => {
     const region = destination('梦枢天罗')
     const options = mapNavigationOptions(dataset)
     const columns = cascaderColumns(options, ['country:1', 'group:1:8'])
@@ -104,8 +104,7 @@ describe('map navigation destinations', () => {
     const floors = new Set(state?.layeredMaps.flatMap(({ floors }) => floors.map(({ id }) => id)))
     expect(floors.size).toBeGreaterThan(0)
     const echoes = dataset.echoLocations.filter(({ stateId }) => stateId === 912)
-    expect(echoes.length).toBeGreaterThan(0)
-    expect(echoes.some(({ levelId }) => levelId !== null && floors.has(levelId))).toBe(true)
+    expect(echoes).toEqual([])
     const points = dataset.navigationPoints.filter(({ stateId }) => stateId === 912)
     expect(points).toEqual([])
   })

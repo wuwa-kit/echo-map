@@ -114,7 +114,6 @@ function closeSheet(): void {
 const routeQuery = useExplorerRouteQuery()
 let urlSyncEnabled = false
 const urlSnapshot = useEqualComputed<ExplorerUrlSnapshot>(() => ({
-  pointSourceFilters: store.pointSourceFilters,
   stateId: store.selectedStateId,
   countryId: store.selectedCountryId,
   levelId: store.selectedLevelId,

@@ -10,7 +10,7 @@ export const wiki: WikiSnapshot = {
   })),
 }
 
-const coordinate = { stateId: 8, countryId: 1, levelId: null, x: 11, y: 22, z: 33, quality: 'manual-verified', note: '固定测试输入' }
+const coordinate = { stateId: 8, countryId: 1, levelId: null, x: 11, y: 22, z: 33, quality: 'manual', note: '固定测试输入' }
 export const manual = {
   echoLocations: [
     { ...coordinate, id: 'manual-linked', officialLocationId: 'echo-official', echoName: '甲' },
@@ -63,6 +63,6 @@ export const layers = [{
 }]
 
 export const countries = [{
-  name: '地区', stateId: 8, countryId: 1, xPosition: 100, yPosition: 200,
-  children: [{ name: '地名', xPosition: 300, yPosition: 400 }],
+  name: '地区', stateId: 8, countryId: 1, mapStateId: '1', mapStateName: '今州', xPosition: 100, yPosition: 200,
+  children: [{ name: '地名', mapState: '1', xPosition: 300, yPosition: 400 }],
 }]

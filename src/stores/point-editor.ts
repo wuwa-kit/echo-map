@@ -5,9 +5,9 @@ import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
-import { authoredPointSchema, navigationPointTypeSchema, navigationIconUrlSchema } from '../domain/schema.ts'
-import { emptyPointLibrary, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
-import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary } from '../domain/types.ts'
+import { navigationPointTypeSchema, navigationIconUrlSchema } from '../domain/schema.ts'
+import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointDraft, parsePointLibrary } from '../domain/point-library.ts'
+import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision } from '../domain/types.ts'
 import type { NavigationMode, NavigationPointType } from '../domain/types.ts'
 import { combinePointLibraries } from '../domain/point-matching.ts'
 import { readEditorLibrary, saveEditorLibrary } from '../data/editor-client.ts'
@@ -17,6 +17,7 @@ import type { GravityType } from '../domain/types.ts'
 import { createFloorCoverage, floorsAtCoordinate } from '../map/floor-coverage.ts'
 import { gameToMapCoordinate } from '../map/projection.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
+import { serializeJson } from '../utils/json.ts'
 
 const DRAFT_KEY = 'echo-map:point-editor:draft:v1'
 const CONTINUE_ADDING_KEY = 'echo-map:point-editor:continue-adding:v1'
@@ -46,7 +47,6 @@ function formDirty(form: EditorForm): boolean {
 
 interface PointEditorMapContext {
   stateId?: number
-  countryId?: number
   levelId?: string
   gravityType?: GravityType
 }
@@ -57,7 +57,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const officialLibrary = shallowRef<PointLibrary>(freeze(emptyPointLibrary(), true))
   const mapTileError = shallowRef(false)
   const mapTileRetry = shallowRef(0)
-  const revision = shallowRef('')
+  const revision = shallowRef<PointLibraryRevision | null>(null)
   const storage = shallowRef<'project' | 'browser'>('project')
   const editorMode = shallowRef<EditorKind>('navigation')
   const continueAdding = shallowRef(false)
@@ -115,7 +115,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   function cacheDraft(): void {
     try {
       if (recovery.value) return
-      if (draft.value && editing.value && dirty.value) localStorage.setItem(`${DRAFT_KEY}:${editorMode.value}`, JSON.stringify(draft.value))
+      if (draft.value && editing.value && dirty.value) localStorage.setItem(`${DRAFT_KEY}:${editorMode.value}`, serializeJson(draft.value))
       else localStorage.removeItem(`${DRAFT_KEY}:${editorMode.value}`)
     } catch {
       notice.value = '自动暂存不可用，请保存后再离开。'
@@ -155,7 +155,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     notice.value = ''
     if (!draft.value) {
       newPoint(kind)
-      if (context) initializeMapContext({ stateId: context.stateId, countryId: context.countryId ?? undefined, levelId: context.levelId ?? undefined, gravityType: context.gravityType ?? undefined })
+      if (context) initializeMapContext({ stateId: context.stateId, levelId: context.levelId ?? undefined, gravityType: context.gravityType ?? undefined })
     }
   }
 
@@ -164,8 +164,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     const previous = draft.value
     editorMode.value = kind
     const base = {
-      id: crypto.randomUUID(), status: 'draft' as const, stateId: previous?.stateId ?? (dataset.value?.states.some(({ id }) => id === 8) ? 8 : dataset.value?.states[0]?.id ?? 8),
-      countryId: previous?.countryId ?? null, levelId: previous?.levelId ?? null,
+      id: crypto.randomUUID(), stateId: previous?.stateId ?? (dataset.value?.states.some(({ id }) => id === 8) ? 8 : dataset.value?.states[0]?.id ?? 8),
+      levelId: previous?.levelId ?? null,
       gravityType: previous?.gravityType ?? null,
       coordinate: { x: null, y: null, z: null }, note: '',
     }
@@ -177,7 +177,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   function selectPoint(id: string): void {
     const point = completePoints.value.find((point) => point.id === id)
     if (!point || busy.value) return
-    if (point.status === 'imported') {
+    if (isOfficialPoint(point)) {
       error.value = ''
       notice.value = '官方点位为只读，不可编辑'
       return
@@ -202,14 +202,14 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     const point = draft.value
     if (!point?.levelId || !coordinateInputXY(positionInput.value, point.coordinate)
       || availableFloors.value.some(({ id }) => id === point.levelId)) return
-    draft.value = freeze(produce(point, (point) => { point.levelId = null; point.status = 'draft' }), true)
+    draft.value = freeze(produce(point, (point) => { point.levelId = null }), true)
   }
 
   function setLevel(value: string | number | null): void {
     if (busy.value || !draft.value || typeof value === 'number'
       || value !== null && !availableFloors.value.some(({ id }) => id === value)
       || value === draft.value.levelId) return
-    edit((point) => { point.levelId = value; point.status = 'draft' })
+    edit((point) => { point.levelId = value })
   }
 
   function updateCoordinateInput(teleport: boolean, change: CoordinateInputChange): void {
@@ -225,12 +225,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (emptyArrival && point.kind === 'navigation') {
         if (point.teleportCoordinate) {
           delete point.teleportCoordinate
-          point.status = 'draft'
         }
       } else if (coordinateAxes.some((axis) => (previous?.[axis] ?? null) !== change.value[axis])) {
         if (teleport && point.kind === 'navigation') point.teleportCoordinate = change.value
         else point.coordinate = change.value
-        point.status = 'draft'
       }
       const clearedArrival = emptyArrival && change.valid && !coordinateInputPending(change.state)
       for (const axis of coordinateAxes) {
@@ -260,7 +258,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     clearInputError(axis)
     edit((point) => {
       point.coordinate[axis] = number
-      point.status = 'draft'
     })
   }
 
@@ -274,7 +271,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       }
       edit((point) => {
         point.coordinate = coordinate
-        point.status = 'draft'
       })
     } catch (failure) { error.value = failure instanceof Error ? failure.message : String(failure) }
   }
@@ -300,7 +296,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       coordinate[axis] = number
       if (Object.values(coordinate).every((entry) => entry === null)) delete point.teleportCoordinate
       else point.teleportCoordinate = coordinate
-      point.status = 'draft'
     })
   }
 
@@ -316,7 +311,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       edit((point) => {
         if (point.kind !== 'navigation') return
         point.teleportCoordinate = coordinate
-        point.status = 'draft'
       })
     } catch (failure) { error.value = failure instanceof Error ? failure.message : String(failure) }
   }
@@ -332,12 +326,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     }
     edit((point) => {
       point.stateId = stateId
-      point.countryId = null
       point.levelId = null
       point.gravityType = null
       point.coordinate = { x: null, y: null, z: null }
       if (point.kind === 'navigation') delete point.teleportCoordinate
-      point.status = 'draft'
     })
   }
 
@@ -349,13 +341,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       ?? currentDataset.states.find(({ id }) => id === currentDraft.stateId)
       ?? currentDataset.states[0]
     if (!state) return
-    const countryIds = new Set(currentDataset.regionLabels
-      .filter((label) => label.stateId === state.id && label.level === 1)
-      .map(({ countryId }) => countryId))
     const floorIds = new Set(state.layeredMaps.flatMap(({ floors }) => floors.map(({ id }) => id)))
     openDraft(produce(currentDraft, (point) => {
       point.stateId = state.id
-      point.countryId = context.countryId !== undefined && countryIds.has(context.countryId) ? context.countryId : null
       point.levelId = context.levelId !== undefined && floorIds.has(context.levelId) ? context.levelId : null
       point.gravityType = hasGravityMap(state) && (context.gravityType === 1 || context.gravityType === 2)
         ? context.gravityType
@@ -375,7 +363,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (existing) existing.count = Math.min(999, existing.count + 1)
       else point.members.push({ echoId, count: 1 })
       point.compositionStatus = 'partial'
-      point.status = 'draft'
     })
   }
 
@@ -384,7 +371,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (!hasGravityMap(dataset.value?.states.find(({ id }) => id === draft.value?.stateId))) return
     edit((point) => {
       point.gravityType = value
-      point.status = 'draft'
     })
   }
 
@@ -400,7 +386,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (point.kind === 'echo') {
         const member = point.members.find((item) => item.echoId === echoId)
         if (member) member.count = count
-        point.status = 'draft'
       }
     })
   }
@@ -420,7 +405,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     edit((point) => {
       if (point.kind === 'echo') {
         point.members = point.members.filter((member) => member.echoId !== echoId)
-        point.status = 'draft'
       }
     })
   }
@@ -502,7 +486,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     try {
       const [{ dataset: reference, officialLibrary: official }, snapshot] = await Promise.all([dataset.value ? { dataset: dataset.value, officialLibrary: officialLibrary.value } : loadMapDataset(), readEditorLibrary()])
       dataset.value = freeze(reference, true)
-      library.value = freeze(parsePointLibrary(snapshot.library, reference), true)
+      library.value = freeze(parsePointLibrary(snapshot.library, reference, 'manual'), true)
       officialLibrary.value = freeze(official, true)
       revision.value = snapshot.revision
       storage.value = snapshot.storage
@@ -510,11 +494,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
         if (forms.value[kind].draft) continue
         try {
           const cached = localStorage.getItem(`${DRAFT_KEY}:${kind}`)
-          const parsed = cached ? authoredPointSchema.safeParse(JSON.parse(cached)) : null
-          if (parsed?.success && parsed.data.kind === kind) {
-            const validated = parsePointLibrary({ version: 1, points: [parsed.data] }, reference, 'manual').points[0]
-            if (validated) forms.value = produce(forms.value, (state) => { state[kind].recovery = validated })
-          }
+          if (!cached) continue
+          const point = parsePointDraft(JSON.parse(cached), reference)
+          if (point.kind === kind) forms.value = produce(forms.value, (state) => { state[kind].recovery = point })
         } catch { /* Ignore invalid cached input. */ }
       }
       notice.value = ''
@@ -525,7 +507,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       // Keep recovery set while creating the blank editor so cacheDraft cannot erase it.
       newPoint()
       recovery.value = pendingRecovery
-      if (pendingRecovery) { try { localStorage.setItem(`${DRAFT_KEY}:${editorMode.value}`, JSON.stringify(pendingRecovery)) } catch { /* Recovery remains available in memory. */ } }
+      if (pendingRecovery) { try { localStorage.setItem(`${DRAFT_KEY}:${editorMode.value}`, serializeJson(pendingRecovery)) } catch { /* Recovery remains available in memory. */ } }
     }
   }
 
@@ -536,7 +518,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     notice.value = ''
     try {
       const libraryToSave = parsePointLibrary(next, dataset.value, 'manual')
-      const snapshot = await saveEditorLibrary(libraryToSave, revision.value)
+      const snapshot = await saveEditorLibrary(libraryToSave, revision.value, library.value, action === 'import')
       library.value = freeze(snapshot.library, true)
       revision.value = snapshot.revision
       storage.value = snapshot.storage
@@ -579,7 +561,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       error.value = '请检查标出的字段'
       return false
     }
-    const saved = produce(draft.value, (point) => { point.status = 'verified' })
+    const saved = draft.value
     const next = produce(library.value, (library) => {
       const index = library.points.findIndex(({ id }) => id === saved.id)
       if (index >= 0) library.points[index] = saved
@@ -695,7 +677,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (rule?.icons.length) delete point.iconUrl
       if (icon) point.iconId = icon.id
       if (point.mode !== 'fast-travel') delete point.teleportCoordinate
-      point.status = 'draft'
     })
   }
 
@@ -713,7 +694,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       delete point.iconUrl
       point.iconId = icon.id
       if (name !== undefined) point.name = name
-      point.status = 'draft'
     })
   }
 
@@ -732,7 +712,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       delete point.iconId
       if (url) point.iconUrl = url
       else delete point.iconUrl
-      point.status = 'draft'
     })
   }
 
@@ -841,7 +820,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
     setTeleportCoordinateText: (value: string) => { teleportCoordinateText.value = value },
-    setCountry: (value: number | null) => edit((point) => { point.countryId = value }),
     setNote: (value: string) => edit((point) => { point.note = value }),
     setName: (value: string) => {
       if (busy.value || draft.value?.kind !== 'navigation') return
@@ -861,7 +839,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
         if (point.kind === 'navigation') {
           point.mode = mode
           if (mode !== 'fast-travel') delete point.teleportCoordinate
-          point.status = 'draft'
         }
       })
     },

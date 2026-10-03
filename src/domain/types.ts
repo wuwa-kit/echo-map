@@ -2,7 +2,7 @@ import type { navigationPointTypes } from './navigation-point-types.ts'
 
 export type NonEmptyArray<T> = [T, ...T[]]
 
-export type PointQuality = 'official-provisional' | 'manual-verified' | 'example'
+export type PointQuality = 'official-provisional' | 'manual' | 'example'
 
 export type GravityType = 1 | 2
 
@@ -127,17 +127,22 @@ export interface EchoMember {
 }
 
 export interface AuthoredPointBase {
-  // Older manual libraries are normalized to null when read.
   gravityType: GravityType | null
   id: string
-  status: 'draft' | 'verified' | 'imported'
   officialIds?: string[]
   replacesOfficialIds?: string[]
   stateId: number
-  countryId: number | null
   levelId: string | null
   coordinate: AuthoredCoordinate
-  note: string
+  note?: string
+}
+
+export type PointFileRevisions = Record<string, string>
+export type PointLibraryRevision = string | PointFileRevisions
+
+export interface PointLibraryChanges {
+  edits: { before: AuthoredPoint | null; after: AuthoredPoint | null }[]
+  replaceAll: boolean
 }
 
 export interface AuthoredEchoPoint extends AuthoredPointBase {
@@ -189,9 +194,6 @@ export interface AuthoredEchoLocation extends PointLocationBase {
   note: string
   compositionStatus?: 'partial' | 'complete'
 }
-
-export type PointSource = 'all' | 'manual' | 'official'
-export type PointSourceFilter = Exclude<PointSource, 'all'>
 
 export type EchoMapLocation = EchoLocation | AuthoredEchoLocation
 

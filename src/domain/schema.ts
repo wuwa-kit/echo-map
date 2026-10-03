@@ -5,7 +5,7 @@ import type { RefinementCtx } from 'zod'
 import type { MapDataset, NavigationKind, NavigationMode, NavigationPointType } from './types.ts'
 
 const finiteNumber = z.number().finite()
-const nullableString = z.string().nullable()
+const nullableString = z.string().nullable().default(null)
 export const gravityTypeSchema = z.union([z.literal(1), z.literal(2)])
 
 export const officialAssetCategorySchema = z.enum(['echo', 'sonata', 'navigation', 'exploration', 'challenge', 'service', 'tile', 'floor', 'gravity'])
@@ -55,22 +55,20 @@ export const navigationPointTypeSchema = z.enum(navigationPointTypeIds)
 export const navigationModeSchema = z.enum(['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown'])
 
 const authoredCoordinateSchema = z.object({
-  x: z.number().int().safe().nullable(),
-  y: z.number().int().safe().nullable(),
-  z: z.number().int().safe().nullable(),
+  x: z.number().int().safe().nullable().default(null),
+  y: z.number().int().safe().nullable().default(null),
+  z: z.number().int().safe().nullable().default(null),
 }).strict()
 
 const authoredPointBase = {
   gravityType: gravityTypeSchema.nullable().default(null),
   id: z.string().min(1).max(100),
-  status: z.enum(['draft', 'verified', 'imported']),
   officialIds: z.array(z.string().min(1).max(100)).min(1).optional(),
   replacesOfficialIds: z.array(z.string().min(1).max(100)).min(1).optional(),
   stateId: z.number().int(),
-  countryId: z.number().int().nullable(),
-  levelId: z.string().min(1).nullable(),
+  levelId: z.string().min(1).nullable().default(null),
   coordinate: authoredCoordinateSchema,
-  note: z.string().max(2000),
+  note: z.string().max(2000).optional(),
 }
 
 export const authoredPointSchema = z.discriminatedUnion('kind', [
@@ -96,18 +94,8 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
   if (point.kind === 'echo' && new Set(point.members.map(({ echoId }) => echoId)).size !== point.members.length) {
     issue('同种怪物只能有一行，请合并数量')
   }
-  if (point.status === 'imported' && (point.coordinate.z !== 0 || !point.officialIds?.length)) {
-    issue('官方导入点必须保留来源 ID，Z 固定为 0')
-  }
-  if (point.status !== 'draft') {
-    if (Object.values(point.coordinate).some((value) => value === null)) issue('核验点位必须填写完整的整数 XYZ')
-    if (point.kind === 'navigation' && point.teleportCoordinate && Object.values(point.teleportCoordinate).some((value) => value === null)) {
-      issue('核验传送落点必须填写完整的整数 XYZ')
-    }
-    if (point.kind === 'echo' && point.members.length === 0) issue('刷取点至少需要一种怪物')
-    if (point.kind === 'navigation' && (!point.name.trim() || point.navigationKind === 'unknown' || point.mode === 'unknown')) {
-      issue('定位点需要名称和明确的传送能力')
-    }
+  if (point.officialIds && point.coordinate.z !== 0) {
+    issue('官方导入点的 Z 固定为 0')
   }
   if (point.kind === 'navigation') {
     for (const message of navigationTypeErrors({ ...point, kind: point.navigationKind })) issue(message)
@@ -127,9 +115,20 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
   }
 })
 
+export const savedPointSchema = authoredPointSchema.superRefine((point, context) => {
+  const issue = (message: string) => context.addIssue({ code: 'custom', message })
+  if (Object.values(point.coordinate).some((value) => value === null)) issue('点位必须填写完整的整数 XYZ')
+  if (point.kind === 'echo' && point.members.length === 0) issue('刷取点至少需要一种怪物')
+  if (point.kind === 'navigation') {
+    if (!point.name.trim() || point.navigationKind === 'unknown' || point.mode === 'unknown') issue('定位点需要名称和明确的传送能力')
+    if (!point.iconId && !point.iconUrl) issue('定位点需要图标')
+    if (point.teleportCoordinate && Object.values(point.teleportCoordinate).some((value) => value === null)) issue('传送落点必须填写完整的整数 XYZ')
+  }
+})
+
 export const pointLibrarySchema = z.object({
   version: z.literal(1),
-  points: z.array(authoredPointSchema).max(100000),
+  points: z.array(savedPointSchema).max(100000),
 }).strict().superRefine(({ points }, context) => {
   const ids = new Set<string>()
   for (const point of points) {
@@ -168,7 +167,7 @@ const officialCoordinateSchema = z.object({
 const mapLocationBaseShape = {
   id: z.string().min(1),
   stateId: z.number().int(),
-  countryId: z.number().int().nullable(),
+  countryId: z.number().int().nullable().default(null),
   coordinate: officialCoordinateSchema,
 }
 
@@ -182,7 +181,7 @@ export const regionLabelSchema = z.object({
 
 export const mapZoomRangeSchema = z.object({
   minZoom: finiteNumber.nonnegative(),
-  maxZoom: finiteNumber.nullable(),
+  maxZoom: finiteNumber.nullable().default(null),
 }).strict().refine(({ minZoom, maxZoom }) => maxZoom === null || maxZoom > minZoom, {
   message: '缩放范围上限必须大于下限，或以 null 表示无上限',
 })
@@ -195,8 +194,8 @@ const pointBaseShape = {
   iconUrl: z.string(),
   layeredMapId: nullableString,
   levelId: nullableString,
-  gameCoordinate: gameCoordinateSchema.nullable(),
-  quality: z.enum(['official-provisional', 'manual-verified', 'example']),
+  gameCoordinate: gameCoordinateSchema.nullable().default(null),
+  quality: z.enum(['official-provisional', 'manual', 'example']),
 }
 
 const sonataEchoIdsSchema = z.array(z.string().min(1)).refine(
@@ -419,7 +418,7 @@ const mapDatasetObjectSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1),
     iconUrl: z.string(),
-    iconHash: z.string().length(64).nullable(),
+    iconHash: z.string().length(64).nullable().default(null),
     typeIds: z.array(z.string().min(1)).min(1),
     typeNames: z.array(z.string().min(1)).min(1),
     modes: z.array(z.enum(['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown'])).min(1),

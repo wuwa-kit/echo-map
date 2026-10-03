@@ -1,4 +1,4 @@
-import type { GravityType, PointSourceFilter } from '../domain/types.ts'
+import type { GravityType } from '../domain/types.ts'
 import { compactWikiEchoId, parseWikiEchoId } from './wiki-id.ts'
 
 export const DEFAULT_STATE_ID = 8
@@ -15,7 +15,6 @@ export interface MapViewportState {
 
 export interface ExplorerUrlState {
   gravityType?: GravityType
-  pointSourceFilters?: PointSourceFilter[]
   stateId?: number
   countryId?: number
   levelId?: string
@@ -31,7 +30,6 @@ export interface ExplorerUrlState {
 
 export interface ExplorerUrlSnapshot {
   gravityType?: GravityType
-  pointSourceFilters?: readonly PointSourceFilter[]
   stateId: number
   countryId: number | null
   levelId: string | null
@@ -49,7 +47,6 @@ export type ExplorerQueryValue = string | string[] | null | undefined
 
 export interface ExplorerQueryValues {
   gravity?: ExplorerQueryValue
-  sources?: ExplorerQueryValue
   map?: ExplorerQueryValue
   region?: ExplorerQueryValue
   floor?: ExplorerQueryValue
@@ -134,12 +131,6 @@ function costList(value: ExplorerQueryValue): EchoCostFilter[] | undefined {
   return values && values.length > 0 ? values : undefined
 }
 
-function pointSourceList(value: ExplorerQueryValue): PointSourceFilter[] | undefined {
-  const selected = new Set(idList(value))
-  const sources = (['manual', 'official'] as const).filter(source => selected.has(source))
-  return sources.length > 0 ? sources : undefined
-}
-
 function compactNumber(value: number, fractionDigits: number): string {
   return String(Number(value.toFixed(fractionDigits)))
 }
@@ -150,7 +141,6 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
   const zoom = finiteNumber(values.zoom)
   const sheet = single(values.sheet)
   return {
-    pointSourceFilters: pointSourceList(values.sources),
     stateId: integer(values.map),
     gravityType: single(values.gravity) === '2' ? 2 : 1,
     countryId: integer(values.region),
@@ -170,9 +160,6 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
 
 export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerSerializedQueryValues {
   return {
-    sources: state.pointSourceFilters && state.pointSourceFilters.length > 0
-      ? state.pointSourceFilters.join(',')
-      : undefined,
     map: state.stateId === DEFAULT_STATE_ID ? undefined : String(state.stateId),
     gravity: state.gravityType === 2 ? '2' : undefined,
     region: state.countryId === null ? undefined : String(state.countryId),

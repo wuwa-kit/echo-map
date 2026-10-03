@@ -1,12 +1,14 @@
+import { pointLibraryChanges, projectPointSnapshotSchema } from '../domain/point-changes.ts'
 import { z } from 'zod'
 import { combinePointLibraryKinds } from '../domain/point-library.ts'
 import { echoPointLibrarySchema, navigationPointLibrarySchema, pointLibrarySchema } from '../domain/schema.ts'
-import type { PointLibrary } from '../domain/types.ts'
-import { editorSnapshotSchema, initializeBrowserPointLibrary, readBrowserPointSnapshot, readBrowserPointVersion, readBrowserPointVersions, saveBrowserPointLibrary } from './browser-point-repository.ts'
+import type { PointLibrary, PointLibraryRevision } from '../domain/types.ts'
+import { initializeBrowserPointLibrary, readBrowserPointSnapshot, readBrowserPointVersion, readBrowserPointVersions, saveBrowserPointLibrary } from './browser-point-repository.ts'
+import { serializeJson } from '../utils/json.ts'
 
 const versionsSchema = z.array(z.object({ revision: z.string().regex(/^[a-f0-9]{64}$/u), savedAt: z.string() }))
 type EditorStorage = 'project' | 'browser'
-type EditorSnapshot = z.infer<typeof editorSnapshotSchema> & { storage: EditorStorage }
+type EditorSnapshot = { library: PointLibrary; revision: PointLibraryRevision; storage: EditorStorage }
 let activeStorage: EditorStorage | null = null
 
 class EditorApiUnavailableError extends Error {}
@@ -45,7 +47,7 @@ async function readBrowserLibrary(): Promise<EditorSnapshot> {
 export async function readEditorLibrary(): Promise<EditorSnapshot> {
   if (activeStorage === 'browser') return readBrowserLibrary()
   try {
-    const snapshot = editorSnapshotSchema.parse(await request('library'))
+    const snapshot = projectPointSnapshotSchema.parse(await request('library'))
     activeStorage = 'project'
     return { ...snapshot, storage: 'project' }
   } catch (error) {
@@ -55,12 +57,13 @@ export async function readEditorLibrary(): Promise<EditorSnapshot> {
   }
 }
 
-export async function saveEditorLibrary(library: PointLibrary, revision: string): Promise<EditorSnapshot> {
+export async function saveEditorLibrary(library: PointLibrary, revision: PointLibraryRevision, previous: PointLibrary, replaceAll = false): Promise<EditorSnapshot> {
   if (activeStorage !== 'browser') {
-    const snapshot = editorSnapshotSchema.parse(await request('library', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ library, revision }) }))
+    const snapshot = projectPointSnapshotSchema.parse(await request('library', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: serializeJson({ changes: pointLibraryChanges(previous, library, replaceAll), revision }) }))
     activeStorage = 'project'
     return { ...snapshot, storage: 'project' }
   }
+  if (typeof revision !== 'string') throw new Error('浏览器点位库版本无效')
   const snapshot = await saveBrowserPointLibrary(library, revision)
   return { ...snapshot, storage: 'browser' }
 }

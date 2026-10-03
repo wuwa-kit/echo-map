@@ -5,7 +5,7 @@ import type { Extent } from 'ol/extent.js'
 import { DEFAULT_STATE_ID } from '../url/explorer-url.ts'
 import type { EchoCostFilter, ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
 import { planRouteInWorker } from '../route/worker-client.ts'
-import type { EchoMapLocation, MapDataset, MapFloorDefinition, MapStateDefinition, PointLibrary, PointSource, PointSourceFilter, RoutePlanResult, RouteResult } from '../domain/types.ts'
+import type { EchoMapLocation, MapDataset, MapFloorDefinition, MapStateDefinition, PointLibrary, RoutePlanResult, RouteResult } from '../domain/types.ts'
 import { echoMembers, emptyPointLibrary, libraryLocations } from '../domain/point-library.ts'
 import { combinePointLibraries } from '../domain/point-matching.ts'
 import {
@@ -47,7 +47,6 @@ export const useExplorerStore = defineStore('explorer', () => {
   const dataset = shallowRef<MapDataset | null>(null)
   const pointLibrary = shallowRef<PointLibrary>(immutableSnapshot(emptyPointLibrary()))
   const officialLibrary = shallowRef<PointLibrary>(immutableSnapshot(emptyPointLibrary()))
-  const pointSourceFilters = shallowRef<PointSourceFilter[]>(immutableSnapshot([]))
   const selectedPointId = shallowRef<string | null>(null)
   const candidateIds = shallowRef<string[]>(immutableSnapshot([]))
   const selectedStateId = shallowRef<number>(DEFAULT_STATE_ID)
@@ -78,10 +77,6 @@ export const useExplorerStore = defineStore('explorer', () => {
   let activePlan: AbortController | null = null
 
   onScopeDispose(() => activePlan?.abort())
-
-  const pointSource = computed<PointSource>(() => (
-    pointSourceFilters.value.length === 1 ? pointSourceFilters.value[0] ?? 'all' : 'all'
-  ))
 
   const states = computed(() => dataset.value?.states ?? [])
   const activeState = computed<MapStateDefinition | null>(() => (
@@ -119,7 +114,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   ))
   const activeEchoIds = computed<ReadonlySet<string>>(() => selectActiveEchoIds(selectedEchoIds.value))
   const authoredLocations = computed(() => dataset.value
-    ? immutableSnapshot(libraryLocations(combinePointLibraries({ ...pointLibrary.value, points: pointLibrary.value.points.filter(({ status }) => status === 'verified') }, officialLibrary.value, pointSource.value), dataset.value))
+    ? immutableSnapshot(libraryLocations(combinePointLibraries(pointLibrary.value, officialLibrary.value), dataset.value))
     : { echoLocations: [], navigationPoints: [], navigationPointGroups: [] })
   const allEchoLocations = computed<readonly EchoMapLocation[]>(() => authoredLocations.value.echoLocations)
   const allNavigationPoints = computed(() => authoredLocations.value.navigationPoints)
@@ -210,7 +205,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     resetFloorContext()
 
     const resolved = resolveExplorerState(currentDataset, state, selectedStateId.value)
-    pointSourceFilters.value = immutableSnapshot([...(resolved.pointSourceFilters ?? [])])
     selectedStateId.value = resolved.stateId
     selectedCountryId.value = resolved.countryId
     selectedLevelId.value = resolved.levelId
@@ -508,7 +502,6 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   return {
-    pointSourceFilters: shallowReadonly(pointSourceFilters),
     allEchoLocations, allNavigationPoints, activeEchoIds, matchingMonsterCount, selectedEchoLocation, selectedNavigationPoint,
     setPointLibrary: (value: PointLibrary) => {
       pointLibrary.value = immutableSnapshot(value)
@@ -516,12 +509,6 @@ export const useExplorerStore = defineStore('explorer', () => {
     },
     setOfficialPointLibrary: (value: PointLibrary) => {
       officialLibrary.value = immutableSnapshot(value)
-      clearRoute()
-    },
-    setPointSourceFilters: (values: readonly PointSourceFilter[]) => {
-      pointSourceFilters.value = immutableSnapshot(
-        (['manual', 'official'] as const).filter(source => values.includes(source)),
-      )
       clearRoute()
     },
     pointCandidates, navigationPointCandidates,

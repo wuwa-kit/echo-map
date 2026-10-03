@@ -1,3 +1,5 @@
+import { readPointLibrary } from './lib/point-files.ts'
+import { isOfficialEchoMapIncluded } from '../src/domain/official-echo-scope.ts'
 import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
 import { mapZoomRangeSchema, officialAssetSchema, officialEchoPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { navigationIconById } from '../src/domain/navigation-icons.ts'
@@ -8,7 +10,7 @@ import { officialNavigationTypeIds } from './lib/map/navigation-types.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
 import { projectPath, readJson } from './lib/files.ts'
-import { parsePointLibrary } from '../src/domain/point-library.ts'
+import { parsePointLibrary, splitPointLibrary } from '../src/domain/point-library.ts'
 import { readMapDataset, readOfficialPointData } from './lib/map-data.ts'
 import { inferOfficialEchoCountryId, OFFICIAL_ECHO_MERGE_DIAMETER } from './lib/official-point-library.ts'
 
@@ -25,7 +27,8 @@ for (const asset of assets) {
     throw new Error(`资产 ${asset.name} 引用了不存在的地图`)
   }
 }
-const pointLibrary = parsePointLibrary(await readJson<unknown>(projectPath('data', 'manual', 'points.json')), dataset, 'manual')
+const pointLibrary = await readPointLibrary(projectPath('data', 'manual'), dataset, 'manual')
+const manual = splitPointLibrary(pointLibrary)
 const official = await readOfficialPointData(dataset)
 const officialEcho = officialEchoPointDataSchema.parse(official.echo)
 const officialLibrary = parsePointLibrary(officialEcho.library, dataset, 'official')
@@ -60,6 +63,9 @@ const officialById = new Map(dataset.echoLocations.map((point) => [point.id, poi
 const officialEchoById = new Map(dataset.echoLocations.map((point) => [point.id, point]))
 const convertedOfficialIds = new Set<string>()
 for (const point of officialLibrary.points) {
+  if (point.note !== undefined || (point.kind === 'echo' && point.compositionStatus === 'partial')) {
+    errors.push(`官方点 ${point.id} 包含可省略的备注或默认清单状态，请重新转换官方点位`)
+  }
   const officialIds = point.officialIds ?? []
   const expectedPointId = `official:${[...officialIds].sort((left, right) => left.localeCompare(right))[0]}`
   if (point.id !== expectedPointId) errors.push(`官方点 ${point.id} 未使用最小来源 ID 生成稳定 ID`)
@@ -84,15 +90,14 @@ for (const point of officialLibrary.points) {
   }
   const firstSource = sources[0]
   if (!firstSource) continue
-  const firstCountryId = inferOfficialEchoCountryId(firstSource, dataset.regionLabels)
-  if (point.countryId !== firstCountryId) errors.push(`官方声骸点 ${point.id} 未使用最近地区标签归区`)
+  const firstCountryId = inferOfficialEchoCountryId(firstSource, dataset)
   const maximumRawDistanceSquared = (OFFICIAL_ECHO_MERGE_DIAMETER * 100) ** 2
   for (let leftIndex = 0; leftIndex < sources.length; leftIndex += 1) {
     const left = sources[leftIndex]
     if (!left) continue
     if (
       left.stateId !== firstSource.stateId
-      || inferOfficialEchoCountryId(left, dataset.regionLabels) !== firstCountryId
+      || inferOfficialEchoCountryId(left, dataset) !== firstCountryId
       || left.levelId !== firstSource.levelId
       || left.gravityType !== firstSource.gravityType
     ) {
@@ -153,6 +158,9 @@ for (const echo of dataset.echoes) {
 if (dataset.navigationPoints.length || dataset.navigationPointGroups.length) errors.push('官方数据不应包含定位点或定位点分组')
 
 for (const location of dataset.echoLocations) {
+  if (!isOfficialEchoMapIncluded(dataset, location.stateId, [location.coordinate.mapX, location.coordinate.mapY])) {
+    errors.push(`官方来源 ${location.id} 不在收录地图范围内`)
+  }
   if (!echoIds.has(location.echoId)) {
     errors.push(`点位 ${location.id} 引用了白名单外声骸 ${location.echoId}`)
   }
@@ -180,8 +188,8 @@ console.log([
   `官方资产 ${assets.length}`,
   `反重力瓦片 ${dataset.states.reduce((sum, state) => sum + state.gravityTiles.length, 0)}`,
   `地图导航 ${dataset.mapNavigation.length} 个大区 / ${dataset.mapNavigation.reduce((sum, country) => sum + country.groups.length, 0)} 个分组`,
-  `人工点位 ${pointLibrary.points.length}`,
-  `官方录入格式 ${officialLibrary.points.length}`,
+  `人工点位 ${pointLibrary.points.length}（声骸 ${manual.echo.points.length} / 定位点 ${manual.navigation.points.length}）`,
+  `官方声骸点位 ${officialLibrary.points.length}`,
   `声骸 ${dataset.echoes.length}`,
   `合鸣效果 ${dataset.sonatas.length}`,
   `声骸点位 ${dataset.echoLocations.length}`,

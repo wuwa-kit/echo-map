@@ -11,7 +11,7 @@ const props = defineProps<{
 }>()
 
 const costLabel = computed(() => props.cost === null ? 'C?' : `C${props.cost}`)
-const countLabel = computed(() => props.count === null ? '数量待核验' : `${props.count}只`)
+const countLabel = computed(() => props.count === null ? '数量未知' : `${props.count}只`)
 </script>
 
 <template>

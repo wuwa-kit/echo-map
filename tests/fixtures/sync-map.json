@@ -149,7 +149,15 @@
       "regionIds": [
         "1:8:0.0:地名"
       ],
-      "groups": []
+      "groups": [
+        {
+          "id": "1",
+          "name": "今州",
+          "regionIds": [
+            "1:8:0.0:地名"
+          ]
+        }
+      ]
     }
   ],
   "regionLabels": [
@@ -202,7 +210,7 @@
         "y": 22,
         "z": 33
       },
-      "quality": "manual-verified",
+      "quality": "manual",
       "echoId": "echo-0"
     },
     {
@@ -246,7 +254,7 @@
         "y": 22,
         "z": 33
       },
-      "quality": "manual-verified",
+      "quality": "manual",
       "echoId": "echo-0"
     },
     {
@@ -270,7 +278,7 @@
         "y": 22,
         "z": 33
       },
-      "quality": "manual-verified",
+      "quality": "manual",
       "echoId": "echo-1"
     }
   ],

@@ -1,6 +1,8 @@
+import { readPointLibrary } from './point-files.ts'
+import { selectOfficialEchoLocations } from '../../src/domain/official-echo-scope.ts'
 import { mapCatalogDataSchema, mapDataSchema, mapDatasetSchema, mapPointLocationsSchema } from '../../src/domain/schema.ts'
 import { assembleMapDataset } from '../../src/domain/map-data.ts'
-import { parsePointLibrary, splitPointLibrary } from '../../src/domain/point-library.ts'
+import { splitPointLibrary } from '../../src/domain/point-library.ts'
 import type { MapCatalogData, MapData, MapDataset, MapPointLocations, OfficialEchoPointData, PointLibrary } from '../../src/domain/types.ts'
 import { projectPath, readJson, writeJson } from './files.ts'
 import { readOfficialPointLibrary } from './official-point-library.ts'
@@ -8,10 +10,10 @@ import { readOfficialPointLibrary } from './official-point-library.ts'
 let pendingPublicWrite: Promise<unknown> = Promise.resolve()
 
 export function splitMapDataset(dataset: MapDataset): { map: MapData, catalog: MapCatalogData, locations: MapPointLocations } {
-  const { echoLocations, navigationPoints: _navigationPoints, sonatas, echoes, navigationPointGroups: _navigationPointGroups, report, source, ...structure } = dataset
+  const { echoLocations: _echoLocations, navigationPoints: _navigationPoints, sonatas, echoes, navigationPointGroups: _navigationPointGroups, report, source, ...structure } = dataset
   const { wikiFetchedAt, sourceUrls: { echoCatalogue, sonataCatalogue, officialMap }, ...mapSource } = source
   const locations = {
-    echoLocations: echoLocations.map(({ iconUrl: _iconUrl, ...location }) => location),
+    echoLocations: selectOfficialEchoLocations(dataset).map(({ iconUrl: _iconUrl, ...location }) => location),
   }
   return {
     map: { ...structure, source: { ...mapSource, sourceUrls: { officialMap } } },
@@ -45,31 +47,31 @@ export async function readOfficialPointData(dataset: MapDataset): Promise<{
   echo: OfficialEchoPointData
 }> {
   const locations = splitMapDataset(dataset).locations
-  const library = await readOfficialPointLibrary(projectPath('data', 'generated', 'official-points.json'), dataset)
+  const library = await readOfficialPointLibrary(projectPath('data', 'generated', 'official-echo'), dataset)
   return {
     echo: { locations: locations.echoLocations, library },
   }
 }
 
-export function writePublicPointData(dataset?: MapDataset): Promise<{
+export async function readPublicPointData(dataset?: MapDataset): Promise<{
   officialEcho: OfficialEchoPointData
   manualEcho: PointLibrary
   manualNavigation: PointLibrary
 }> {
+  const reference = dataset ?? await readMapDataset()
+  const official = await readOfficialPointData(reference)
+  const library = await readPointLibrary(projectPath('data', 'manual'), reference, 'manual')
+  const manual = splitPointLibrary(library)
+  return { officialEcho: official.echo, manualEcho: manual.echo, manualNavigation: manual.navigation }
+}
+
+export function writePublicPointData(dataset?: MapDataset): Promise<void> {
   const work = pendingPublicWrite.then(async () => {
-    const reference = dataset ?? await readMapDataset()
-    const official = await readOfficialPointData(reference)
-    const library = parsePointLibrary(await readJson<unknown>(projectPath('data', 'manual', 'points.json')), reference, 'manual')
-    const manual = splitPointLibrary({ ...library, points: library.points.filter(({ status }) => status === 'verified') })
+    const data = await readPublicPointData(dataset)
     const options = { compact: true, skipUnchanged: true }
-    await writeJson(projectPath('public', 'data', 'official-echo-points.json'), official.echo, options)
-    await writeJson(projectPath('public', 'data', 'custom-echo-points.json'), manual.echo, options)
-    await writeJson(projectPath('public', 'data', 'custom-navigation-points.json'), manual.navigation, options)
-    return {
-      officialEcho: official.echo,
-      manualEcho: manual.echo,
-      manualNavigation: manual.navigation,
-    }
+    await writeJson(projectPath('public', 'data', 'official-echo-points.json'), data.officialEcho, options)
+    await writeJson(projectPath('public', 'data', 'custom-echo-points.json'), data.manualEcho, options)
+    await writeJson(projectPath('public', 'data', 'custom-navigation-points.json'), data.manualNavigation, options)
   })
   pendingPublicWrite = work.catch(() => undefined)
   return work

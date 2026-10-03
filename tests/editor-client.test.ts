@@ -34,7 +34,7 @@ describe('point editor client', () => {
     expect(initial).toMatchObject({ storage: 'browser', library: { points: [{ id: 'mixed-point' }] } })
 
     const updatedLibrary = { version: 1 as const, points: [{ ...mixedPoint(), note: '线上录入' }] }
-    const saved = await client.saveEditorLibrary(updatedLibrary, initial.revision)
+    const saved = await client.saveEditorLibrary(updatedLibrary, initial.revision, initial.library)
     expect(saved).toMatchObject({ storage: 'browser', library: updatedLibrary })
     expect((await client.readEditorLibrary()).library).toEqual(updatedLibrary)
 
@@ -49,13 +49,13 @@ describe('point editor client', () => {
 
   it('keeps using the project API when it is available', async () => {
     vi.stubGlobal('indexedDB', undefined)
-    const apiSnapshot = { library: { version: 1 as const, points: [] }, revision: 'a'.repeat(64) }
+    const apiSnapshot = { library: { version: 1 as const, points: [] }, revision: {} }
     const fetchMock = vi.fn(async () => jsonResponse(apiSnapshot))
     vi.stubGlobal('fetch', fetchMock)
     const client = await import('../src/data/editor-client.ts')
 
     expect(await client.readEditorLibrary()).toEqual({ ...apiSnapshot, storage: 'project' })
-    await client.saveEditorLibrary(apiSnapshot.library, apiSnapshot.revision)
+    await client.saveEditorLibrary(apiSnapshot.library, apiSnapshot.revision, apiSnapshot.library)
     expect(fetchMock).toHaveBeenLastCalledWith('/api/editor/library', expect.objectContaining({ method: 'PUT' }))
   })
 
@@ -64,18 +64,18 @@ describe('point editor client', () => {
     vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ error: '不存在的录入接口' }, 404)))
     const client = await import('../src/data/editor-client.ts')
     await expect(client.readEditorLibrary()).rejects.toThrow('IndexedDB')
-    await expect(client.saveEditorLibrary({ version: 1, points: [] }, 'missing')).rejects.toThrow('IndexedDB')
+    await expect(client.saveEditorLibrary({ version: 1, points: [] }, 'missing', { version: 1, points: [] })).rejects.toThrow('IndexedDB')
   })
 
   it('does not switch storage when a project save fails', async () => {
-    const apiSnapshot = { library: { version: 1 as const, points: [] }, revision: 'a'.repeat(64) }
+    const apiSnapshot = { library: { version: 1 as const, points: [] }, revision: {} }
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse(apiSnapshot))
       .mockResolvedValueOnce(jsonResponse({ error: '数据已被其他页面修改' }, 409))
     vi.stubGlobal('fetch', fetchMock)
     const client = await import('../src/data/editor-client.ts')
     await client.readEditorLibrary()
-    await expect(client.saveEditorLibrary(apiSnapshot.library, apiSnapshot.revision)).rejects.toThrow('其他页面修改')
+    await expect(client.saveEditorLibrary(apiSnapshot.library, apiSnapshot.revision, apiSnapshot.library)).rejects.toThrow('其他页面修改')
     const { readBrowserPointSnapshot } = await import('../src/data/browser-point-repository.ts')
     expect(await readBrowserPointSnapshot()).toBeNull()
   })

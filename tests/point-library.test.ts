@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { editorLibraryLocations, parsePointLibrary, libraryLocations, parseCoordinateInput } from '../src/domain/point-library.ts'
+import { editorLibraryLocations, parsePointDraft, parsePointLibrary, libraryLocations, parseCoordinateInput } from '../src/domain/point-library.ts'
 import { createRoutePlanInput } from '../src/route/plan-input.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import { echoComposition } from '../src/map/echo-composition.ts'
@@ -18,7 +18,7 @@ describe('authored point library', () => {
     store.setDataset(referenceDataset)
     expect(store.allEchoLocations).toEqual([])
     expect(store.allNavigationPoints).toEqual([])
-    store.setPointLibrary({ version: 1, points: [mixedPoint(), { ...mixedPoint('draft'), status: 'draft' }] })
+    store.setPointLibrary({ version: 1, points: [mixedPoint()] })
     store.toggleEcho(smallEcho.id)
     expect(store.visibleEchoLocations).toHaveLength(1)
     expect(store.matchingMonsterCount).toBe(3)
@@ -34,23 +34,19 @@ describe('authored point library', () => {
     const officialLibrary = convertOfficialPoints(referenceDataset)
     const officialEchoPointCount = officialLibrary.points.filter(({ kind }) => kind === 'echo').length
     store.setOfficialPointLibrary(officialLibrary)
-    store.setPointSourceFilters(['official'])
-    expect(store.allEchoLocations).toHaveLength(officialEchoPointCount)
-    expect(store.allEchoLocations.length).toBeLessThan(referenceDataset.echoLocations.length)
-    expect(store.allEchoLocations.every(({ gameCoordinate }) => gameCoordinate?.z === 0)).toBe(true)
-    expect(store.allEchoLocations.some(({ id }) => id === 'mixed-point')).toBe(false)
-    store.setPointSourceFilters(['manual'])
-    expect(store.allEchoLocations).toHaveLength(1)
-    store.setPointSourceFilters(['manual', 'official'])
     expect(store.allEchoLocations).toHaveLength(officialEchoPointCount + 1)
     expect(store.allEchoLocations.some(({ id }) => id === 'mixed-point')).toBe(true)
+    expect(store.allEchoLocations.filter(({ quality }) => quality === 'official-provisional')
+      .every(({ gameCoordinate }) => gameCoordinate?.z === 0)).toBe(true)
+    expect(store.routePlanEligibleLocations.some(({ quality }) => quality === 'official-provisional')).toBe(true)
+    expect(store.routePlanEligibleLocations.some(({ id }) => id === 'mixed-point')).toBe(true)
   })
 
-  it('keeps XY-overlapping floors and heights independent and only permits verified travel starts', () => {
+  it('keeps XY-overlapping floors and heights independent and permits saved travel starts', () => {
     const point = mixedPoint()
     const other = { ...mixedPoint('higher'), coordinate: { ...point.coordinate, z: 200 } }
     const teleportCoordinate = { x: 3, y: 4, z: 5 }
-    const library: PointLibrary = { version: 1, points: [point, other, { gravityType: null, id: 'beacon', kind: 'navigation', status: 'verified', stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: 0 }, teleportCoordinate, name: '测试信标', navigationKind: 'beacon', mode: 'fast-travel', note: '' }] }
+    const library: PointLibrary = { version: 1, points: [point, other, { gravityType: null, id: 'beacon', kind: 'navigation', stateId: 8, levelId: null, coordinate: { x: 0, y: 0, z: 0 }, teleportCoordinate, name: '测试信标', navigationKind: 'beacon', mode: 'fast-travel', note: '' }] }
     const locations = libraryLocations(library, referenceDataset)
     expect(locations.echoLocations).toHaveLength(2)
     expect(locations.echoLocations.map(({ gameCoordinate }) => gameCoordinate?.z)).toEqual([18, 200])
@@ -71,8 +67,8 @@ describe('authored point library', () => {
     const source = navigationTypeIcons('small-beacon')[0]
     if (!source) throw new Error('测试数据缺少信标图标')
     const point = {
-      gravityType: null, id: 'custom-icon', kind: 'navigation' as const, status: 'verified' as const,
-      stateId: 8, countryId: null, levelId: null, coordinate: { x: 15, y: 25, z: 35 },
+      gravityType: null, id: 'custom-icon', kind: 'navigation' as const,
+      stateId: 8, levelId: null, coordinate: { x: 15, y: 25, z: 35 },
       name: '独立名称', pointType: 'service' as const, navigationKind: 'service' as const, mode: 'landmark' as const, note: '', iconId: source.id,
     }
     const library = parsePointLibrary({ version: 1, points: [point] }, referenceDataset, 'manual')
@@ -83,13 +79,13 @@ describe('authored point library', () => {
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: 'missing-icon' }] }, referenceDataset)).toThrow('未知图标')
   })
 
-  it('requires complete teleport XYZ for verified fast-travel points and rejects it for other modes', () => {
+  it('requires complete teleport XYZ for saved fast-travel points and rejects it for other modes', () => {
     const navigation = {
-      gravityType: null, id: 'beacon', kind: 'navigation' as const, status: 'verified' as const,
-      stateId: 8, countryId: null, levelId: null, coordinate: { x: 0, y: 0, z: 0 },
-      name: '小型信标', pointType: 'small-beacon' as const, navigationKind: 'beacon' as const, mode: 'fast-travel' as const, note: '',
+      gravityType: null, id: 'beacon', kind: 'navigation' as const,
+      stateId: 8, levelId: null, coordinate: { x: 0, y: 0, z: 0 },
+      name: '小型信标', pointType: 'small-beacon' as const, navigationKind: 'beacon' as const, mode: 'fast-travel' as const, note: '', iconId: navigationPointTypes['small-beacon'].icons[0],
     }
-    expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, teleportCoordinate: { x: 1, y: 2, z: null } }] }, referenceDataset)).toThrow('核验传送落点')
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, teleportCoordinate: { x: 1, y: 2, z: null } }] }, referenceDataset)).toThrow('传送落点')
     expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, mode: 'landmark', teleportCoordinate: { x: 1, y: 2, z: 3 } }] }, referenceDataset)).toThrow('只有可直接传送')
     expect(parsePointLibrary({ version: 1, points: [navigation] }, referenceDataset).points[0]).not.toHaveProperty('teleportCoordinate')
   })
@@ -107,12 +103,22 @@ describe('authored point library', () => {
     expect(() => parsePointLibrary({ version: 1, points: [point()] }, referenceDataset)).toThrow()
   })
 
-  it('accepts incomplete drafts but never publishes them, and rejects duplicate point IDs', () => {
-    const draft = { ...mixedPoint(), status: 'draft' as const, members: [], coordinate: { x: 1, y: 2, z: null } }
-    const library = parsePointLibrary({ version: 1, points: [draft] }, referenceDataset)
-    expect(libraryLocations(library, referenceDataset).echoLocations).toEqual([])
-    expect(editorLibraryLocations(library.points, referenceDataset, 'echo').echoLocations[0]?.gameCoordinate).toBeNull()
+  it('allows incomplete form recovery but rejects incomplete records before persistence', () => {
+    const draft = { ...mixedPoint(), members: [], coordinate: { x: 1, y: 2, z: null } }
+    expect(parsePointDraft(draft, referenceDataset)).toEqual(draft)
+    expect(() => parsePointLibrary({ version: 1, points: [draft] }, referenceDataset)).toThrow('完整的整数 XYZ')
+    expect(editorLibraryLocations([draft], referenceDataset, 'echo').echoLocations[0]?.gameCoordinate).toBeNull()
+    expect(() => parsePointDraft({ ...draft, stateId: -1 }, referenceDataset)).toThrow('未知地图')
     expect(() => parsePointLibrary({ version: 1, points: [mixedPoint(), mixedPoint()] }, referenceDataset)).toThrow('重复点位 ID')
+  })
+
+  it('uses source IDs for provenance and prevents official records from entering the manual library', () => {
+    const official = { ...mixedPoint('official:source'), officialIds: ['source'], coordinate: { x: 1, y: 2, z: 0 } }
+    expect(parsePointLibrary({ version: 1, points: [official] }, referenceDataset, 'official').points).toEqual([official])
+    expect(() => parsePointLibrary({ version: 1, points: [official] }, referenceDataset, 'manual')).toThrow('官方导入点应保存于官方文件')
+    expect(() => parsePointLibrary({ version: 1, points: [mixedPoint()] }, referenceDataset, 'official')).toThrow('来源 ID')
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...official, coordinate: { x: 1, y: 2, z: 10 } }] }, referenceDataset, 'official')).toThrow('Z 固定为 0')
+    expect(libraryLocations({ version: 1, points: [official, mixedPoint()] }, referenceDataset).echoLocations.map(({ quality }) => quality)).toEqual(['official-provisional', 'manual'])
   })
 
   it('temporarily hides all echo sources during navigation editing and restores them when switching back', () => {
@@ -120,13 +126,13 @@ describe('authored point library', () => {
     const officialEcho = official.points.find(({ kind }) => kind === 'echo')
     if (!officialEcho) throw new Error('需要官方声骸点位')
     const navigation: AuthoredNavigationPoint = {
-      id: 'manual-navigation', kind: 'navigation', status: 'verified', stateId: 8, countryId: null, levelId: null,
+      id: 'manual-navigation', kind: 'navigation', stateId: 8, levelId: null,
       gravityType: null, coordinate: { x: 1, y: 2, z: 3 }, note: '', name: '小型信标', pointType: 'small-beacon',
       navigationKind: 'beacon', mode: 'fast-travel',
     }
     const library: PointLibrary = {
       version: 1,
-      points: [mixedPoint(), { ...mixedPoint('draft'), status: 'draft' }, officialEcho, navigation],
+      points: [mixedPoint(), { ...mixedPoint('draft'), coordinate: { x: 1, y: 2, z: null } }, officialEcho, navigation],
     }
     const snapshot = JSON.stringify(library)
     const echoEditing = editorLibraryLocations(library.points, referenceDataset, 'echo')
@@ -158,30 +164,27 @@ describe('authored point library', () => {
     expect(echoComposition([{ echoId: smallEcho.id, count: null }], referenceDataset.echoes).total).toBeNull()
   })
 
-  it('round-trips independent point source filters and ignores unknown values', () => {
-    expect(parseExplorerQueryValues({ sources: 'official' }).pointSourceFilters).toEqual(['official'])
-    expect(parseExplorerQueryValues({ sources: 'manual' }).pointSourceFilters).toEqual(['manual'])
-    expect(parseExplorerQueryValues({ sources: 'official,manual' }).pointSourceFilters).toEqual(['manual', 'official'])
-    expect(parseExplorerQueryValues({ sources: 'unknown' }).pointSourceFilters).toBeUndefined()
-    expect(createExplorerQueryValues({ stateId: 8, countryId: null, levelId: null, pointSourceFilters: [], echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true, controlPanelCollapsed: false, mobileSheet: null, viewport: null }).sources).toBeUndefined()
-  })
-})
+  it('ignores removed source parameters and does not serialize them', () => {
+    const query = { map: '8', sources: 'official' }
+    expect(parseExplorerQueryValues(query)).toEqual(parseExplorerQueryValues({ map: '8' }))
+    expect(createExplorerQueryValues({ stateId: 8, countryId: null, levelId: null, echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true, controlPanelCollapsed: false, mobileSheet: null, viewport: null })).not.toHaveProperty('sources')
+  })})
 
 it('accepts an unset navigation type on saved points and validates rules when a type is selected', () => {
   const navigation = {
-    gravityType: null, id: 'typed-navigation', kind: 'navigation', status: 'verified',
-    stateId: 8, countryId: null, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
-    name: '测试', navigationKind: 'landmark', mode: 'landmark', note: '',
+    gravityType: null, id: 'typed-navigation', kind: 'navigation',
+    stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
+    name: '测试', navigationKind: 'landmark', mode: 'landmark', note: '', iconId: navigationPointTypes['small-beacon'].icons[0],
   }
   for (const pointType of navigationPointTypeIds) {
     const rule = navigationPointTypes[pointType]
-    const point = { ...navigation, name: rule.names[0] ?? navigation.name, pointType, navigationKind: rule.kind, mode: rule.defaultMode }
+    const point = { ...navigation, name: rule.names[0] ?? navigation.name, pointType, navigationKind: rule.kind, mode: rule.defaultMode, iconId: rule.icons[0] ?? navigation.iconId }
     expect(parsePointLibrary({ version: 1, points: [point] }, referenceDataset).points[0]).toHaveProperty('pointType', pointType)
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, navigationKind: 'unknown' }] }, referenceDataset)).toThrow()
     if (rule.teleportLocked) expect(() => parsePointLibrary({ version: 1, points: [{ ...point, mode: 'landmark' }] }, referenceDataset)).toThrow('可直接传送')
   }
   expect(parsePointLibrary({ version: 1, points: [navigation] }, referenceDataset).points[0]).toEqual(navigation)
   expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, mode: 'unknown' }] }, referenceDataset)).toThrow('传送能力')
-  expect(parsePointLibrary({ version: 1, points: [{ ...navigation, status: 'draft' }] }, referenceDataset).points[0]).not.toHaveProperty('pointType')
+  expect(parsePointDraft(navigation, referenceDataset)).not.toHaveProperty('pointType')
   expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, pointType: 'invalid' }] }, referenceDataset)).toThrow()
 })
