@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from './base/WuButton.vue'
 import type { GravityType } from '../domain/types.ts'
 import WuSvg from './base/WuSvg.vue'
 
@@ -17,18 +18,10 @@ function toggleGravity(): void {
 </script>
 
 <template>
-  <button
-    v-if="supportsGravity"
-    type="button"
-    class="flex cursor-pointer select-none items-center gap-6px rounded-8px border border-[var(--line)] bg-[#07110fed] text-13px text-[#dcebe4] shadow-lg hover:bg-[#142a23]"
-    :class="compact ? 'h-44px px-11px' : 'h-40px px-10px'"
-    @click="toggleGravity"
-  >
-    <span>重力</span>
-    <WuSvg
-      name="gravity-direction"
-      class="text-[var(--accent)] transition-transform duration-200 [--wu-svg-h:18px]"
-      :class="props.selectedGravity === 2 ? 'rotate-180' : ''"
-    />
-  </button>
+  <WuButton v-if="supportsGravity" variant="solid" :size="compact ? 'lg' : 'md'" icon-position="end" class="shadow-lg" @click="toggleGravity">
+    <template #icon>
+      <WuSvg name="gravity-direction" class="text-[var(--accent)] transition-transform duration-200 motion-reduce:transition-none" :class="props.selectedGravity === 2 ? 'rotate-180' : ''" />
+    </template>
+    重力
+  </WuButton>
 </template>

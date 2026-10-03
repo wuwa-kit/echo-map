@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vTooltip } from './base/tooltip.ts'
 import { computed, toRefs } from 'vue'
 import type { LayeredMapDefinition } from '../domain/types.ts'
 import WuEllipsis from './base/WuEllipsis.vue'
@@ -65,7 +66,7 @@ function toggleLayout(): void {
         </button>
       </WuTooltip>
       <button
-        type="button" :title="layoutLabel"
+        type="button" v-tooltip="layoutLabel"
         class="absolute flex cursor-pointer items-center justify-center text-[#a9bfb2] hover:bg-[#183329] hover:text-[#8cf4ce]"
         :class="compactFloors ? 'left-full top-0 h-36px w-24px rounded-r-8px border border-l-0 border-[var(--line)] bg-[#07110fed]' : 'right-2px top-2px h-36px w-28px rounded-6px border-0 bg-transparent'"
         @click="toggleLayout"

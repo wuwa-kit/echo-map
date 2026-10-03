@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from './WuButton.vue'
 import { computed, useTemplateRef, watch } from 'vue'
 import { useSupported, useTimeoutFn } from '@vueuse/core'
 
@@ -58,6 +59,6 @@ defineExpose({ show, close })
     :class="colorClass"
   >
     <span class="min-w-0 whitespace-pre-wrap break-words">{{ message }}</span>
-    <button type="button" class="h-18px w-18px shrink-0 border-0 bg-transparent p-0 text-16px text-inherit leading-16px opacity-70 hover:opacity-100" @click="close">×</button>
+    <WuButton variant="ghost" size="xs" icon="close" icon-only tooltip="关闭消息" :tone="type === 'error' ? 'danger' : 'neutral'" @click="close"></WuButton>
   </div>
 </template>

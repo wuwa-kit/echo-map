@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vTooltip } from './base/tooltip.ts'
 import { computed, nextTick, shallowRef, useTemplateRef, watch } from 'vue'
 import { useEventListener, useResizeObserver } from '@vueuse/core'
 import type { OfficialAsset } from '../domain/types.ts'
@@ -45,7 +46,7 @@ watch(() => props.assets.map(({ id }) => id).join('\n'), async () => {
         <button v-for="item in visibleAssets" :key="item.id" type="button" class="group min-w-0 cursor-pointer overflow-hidden rounded-8px border bg-[#0f211a] p-0 text-left transition-colors hover:border-[#4f9d78]" :style="{ height: `${window.rowHeight}px` }" :class="selectedId === item.id ? 'border-[var(--accent)]' : 'border-[var(--line)]'" @click="emit('select', item.id)">
           <AssetImage :key="item.previewUrl" :src="item.previewUrl" class="aspect-[4/3] w-full" />
           <div class="h-70px p-12px">
-            <div class="truncate text-13px text-[#dceee3]" :title="item.name">{{ item.name }}</div>
+            <div class="truncate text-13px text-[#dceee3]" v-tooltip="item.name">{{ item.name }}</div>
             <div class="mt-7px flex items-center justify-between gap-4px text-10px text-[var(--muted)]">
               <span class="truncate">{{ item.categories.map((category) => assetCategories.find(({ id }) => id === category)?.name).join(' / ') }}</span>
               <WuSvg name="chevron-right" class="shrink-0 text-[#6e9a83] [--wu-svg-h:12px] group-hover:text-[var(--accent)]" />

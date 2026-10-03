@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from './WuButton.vue'
 import { computed, shallowRef, useAttrs, useId, useTemplateRef } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { cascaderColumns, resolveCascaderChoice, resolveCascaderPath } from './cascader.ts'
@@ -11,6 +12,7 @@ defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<{
   options: readonly WuCascaderOption[]
+  initialExpandedValues?: readonly string[]
   placeholder?: string
   title?: string
   rootLabel?: string
@@ -23,6 +25,7 @@ const props = withDefaults(defineProps<{
   popoverViewportMargin?: number
 }>(), {
   placeholder: '请选择',
+  initialExpandedValues: () => [],
   rootLabel: '全部',
   emptyText: '暂无选项',
   disabled: false,
@@ -47,7 +50,7 @@ const visibleColumns = computed(() => narrow.value ? columns.value.slice(-1) : c
 const panelWidth = computed(() => narrow.value ? 'viewport' : props.compact ? 'content' : Math.max(220, columns.value.length * 210))
 
 function onOpened(): void {
-  expandedValues.value = []
+  expandedValues.value = props.initialExpandedValues
   isOpen.value = true
 }
 
@@ -96,13 +99,13 @@ function browseTo(depth: number): void {
     >
       <div v-if="showHeader" class="flex shrink-0 items-center justify-between gap-10px border-b border-[var(--line)] px-12px py-5px">
         <span class="min-w-0 text-14px font-600">{{ title ?? placeholder }}</span>
-        <button type="button" class="min-h-44px cursor-pointer border-0 rounded-5px bg-transparent px-8px text-12px text-[#91ab9d] hover:text-[var(--accent)]" @click="close()">关闭</button>
+        <WuButton variant="ghost" size="lg" @click="close()">关闭</WuButton>
       </div>
       <div v-if="narrow && showPath" class="flex shrink-0 flex-wrap items-center gap-x-5px border-b border-[var(--line)] px-12px py-4px text-13px">
-        <button type="button" class="min-h-44px cursor-pointer border-0 bg-transparent px-0 text-[var(--accent)]" @click="browseTo(0)">{{ rootLabel }}</button>
+        <WuButton variant="ghost" tone="accent" size="lg" @click="browseTo(0)">{{ rootLabel }}</WuButton>
         <template v-for="(ancestor, index) in path" :key="ancestor.value">
           <WuSvg name="chevron-right" class="text-[#627e70] [--wu-svg-h:12px]" />
-          <button type="button" class="min-h-44px cursor-pointer border-0 bg-transparent px-0 text-[var(--accent)]" @click="browseTo(index + 1)">{{ ancestor.label }}</button>
+          <WuButton variant="ghost" tone="accent" size="lg" @click="browseTo(index + 1)">{{ ancestor.label }}</WuButton>
         </template>
       </div>
       <div class="min-h-0 flex overflow-x-auto overscroll-contain">
@@ -137,9 +140,7 @@ function browseTo(depth: number): void {
           </WuScrollArea>
         </div>
       </div>
-      <button v-if="narrow && path.length" type="button" class="min-h-44px shrink-0 flex cursor-pointer items-center gap-6px border-0 border-t border-solid border-[var(--line)] bg-transparent px-12px text-13px text-[var(--accent)]" @click="browseTo(path.length - 1)">
-        <WuSvg name="chevron-right" class="rotate-180 [--wu-svg-h:12px]" />返回上一级
-      </button>
+      <WuButton v-if="narrow && path.length" variant="ghost" tone="accent" size="lg" icon="chevron-left" @click="browseTo(path.length - 1)">返回上一级</WuButton>
     </WuPopover>
   </div>
 </template>

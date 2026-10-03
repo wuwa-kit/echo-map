@@ -27,7 +27,12 @@ describe('map navigation destinations', () => {
       ['黑海岸群岛', '黑海岸群岛'],
     ] as const) {
       const region = destination(name)
-      expect(mapNavigationSectionAtCenter(dataset, region.stateId, [region.coordinate.mapX, region.coordinate.mapY])).toBe(sectionName)
+      const section = mapNavigationSectionAtCenter(dataset, region.stateId, [region.coordinate.mapX, region.coordinate.mapY])
+      expect(section?.name).toBe(sectionName)
+      const columns = cascaderColumns(mapNavigationOptions(dataset), section?.expandedValues ?? [])
+      expect(columns).toHaveLength(name === '黑海岸群岛' ? 2 : 3)
+      expect(columns.at(-1)?.options).toContainEqual({ value: region.id, label: region.name })
+      if (name !== '黑海岸群岛') expect(columns.at(-1)?.parent?.label).toBe(sectionName)
     }
     expect(mapNavigationSectionAtCenter(dataset, -1, [0, 0])).toBeNull()
   })

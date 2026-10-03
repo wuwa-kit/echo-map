@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from '../components/base/WuButton.vue'
 import { computed, onBeforeUnmount, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAsyncState, useEventListener, useMediaQuery, useResizeObserver, useWindowSize } from '@vueuse/core'
@@ -173,7 +174,7 @@ const loadError = computed(() => {
     <div v-else-if="loadError" class="absolute inset-0 flex flex-col items-center justify-center gap-14px p-24px text-center text-14px text-[#9ab0a7]">
       <div class="text-20px text-[#e4f0eb]">地图数据无法加载</div>
       <div class="max-w-full break-words">{{ loadError }}</div>
-      <button type="button" class="min-h-44px cursor-pointer rounded-7px border border-[var(--accent)] bg-transparent px-20px text-14px text-[var(--accent)]" @click="reloadDataset()">重新加载</button>
+      <WuButton size="lg" tone="accent" @click="reloadDataset()">重新加载</WuButton>
     </div>
     <div
       v-else-if="dataset"
@@ -197,28 +198,28 @@ const loadError = computed(() => {
       >
         <div v-if="compact" class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-16px py-6px">
           <span v-if="!editingMode" class="text-16px font-600">筛选与路线</span>
-          <button type="button" class="min-h-44px cursor-pointer rounded-7px border-0 bg-transparent px-12px text-14px text-[var(--accent)]" @click="closeSheet">查看地图</button>
+          <WuButton size="lg" variant="ghost" tone="accent" @click="closeSheet">查看地图</WuButton>
         </div>
         <PointEditorPanel v-if="editingMode" ref="editorPanelRef" @returned="leaveEditor" @locate-requested="mapCanvas?.locateDraft()" />
         <ControlPanel v-else :compact="compact" @edit-requested="enterEditor" />
       </div>
-      <button
+      <div
         v-if="!compact"
-        type="button"
-        class="absolute top-14px z-90 grid h-44px w-44px cursor-pointer place-items-center rounded-l-9px border border-[var(--line)] bg-[var(--panel)] text-[var(--accent)] transition-[right] duration-300 ease-out motion-reduce:transition-none"
+        class="absolute top-14px z-90 transition-[right] duration-300 ease-out motion-reduce:transition-none"
         :class="controlPanelCollapsed ? 'right-0' : 'right-[var(--control-panel-width)]'"
-        @click="store.toggleControlPanel"
       >
-        <WuSvg name="chevron-right" class="transition-transform duration-300 [--wu-svg-h:18px] motion-reduce:transition-none" :class="controlPanelCollapsed ? 'rotate-180' : ''" />
-      </button>
+        <WuButton variant="solid" size="lg" icon-only :tooltip="controlPanelCollapsed ? '展开面板' : '收起面板'" @click="store.toggleControlPanel">
+          <template #icon><WuSvg name="chevron-right" class="text-[var(--accent)] transition-transform duration-300 motion-reduce:transition-none" :class="controlPanelCollapsed ? 'rotate-180' : ''" /></template>
+        </WuButton>
+      </div>
       <div
         v-if="compact"
         ref="mobileBarRef"
         class="absolute inset-x-0 bottom-0 z-90 flex h-[var(--mobile-bar-height)] items-start border-t border-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-10px"
       >
-        <button type="button" class="min-h-50px w-full min-w-0 cursor-pointer rounded-9px border border-[var(--line)] px-10px text-14px text-[#eaf4ef]" :class="mobileSheet === 'filters' ? 'bg-[#245442]' : 'bg-[#152b24]'" @click="openSheet('filters')">
+        <WuButton class="w-full" size="lg" :variant="mobileSheet === 'filters' ? 'solid' : 'outline'" tone="accent" @click="openSheet('filters')">
           {{ editingMode ? '点位录入' : planning ? '路线优化中…' : '筛选与路线' }}<span v-if="!editingMode && selectedEchoIds.length" class="ml-6px text-[var(--accent)]">{{ selectedEchoIds.length }}</span>
-        </button>
+        </WuButton>
       </div>
     </div>
   </div>

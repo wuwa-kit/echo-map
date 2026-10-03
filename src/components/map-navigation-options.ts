@@ -7,31 +7,33 @@ export function mapNavigationSectionAtCenter(
   dataset: MapNavigationData,
   stateId: number,
   center: readonly [number, number],
-): string | null {
+): { name: string, expandedValues: readonly string[] } | null {
   const regions = new Map(dataset.regionLabels.map((region) => [region.id, region]))
-  let closestName: string | null = null
+  let closestSection: { name: string, expandedValues: readonly string[] } | null = null
   let closestDistance = Number.POSITIVE_INFINITY
-  const consider = (name: string, regionIds: readonly string[]) => {
+  const consider = (name: string, regionIds: readonly string[], expandedValues: readonly string[]) => {
     for (const id of regionIds) {
       const region = regions.get(id)
       if (!region || region.stateId !== stateId) continue
       const distance = (region.coordinate.mapX - center[0]) ** 2 + (region.coordinate.mapY - center[1]) ** 2
       if (distance >= closestDistance) continue
-      closestName = name
+      closestSection = { name, expandedValues }
       closestDistance = distance
     }
   }
   for (const country of dataset.mapNavigation) {
     if (country.groups.length) {
-      for (const group of country.groups) consider(group.name, group.regionIds)
+      for (const group of country.groups) {
+        consider(group.name, group.regionIds, [`country:${country.id}`, `group:${country.id}:${group.id}`])
+      }
       continue
     }
     for (const id of country.regionIds) {
       const region = regions.get(id)
-      if (region) consider(region.name, [id])
+      if (region) consider(region.name, [id], [`country:${country.id}`])
     }
   }
-  return closestName
+  return closestSection
 }
 
 export function mapNavigationOptions(dataset: MapNavigationData): WuCascaderOption[] {

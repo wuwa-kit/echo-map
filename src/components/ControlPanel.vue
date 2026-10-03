@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { buttonClasses } from './base/button-styles.ts'
+import WuButton from './base/WuButton.vue'
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
@@ -57,22 +59,13 @@ function togglePointSourceFilter(source: PointSourceFilter): void {
       </div>
 
       <div class="border-b border-[var(--line)] p-16px">
-        <div class="flex items-center justify-between gap-10px">
-          <div class="min-w-0 flex items-center gap-12px whitespace-nowrap">
-            <button type="button" @click="$emit('editRequested')" class="border-0 bg-transparent p-0 inline-flex min-h-40px min-[1024px]:min-h-0 items-center text-12px min-[1024px]:text-9px text-[var(--accent)] hover:text-[#b9ffe7]">点位录入</button>
-            <RouterLink to="/assets" class="inline-flex min-h-40px min-[1024px]:min-h-0 items-center text-12px min-[1024px]:text-9px text-[var(--accent)] hover:text-[#b9ffe7]">资产浏览</RouterLink>
+        <div class="flex flex-wrap items-center justify-between gap-10px">
+          <div class="min-w-0 flex items-center gap-4px whitespace-nowrap">
+            <WuButton variant="ghost" tone="accent" :size="compact ? 'lg' : 'xs'" @click="$emit('editRequested')">点位录入</WuButton>
+            <RouterLink to="/assets" :class="buttonClasses({ variant: 'ghost', tone: 'accent', size: compact ? 'lg' : 'xs' })">资产浏览</RouterLink>
           </div>
           <div class="flex shrink-0 gap-5px">
-            <button
-              v-for="option in pointSourceOptions"
-              :key="option.value"
-              type="button"
-              class="min-h-40px min-[1024px]:min-h-0 cursor-pointer rounded-5px border px-9px py-4px text-12px min-[1024px]:text-9px font-650 outline-none"
-              :class="activePointSourceFilterSet.has(option.value)
-                ? 'border-[rgba(101,241,194,0.5)] bg-[#244b39] text-[#eafff2]'
-                : 'border-[var(--line)] bg-transparent text-[#91a99f] hover:border-[rgba(101,241,194,0.36)] hover:text-[#dce9e3]'"
-              @click="togglePointSourceFilter(option.value)"
-            >{{ option.label }}</button>
+            <WuButton v-for="option in pointSourceOptions" :key="option.value" :size="compact ? 'lg' : 'xs'" :tone="activePointSourceFilterSet.has(option.value) ? 'accent' : 'neutral'" @click="togglePointSourceFilter(option.value)">{{ option.label }}</WuButton>
           </div>
         </div>
       </div>

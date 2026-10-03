@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from './base/WuButton.vue'
 import { computed, shallowRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { usePointEditorStore } from '../stores/point-editor.ts'
@@ -25,14 +26,14 @@ function add(echoId: string): void {
         <img :src="echoById.get(member.echoId)?.iconUrl" class="h-32px w-32px object-contain" />
         <span class="min-w-0 flex-1 text-12px">{{ echoById.get(member.echoId)?.name }}</span>
         <div class="flex shrink-0 items-center gap-2px">
-          <button type="button" class="h-32px w-32px rounded-6px border border-[var(--line)] bg-[#10251b] text-18px text-[#c7dfd2] disabled:opacity-40" :title="member.count === 1 ? '移除此声骸' : '减少数量'" :disabled="busy" @click="store.adjustMemberCount(member.echoId, -1)">−</button>
+          <WuButton size="sm" icon="minus" icon-only :tooltip="member.count === 1 ? '移除此声骸' : '减少数量'" :disabled="busy" @click="store.adjustMemberCount(member.echoId, -1)"></WuButton>
           <span class="min-w-30px text-center text-13px tabular-nums">{{ member.count }}</span>
-          <button type="button" class="h-32px w-32px rounded-6px border border-[var(--line)] bg-[#10251b] text-18px text-[#c7dfd2] disabled:opacity-40" title="增加数量" :disabled="busy || member.count >= 999" @click="store.adjustMemberCount(member.echoId, 1)">＋</button>
+          <WuButton size="sm" icon="plus" icon-only tooltip="增加数量" :disabled="busy || member.count >= 999" @click="store.adjustMemberCount(member.echoId, 1)"></WuButton>
         </div>
       </div>
     </div>
     <div v-if="inputErrors.members" class="mb-8px text-12px text-[#ffad9f]">{{ inputErrors.members }}</div>
-    <button type="button" class="min-h-38px w-full border border-dashed border-[#355748] rounded-7px bg-transparent text-12px text-[#9cceba]" :disabled="busy" @click="adding = !adding">{{ adding ? '收起' : '＋ 添加声骸' }}</button>
+    <WuButton class="w-full" tone="accent" :icon="adding ? 'chevron-down' : 'plus'" :disabled="busy" @click="adding = !adding">{{ adding ? '收起' : '添加声骸' }}</WuButton>
     <div v-if="adding" class="mt-8px">
       <WuInput :model-value="monsterSearch" type="search" placeholder="搜索声骸" @update:model-value="store.setMonsterSearch" />
       <WuScrollArea class="mt-6px max-h-240px" content-class="grid grid-cols-2 gap-5px">

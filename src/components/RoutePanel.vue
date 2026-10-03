@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from './base/WuButton.vue'
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../stores/explorer.ts'
@@ -39,16 +40,10 @@ function generateRoutes(): void {
 <template>
   <div v-if="selectedEchoIds.length > 0" class="p-16px">
     <div class="grid grid-cols-2 gap-8px">
-      <button
-        class="min-h-44px w-full cursor-pointer rounded-7px border px-12px py-10px text-14px font-700 disabled:cursor-not-allowed disabled:border-transparent disabled:bg-[#1a2b27] disabled:text-[#8ca399]"
-        :class="planning ? 'border-[var(--line)] bg-transparent text-[#b9c9c2]' : 'border-transparent bg-[var(--accent)] text-[#08231d]'"
-        type="button"
-        :disabled="generateDisabled"
-        @click="generateRoutes"
-      >
+      <WuButton class="w-full" size="lg" :variant="planning ? 'outline' : 'solid'" :tone="planning ? 'neutral' : 'accent'" :disabled="generateDisabled" @click="generateRoutes">
         {{ generateLabel }}
-      </button>
-      <button type="button" class="min-h-44px w-full cursor-pointer rounded-7px border border-[var(--line)] bg-transparent px-12px text-13px text-[#a8f6d5] disabled:cursor-not-allowed disabled:border-transparent disabled:bg-[#1a2b27] disabled:text-[#60756c]" :disabled="exportDisabled" @click="exportStore.start">{{ exportStore.status === 'running' ? '正在导出…' : '导出路线' }}</button>
+      </WuButton>
+      <WuButton class="w-full" size="lg" tone="accent" :disabled="exportDisabled" :loading="exportStore.status === 'running'" @click="exportStore.start">导出路线</WuButton>
     </div>
     <div v-if="routeError" class="mt-8px text-12px text-[#ff9f92]">{{ routeError }}</div>
   </div>

@@ -15,19 +15,20 @@ const emit = defineEmits<{
   regionSelected: [id: string]
 }>()
 const options = computed(() => mapNavigationOptions(props.dataset))
-const currentRegionName = computed(() => {
+const currentSection = computed(() => {
   const state = props.dataset.states.find(({ id }) => id === props.stateId)
-  if (!state) return '切换地图'
+  if (!state) return null
   const [left, bottom, right, top] = state.tileExtent.extent
   const center: readonly [number, number] = props.center
     ?? [(left + right) / 2, (bottom + top) / 2]
-  return mapNavigationSectionAtCenter(props.dataset, state.id, center) ?? '切换地图'
+  return mapNavigationSectionAtCenter(props.dataset, state.id, center)
 })
 </script>
 
 <template>
   <WuCascader
-    v-bind="$attrs" :options="options" :placeholder="currentRegionName" root-label="全部地图"
+    v-bind="$attrs" :options="options" :placeholder="currentSection?.name ?? '切换地图'" root-label="全部地图"
+    :initial-expanded-values="currentSection?.expandedValues"
     :show-header="false" :show-path="false" :popover-gap="4" :popover-viewport-margin="8" compact
     @select="emit('regionSelected', $event)"
   />

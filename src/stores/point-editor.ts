@@ -81,7 +81,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const teleportCoordinateText = formField('teleportCoordinateText')
   const error = shallowRef('')
   const notice = shallowRef('')
-  const busy = shallowRef(false)
+  const operation = shallowRef<'load' | 'save' | 'delete' | 'undo' | 'import' | null>(null)
+  const busy = computed(() => operation.value !== null)
   const inputErrors = formField('inputErrors')
   const inputValues = formField('inputValues')
   const dirty = computed(() => formDirty(forms.value[editorMode.value]))
@@ -384,7 +385,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (!draft.value) newPoint()
       return
     }
-    busy.value = true
+    operation.value = 'load'
     error.value = ''
     try {
       const [{ dataset: reference, officialLibrary: official }, snapshot] = await Promise.all([dataset.value ? { dataset: dataset.value, officialLibrary: officialLibrary.value } : loadMapDataset(), readEditorLibrary()])
@@ -406,7 +407,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       }
       notice.value = ''
     } catch (failure) { error.value = failure instanceof Error ? failure.message : String(failure) }
-    finally { busy.value = false }
+    finally { operation.value = null }
     if (dataset.value && revision.value && !draft.value) {
       const pendingRecovery = recovery.value
       // Keep recovery set while creating the blank editor so cacheDraft cannot erase it.
@@ -416,9 +417,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     }
   }
 
-  async function commit(next: PointLibrary): Promise<boolean> {
+  async function commit(next: PointLibrary, action: 'save' | 'delete' | 'undo' | 'import'): Promise<boolean> {
     if (busy.value || !dataset.value || !revision.value) return false
-    busy.value = true
+    operation.value = action
     error.value = ''
     try {
       const libraryToSave = parsePointLibrary(next, dataset.value, 'manual')
@@ -432,7 +433,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       error.value = failure instanceof Error ? failure.message : String(failure)
       return false
     }
-    finally { busy.value = false }
+    finally { operation.value = null }
   }
 
   async function savePoint(): Promise<boolean> {
@@ -468,7 +469,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (index >= 0) library.points[index] = saved
       else library.points.push(saved)
     })
-    if (await commit(next)) {
+    if (await commit(next, 'save')) {
       openDraft(saved)
       recovery.value = null
       cacheDraft()
@@ -592,7 +593,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   async function deletePoint(): Promise<void> {
     const point = library.value.points.find(({ id }) => id === draft.value?.id)
     if (!point) return
-    if (await commit(produce(library.value, (library) => { library.points = library.points.filter(({ id }) => id !== point.id) }))) {
+    if (await commit(produce(library.value, (library) => { library.points = library.points.filter(({ id }) => id !== point.id) }), 'delete')) {
       deleted.value = point
       baseline.value = JSON.stringify(draft.value)
       inputErrors.value = {}
@@ -605,7 +606,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (!point) return
     switchEditorTab(point.kind)
     if (!canSwitch()) return
-    if (await commit(produce(library.value, (library) => { library.points.push(point) }))) {
+    if (await commit(produce(library.value, (library) => { library.points.push(point) }), 'undo')) {
       deleted.value = null
       openDraft(point)
       }
@@ -638,7 +639,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       error.value = '请先保存两个表单中的修改，再导入点位。'
       return
     }
-    if (await commit(importPreview.value)) {
+    if (await commit(importPreview.value, 'import')) {
       importPreview.value = null
       deleted.value = null
     }
@@ -668,7 +669,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     dataset: shallowReadonly(dataset), library: shallowReadonly(library), draft: shallowReadonly(draft), storage: shallowReadonly(storage),
     recovery: shallowReadonly(recovery), deleted: shallowReadonly(deleted), importPreview: shallowReadonly(importPreview),
     monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
-    error: shallowReadonly(error), notice: shallowReadonly(notice), busy: shallowReadonly(busy), dirty,
+    error: shallowReadonly(error), notice: shallowReadonly(notice), busy, operation: shallowReadonly(operation), dirty,
     setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, addMember, setMemberCount, adjustMemberCount, removeMember,
     resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setAssetIcon, clearTeleportCoordinate, deletePoint, undoDelete, recoverDraft, previewImport, applyImport,
     setMonsterSearch: (value: string) => { monsterSearch.value = value },

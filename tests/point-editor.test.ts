@@ -31,6 +31,54 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('point editor actions', () => {
+  it('exposes the current operation and clears loading after saves, deletions, undo, and imports', async () => {
+    disk = { version: 1, points: [mixedPoint()] }
+    const store = usePointEditorStore()
+    const loading = store.load()
+    expect(store.operation).toBe('load')
+    expect(store.busy).toBe(true)
+    await loading
+    expect(store.operation).toBeNull()
+    store.selectPoint(disk.points[0]?.id ?? '')
+    store.setCoordinate('x', '123')
+    const saving = store.savePoint()
+    expect(store.operation).toBe('save')
+    expect(store.busy).toBe(true)
+    await saving
+    expect(store.operation).toBeNull()
+    const deleting = store.deletePoint()
+    expect(store.operation).toBe('delete')
+    await deleting
+    expect(store.operation).toBeNull()
+    const undoing = store.undoDelete()
+    expect(store.operation).toBe('undo')
+    await undoing
+    expect(store.operation).toBeNull()
+    store.previewImport(JSON.stringify({ version: 1, points: [] }))
+    const importing = store.applyImport()
+    expect(store.operation).toBe('import')
+    await importing
+    expect(store.operation).toBeNull()
+    expect(store.busy).toBe(false)
+  })
+
+  it('clears the operation on failure and does not enter loading for invalid input', async () => {
+    const store = usePointEditorStore()
+    await store.load()
+    expect(await store.savePoint()).toBe(false)
+    expect(store.operation).toBeNull()
+    store.setCoordinateText('1, 2, 3')
+    store.applyCoordinateText()
+    store.addMember(smallEcho.id)
+    vi.mocked(saveEditorLibrary).mockRejectedValueOnce(new Error('保存失败'))
+    const saving = store.savePoint()
+    expect(store.operation).toBe('save')
+    expect(await saving).toBe(false)
+    expect(store.operation).toBeNull()
+    expect(store.busy).toBe(false)
+    expect(store.error).toBe('保存失败')
+  })
+
   it('initializes a pristine draft from validated map context without making it dirty', async () => {
     const floorState = referenceDataset.states.find(({ layeredMaps }) => layeredMaps.some(({ floors }) => floors.length > 0))
     const floor = floorState?.layeredMaps.flatMap(({ floors }) => floors)[0]

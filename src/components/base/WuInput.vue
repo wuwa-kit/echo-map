@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { createInputEvents } from './input-events.ts'
+import { vTooltip } from './tooltip.ts'
+import type { WuTooltipValue } from './tooltip.ts'
 
 const props = withDefaults(defineProps<{
   modelValue: string | number | null
@@ -9,6 +11,7 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   readonly?: boolean
   invalid?: boolean
+  tooltip?: WuTooltipValue
   /** Commit on change or Enter; reflect the value accepted by the owner. */
   lazy?: boolean
 }>(), {
@@ -34,6 +37,7 @@ const events = createInputEvents(props, {
 
 <template>
   <input
+    v-tooltip="tooltip"
     :type="type"
     :value="modelValue ?? ''"
     :disabled="disabled"

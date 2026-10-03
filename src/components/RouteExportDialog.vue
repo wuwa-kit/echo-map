@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { vTooltip } from './base/tooltip.ts'
+import { buttonClasses } from './base/button-styles.ts'
+import WuButton from './base/WuButton.vue'
 import { onBeforeUnmount, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouteExportStore } from '../stores/route-export.ts'
@@ -27,7 +30,7 @@ onBeforeUnmount(() => {
     <div class="mx-auto h-full max-w-900px flex flex-col">
       <div class="shrink-0 flex items-center justify-between gap-12px border-b border-[#294539] p-16px">
         <div class="text-18px font-600">路线长图</div>
-        <button type="button" class="min-h-44px rounded-6px border border-[#456354] bg-transparent px-16px text-inherit" @click="store.close">{{ status === 'running' ? '取消并关闭' : '关闭' }}</button>
+        <WuButton size="lg" @click="store.close">{{ status === 'running' ? '取消并关闭' : '关闭' }}</WuButton>
       </div>
       <div v-if="status === 'running'" class="flex flex-1 flex-col items-center justify-center gap-16px p-24px">
         <div class="text-16px">{{ progress.message }}</div>
@@ -36,16 +39,16 @@ onBeforeUnmount(() => {
       </div>
       <div v-else-if="status === 'error' || status === 'cancelled'" class="flex flex-1 flex-col items-center justify-center gap-16px p-24px">
         <div class="text-15px text-[#efc697]">{{ error || '生成已取消' }}</div>
-        <button type="button" class="min-h-44px rounded-6px border-0 bg-[#65f1c2] px-24px text-[#08231d]" @click="store.retry">重新生成</button>
+        <WuButton size="lg" variant="solid" tone="accent" @click="store.retry">重新生成</WuButton>
       </div>
       <template v-else-if="artifacts">
         <div class="shrink-0 border-b border-[#294539] p-16px">
-          <div :title="artifacts.title" class="line-clamp-2 text-15px">{{ artifacts.title }}</div>
+          <div v-tooltip="artifacts.title" class="line-clamp-2 text-15px">{{ artifacts.title }}</div>
           <div class="mt-6px text-12px text-[#afc6bb]">{{ artifacts.routes.length }} 张路线图 · 固定 2 列 · {{ artifacts.maps.length }} 张分地图 · {{ artifacts.pages.length }} 张手机分卷</div>
           <div class="mt-12px flex gap-8px overflow-x-auto whitespace-nowrap pb-4px">
-            <a v-for="(route, index) in artifacts.routes" :key="route.url" :href="route.url" :download="`${route.filename}.jpg`" class="min-h-44px flex shrink-0 items-center rounded-6px bg-[#65f1c2] px-16px text-14px text-[#08231d] no-underline">{{ artifacts.routes.length === 1 ? '保存路线图' : `路线图 ${index + 1} / ${artifacts.routes.length}` }}</a>
-            <a v-for="map in artifacts.maps" :key="map.url" :href="map.url" :download="`${map.filename}.jpg`" class="min-h-44px flex shrink-0 items-center rounded-6px border border-[#65f1c2] px-12px text-14px text-[#b9ffe7] no-underline">{{ map.parts === 1 ? map.title : `${map.title} ${map.part} / ${map.parts}` }}</a>
-            <a v-for="(page, index) in artifacts.pages" :key="page.url" :href="page.url" :download="`${artifacts.filename}-手机-${String(index + 1).padStart(2, '0')}.jpg`" class="min-h-44px flex shrink-0 items-center rounded-6px border border-[#456354] px-12px text-14px text-inherit no-underline">分卷 {{ index + 1 }}</a>
+            <a v-for="(route, index) in artifacts.routes" :key="route.url" :href="route.url" :download="`${route.filename}.jpg`" :class="buttonClasses({ variant: 'solid', tone: 'accent', size: 'lg' })">{{ artifacts.routes.length === 1 ? '保存路线图' : `路线图 ${index + 1} / ${artifacts.routes.length}` }}</a>
+            <a v-for="map in artifacts.maps" :key="map.url" :href="map.url" :download="`${map.filename}.jpg`" :class="buttonClasses({ tone: 'accent', size: 'lg' })">{{ map.parts === 1 ? map.title : `${map.title} ${map.part} / ${map.parts}` }}</a>
+            <a v-for="(page, index) in artifacts.pages" :key="page.url" :href="page.url" :download="`${artifacts.filename}-手机-${String(index + 1).padStart(2, '0')}.jpg`" :class="buttonClasses({ size: 'lg' })">分卷 {{ index + 1 }}</a>
           </div>
           <div class="mt-10px text-12px text-[#afc6bb]">下方预览{{ artifacts.routes.length === 1 ? '路线图' : '第一张路线图' }}，可长按保存。</div>
         </div>

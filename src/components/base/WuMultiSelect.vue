@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from './WuButton.vue'
 import { computed, shallowRef, useAttrs, useId, useTemplateRef } from 'vue'
 import WuCheckBox from './WuCheckBox.vue'
 import WuInput from './WuInput.vue'
@@ -125,10 +126,8 @@ function onClosed(): void {
       <div v-if="searchPlaceholder" class="absolute bottom-[calc(100%+6px)] left-0 h-40px w-full min-w-0 flex box-border items-center gap-7px rounded-7px border border-[rgba(101,241,194,0.55)] bg-[#152b24] px-10px text-12px text-[#dce9e3] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
         <WuSvg name="search" class="shrink-0 text-[#6f887f] [--wu-svg-h:14px]" />
         <WuInput v-model="searchQuery" class="flex-1" variant="plain" size="sm" type="text" :placeholder="searchPlaceholder" />
-        <button v-if="searchQuery" type="button" class="h-24px w-24px shrink-0 cursor-pointer border-0 rounded-4px bg-transparent p-0 text-16px text-[#91ab9d] hover:bg-[#1c372b] hover:text-[#dce9e3]" @click="clearSearch">×</button>
-        <button type="button" class="h-24px w-24px shrink-0 flex cursor-pointer items-center justify-center border-0 rounded-4px bg-transparent p-0 text-[var(--accent)]" @click="popover?.hide()">
-          <WuSvg name="chevron-down" class="rotate-180 [--wu-svg-h:14px]" />
-        </button>
+        <WuButton v-if="searchQuery" variant="ghost" size="xs" icon="close" icon-only tooltip="清除搜索" @click="clearSearch"></WuButton>
+        <WuButton variant="ghost" tone="accent" size="xs" icon-only tooltip="收起选项" @click="popover?.hide()"><template #icon><WuSvg name="chevron-down" class="rotate-180" /></template></WuButton>
       </div>
       <div class="min-h-40px flex items-center justify-between gap-8px border-b border-[var(--line)] px-8px py-5px">
         <WuCheckBox

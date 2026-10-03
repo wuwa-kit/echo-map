@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from './base/WuButton.vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useResizeObserver } from '@vueuse/core'
@@ -337,14 +338,14 @@ onBeforeUnmount(() => {
   <div class="relative h-full w-full min-h-0 min-w-0">
     <span ref="contextAnchorRef" class="pointer-events-none fixed h-0 w-0" :style="{ left: `${contextPosition.x}px`, top: `${contextPosition.y}px` }" />
     <WuPopover ref="contextMenuRef" :anchor="contextAnchor" :disabled="!editing || editor.busy" :width="144" :gap="0" class="rounded-8px border border-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
-      <button type="button" class="min-h-40px border-0 bg-transparent px-14px text-left text-13px hover:bg-[#204b3b]" @click="requestPoint('navigation')">添加定位</button>
-      <button type="button" class="min-h-40px border-0 bg-transparent px-14px text-left text-13px hover:bg-[#204b3b]" @click="requestPoint('echo')">添加声骸</button>
+      <WuButton variant="ghost" @click="requestPoint('navigation')">添加定位</WuButton>
+      <WuButton variant="ghost" @click="requestPoint('echo')">添加声骸</WuButton>
     </WuPopover>
     <PointDetails v-if="!editing" />
     <RouteLegDetailsPopup v-if="!editing && selectedRouteLeg" :details="selectedRouteLeg" @close="selectedRouteLeg = null" />
     <div v-if="baseTileError" class="absolute left-1/2 top-12px z-70 flex max-w-[90%] translate-x--1/2 items-center gap-10px rounded-8px bg-[#35261eed] px-12px py-8px text-12px text-[#f1d7b4]">
       <span>{{ selectedGravity === 2 ? '反重力' : '' }}底图部分加载失败</span>
-      <button type="button" class="min-h-32px shrink-0 rounded-5px border border-[#a27f58] bg-transparent px-8px text-inherit" @click="store.retryBaseTiles">重试</button>
+      <WuButton size="sm" @click="store.retryBaseTiles">重试</WuButton>
     </div>
     <div
       ref="mapTargetRef"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from '../base/WuButton.vue'
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../../stores/explorer.ts'
@@ -83,16 +84,7 @@ const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCovera
         @update:model-value="setCurrentSelection"
       >{{ currentSelectedCount }} / {{ candidateEchoes.length }}</WuCheckBox>
       <div class="flex shrink-0 gap-5px">
-        <button
-          v-for="option in costOptions"
-          :key="option.value"
-          type="button"
-          class="min-h-40px min-[1024px]:min-h-0 cursor-pointer rounded-5px border px-9px py-4px text-12px min-[1024px]:text-9px font-650 outline-none"
-          :class="activeCostFilterSet.has(option.value)
-            ? 'border-[rgba(101,241,194,0.5)] bg-[#244b39] text-[#eafff2]'
-            : 'border-[var(--line)] bg-transparent text-[#91a99f] hover:border-[rgba(101,241,194,0.36)] hover:text-[#dce9e3]'"
-          @click="toggleCostFilter(option.value)"
-        >{{ option.label }}</button>
+        <WuButton v-for="option in costOptions" :key="option.value" :size="compact ? 'lg' : 'xs'" :tone="activeCostFilterSet.has(option.value) ? 'accent' : 'neutral'" @click="toggleCostFilter(option.value)">{{ option.label }}</WuButton>
       </div>
     </div>
     <WuScrollArea
@@ -121,7 +113,7 @@ const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCovera
             :class="(locationCoverageByEcho.get(echo.id)?.current ?? 0) === 0 && (locationCoverageByEcho.get(echo.id)?.total ?? 0) > 0 ? 'text-[#d3b680]' : 'text-[#70877e]'"
           >COST {{ echo.cost }} · 当前 {{ locationCoverageByEcho.get(echo.id)?.current ?? 0 }} / 全部 {{ locationCoverageByEcho.get(echo.id)?.total ?? 0 }} 处<span v-if="(locationCoverageByEcho.get(echo.id)?.stateCount ?? 0) > 1"> · {{ locationCoverageByEcho.get(echo.id)?.stateCount }} 图</span></span>
         </span>
-        <span class="text-center text-13px text-[var(--accent)]">{{ selectedEchoIds.includes(echo.id) ? '✓' : '+' }}</span>
+        <WuSvg :name="selectedEchoIds.includes(echo.id) ? 'check' : 'plus'" class="text-[var(--accent)] [--wu-svg-h:14px]" />
       </button>
     </WuScrollArea>
     <div v-if="selectedEchoes.length" class="mt-10px min-w-0 border-t border-[var(--line)] pt-10px">

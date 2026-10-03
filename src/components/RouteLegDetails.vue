@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WuButton from './base/WuButton.vue'
 import { computed } from 'vue'
 import { useClipboard } from '@vueuse/core'
 import type { RoutePoint } from '../domain/types.ts'
@@ -38,7 +39,7 @@ function copyDebug(): void {
         </div>
         <div class="mt-5px font-mono text-11px text-[#73988a] break-all">{{ details.debugId }}</div>
       </div>
-      <button type="button" class="h-28px w-28px shrink-0 flex cursor-pointer items-center justify-center rounded-5px border-0 bg-transparent p-0 text-20px text-[#99b8a9] leading-none hover:bg-[#183128] hover:text-[#e7f4ee]" @click="emit('close')">×</button>
+      <WuButton variant="ghost" size="sm" icon="close" icon-only tooltip="关闭" @click="emit('close')"></WuButton>
     </div>
 
     <div class="mt-12px grid grid-cols-[52px_1fr] gap-x-8px gap-y-4px">
@@ -57,7 +58,7 @@ function copyDebug(): void {
 
     <div class="mt-12px flex items-center justify-between gap-8px">
       <span class="text-11px text-[#789789]">复制后可直接发给我排查</span>
-      <button type="button" class="min-h-34px shrink-0 rounded-6px border border-[#39735b] bg-[#173a2d] px-10px text-11px text-[#9ff5d2]" @click="copyDebug">{{ copied ? '已复制' : '复制调试数据' }}</button>
+      <WuButton size="sm" tone="accent" @click="copyDebug">{{ copied ? '已复制' : '复制调试数据' }}</WuButton>
     </div>
     <div class="mt-7px max-h-150px overflow-y-auto whitespace-pre-wrap break-all rounded-6px bg-[#07130f] p-8px font-mono text-10px text-[#77998a] select-text">{{ debugText }}</div>
   </div>

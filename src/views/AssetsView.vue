@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { buttonClasses } from '../components/base/button-styles.ts'
+import WuButton from '../components/base/WuButton.vue'
 import { computed, nextTick, useTemplateRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTitle } from '@vueuse/core'
@@ -62,8 +64,8 @@ async function selectAsset(id: string): Promise<void> {
           <span class="h-18px w-1px bg-[var(--line)]" />
           <span class="text-13px text-[#a6bdb3]">官方资产库</span>
         </div>
-        <RouterLink to="/" class="min-h-40px inline-flex items-center gap-8px rounded-7px px-12px text-13px text-[var(--accent)] no-underline hover:bg-[#19372b]">
-          <WuSvg name="chevron-right" class="rotate-180 [--wu-svg-h:14px]" />返回地图
+        <RouterLink to="/" :class="buttonClasses({ variant: 'ghost', tone: 'accent' })">
+          <WuSvg name="chevron-left" class="[--wu-svg-h:var(--wu-button-icon-size)]" />返回地图
         </RouterLink>
       </div>
     </div>
@@ -76,7 +78,7 @@ async function selectAsset(id: string): Promise<void> {
     <div v-else-if="error" class="flex flex-1 flex-col items-center justify-center gap-16px p-24px text-center">
       <div class="text-20px">资产数据加载失败</div>
       <div class="max-w-full break-words text-14px text-[var(--muted)]">{{ error }}</div>
-      <button type="button" class="min-h-44px cursor-pointer rounded-7px border border-[var(--accent)] bg-transparent px-20px text-[var(--accent)]" @click="routeQuery.reload">重新加载</button>
+      <WuButton size="lg" tone="accent" @click="routeQuery.reload">重新加载</WuButton>
     </div>
 
     <WuScrollArea v-else-if="dataset" class="min-h-0 flex-1" content-class="px-16px pb-32px sm:px-28px">
@@ -88,7 +90,7 @@ async function selectAsset(id: string): Promise<void> {
             <div class="mt-10px max-w-660px text-13px text-[var(--muted)] leading-6">浏览已从库街区 Wiki 与官方地图抓取的资源清单。按分类浏览名称、图标与来源，也可搜索探索、挑战和服务点。</div>
           </div>
           <div class="flex flex-wrap gap-8px">
-            <a v-for="item in dataDownloads" :key="item.file" :href="`/data/${item.file}`" :download="item.file" class="min-h-42px inline-flex items-center rounded-7px border border-[var(--line)] bg-[#13271f] px-16px text-13px text-[#d5e8df] no-underline hover:border-[var(--accent)]">{{ item.label }} ↗</a>
+            <a v-for="item in dataDownloads" :key="item.file" :href="`/data/${item.file}`" :download="item.file" :class="buttonClasses({ variant: 'solid' })">{{ item.label }}<WuSvg name="download" class="shrink-0 [--wu-svg-h:var(--wu-button-icon-size)]" /></a>
           </div>
         </div>
 
@@ -124,12 +126,12 @@ async function selectAsset(id: string): Promise<void> {
             <div v-if="selectedAsset" ref="detailsRef" class="mb-24px overflow-hidden rounded-9px border border-[#377c60] bg-[#10251c]">
               <div class="flex items-center justify-between gap-12px border-b border-[var(--line)] px-16px py-4px">
                 <span class="text-12px text-[var(--accent)]">资产详情 / {{ selectedAsset.categories.map(categoryName).join(' / ') }}</span>
-                <button type="button" class="min-h-40px cursor-pointer rounded-5px border-0 bg-transparent px-8px text-13px text-[#b5cbc0] hover:text-white" @click="change(() => store.selectAsset(null))">收起详情</button>
+                <WuButton variant="ghost" @click="change(() => store.selectAsset(null))">收起详情</WuButton>
               </div>
               <div class="grid gap-18px p-16px sm:grid-cols-[180px_minmax(0,1fr)]">
                 <div>
                   <AssetImage :key="selectedAsset.url" :src="selectedAsset.url" large class="aspect-square w-full rounded-7px" />
-                  <a :href="selectedAsset.url" target="_blank" rel="noopener noreferrer" class="mt-10px min-h-40px flex items-center justify-center rounded-6px border border-[#377c60] text-13px text-[var(--accent)] no-underline hover:bg-[#193b2c]">打开原图 ↗</a>
+                  <a :href="selectedAsset.url" target="_blank" rel="noopener noreferrer" class="mt-10px w-full" :class="buttonClasses({ tone: 'accent' })">打开原图<WuSvg name="external-link" class="shrink-0 [--wu-svg-h:var(--wu-button-icon-size)]" /></a>
                 </div>
                 <div class="min-w-0 text-12px text-[#a9c1b4] leading-6">
                   <div class="break-words text-20px text-[#eaf4ef] font-600">{{ selectedAsset.name }}</div>
@@ -156,7 +158,7 @@ async function selectAsset(id: string): Promise<void> {
             <div v-if="!filteredAssets.length" class="flex flex-col items-center gap-12px rounded-9px border border-dashed border-[var(--line)] px-20px py-64px text-center">
               <div class="text-18px">没有匹配的资产</div>
               <div class="text-13px text-[var(--muted)]">试试其他关键词，或切换资源分类与地图范围。</div>
-              <button type="button" class="min-h-44px cursor-pointer rounded-7px border border-[#377c60] bg-[#173b2d] px-18px text-13px text-[var(--accent)]" @click="change(store.resetFilters)">清除筛选</button>
+              <WuButton size="lg" tone="accent" @click="change(store.resetFilters)">清除筛选</WuButton>
             </div>
             <AssetVirtualGrid v-else :assets="filteredAssets" :selected-id="filters.selectedId" @select="selectAsset" />
 

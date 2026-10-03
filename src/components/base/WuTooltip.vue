@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, onScopeDispose, shallowRef, useSlots, useTemplateRef, watch } from 'vue'
-import { useElementHover, useEventListener, useMutationObserver, useResizeObserver, useSupported } from '@vueuse/core'
+import { useElementHover, useEventListener, useMutationObserver, useResizeObserver, useSupported, useTimeoutFn } from '@vueuse/core'
 import { tooltipPosition } from './tooltip-position.ts'
 import type { WuTooltipPlacement } from './tooltip-position.ts'
 
 defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<{
+  anchor?: HTMLElement | null
   content?: string
   disabled?: boolean
   placement?: WuTooltipPlacement
@@ -26,18 +27,24 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{ opened: [], closed: [] }>()
 const slots = useSlots()
 const trigger = useTemplateRef<HTMLSpanElement>('triggerRef')
+const anchor = computed(() => props.anchor ?? trigger.value)
 const panel = useTemplateRef<HTMLSpanElement>('panelRef')
 const openState = shallowRef(false)
 const isOpen = computed(() => openState.value)
 const hasContent = computed(() => props.content.trim().length > 0 || Boolean(slots.content))
 const isSupported = useSupported(() => typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype)
-const hovered = useElementHover(trigger, { delayEnter: Math.max(0, props.delayEnter) })
+const hovered = useElementHover(anchor)
+const { start: scheduleOpen, stop: cancelOpen } = useTimeoutFn(open, () => Math.max(0, props.delayEnter), { immediate: false })
 const pointerType = shallowRef('')
 let resizeFrame: number | null = null
 
 function updatePosition(): void {
   const element = panel.value
-  if (!isSupported.value || !element?.matches(':popover-open') || !trigger.value) return
+  if (!isSupported.value || !element?.matches(':popover-open') || !anchor.value) return
+  if (!anchor.value.isConnected || !anchor.value.getClientRects().length) {
+    hide()
+    return
+  }
   const visualViewport = window.visualViewport
   const viewport = {
     left: visualViewport?.offsetLeft ?? 0,
@@ -51,7 +58,7 @@ function updatePosition(): void {
   element.style.maxWidth = `${maxWidth}px`
   element.style.maxHeight = `${maxHeight}px`
   const position = tooltipPosition({
-    anchor: trigger.value.getBoundingClientRect(),
+    anchor: anchor.value.getBoundingClientRect(),
     viewport,
     size: element.getBoundingClientRect(),
     placement: props.placement,
@@ -73,7 +80,7 @@ function schedulePositionUpdate(): void {
 function open(): void {
   const element = panel.value
   if (!isSupported.value || props.disabled || !hasContent.value || !element?.isConnected || element.matches(':popover-open')) return
-  element.showPopover({ source: trigger.value ?? undefined })
+  element.showPopover({ source: anchor.value ?? undefined })
   updatePosition()
 }
 
@@ -96,15 +103,20 @@ function onToggle(): void {
   else emit('closed')
 }
 
-watch([hovered, pointerType, () => props.disabled, hasContent], ([hovering, input, disabled, content]) => {
-  if (hovering && input !== 'touch' && !disabled && content) open()
+watch([hovered, pointerType, () => props.disabled, hasContent, () => props.delayEnter], ([hovering, input, disabled, content]) => {
+  cancelOpen()
+  if (hovering && input !== 'touch' && !disabled && content) {
+    if (props.delayEnter > 0) scheduleOpen()
+    else open()
+  }
   else hide()
 })
 watch(() => [props.content, props.placement, props.gap, props.viewportMargin, props.maxWidth], updatePosition, { flush: 'post' })
+useEventListener(anchor, ['pointerenter', 'pointerdown'], recordPointer)
 useEventListener(window, 'resize', updatePosition, { passive: true })
 useEventListener(window, 'scroll', updatePosition, { capture: true, passive: true })
 useEventListener(window.visualViewport, ['resize', 'scroll'], updatePosition, { passive: true })
-useResizeObserver([trigger, panel], schedulePositionUpdate)
+useResizeObserver([anchor, panel], schedulePositionUpdate)
 useMutationObserver(panel, updatePosition, { childList: true, subtree: true, characterData: true })
 onScopeDispose(() => {
   if (resizeFrame !== null) cancelAnimationFrame(resizeFrame)
@@ -115,12 +127,11 @@ defineExpose({ isOpen, isSupported, show: open, hide, updatePosition })
 
 <template>
   <span
-    v-bind="$attrs" ref="triggerRef" class="min-w-0"
-    @pointerenter="recordPointer" @pointerdown="recordPointer"
+    v-if="!props.anchor" v-bind="$attrs" ref="triggerRef" class="min-w-0"
   ><slot /></span>
   <span
     ref="panelRef" popover="manual" :hidden="!isSupported"
-    class="wu-floating-motion pointer-events-none fixed inset-auto m-0 w-max box-border select-none overflow-hidden break-words border-0 rounded-5px bg-[#e5eee7] px-10px py-7px text-13px text-[#263b31] font-600 leading-18px shadow-lg [&:popover-open]:block"
+    class="wu-floating-motion pointer-events-none fixed inset-auto m-0 w-max box-border select-none overflow-hidden break-words border-0 rounded-5px bg-[#e5eee7] px-10px py-6px text-12px text-[#263b31] font-400 leading-18px shadow-lg [&:popover-open]:block"
     @toggle="onToggle"
   ><slot name="content">{{ content }}</slot></span>
 </template>
