@@ -24,6 +24,7 @@
     "@vitejs/plugin-vue": "catalog:",
     "@vueuse/core": "catalog:",
     "@vueuse/router": "catalog:",
+    "fake-indexeddb": "catalog:",
     "immer": "catalog:",
     "ol": "catalog:",
     "pinia": "catalog:",

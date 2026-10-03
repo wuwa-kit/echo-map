@@ -53,19 +53,5 @@
       "note": "示例 XYZ，仅用于验证路线功能，不代表精确实测值"
     }
   ],
-  "navigationPoints": [
-    {
-      "id": "example-teleport-001",
-      "officialLocationId": "1253326841135009792",
-      "stateId": 8,
-      "countryId": 1,
-      "levelId": null,
-      "x": 279,
-      "y": 787,
-      "z": 15,
-      "quality": "example",
-      "note": "示例 XYZ，仅用于验证路线功能，不代表精确实测值"
-    }
-  ],
   "connectors": []
 }

@@ -12,7 +12,7 @@ import { referenceDataset, mixedPoint } from './fixtures/point-library.ts'
 
 const publicFiles = [
   'catalog-data.json', 'custom-echo-points.json', 'custom-navigation-points.json', 'map-data.json',
-  'official-echo-points.json', 'official-navigation-points.json',
+  'official-echo-points.json',
 ]
 const manual = { version: 1, points: [mixedPoint(), { ...mixedPoint('draft'), status: 'draft' }] }
 const official = convertOfficialPoints(referenceDataset)
@@ -32,7 +32,7 @@ afterEach(async () => {
 })
 
 describe('public data generation', () => {
-  it('materializes all six compact JSON files when synchronizing the map', async () => {
+  it('materializes all five compact JSON files when synchronizing the map', async () => {
     await writeMapDataset(referenceDataset)
     expect((await readdir(files.projectPath('public', 'data'))).sort()).toEqual(publicFiles)
     for (const name of publicFiles) {
@@ -44,9 +44,6 @@ describe('public data generation', () => {
     const source = await files.readJson<{ version: 1, points: { kind: string }[] }>(files.projectPath('data', 'generated', 'official-points.json'))
     expect(await files.readJson(files.projectPath('public', 'data', 'official-echo-points.json'))).toMatchObject({
       library: { version: 1, points: source.points.filter(({ kind }) => kind === 'echo') },
-    })
-    expect(await files.readJson(files.projectPath('public', 'data', 'official-navigation-points.json'))).toMatchObject({
-      library: { version: 1, points: source.points.filter(({ kind }) => kind === 'navigation') },
     })
     expect(await files.readJson(files.projectPath('data', 'manual', 'points.json'))).toEqual(manual)
   })
@@ -89,7 +86,6 @@ describe('public data generation', () => {
       expect(result.status).toBe(200)
       expect(await result.json()).toMatchObject({ library: { version: 1, points: [] } })
       expect(await files.readJson(files.projectPath('public', 'data', 'official-echo-points.json'))).toMatchObject({ library: { version: 1, points: [] } })
-      expect(await files.readJson(files.projectPath('public', 'data', 'official-navigation-points.json'))).toMatchObject({ library: { version: 1, points: [] } })
     } finally {
       await server.close()
     }

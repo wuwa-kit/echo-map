@@ -24,11 +24,5 @@
     "玉冥蛇"
   ],
   "provisionalEchoLocationCount": 6806,
-  "routeEligibleEchoLocationCount": 4,
-  "navigationPointCount": 620,
-  "navigationPointGroupCount": 52,
-  "bossNavigationPointCount": 44,
-  "challengeNavigationPointCount": 68,
-  "navigationIconFetchFailureCount": 0,
-  "routeEligibleNavigationPointCount": 1
+  "routeEligibleEchoLocationCount": 4
 }

@@ -13,8 +13,12 @@ describe('boss marker classification', () => {
     '命途断章之轮',
     '烬夜天启之章',
     '昔日咏叹之钟',
+    '周本 BOSS',
+    '我命名的周本',
+    '',
   ])('uses clipped corners for the weekly boss %s', (typeName) => {
-    expect(bossMarkerShape({ kind: 'boss', typeName })).toBe('cut-diamond')
+    const point = { kind: 'boss', pointType: 'weekly-boss', typeName } as const
+    expect(bossMarkerShape(point)).toBe('cut-diamond')
   })
 
   it.each([
@@ -25,13 +29,20 @@ describe('boss marker classification', () => {
     '梦魇·昔日咏叹之钟',
     '昔日咏叹之钟·挑战',
     '',
-  ])('keeps the full diamond when the whole name does not match: %s', (typeName) => {
-    expect(bossMarkerShape({ kind: 'boss', typeName })).toBe('diamond')
+    '星海迷途之扉',
+  ])('keeps a normal boss diamond independently of its name: %s', (typeName) => {
+    const point = { kind: 'boss', pointType: 'normal-boss', typeName } as const
+    expect(bossMarkerShape(point)).toBe('diamond')
   })
 
-  it('leaves matching service landmarks and ordinary challenges unframed', () => {
-    expect(bossMarkerShape({ kind: 'service', typeName: '青实归还之碑' })).toBeNull()
-    expect(bossMarkerShape({ kind: 'challenge', typeName: '昔日咏叹之钟' })).toBeNull()
-    expect(bossMarkerShape({ kind: 'domain', typeName: '欲燃之森' })).toBeNull()
+  it.each(['nightmare-boss', 'normal-boss', undefined] as const)('does not infer a weekly frame from the name for %s', (pointType) => {
+    const point = { kind: 'boss', pointType, typeName: '昔日咏叹之钟' } as const
+    expect(bossMarkerShape(point)).toBe('diamond')
+  })
+
+  it('leaves service landmarks and ordinary challenges unframed', () => {
+    expect(bossMarkerShape({ kind: 'service', pointType: 'service' })).toBeNull()
+    expect(bossMarkerShape({ kind: 'challenge', pointType: 'challenge' })).toBeNull()
+    expect(bossMarkerShape({ kind: 'domain', pointType: 'material-domain' })).toBeNull()
   })
 })

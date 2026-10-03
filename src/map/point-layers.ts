@@ -247,11 +247,15 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   function pointStyle(feature: FeatureLike, resolution: number): Style | Style[] | undefined {
     const point = feature.get('mapPoint') as MapDisplayPoint
     if (!options.exportMode && !isMapPointVisibleAtZoom(point, mapZoomForResolution(resolution))) return undefined
+    return pointMarkerStyle(point, selectedLevelId === null)
+  }
+
+  function pointMarkerStyle(point: MapDisplayPoint, includeFloorBadge: boolean): Style | Style[] | undefined {
     const style = point.category === 'echo' ? markerStyles.echo(point.location)
       : point.category === 'navigation' ? markerStyles.navigation(point.location) : labelStyle(point.location)
     const artworkWidth = point.category === 'navigation' && point.location.iconUrl && !bossMarkerShape(point.location) ? 36 : undefined
     resizeExportMarkers(style, artworkWidth)
-    const showFloorBadge = point.category !== 'region-name' && selectedLevelId === null
+    const showFloorBadge = point.category !== 'region-name' && includeFloorBadge
       && point.location.levelId !== null
       && (point.category !== 'navigation' || point.location.typeName !== '分层入口')
     return showFloorBadge && Array.isArray(style)
@@ -335,8 +339,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   return {
     layers, update, dispose,
     ready: markerStyles.ready,
-    styleFor: (point: MapDisplayPoint) => point.category === 'echo' ? markerStyles.echo(point.location)
-      : point.category === 'navigation' ? markerStyles.navigation(point.location) : labelStyle(point.location),
+    styleFor: (point: MapDisplayPoint) => pointMarkerStyle(point, true),
     finishInteraction: (extent: Extent, resolution: number, projection: Projection, separatePoints = false) => {
       clusters?.finishInteraction(extent, resolution, projection, separatePoints)
       backgroundClusters?.finishInteraction(extent, resolution, projection, separatePoints)

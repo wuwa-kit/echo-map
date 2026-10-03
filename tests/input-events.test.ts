@@ -83,6 +83,17 @@ describe('shared input events', () => {
     await nextTick()
   })
 
+  it('ignores held Enter keys so each confirmation requires a separate press', () => {
+    const { target, update, confirm, handlers } = fixture(true)
+    handlers.keydown({ target, key: 'Enter', keyCode: 13, repeat: false })
+    handlers.keydown({ target, key: 'Enter', keyCode: 13, repeat: true })
+    handlers.keydown({ target, key: 'Enter', keyCode: 13, repeat: true })
+    expect(update).toHaveBeenCalledTimes(1)
+    expect(confirm).toHaveBeenCalledTimes(1)
+    handlers.keydown({ target, key: 'Enter', keyCode: 13, repeat: false })
+    expect(confirm).toHaveBeenCalledTimes(2)
+  })
+
   it.each(['disabled', 'readonly'] as const)('ignores editing and confirmation while %s', (flag) => {
     const { state, target, update, confirm, handlers } = fixture()
     state[flag] = true

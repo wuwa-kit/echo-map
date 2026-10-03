@@ -3,16 +3,12 @@ import { officialToMapCoordinate } from '../../../src/map/projection.ts'
 import { asArray, asNumber, asRecord, asString } from '../raw.ts'
 import type { UnknownRecord } from '../raw.ts'
 import type { WikiSnapshot } from '../wiki.ts'
-import { iconUrl, indexCatalogTypes, normalizeName, nullableId } from './normalize.ts'
+import { normalizeName, nullableId } from './normalize.ts'
 import type {
   AliasData,
-  CatalogTypeInfo,
   ManualData,
   ManualPoint,
   MapStatePayload,
-  NavigationConfig,
-  NavigationPointDraft,
-  NavigationRule,
 } from './types.ts'
 
 function normalizeGravity(value: unknown): GravityType | null {
@@ -24,24 +20,6 @@ function normalizeGravity(value: unknown): GravityType | null {
 
 function manualCoordinate(point: ManualPoint | undefined): GameCoordinate | null {
   return point ? { x: point.x, y: point.y, z: point.z } : null
-}
-
-function navigationClassification(
-  typeId: string,
-  catalogType: CatalogTypeInfo | undefined,
-  config: NavigationConfig,
-): (CatalogTypeInfo & NavigationRule) | null {
-  const rule = config.types[typeId]
-    ?? (catalogType ? config.includeTableNames[catalogType.tableName] : undefined)
-  if (!rule) {
-    return null
-  }
-  return {
-    categoryId: catalogType?.categoryId ?? 'configured',
-    categoryName: catalogType?.categoryName ?? '配置定位点',
-    tableName: catalogType?.tableName ?? '',
-    ...rule,
-  }
 }
 
 function locationBase(
@@ -75,28 +53,21 @@ export function normalizeLocations(
   wiki: WikiSnapshot,
   manual: ManualData,
   aliases: AliasData,
-  navigationConfig: NavigationConfig,
   statePayloads: readonly MapStatePayload[],
 ) {
   const echoByName = new Map(wiki.echoes.map((echo) => [normalizeName(echo.name), echo]))
   const manualEchoByLocation = new Map(manual.echoLocations
     .filter((point) => point.officialLocationId !== undefined)
     .map((point) => [point.officialLocationId as string, point]))
-  const manualNavigationByLocation = new Map(manual.navigationPoints
-    .filter((point) => point.officialLocationId !== undefined)
-    .map((point) => [point.officialLocationId as string, point]))
   const echoLocations = new Map<string, EchoLocation>()
-  const navigationPoints = new Map<string, NavigationPointDraft>()
   const exactMatchedEchoIds = new Set<string>()
   const aliasMatchedEchoIds = new Set<string>()
 
-  for (const { state, positionData, catalogData } of statePayloads) {
-    const catalogTypes = indexCatalogTypes(catalogData)
+  for (const { state, positionData } of statePayloads) {
     for (const rawType of asArray(positionData, `position ${state.id}`)) {
       const type = asRecord(rawType, 'position type')
       const typeId = asString(type.id)
       const typeName = normalizeName(asString(type.name))
-      const navigation = navigationClassification(typeId, catalogTypes.get(typeId), navigationConfig)
       const aliasName = aliases.byTypeId[typeId]
       const exactEcho = echoByName.get(typeName)
       const echo = exactEcho ?? (aliasName ? echoByName.get(normalizeName(aliasName)) : undefined)
@@ -105,27 +76,16 @@ export function normalizeLocations(
       } else if (echo) {
         aliasMatchedEchoIds.add(echo.id)
       }
+      if (!echo) continue
 
       const locations = Array.isArray(type.location) ? type.location : []
       for (const rawLocation of locations) {
         const location = asRecord(rawLocation, 'position location')
         const locationId = asString(location.id)
-        if (echo && !echoLocations.has(locationId)) {
+        if (!echoLocations.has(locationId)) {
           echoLocations.set(locationId, {
             ...locationBase(location, type, state.id, manualEchoByLocation.get(locationId), echo.iconUrl),
             echoId: echo.id,
-          })
-        }
-
-        if (navigation && !navigationPoints.has(locationId)) {
-          const manualPoint = manualNavigationByLocation.get(locationId)
-          navigationPoints.set(locationId, {
-            ...locationBase(location, type, state.id, manualPoint, iconUrl(type.icon)),
-            catalogCategoryId: navigation.categoryId,
-            catalogCategoryName: navigation.categoryName,
-            mode: navigation.mode,
-            kind: navigation.kind,
-            ...(manualPoint?.teleportCoordinate ? { teleportCoordinate: manualPoint.teleportCoordinate } : {}),
           })
         }
       }
@@ -165,7 +125,6 @@ export function normalizeLocations(
 
   return {
     echoLocations: [...echoLocations.values()],
-    navigationPoints: [...navigationPoints.values()],
     exactMatchedEchoIds,
     aliasMatchedEchoIds,
   }

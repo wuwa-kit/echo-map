@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { parsePointLibrary, emptyPointLibrary } from '../../src/domain/point-library.ts'
-import type { AuthoredEchoPoint, AuthoredPoint, MapDataset, PointLibrary } from '../../src/domain/types.ts'
+import { echoPointLibrarySchema } from '../../src/domain/schema.ts'
+import type { AuthoredEchoPoint, MapDataset, PointLibrary } from '../../src/domain/types.ts'
 
 export const OFFICIAL_ECHO_MERGE_DIAMETER = 25
 
@@ -116,13 +117,13 @@ function clusterRepresentative(cluster: OfficialEchoCluster): OfficialEchoLocati
 }
 
 export function convertOfficialPoints(dataset: MapDataset): PointLibrary {
-  const points: AuthoredPoint[] = []
+  const points: AuthoredEchoPoint[] = []
   const validCountries = new Set(dataset.regionLabels.filter(({ level }) => level === 1).map(({ stateId, countryId }) => `${stateId}:${countryId}`))
   const echoLocations = dataset.echoLocations.map((location) => {
     const countryId = inferOfficialEchoCountryId(location, dataset.regionLabels)
     return countryId === location.countryId ? location : { ...location, countryId }
   })
-  const makeBase = (point: MapDataset['echoLocations'][number] | MapDataset['navigationPoints'][number]) => {
+  const makeBase = (point: MapDataset['echoLocations'][number]) => {
     return {
       id: `official:${point.id}`,
       status: 'imported' as const,
@@ -154,9 +155,6 @@ export function convertOfficialPoints(dataset: MapDataset): PointLibrary {
     }
     points.push(point)
   }
-  for (const location of dataset.navigationPoints) {
-    points.push({ ...makeBase(location), kind: 'navigation', name: location.typeName, navigationKind: location.kind, mode: location.mode, note: '官方导入：Z=0 为占位值，待实测。', ...(location.teleportCoordinate ? { teleportCoordinate: location.teleportCoordinate } : {}) })
-  }
   return parsePointLibrary({ version: 1, points }, dataset, 'official')
 }
 
@@ -168,5 +166,5 @@ export async function readOfficialPointLibrary(path: string, dataset: MapDataset
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return emptyPointLibrary()
     throw error
   }
-  return parsePointLibrary(JSON.parse(text), dataset, 'official')
+  return parsePointLibrary(echoPointLibrarySchema.parse(JSON.parse(text)), dataset, 'official')
 }

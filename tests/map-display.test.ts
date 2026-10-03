@@ -8,7 +8,7 @@ import RegularShape from 'ol/style/RegularShape.js'
 import Style from 'ol/style/Style.js'
 import { createPointLayers, mapFeaturePointIds, mapFeaturesPointIds } from '../src/map/point-layers.ts'
 import type { MapDisplayPoint, NavigationPoint, RegionLabel } from '../src/domain/types.ts'
-import { referenceDataset } from './fixtures/point-library.ts'
+import { navigationTestDataset as referenceDataset } from './fixtures/navigation-points.ts'
 
 class MarkerPath {
   moveTo() {}
@@ -118,6 +118,10 @@ describe('map display layer integration', () => {
 
     points.update([], navigation, [], [], undefined, 'a1')
     expect(navigationBadges('floor')).toEqual([])
+    const floorPoint = navigation.find(({ id }) => id === 'floor')
+    if (!floorPoint) throw new Error('需要分层定位点')
+    expect(badgeShapes(points.styleFor({ category: 'navigation', location: floorPoint }))).toEqual(expectedBadge(36, 36))
+    expect(badgeShapes(points.styleFor({ category: 'navigation', location: { ...floorPoint, levelId: null } }))).toEqual([])
     points.dispose()
   })
 
@@ -317,8 +321,8 @@ describe('map display layer integration', () => {
     const point = referenceDataset.navigationPoints[0]
     if (!point) throw new Error('需要定位点测试数据')
     const navigation: NavigationPoint[] = [
-      { ...point, id: 'nexus', kind: 'nexus', iconUrl: '' },
-      { ...point, id: 'beacon', kind: 'beacon', iconUrl: '' },
+      { ...point, id: 'nexus', kind: 'nexus', pointType: 'central-beacon', iconUrl: '' },
+      { ...point, id: 'beacon', kind: 'beacon', pointType: 'small-beacon', iconUrl: '' },
     ]
     points.update([], navigation, [], [])
     const layer = points.layers[2]
@@ -346,7 +350,7 @@ describe('map display layer integration', () => {
     const points = createPointLayers()
     const point = referenceDataset.navigationPoints[0]
     if (!point) throw new Error('需要定位点测试数据')
-    const navigation = { ...point, kind: 'service' as const, iconUrl: '' }
+    const navigation = { ...point, kind: 'service' as const, pointType: 'service' as const, iconUrl: '' }
     points.update([], [navigation], [], [])
     const layer = points.layers[2]
     const feature = layer?.getSource()?.getFeatures()[0]

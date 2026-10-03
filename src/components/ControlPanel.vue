@@ -62,7 +62,7 @@ function togglePointSourceFilter(source: PointSourceFilter): void {
         <div class="flex flex-wrap items-center justify-between gap-10px">
           <div class="min-w-0 flex items-center gap-4px whitespace-nowrap">
             <WuButton variant="ghost" tone="accent" :size="compact ? 'lg' : 'xs'" @click="$emit('editRequested')">点位录入</WuButton>
-            <RouterLink to="/assets" :class="buttonClasses({ variant: 'ghost', tone: 'accent', size: compact ? 'lg' : 'xs' })">资产浏览</RouterLink>
+            <RouterLink to="/assets" target="_blank" rel="noopener" :class="buttonClasses({ variant: 'ghost', tone: 'accent', size: compact ? 'lg' : 'xs' })">资产浏览</RouterLink>
           </div>
           <div class="flex shrink-0 gap-5px">
             <WuButton v-for="option in pointSourceOptions" :key="option.value" :size="compact ? 'lg' : 'xs'" :tone="activePointSourceFilterSet.has(option.value) ? 'accent' : 'neutral'" @click="togglePointSourceFilter(option.value)">{{ option.label }}</WuButton>

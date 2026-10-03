@@ -1,11 +1,14 @@
 import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
-import { mapZoomRangeSchema, officialAssetSchema, officialEchoPointDataSchema, officialNavigationPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
-import { navigationIconAssets } from '../src/domain/navigation-icons.ts'
+import { mapZoomRangeSchema, officialAssetSchema, officialEchoPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
+import { navigationIconById } from '../src/domain/navigation-icons.ts'
+import { navigationIconCatalog } from '../src/domain/navigation-icon-catalog.ts'
+import { navigationIconDefinitionSchema } from '../src/domain/schema.ts'
+import { navigationPointTypeIds, navigationPointTypes } from '../src/domain/navigation-point-types.ts'
+import { officialNavigationTypeIds } from './lib/map/navigation-types.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
 import { projectPath, readJson } from './lib/files.ts'
-import { combinePointLibraryKinds, parsePointLibrary } from '../src/domain/point-library.ts'
-import { isRouteStart } from '../src/domain/explorer-selectors.ts'
+import { parsePointLibrary } from '../src/domain/point-library.ts'
 import { readMapDataset, readOfficialPointData } from './lib/map-data.ts'
 import { inferOfficialEchoCountryId, OFFICIAL_ECHO_MERGE_DIAMETER } from './lib/official-point-library.ts'
 
@@ -25,14 +28,24 @@ for (const asset of assets) {
 const pointLibrary = parsePointLibrary(await readJson<unknown>(projectPath('data', 'manual', 'points.json')), dataset, 'manual')
 const official = await readOfficialPointData(dataset)
 const officialEcho = officialEchoPointDataSchema.parse(official.echo)
-const officialNavigation = officialNavigationPointDataSchema.parse(official.navigation)
-const officialLibrary = parsePointLibrary(combinePointLibraryKinds(officialEcho.library, officialNavigation.library), dataset, 'official')
+const officialLibrary = parsePointLibrary(officialEcho.library, dataset, 'official')
 const echoIds = new Set(dataset.echoes.map(({ id }) => id))
 const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []
-const selectableIconUrls = new Set(navigationIconAssets(assets).map(({ url }) => url))
-for (const point of pointLibrary.points) {
-  if (point.kind === 'navigation' && point.iconUrl && !selectableIconUrls.has(point.iconUrl)) errors.push(`点位 ${point.id} 引用了资产目录外图标`)
+const classifiedTypeIds = Object.values(officialNavigationTypeIds).flat()
+if (new Set(classifiedTypeIds).size !== classifiedTypeIds.length) errors.push('同一官方类型 ID 不能属于多个定位点类型')
+const localIconIds = new Set<string>()
+for (const icon of navigationIconCatalog) {
+  navigationIconDefinitionSchema.parse(icon)
+  if (localIconIds.has(icon.id)) errors.push(`重复定位点图标 ID：${icon.id}`)
+  localIconIds.add(icon.id)
+}
+for (const type of navigationPointTypeIds) {
+  const rule = navigationPointTypes[type]
+  if (new Set(rule.icons).size !== rule.icons.length) errors.push(`${rule.name} 的图标列表有重复项`)
+  if (rule.names.length > 1 || rule.names.some((name) => !name.trim())) errors.push(`${rule.name} 的名称只能为空列表或单个固定名称`)
+  if (rule.icons.some((id) => !navigationIconById(id))) errors.push(`${rule.name} 的图标列表引用了未知图标`)
+  if (new Set(rule.icons.map((id) => navigationIconById(id)?.url)).size !== rule.icons.length) errors.push(`${rule.name} 的图标列表包含重复图像`)
 }
 
 for (const state of dataset.states) {
@@ -43,9 +56,8 @@ for (const state of dataset.states) {
 }
 
 for (const range of Object.values(MAP_POINT_ZOOM_RANGES)) mapZoomRangeSchema.parse(range)
-const officialById = new Map([...dataset.echoLocations, ...dataset.navigationPoints].map((point) => [point.id, point]))
+const officialById = new Map(dataset.echoLocations.map((point) => [point.id, point]))
 const officialEchoById = new Map(dataset.echoLocations.map((point) => [point.id, point]))
-const officialNavigationById = new Map(dataset.navigationPoints.map((point) => [point.id, point]))
 const convertedOfficialIds = new Set<string>()
 for (const point of officialLibrary.points) {
   const officialIds = point.officialIds ?? []
@@ -57,8 +69,8 @@ for (const point of officialLibrary.points) {
     const original = officialById.get(id)
     if (!original || original.gravityType !== point.gravityType) errors.push(`官方点 ${point.id} 的重力与来源 ${id} 不一致，请重新转换官方点位`)
   }
-  if (point.kind === 'navigation') {
-    if (officialIds.length !== 1 || !officialNavigationById.has(officialIds[0] ?? '')) errors.push(`官方定位点 ${point.id} 的来源不唯一或类型不正确`)
+  if (point.kind !== 'echo') {
+    errors.push(`官方点位库只允许声骸点：${point.id}`)
     continue
   }
 
@@ -138,31 +150,7 @@ for (const echo of dataset.echoes) {
   }
 }
 
-const navigationGroupIds = new Set<string>()
-for (const group of dataset.navigationPointGroups) {
-  if (navigationGroupIds.has(group.id)) {
-    errors.push(`定位点图标分组存在重复 ID：${group.id}`)
-  }
-  navigationGroupIds.add(group.id)
-}
-
-for (const point of dataset.navigationPoints) {
-  if (point.typeName === '观景点') {
-    errors.push(`定位点 ${point.id} 不应收录观景点`)
-  }
-  if (!navigationGroupIds.has(point.groupId)) {
-    errors.push(`定位点 ${point.id} 引用了不存在的图标分组 ${point.groupId}`)
-  }
-  if ((point.kind === 'boss' || point.catalogCategoryName === '挑战') && point.mode !== 'fast-travel') {
-    errors.push(`${point.typeName} 应标记为可传送点`)
-  }
-}
-
-for (const group of dataset.navigationPointGroups) {
-  if (group.typeNames.includes('观景点')) {
-    errors.push(`定位点图标分组 ${group.id} 不应收录观景点`)
-  }
-}
+if (dataset.navigationPoints.length || dataset.navigationPointGroups.length) errors.push('官方数据不应包含定位点或定位点分组')
 
 for (const location of dataset.echoLocations) {
   if (!echoIds.has(location.echoId)) {
@@ -183,23 +171,6 @@ for (const collection of [dataset.echoLocations, dataset.navigationPoints, datas
   }
 }
 
-const routeEligibleNavigationPoints = dataset.navigationPoints.filter(isRouteStart)
-if (routeEligibleNavigationPoints.length !== dataset.report.routeEligibleNavigationPointCount) {
-  errors.push('路线起点统计与定位点数据不一致')
-}
-if (dataset.navigationPoints.length !== dataset.report.navigationPointCount) {
-  errors.push('定位点统计与定位点数据不一致')
-}
-if (dataset.navigationPointGroups.length !== dataset.report.navigationPointGroupCount) {
-  errors.push('定位点图标分组统计与数据不一致')
-}
-if (dataset.navigationPoints.filter(({ kind }) => kind === 'boss').length !== dataset.report.bossNavigationPointCount) {
-  errors.push('BOSS 定位点统计与数据不一致')
-}
-if (dataset.navigationPoints.filter(({ catalogCategoryName }) => catalogCategoryName === '挑战').length !== dataset.report.challengeNavigationPointCount) {
-  errors.push('挑战定位点统计与数据不一致')
-}
-
 if (errors.length > 0) {
   throw new Error(`数据校验失败：\n${errors.join('\n')}`)
 }
@@ -218,9 +189,6 @@ console.log([
   `文字定位点 ${dataset.regionLabels.length}`,
   `图标分组 ${dataset.navigationPointGroups.length}`,
   `已分类定位点 ${pointLibrary.points.filter((point) => point.kind === 'navigation' && point.pointType).length}`,
-  `自选图标点位 ${pointLibrary.points.filter((point) => point.kind === 'navigation' && (point.iconSourceId || point.iconUrl)).length}`,
-  `BOSS ${dataset.report.bossNavigationPointCount}`,
-  `挑战 ${dataset.report.challengeNavigationPointCount}`,
-  `路线起点 ${routeEligibleNavigationPoints.length}`,
+  `自选图标点位 ${pointLibrary.points.filter((point) => point.kind === 'navigation' && (point.iconId || point.iconUrl)).length}`,
   `路线可用声骸点 ${dataset.report.routeEligibleEchoLocationCount}`,
 ].join(' · '))

@@ -29,7 +29,7 @@ describe('inline point editor', () => {
     const panel = await readFile(new URL('../src/components/PointEditorPanel.vue', import.meta.url), 'utf8')
     expect(panel).toContain("useRouteQuery<string>('editorTab', 'navigation', { mode: 'replace' })")
     expect(panel).toContain('tabQuery.value = editorMode.value')
-    expect(panel).toContain("switchTab(tabQuery.value === 'echo' ? 'echo' : 'navigation')")
+    expect(panel).toContain("store.load(tabQuery.value === 'echo' ? 'echo' : 'navigation')")
     expect(panel).not.toContain('tabQuery.value = undefined')
   })
 

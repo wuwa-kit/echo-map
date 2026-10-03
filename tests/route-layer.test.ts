@@ -426,11 +426,11 @@ describe('route map lines', () => {
   })
 
   it.each([
-    { typeName: '无归的谬误', expected: [100 + 22 + 5.5, 200], vertices: 4 },
-    { typeName: '星海迷途之扉', expected: [100 + 22 + 5.5, 200], vertices: 8 },
-  ])('uses the rendered boss border for $typeName', ({ typeName, expected, vertices }) => {
+    { pointType: 'normal-boss', typeName: '星海迷途之扉', expected: [100 + 22 + 5.5, 200], vertices: 4 },
+    { pointType: 'weekly-boss', typeName: '我的周本定位点', expected: [100 + 22 + 5.5, 200], vertices: 8 },
+  ])('uses the rendered boss border for $pointType with name $typeName', ({ pointType, typeName, expected, vertices }) => {
     const source = new VectorSource({ features: [new Feature({
-      geometry: new Point([100, 0]), mapPoint: { category: 'navigation', location: { id: 'boss', kind: 'boss', typeName, iconUrl: 'boss.png' } },
+      geometry: new Point([100, 0]), mapPoint: { category: 'navigation', location: { id: 'boss', kind: 'boss', pointType, typeName, iconUrl: 'boss.png' } },
     })] })
     const iconLayer = new VectorLayer({ source, style: new Style({ image: new CircleStyle({ radius: 23 }) }) })
     const routeLayer = createRouteLayer([iconLayer])

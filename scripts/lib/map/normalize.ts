@@ -1,7 +1,6 @@
 import type { LayeredMapDefinition, MapNavigationCountry, RegionLabel } from '../../../src/domain/types.ts'
 import { officialToMapCoordinate } from '../../../src/map/projection.ts'
 import { asArray, asNumber, asRecord, asString } from '../raw.ts'
-import type { CatalogTypeInfo } from './types.ts'
 
 export const STATIC_ROOT = 'https://web-static.kurobbs.com'
 
@@ -123,22 +122,4 @@ export function normalizeMapNavigation(value: unknown): MapNavigationCountry[] {
     })
     return { id: countryId, name: asString(country.name).trim(), regionIds: regions.map(({ id }) => id), groups }
   })
-}
-
-export function indexCatalogTypes(value: unknown): Map<string, CatalogTypeInfo> {
-  const result = new Map<string, CatalogTypeInfo>()
-  for (const rawCategory of asArray(value, 'map catalog')) {
-    const category = asRecord(rawCategory, 'map catalog category')
-    const categoryId = asString(category.id)
-    const categoryName = asString(category.name)
-    const children = Array.isArray(category.children) ? category.children : []
-    for (const rawType of children) {
-      const type = asRecord(rawType, 'map catalog type')
-      const typeId = asString(type.id)
-      if (typeId.length > 0) {
-        result.set(typeId, { categoryId, categoryName, tableName: asString(type.tableName) })
-      }
-    }
-  }
-  return result
 }

@@ -5,6 +5,8 @@ import { iconUrl, STATIC_ROOT } from './normalize.ts'
 import { createHash } from 'node:crypto'
 import { fetchBytes } from '../http.ts'
 import { PNG } from 'pngjs'
+import { officialNavigationPointType } from './navigation-types.ts'
+import type { NavigationConfig } from './types.ts'
 
 export async function deduplicateMapAssets(catalog: OfficialMapAssetCatalog): Promise<OfficialMapAssetCatalog> {
   const hashes = new Map<string, string>()
@@ -37,13 +39,14 @@ export async function deduplicateMapAssets(catalog: OfficialMapAssetCatalog): Pr
 }
 
 const categories: Record<string, OfficialAssetCategory> = {
-  探索: 'exploration', 挑战: 'challenge', NPC及服务点: 'service',
+  探索: 'exploration', 挑战: 'challenge', NPC及服务点: 'service', BOSS: 'navigation',
 }
 
 export function normalizeMapAssets(
   payloads: readonly { state: { id: number }; catalogData: unknown }[],
   resourceHash: string,
   fetchedAt: string,
+  navigationConfig: NavigationConfig = { types: {}, includeTableNames: {} },
 ): OfficialMapAssetCatalog {
   const assets = new Map<string, OfficialAsset>()
   for (const { state, catalogData } of payloads) {
@@ -58,6 +61,10 @@ export function normalizeMapAssets(
         for (const value of asArray(values, 'map asset entries')) {
           const entry = asRecord(value, 'map asset entry')
           const typeId = asString(entry.id)
+          const tableName = asString(entry.tableName)
+          const isNavigation = category === 'navigation' || navigationConfig.types[typeId]
+            || officialNavigationPointType(typeId) || navigationConfig.includeTableNames[tableName]
+          const entryCategories = isNavigation && category !== 'navigation' ? [category, 'navigation' as const] : [category]
           const name = asString(entry.name).trim()
           const url = iconUrl(entry.icon)
           if (url) {
@@ -71,7 +78,7 @@ export function normalizeMapAssets(
               if (!previous.referenceIds.includes(typeId)) previous.referenceIds.push(typeId)
             } else {
               assets.set(id, {
-                id, category, categories: [category], name, url, previewUrl: url,
+                id, category, categories: entryCategories, name, url, previewUrl: url,
                 sourceUrl: `${STATIC_ROOT}/mcmap/catalog/${resourceHash}/${state.id}/catalog.json`,
                 fetchedAt, stateIds: [state.id], referenceIds: [typeId],
                 tags: [categoryName, categoryId, asString(entry.tableName), typeId].filter(Boolean),

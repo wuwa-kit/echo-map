@@ -25,10 +25,9 @@ const details = useTemplateRef<HTMLElement>('detailsRef')
 const activeCategory = computed(() => categories.value.find(({ id }) => id === filters.value.category))
 const dataDownloads = [
   { file: 'map-data.json', label: '地图数据' },
-  { file: 'map-asset-catalog.json', label: '探索、挑战与 NPC 图标目录' },
+  { file: 'map-asset-catalog.json', label: '定位点、探索、挑战与 NPC 图标和名称目录' },
   { file: 'catalog-data.json', label: '声骸套装与图标' },
   { file: 'official-echo-points.json', label: '官方声骸点位' },
-  { file: 'official-navigation-points.json', label: '官方定位点' },
   { file: 'custom-echo-points.json', label: '人工声骸点位' },
   { file: 'custom-navigation-points.json', label: '人工定位点' },
 ]

@@ -1,14 +1,25 @@
-import type { OfficialAsset } from './types.ts'
+import type { AuthoredNavigationPoint, NavigationIconDefinition, NavigationPointType } from './types.ts'
+import { navigationPointTypes } from './navigation-point-types.ts'
+import { navigationIconCatalog } from './navigation-icon-catalog.ts'
 
-export function navigationIconAssets(assets: readonly OfficialAsset[], search = ''): OfficialAsset[] {
-  const query = search.trim().toLocaleLowerCase()
-  return assets.filter((asset) => asset.categories.some((category) => ['navigation', 'exploration', 'challenge', 'service'].includes(category))
-    && (!query || asset.name.split(' / ').some((name) => name.toLocaleLowerCase().includes(query))))
-    .map((asset) => {
-      if (!query) return asset
-      const names = asset.name.split(' / ')
-      const index = names.findIndex((name) => name.toLocaleLowerCase().includes(query))
-      if (index <= 0) return asset
-      return { ...asset, name: [names[index], ...names.filter((_, position) => position !== index)].join(' / ') }
+const iconsById = new Map(navigationIconCatalog.map((icon) => [icon.id, icon]))
+
+export function navigationIconById(id: string | undefined): NavigationIconDefinition | undefined {
+  return id ? iconsById.get(id) : undefined
+}
+
+export function navigationTypeIcons(pointType: NavigationPointType | undefined, search = ''): readonly NavigationIconDefinition[] {
+  const rule = pointType ? navigationPointTypes[pointType] : undefined
+  const icons = rule?.icons.length
+    ? rule.icons.flatMap((id) => {
+      const icon = navigationIconById(id)
+      return icon ? [icon] : []
     })
+    : navigationIconCatalog
+  const query = search.trim().toLocaleLowerCase()
+  return query ? icons.filter(({ name }) => name.toLocaleLowerCase().includes(query)) : icons
+}
+
+export function navigationPointIconUrl(point: Pick<AuthoredNavigationPoint, 'iconId' | 'iconUrl'>): string {
+  return navigationIconById(point.iconId)?.url ?? point.iconUrl ?? ''
 }

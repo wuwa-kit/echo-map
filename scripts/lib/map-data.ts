@@ -1,32 +1,23 @@
-import { createHash } from 'node:crypto'
 import { mapCatalogDataSchema, mapDataSchema, mapDatasetSchema, mapPointLocationsSchema } from '../../src/domain/schema.ts'
 import { assembleMapDataset } from '../../src/domain/map-data.ts'
 import { parsePointLibrary, splitPointLibrary } from '../../src/domain/point-library.ts'
-import type { MapCatalogData, MapData, MapDataset, MapPointLocations, OfficialEchoPointData, OfficialNavigationPointData, PointIconDefinition, PointLibrary, PointLocationBase, PointWithIconReference } from '../../src/domain/types.ts'
+import type { MapCatalogData, MapData, MapDataset, MapPointLocations, OfficialEchoPointData, PointLibrary } from '../../src/domain/types.ts'
 import { projectPath, readJson, writeJson } from './files.ts'
 import { readOfficialPointLibrary } from './official-point-library.ts'
 
 let pendingPublicWrite: Promise<unknown> = Promise.resolve()
 
 export function splitMapDataset(dataset: MapDataset): { map: MapData, catalog: MapCatalogData, locations: MapPointLocations } {
-  const { echoLocations, navigationPoints, sonatas, echoes, navigationPointGroups, report, source, ...structure } = dataset
+  const { echoLocations, navigationPoints: _navigationPoints, sonatas, echoes, navigationPointGroups: _navigationPointGroups, report, source, ...structure } = dataset
   const { wikiFetchedAt, sourceUrls: { echoCatalogue, sonataCatalogue, officialMap }, ...mapSource } = source
-  const icons = new Map<string, PointIconDefinition>()
-  function extractIcon<T extends PointLocationBase>(point: T): PointWithIconReference<T> {
-    const { typeId, typeName, iconUrl, ...location } = point
-    const iconId = createHash('sha256').update(JSON.stringify([typeId, typeName, iconUrl])).digest('hex')
-    icons.set(iconId, { id: iconId, typeId, typeName, iconUrl })
-    return { ...location, iconId }
-  }
   const locations = {
     echoLocations: echoLocations.map(({ iconUrl: _iconUrl, ...location }) => location),
-    navigationPoints: navigationPoints.map(extractIcon),
   }
   return {
     map: { ...structure, source: { ...mapSource, sourceUrls: { officialMap } } },
     catalog: {
       source: { wikiFetchedAt, sourceUrls: { echoCatalogue, sonataCatalogue } },
-      report, sonatas, echoes, navigationPointGroups, pointIcons: [...icons.values()].sort((left, right) => left.id.localeCompare(right.id)),
+      report, sonatas, echoes,
     },
     locations,
   }
@@ -52,19 +43,16 @@ export async function writeMapDataset(dataset: MapDataset): Promise<void> {
 
 export async function readOfficialPointData(dataset: MapDataset): Promise<{
   echo: OfficialEchoPointData
-  navigation: OfficialNavigationPointData
 }> {
   const locations = splitMapDataset(dataset).locations
-  const library = splitPointLibrary(await readOfficialPointLibrary(projectPath('data', 'generated', 'official-points.json'), dataset))
+  const library = await readOfficialPointLibrary(projectPath('data', 'generated', 'official-points.json'), dataset)
   return {
-    echo: { locations: locations.echoLocations, library: library.echo },
-    navigation: { locations: locations.navigationPoints, library: library.navigation },
+    echo: { locations: locations.echoLocations, library },
   }
 }
 
 export function writePublicPointData(dataset?: MapDataset): Promise<{
   officialEcho: OfficialEchoPointData
-  officialNavigation: OfficialNavigationPointData
   manualEcho: PointLibrary
   manualNavigation: PointLibrary
 }> {
@@ -75,12 +63,10 @@ export function writePublicPointData(dataset?: MapDataset): Promise<{
     const manual = splitPointLibrary({ ...library, points: library.points.filter(({ status }) => status === 'verified') })
     const options = { compact: true, skipUnchanged: true }
     await writeJson(projectPath('public', 'data', 'official-echo-points.json'), official.echo, options)
-    await writeJson(projectPath('public', 'data', 'official-navigation-points.json'), official.navigation, options)
     await writeJson(projectPath('public', 'data', 'custom-echo-points.json'), manual.echo, options)
     await writeJson(projectPath('public', 'data', 'custom-navigation-points.json'), manual.navigation, options)
     return {
       officialEcho: official.echo,
-      officialNavigation: official.navigation,
       manualEcho: manual.echo,
       manualNavigation: manual.navigation,
     }

@@ -1,9 +1,11 @@
 import { pointLibrarySchema } from './schema.ts'
-import type { AuthoredCoordinate, AuthoredNavigationPoint, AuthoredPoint, EchoMapLocation, AuthoredEchoLocation, GameCoordinate, MapDataset, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointLibrary, PointQuality } from './types.ts'
+import type { AuthoredCoordinate, AuthoredPoint, EchoMapLocation, AuthoredEchoLocation, GameCoordinate, MapDataset, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointLibrary, PointQuality } from './types.ts'
 import { officialToMapCoordinate } from '../map/projection.ts'
+import { navigationPointTypes } from './navigation-point-types.ts'
+import { navigationPointIconUrl } from './navigation-icons.ts'
 
 export const NAVIGATION_NAMES: Record<NavigationKind, string> = {
-  nexus: '共鸣中枢', beacon: '共鸣信标', 'tacet-field': '无音区', 'training-ground': '训练场',
+  nexus: '中枢信标', beacon: '小型信标', 'tacet-field': '无音区', 'training-ground': '模拟领域',
   hologram: '全息战略', boss: 'BOSS', domain: '副本', endgame: '周期挑战', challenge: '挑战',
   service: '服务地标', 'local-transit': '交通点', entrance: '入口', landmark: '地标', unknown: '待确认',
 }
@@ -26,19 +28,17 @@ export function combinePointLibraryKinds(echo: PointLibrary, navigation: PointLi
   return { version: 1, points: [...echo.points, ...navigation.points] }
 }
 
-export function parsePointLibrary(value: unknown, dataset: Pick<MapDataset, 'states' | 'echoes' | 'regionLabels' | 'navigationPoints'>, source?: 'manual' | 'official'): PointLibrary {
+export function parsePointLibrary(value: unknown, dataset: Pick<MapDataset, 'states' | 'echoes' | 'regionLabels'>, source?: 'manual' | 'official'): PointLibrary {
   const library = pointLibrarySchema.parse(value)
   const echoIds = new Set(dataset.echoes.map(({ id }) => id))
   const replacements = new Set<string>()
   for (const point of library.points) {
+    if (source === 'official' && point.kind !== 'echo') throw new Error('官方文件只能包含声骸点位')
     if (source === 'official' && point.status !== 'imported') throw new Error('官方文件只能包含官方导入点')
     if (source === 'manual' && point.status === 'imported') throw new Error('官方导入点应保存于官方文件，请先录入实测坐标再保存到人工库')
     for (const id of point.replacesOfficialIds ?? []) {
       if (replacements.has(id)) throw new Error(`官方点 ${id} 已有人工替代点，请追加到已有点位`)
       replacements.add(id)
-    }
-    if (point.kind === 'navigation' && point.iconSourceId && !dataset.navigationPoints.some(({ id }) => id === point.iconSourceId)) {
-      throw new Error(`点位 ${point.id} 引用了未知图标`)
     }
     const state = dataset.states.find(({ id }) => id === point.stateId)
     if (!state) throw new Error(`点位 ${point.id} 引用了未知地图`)
@@ -64,7 +64,7 @@ export function echoMembers(location: EchoMapLocation): readonly {
 }
 
 export function pointTitle(point: AuthoredPoint, dataset: Pick<MapDataset, 'echoes'>): string {
-  if (point.kind === 'navigation') return point.name.trim() || NAVIGATION_NAMES[point.navigationKind]
+  if (point.kind === 'navigation') return point.name.trim() || (point.pointType ? navigationPointTypes[point.pointType].name : '未设置类型')
   const names = new Map(dataset.echoes.map(({ id, name }) => [id, name]))
   return point.members.map(({ echoId, count }) => `${names.get(echoId) ?? echoId} ×${count}`).join(' · ') || '未添加怪物'
 }
@@ -74,26 +74,13 @@ function completeCoordinate(coordinate: AuthoredCoordinate | undefined): GameCoo
   return { x: coordinate.x, y: coordinate.y, z: coordinate.z }
 }
 
-function navigationSource(
-  point: AuthoredNavigationPoint,
-  navigationPoints: readonly NavigationPoint[],
-  byId: ReadonlyMap<string, NavigationPoint>,
-): NavigationPoint | undefined {
-  if (point.iconSourceId) return byId.get(point.iconSourceId)
-  const ids = [point.id, ...(point.officialIds ?? []), ...(point.replacesOfficialIds ?? [])]
-  return ids.reduce<NavigationPoint | undefined>((match, id) => (
-    match ?? byId.get(id) ?? byId.get(id.replace(/^official:/u, ''))
-  ), undefined) ?? navigationPoints.find(({ kind, typeName }) => kind === point.navigationKind && typeName === point.name.trim())
-}
-
 type AuthoredMapDisplayPoint =
   | { category: 'echo'; location: AuthoredEchoLocation }
   | { category: 'navigation'; location: NavigationPoint }
 
-function authoredPointMapDisplayWithSources(
+export function authoredPointMapDisplay(
   point: AuthoredPoint,
   dataset: MapDataset,
-  navigationById: ReadonlyMap<string, NavigationPoint>,
 ): AuthoredMapDisplayPoint | null {
   const { x, y } = point.coordinate
   if (x === null || y === null) return null
@@ -115,24 +102,23 @@ function authoredPointMapDisplayWithSources(
   if (point.kind === 'echo') {
     return { category: 'echo', location: { ...base, members: point.members, note: point.note, compositionStatus: point.compositionStatus ?? 'partial' } }
   }
-  const source = navigationSource(point, dataset.navigationPoints, navigationById)
   const teleportCoordinate = completeCoordinate(point.teleportCoordinate)
-  const location: NavigationPoint = source
-    ? { ...source, ...base, typeId: source.typeId, iconUrl: source.iconUrl, kind: point.navigationKind, mode: point.mode, ...(teleportCoordinate ? { teleportCoordinate } : {}) }
-    : { ...base, groupId: `manual:${point.navigationKind}`, kind: point.navigationKind, mode: point.mode, catalogCategoryId: 'manual', catalogCategoryName: '人工定位点', ...(teleportCoordinate ? { teleportCoordinate } : {}) }
-  if (point.iconUrl) location.iconUrl = point.iconUrl
+  const location: NavigationPoint = {
+    ...base, groupId: `manual:${point.navigationKind}`, kind: point.navigationKind, mode: point.mode,
+    catalogCategoryId: 'manual', catalogCategoryName: '人工定位点',
+    ...(teleportCoordinate ? { teleportCoordinate } : {}),
+  }
+  const iconUrl = navigationPointIconUrl(point)
+  if (iconUrl) location.iconUrl = iconUrl
+  location.pointType = point.pointType
   if (!teleportCoordinate) delete location.teleportCoordinate
   return { category: 'navigation', location }
 }
 
-export function authoredPointMapDisplay(point: AuthoredPoint, dataset: MapDataset): AuthoredMapDisplayPoint | null {
-  return authoredPointMapDisplayWithSources(point, dataset, new Map(dataset.navigationPoints.map((location) => [location.id, location])))
-}
-
-export function editorLibraryLocations(points: readonly AuthoredPoint[], dataset: MapDataset) {
-  const navigationById = new Map(dataset.navigationPoints.map((location) => [location.id, location]))
+export function editorLibraryLocations(points: readonly AuthoredPoint[], dataset: MapDataset, editorKind: AuthoredPoint['kind']) {
   const displayPoints = points.flatMap((point) => {
-    const display = authoredPointMapDisplayWithSources(point, dataset, navigationById)
+    if (editorKind === 'navigation' && point.kind === 'echo') return []
+    const display = authoredPointMapDisplay(point, dataset)
     return display ? [display] : []
   })
   return {
@@ -149,15 +135,12 @@ export function libraryLocations(library: PointLibrary, dataset: MapDataset) {
   const echoLocations: AuthoredEchoLocation[] = []
   const navigationPoints: NavigationPoint[] = []
   const navigationPointGroups: NavigationPointGroup[] = []
-  const officialGroupIds = new Set<string>()
-  const navigationById = new Map(dataset.navigationPoints.map((location) => [location.id, location]))
   for (const point of library.points) {
     if (point.status === 'draft' || !completeCoordinate(point.coordinate)) continue
-    const display = authoredPointMapDisplayWithSources(point, dataset, navigationById)
+    const display = authoredPointMapDisplay(point, dataset)
     if (display?.category === 'echo') echoLocations.push(display.location)
     else if (display?.category === 'navigation') {
       navigationPoints.push(display.location)
-      if (!display.location.groupId.startsWith('manual:')) officialGroupIds.add(display.location.groupId)
     }
   }
   for (const kind of Object.keys(NAVIGATION_NAMES) as NavigationKind[]) {
@@ -166,7 +149,6 @@ export function libraryLocations(library: PointLibrary, dataset: MapDataset) {
     const id = `manual:${kind}`
     navigationPointGroups.push({ id, name: NAVIGATION_NAMES[kind], iconUrl: '', iconHash: null, typeIds: [id], typeNames: [NAVIGATION_NAMES[kind]], modes: [...new Set(points.map(({ mode }) => mode))], kinds: [kind] })
   }
-  navigationPointGroups.push(...dataset.navigationPointGroups.filter(({ id }) => officialGroupIds.has(id)))
   return { echoLocations, navigationPoints, navigationPointGroups }
 }
 

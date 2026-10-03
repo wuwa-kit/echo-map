@@ -15,17 +15,9 @@ export const assetCategories: { id: OfficialAssetCategory; name: string; descrip
 
 export function buildOfficialAssets(dataset: MapDataset, mapAssets: readonly OfficialAsset[] = []): OfficialAsset[] {
   const assets = new Map<string, OfficialAsset>()
-  // The catalog has already compared image pixels, including alternate CDN URLs.
-  const catalogIdByUrl = new Map<string, string>()
-  for (const asset of mapAssets) {
-    for (const url of [asset.url, ...asset.tags]) {
-      if (URL.parse(url)?.pathname.endsWith('.png')) catalogIdByUrl.set(url, asset.id)
-    }
-  }
   const { source } = dataset
   const stateNames = new Map(dataset.states.map(({ id, name }) => [id, name]))
   const sonataNames = new Map(dataset.sonatas.map(({ id, name }) => [id, name]))
-  const groupNames = new Map(dataset.navigationPointGroups.map(({ id, name }) => [id, name]))
   const echoStates = new Map<string, Set<number>>()
   for (const point of dataset.echoLocations) {
     const states = echoStates.get(point.echoId) ?? new Set<number>()
@@ -35,7 +27,7 @@ export function buildOfficialAssets(dataset: MapDataset, mapAssets: readonly Off
 
   function add(category: OfficialAssetCategory, name: string, url: string, referenceId: string, stateIds: number[], tags: string[]): void {
     if (URL.parse(url)?.protocol !== 'https:') return
-    const id = category === 'navigation' ? catalogIdByUrl.get(url) ?? `${category}:${url}` : `${category}:${url}`
+    const id = `${category}:${url}`
     const existing = assets.get(id)
     if (existing) {
       existing.recordCount += 1
@@ -43,7 +35,6 @@ export function buildOfficialAssets(dataset: MapDataset, mapAssets: readonly Off
       existing.referenceIds = [...new Set([...existing.referenceIds, referenceId])]
       existing.tags = [...new Set([...existing.tags, name, ...tags])]
       existing.name = [...new Set([...existing.name.split(' / '), name])].join(' / ')
-      if (category === 'navigation') existing.tags = [...new Set([...existing.tags, url])]
       return
     }
     const isWiki = category === 'echo' || category === 'sonata'
@@ -70,11 +61,6 @@ export function buildOfficialAssets(dataset: MapDataset, mapAssets: readonly Off
       .flatMap(({ id }) => [...echoStates.get(id) ?? []])
     add('sonata', sonata.name, sonata.iconUrl, String(sonata.sourceId), states, [sonata.id])
   }
-  for (const point of dataset.navigationPoints) {
-    add('navigation', point.typeName, point.iconUrl, point.typeId, [point.stateId], [
-      groupNames.get(point.groupId) ?? point.groupId, point.catalogCategoryName,
-    ])
-  }
   for (const state of dataset.states) {
     for (const tilePath of state.gravityTiles) {
       add('gravity', `${state.name} · 反重力 · ${tilePath.split('/').at(-1)}`, officialFloorTileUrl(source.mapResourceHash, state.id, tilePath), tilePath, [state.id], [state.name, '反重力'])
@@ -90,18 +76,7 @@ export function buildOfficialAssets(dataset: MapDataset, mapAssets: readonly Off
       }
     }
   }
-  for (const asset of mapAssets) {
-    const existing = assets.get(asset.id)
-    assets.set(asset.id, existing ? {
-      ...asset,
-      categories: [...new Set([...existing.categories, ...asset.categories])],
-      name: [...new Set([...asset.name.split(' / '), ...existing.name.split(' / ')])].join(' / '),
-      stateIds: [...new Set([...existing.stateIds, ...asset.stateIds])],
-      referenceIds: [...new Set([...existing.referenceIds, ...asset.referenceIds])],
-      tags: [...new Set([...existing.tags, ...asset.tags, existing.url, existing.sourceUrl])],
-      recordCount: existing.recordCount + asset.recordCount,
-    } : asset)
-  }
+  for (const asset of mapAssets) assets.set(asset.id, asset)
   return [...assets.values()].map((asset) => ({
     ...asset,
     stateIds: asset.stateIds.toSorted((a, b) => a - b),

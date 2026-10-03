@@ -48,13 +48,21 @@ const selectionSource = new VectorSource()
 const selectionLayer = new VectorLayer({ source: selectionSource, zIndex: 50 })
 const selectionStyle = createEditorSelectionStyle()
 const arrivalStyle = createEditorArrivalStyle()
-function locateDraft(): void {
+function isDraftInView(coordinate: [number, number]): boolean {
   const draft = editor.draft
-  if (!draft || !dataset.value) return
-  const display = authoredPointMapDisplay(draft, dataset.value)
-  if (display) viewport.locate([display.location.coordinate.mapX, display.location.coordinate.mapY])
+  return Boolean(draft && dataset.value && draft.stateId === store.selectedStateId
+    && viewport.containsCoordinate(gameToMapCoordinate(coordinate[0], coordinate[1], dataset.value.source.tileWidth)))
 }
-defineExpose({ locateDraft })
+function locateDraft(coordinate?: [number, number]): boolean {
+  const draft = editor.draft
+  if (!draft || !dataset.value || draft.stateId !== store.selectedStateId) return false
+  if (coordinate) {
+    return viewport.locate(gameToMapCoordinate(coordinate[0], coordinate[1], dataset.value.source.tileWidth))
+  }
+  const display = authoredPointMapDisplay(draft, dataset.value)
+  return display ? viewport.locate([display.location.coordinate.mapX, display.location.coordinate.mapY]) : false
+}
+defineExpose({ locateDraft, isDraftInView })
 const {
   activeState,
   dataset,
@@ -164,7 +172,7 @@ function rebuildPointLayers(): void {
   if (props.editing && dataset.value) {
     const draft = editor.draft
     const replaced = new Set(draft ? [draft.id, ...(draft.officialIds ?? []), ...(draft.replacesOfficialIds ?? [])] : [])
-    const locations = editorLibraryLocations(editor.allPoints.filter((point) => !isOfficialPointReplaced(point, replaced)), dataset.value)
+    const locations = editorLibraryLocations(editor.allPoints.filter((point) => !isOfficialPointReplaced(point, replaced)), dataset.value, editor.editorMode)
     const matches = (point: { stateId: number, gravityType?: 1 | 2 | null, levelId: string | null }) => point.stateId === store.selectedStateId && matchesGravity(point.gravityType ?? null, store.supportsGravity ? selectedGravity.value : null)
       && (selectedLevelId.value === null || point.levelId === null || point.levelId === selectedLevelId.value)
     editorPoints.update(locations.echoLocations.filter(matches), locations.navigationPoints.filter(matches), visibleRegionLabels.value, dataset.value.echoes, undefined, selectedLevelId.value)
@@ -246,7 +254,7 @@ function applyMapNavigation(): void {
   const request = mapNavigationRequest.value
   if (!request || !map) return
   const region = dataset.value?.regionLabels.find(({ id }) => id === request.regionId)
-  if (region) viewport.locate([region.coordinate.mapX, region.coordinate.mapY])
+  if (region) viewport.locate([region.coordinate.mapX, region.coordinate.mapY], 2.3)
   store.completeMapNavigation()
 }
 
@@ -313,7 +321,7 @@ watch(floorRequest, async (request, _previous, onCleanup) => {
   }
 })
 watch([mapEchoLocations, mapNavigationPoints, visibleRegionLabels, activeEchoIds, selectedLevelId], rebuildPointLayers)
-watch([() => props.editing, () => editor.allPoints, () => editor.draft, activeState, selectedGravity], rebuildPointLayers)
+watch([() => props.editing, () => editor.editorMode, () => editor.allPoints, () => editor.draft, activeState, selectedGravity], rebuildPointLayers)
 watch([() => props.editing, mapRoutes], rebuildRoute, { flush: 'post' })
 watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 

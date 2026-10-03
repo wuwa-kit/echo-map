@@ -4,8 +4,7 @@ import { syncMap } from '../scripts/sync-map.ts'
 import { fetchBytes, fetchJson, fetchOptionalJson, postFormJson } from '../scripts/lib/http.ts'
 import { readJson, writeJson } from '../scripts/lib/files.ts'
 import { splitMapDataset } from '../scripts/lib/map-data.ts'
-import { groupNavigationPoints } from '../scripts/lib/map/navigation-groups.ts'
-import { catalog, countries, iconBytes, iconHash, layers, manual, navigationConfig, positions, wiki } from './fixtures/sync-map-input.ts'
+import { catalog, countries, iconBytes, layers, manual, navigationConfig, positions, wiki } from './fixtures/sync-map-input.ts'
 
 vi.mock('../scripts/lib/http.ts')
 vi.mock('../scripts/lib/official-point-library.ts', async (importOriginal) => ({
@@ -31,7 +30,6 @@ beforeEach(() => {
     if (path.endsWith('locations.json')) return manual
     if (path.endsWith('map-echo-aliases.json')) return { byTypeId: { '2': '乙' } }
     if (path.endsWith('map-navigation-types.json')) return navigationConfig
-    if (path.endsWith('map-navigation-icon-groups.json')) return { namesByHash: { [iconHash]: '相同图标' } }
     throw new Error(`未预期的输入：${path}`)
   })
   vi.mocked(postFormJson).mockImplementation(async (url) => ({
@@ -89,7 +87,7 @@ describe('map synchronization', () => {
     const dataset = await syncMap(wiki)
     expect(dataset.states[0]?.gravityTiles).toEqual(['/2/0_1.png'])
     expect(dataset.echoLocations.find(({ id }) => id === 'echo-official')?.gravityType).toBe(2)
-    expect(dataset.navigationPoints.every(({ gravityType }) => gravityType === 2)).toBe(true)
+    expect(dataset.navigationPoints).toEqual([])
   })
 
   it('does not overwrite snapshots if the gravity manifest cannot be read', async () => {
@@ -101,7 +99,7 @@ describe('map synchronization', () => {
     await expect(syncMap(wiki)).rejects.toThrow('重力资源不可用')
     expect(writeJson).not.toHaveBeenCalled()
   })
-  it('preserves ordering, manual coordinates and the failure report', async () => {
+  it('preserves echoes and map metadata without publishing official navigation', async () => {
     const dataset = await syncMap()
     await expect(`${JSON.stringify(dataset, null, 2)}\n`).toMatchFileSnapshot('./fixtures/sync-map.json')
     const { map, catalog, locations } = splitMapDataset(dataset)
@@ -109,13 +107,19 @@ describe('map synchronization', () => {
     expect(writeJson).toHaveBeenCalledWith('public/data/catalog-data.json', catalog, { compact: true })
     expect(writeJson).toHaveBeenCalledWith('data/generated/official-locations.json', locations, { compact: true })
     expect(writeJson).toHaveBeenCalledWith('public/data/official-echo-points.json', { locations: locations.echoLocations, library: { version: 1, points: [] } }, { compact: true, skipUnchanged: true })
-    expect(writeJson).toHaveBeenCalledWith('public/data/official-navigation-points.json', { locations: locations.navigationPoints, library: { version: 1, points: [] } }, { compact: true, skipUnchanged: true })
+    expect(writeJson).not.toHaveBeenCalledWith('public/data/official-navigation-points.json', expect.anything(), expect.anything())
+    expect(dataset.navigationPoints).toEqual([])
+    expect(dataset.navigationPointGroups).toEqual([])
     expect(writeJson).toHaveBeenCalledWith('public/data/custom-echo-points.json', { version: 1, points: [] }, { compact: true, skipUnchanged: true })
     expect(writeJson).toHaveBeenCalledWith('public/data/custom-navigation-points.json', { version: 1, points: [] }, { compact: true, skipUnchanged: true })
     expect(writeJson).toHaveBeenCalledWith('data/generated/sync-report.json', dataset.report)
     const writes = vi.mocked(writeJson).mock.calls.map(([path]) => path)
     expect(writes.indexOf('data/generated/official-points.json')).toBeLessThan(writes.indexOf('public/data/map-data.json'))
-    expect(fetchBytes).not.toHaveBeenCalledWith(expect.stringContaining('boss.png'))
+    expect(writeJson).toHaveBeenCalledWith('public/data/map-asset-catalog.json', expect.objectContaining({
+      assets: expect.arrayContaining([expect.objectContaining({
+        categories: expect.arrayContaining(['navigation']), name: expect.stringContaining('小型信标'),
+      })]),
+    }), { compact: true })
   })
 
   it('matches Chinese names and aliases to catalogue portraits without requiring map icons', async () => {
@@ -139,16 +143,4 @@ describe('map synchronization', () => {
     expect(writeJson).not.toHaveBeenCalled()
   })
 
-  it('rejects colliding shortened icon hashes instead of merging unrelated groups', async () => {
-    const dataset = await syncMap(wiki)
-    const points = dataset.navigationPoints.filter(({ typeId }) => typeId === '10' || typeId === '11')
-    const hashes = new Map(points.map((point, index) => [point.iconUrl, 'a'.repeat(16) + String(index).repeat(48)]))
-    expect(() => groupNavigationPoints(points, { namesByHash: {} }, hashes)).toThrow('定位点图标分组 ID 冲突')
-  })
-
-  it('handles an empty navigation catalogue without artificial groups', () => {
-    expect(groupNavigationPoints([], { namesByHash: {} }, new Map())).toEqual({
-      points: [], groups: [], iconFetchFailureCount: 0,
-    })
-  })
 })

@@ -35,14 +35,12 @@ export function saveLastExplorerQuery(query: ExplorerSerializedQueryValues): voi
   }
 }
 
-export const restoreLastExplorerQuery: NavigationGuard = (to, from, next) => {
+export const restoreLastExplorerQuery: NavigationGuard = (to, from) => {
   // Query updates within the explorer must never restore an older snapshot.
   if (to.path === '/' && from.name !== 'explorer' && Object.keys(to.query).length === 0) {
     const query = readLastExplorerQuery()
     if (query && Object.keys(query).length > 0) {
-      next({ path: to.path, query, hash: to.hash, replace: true })
-      return
+      return { path: to.path, query, hash: to.hash, replace: true }
     }
   }
-  next()
 }

@@ -12,7 +12,8 @@ import { createEditorSelectionStyle } from '../src/map/editor-marker.ts'
 import { createPointLayers } from '../src/map/point-layers.ts'
 import { createPortraitMarkerStyles, PORTRAIT_MARKER_CANVAS_SIZE, PORTRAIT_MARKER_SIZES } from '../src/map/boss-marker.ts'
 import { createPointMarkerStyles } from '../src/map/point-marker-styles.ts'
-import { referenceDataset, smallEcho, eliteEcho, mixedPoint } from './fixtures/point-library.ts'
+import { smallEcho, eliteEcho, mixedPoint } from './fixtures/point-library.ts'
+import { navigationTestDataset as referenceDataset } from './fixtures/navigation-points.ts'
 
 class MarkerPath {
   vertices: number[][] = []
@@ -217,7 +218,7 @@ describe('echo marker appearance', () => {
     const [style] = markers.navigation(display.location)
     const image = style?.getImage()
     expect(image).toBeInstanceOf(CircleStyle)
-    expect(style?.getText()?.getText()).toBe('共鸣信标')
+    expect(style?.getText()?.getText()).toBe('小型信标')
     markers.dispose()
   })
 
@@ -226,9 +227,10 @@ describe('echo marker appearance', () => {
     if (!navigation) throw new Error('Missing navigation fixture')
     const display = authoredPointMapDisplay({
       gravityType: navigation.gravityType,
-      id: `official:${navigation.id}`,
-      status: 'imported',
-      officialIds: [navigation.id],
+      id: navigation.id,
+      status: 'verified',
+      pointType: navigation.pointType,
+      iconUrl: navigation.iconUrl,
       name: navigation.typeName,
       navigationKind: navigation.kind,
       mode: navigation.mode,
@@ -250,22 +252,24 @@ describe('echo marker appearance', () => {
     markers.dispose()
   })
 
-  it('uses the shared C4 and weekly boss portrait frames in the editor', () => {
+  it.each([false, true])('uses boss classifications for editor portrait frames with custom names (export=%s)', (exportMode) => {
     const bosses = [
-      referenceDataset.navigationPoints.find(({ kind, typeName }) => kind === 'boss' && typeName === '星海迷途之扉'),
-      referenceDataset.navigationPoints.find(({ kind, typeName }) => kind === 'boss' && !/^.{4}之.$/u.test(typeName)),
+      referenceDataset.navigationPoints.find(({ pointType }) => pointType === 'weekly-boss'),
+      referenceDataset.navigationPoints.find(({ pointType }) => pointType === 'normal-boss'),
     ]
-    const markers = createPointMarkerStyles(() => {})
+    const markers = createPointMarkerStyles(() => {}, { exportMode })
     markers.updateEchoes(referenceDataset.echoes)
     bosses.forEach((navigation, index) => {
       if (!navigation) throw new Error('Missing boss fixture')
       const before = painted.length
+      const name = index === 0 ? '我的周本定位点' : '星海迷途之扉'
       const display = authoredPointMapDisplay({
         gravityType: navigation.gravityType,
-        id: `official:${navigation.id}`,
-        status: 'imported',
-        officialIds: [navigation.id],
-        name: navigation.typeName,
+        id: navigation.id,
+        status: 'verified',
+        pointType: navigation.pointType,
+        iconUrl: navigation.iconUrl,
+        name,
         navigationKind: navigation.kind,
         mode: navigation.mode,
         stateId: navigation.stateId,
@@ -277,7 +281,7 @@ describe('echo marker appearance', () => {
       }, referenceDataset)
       if (display?.category !== 'navigation') throw new Error('Missing editor boss point')
       markers.navigation(display.location)
-      expect(display.location.typeName).toBe(navigation.typeName)
+      expect(display.location.typeName).toBe(name)
       expect(painted).toHaveLength(before + 1)
       expect(painted.at(-1)?.[0]?.vertices).toHaveLength(index === 0 ? 8 : 4)
     })

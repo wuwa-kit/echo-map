@@ -1,4 +1,5 @@
 import type { MapDisplayPoint, MapZoomRange, NavigationKind, NavigationPoint } from '../domain/types.ts'
+import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 
 // A display zoom measures actual map scale, independently of each base map's View/URL zoom.
 export const MAP_ZOOM_BASE_RESOLUTION = 64
@@ -47,7 +48,8 @@ export function mapZoomForResolution(resolution: number): number {
     : Number.NaN
 }
 
-export function navigationPointZoomRange(point: Pick<NavigationPoint, 'kind'>): Readonly<MapZoomRange> {
+export function navigationPointZoomRange(point: Pick<NavigationPoint, 'kind' | 'pointType'>): Readonly<MapZoomRange> {
+  if (point.pointType) return { minZoom: navigationPointTypes[point.pointType].minZoom, maxZoom: null }
   return MAP_POINT_ZOOM_RANGES[point.kind]
 }
 

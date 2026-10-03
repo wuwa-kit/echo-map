@@ -43,9 +43,9 @@ export function createInputEvents(state: Readonly<InputState>, events: {
     input(event)
   }
 
-  function keydown(event: InputEventSource & Pick<KeyboardEvent, 'key' | 'keyCode'>): void {
+  function keydown(event: InputEventSource & Pick<KeyboardEvent, 'key' | 'keyCode'> & Partial<Pick<KeyboardEvent, 'repeat'>>): void {
     const target = inputTarget(event)
-    if (!target || event.key !== 'Enter' || composing || event.isComposing || event.keyCode === 229) return
+    if (!target || event.key !== 'Enter' || event.repeat || composing || event.isComposing || event.keyCode === 229) return
     change(event)
     events.confirm(target.value)
   }

@@ -1,3 +1,5 @@
+import type { navigationPointTypes } from './navigation-point-types.ts'
+
 export type NonEmptyArray<T> = [T, ...T[]]
 
 export type PointQuality = 'official-provisional' | 'manual-verified' | 'example'
@@ -144,14 +146,32 @@ export interface AuthoredEchoPoint extends AuthoredPointBase {
   compositionStatus?: 'partial' | 'complete'
 }
 
-export type NavigationPointType = 'central-beacon' | 'small-beacon' | 'tacet-field' | 'echo-settlement' | 'weekly-boss' | 'normal-boss' | 'material-domain'
+export type NavigationPointType = keyof typeof navigationPointTypes
+
+export interface NavigationIconDefinition {
+  id: string
+  name: string
+  url: string
+}
+
+export interface NavigationTypeDefinition {
+  name: string
+  kind: NavigationKind
+  defaultMode: NavigationMode
+  teleportLocked: boolean
+  // IDs belong to the local icon catalogue; an empty list permits custom icons.
+  icons: readonly string[]
+  // Names are either custom (empty) or fixed (one value), never selectable.
+  names: readonly [] | readonly [string]
+  minZoom: number
+}
 
 export interface AuthoredNavigationPoint extends AuthoredPointBase {
   kind: 'navigation'
   name: string
   navigationKind: NavigationKind
   pointType?: NavigationPointType
-  iconSourceId?: string
+  iconId?: string
   iconUrl?: string
   mode: NavigationMode
   teleportCoordinate?: AuthoredCoordinate
@@ -194,6 +214,7 @@ export type NavigationKind =
   | 'unknown'
 
 export interface NavigationPoint extends PointLocationBase {
+  pointType?: NavigationPointType
   groupId: string
   catalogCategoryId: string
   catalogCategoryName: string
@@ -261,12 +282,6 @@ export interface SyncReport {
   unmatchedEchoNames: string[]
   provisionalEchoLocationCount: number
   routeEligibleEchoLocationCount: number
-  navigationPointCount: number
-  navigationPointGroupCount: number
-  bossNavigationPointCount: number
-  challengeNavigationPointCount: number
-  navigationIconFetchFailureCount: number
-  routeEligibleNavigationPointCount: number
 }
 
 export interface MapDataset {
@@ -284,15 +299,8 @@ export interface MapDataset {
   connectors: RouteConnector[]
 }
 
-export interface PointIconDefinition extends Pick<PointLocationBase, 'typeId' | 'typeName' | 'iconUrl'> {
-  id: string
-}
-
-export type PointWithIconReference<T> = Omit<T, 'typeId' | 'typeName' | 'iconUrl'> & { iconId: string }
-
 export interface MapPointLocations {
   echoLocations: Omit<EchoLocation, 'iconUrl'>[]
-  navigationPoints: PointWithIconReference<NavigationPoint>[]
 }
 
 export interface MapData extends Pick<MapDataset, 'version' | 'states' | 'mapNavigation' | 'regionLabels' | 'connectors'> {
@@ -301,20 +309,14 @@ export interface MapData extends Pick<MapDataset, 'version' | 'states' | 'mapNav
   }
 }
 
-export interface MapCatalogData extends Pick<MapDataset, 'report' | 'sonatas' | 'echoes' | 'navigationPointGroups'> {
+export interface MapCatalogData extends Pick<MapDataset, 'report' | 'sonatas' | 'echoes'> {
   source: Pick<SourceManifest, 'wikiFetchedAt'> & {
     sourceUrls: Pick<SourceManifest['sourceUrls'], 'echoCatalogue' | 'sonataCatalogue'>
   }
-  pointIcons: PointIconDefinition[]
 }
 
 export interface OfficialEchoPointData {
   locations: MapPointLocations['echoLocations']
-  library: PointLibrary
-}
-
-export interface OfficialNavigationPointData {
-  locations: MapPointLocations['navigationPoints']
   library: PointLibrary
 }
 

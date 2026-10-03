@@ -94,17 +94,32 @@ export function useMapViewport(options: MapViewportOptions) {
     publish()
   }
 
-  function locate(center: [number, number]): void {
+  function containsCoordinate(coordinate: [number, number]): boolean {
     const map = options.getMap()
     const [width = 0, height = 0] = map?.getSize() ?? []
-    if (!map || width <= 0 || height <= 0) return
+    if (!map || width <= 0 || height <= 0 || !coordinate.every(Number.isFinite)) return false
+    const view = map.getView()
+    const resolution = view.getResolution()
+    if (!resolution || view.getAnimating() || view.getInteracting()) return false
+    const [minX, minY, maxX, maxY] = view.calculateExtent([width, height])
+    if (minX === undefined || minY === undefined || maxX === undefined || maxY === undefined) return false
+    const [top, right, bottom, left] = fitMapPadding(width, height, options.getPadding())
+    return coordinate[0] >= minX + left * resolution && coordinate[0] <= maxX - right * resolution
+      && coordinate[1] >= minY + bottom * resolution && coordinate[1] <= maxY - top * resolution
+  }
+
+  function locate(center: [number, number], resolution?: number): boolean {
+    const map = options.getMap()
+    const [width = 0, height = 0] = map?.getSize() ?? []
+    if (!map || width <= 0 || height <= 0 || !center.every(Number.isFinite)) return false
     const [top, right, bottom, left] = fitMapPadding(width, height, options.getPadding())
     const view = map.getView()
     view.cancelAnimations()
-    view.setResolution(2.3)
+    if (resolution !== undefined) view.setResolution(resolution)
     view.centerOn(center, [width, height], [(left + width - right) / 2, (top + height - bottom) / 2])
     publish()
+    return containsCoordinate(center)
   }
 
-  return { configureBaseView, restoreFloorViewport, publish, locate }
+  return { configureBaseView, restoreFloorViewport, publish, locate, containsCoordinate }
 }

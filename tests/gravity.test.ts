@@ -93,7 +93,13 @@ describe('gravity point data', () => {
     expect(() => normalizeGravityTiles({ '2': ['/2/0_0.png', '/2/0_0.png'] })).toThrow()
     expect(() => normalizeGravityTiles({ '3': [] })).toThrow()
     expect(() => mapDatasetSchema.parse({ ...referenceDataset, states: referenceDataset.states.map((state) => state.id === 903 ? { ...state, gravityTiles: ['/2/999_999.png'] } : state) })).toThrow('超出当前地图网格')
-    expect(() => mapDatasetSchema.parse({ ...referenceDataset, states: referenceDataset.states.map((state) => ({ ...state, gravityTiles: [] })) })).toThrow('缺少对应底图资源')
+    const echo = referenceDataset.echoLocations[0]
+    if (!echo) throw new Error('缺少声骸测试数据')
+    expect(() => mapDatasetSchema.parse({
+      ...referenceDataset,
+      echoLocations: [{ ...echo, stateId: 903, gravityType: 2 }],
+      states: referenceDataset.states.map((state) => ({ ...state, gravityTiles: [] })),
+    })).toThrow('缺少对应底图资源')
   })
 })
 
@@ -164,15 +170,14 @@ describe('gravity map scope', () => {
     expect(store.selectedGravity).toBe(1)
   })
 
-  it('uses only the three marked navigation points in the official negative view', () => {
+  it('does not restore official navigation in the negative view', () => {
     const store = useExplorerStore()
     store.setDataset(referenceDataset)
     store.setOfficialPointLibrary(convertOfficialPoints(referenceDataset))
     store.selectState(903)
     store.selectGravity(2)
-    expect(store.visibleNavigationPoints).toHaveLength(3)
-    expect(store.visibleNavigationPoints.every(({ gravityType }) => gravityType === 2)).toBe(true)
-    expect(store.routeEligibleNavigationPoints).toHaveLength(2)
+    expect(store.visibleNavigationPoints).toEqual([])
+    expect(store.routeEligibleNavigationPoints).toEqual([])
   })
 })
 

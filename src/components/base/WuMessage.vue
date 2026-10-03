@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import WuButton from './WuButton.vue'
 import { computed, useTemplateRef, watch } from 'vue'
 import { useSupported, useTimeoutFn } from '@vueuse/core'
 
@@ -39,9 +38,9 @@ function show(): void {
   element.showPopover()
 }
 
-watch(() => [props.message, props.duration, isSupported.value] as const, ([message, duration, supported]) => {
+watch(() => [panel.value, props.message, props.duration, isSupported.value] as const, ([element, message, duration, supported]) => {
   stop()
-  if (!message || !supported) {
+  if (!element?.isConnected || !message || !supported) {
     hide()
     return
   }
@@ -55,10 +54,9 @@ defineExpose({ show, close })
 <template>
   <div
     v-bind="$attrs" ref="panelRef" popover="manual" :hidden="!isSupported"
-    class="wu-floating-motion fixed inset-auto left-1/2 top-12px m-0 w-max max-w-[calc(100vw-24px)] -translate-x-1/2 items-start gap-10px border rounded-7px px-12px py-9px text-13px leading-18px backdrop-blur-8px [&:popover-open]:flex"
+    class="wu-floating-motion fixed inset-x-0 bottom-auto top-12px mx-auto my-0 w-max max-w-[calc(100vw-24px)] border rounded-7px px-12px py-9px text-13px leading-18px backdrop-blur-8px [&:popover-open]:flex"
     :class="colorClass"
   >
     <span class="min-w-0 whitespace-pre-wrap break-words">{{ message }}</span>
-    <WuButton variant="ghost" size="xs" icon="close" icon-only tooltip="关闭消息" :tone="type === 'error' ? 'danger' : 'neutral'" @click="close"></WuButton>
   </div>
 </template>

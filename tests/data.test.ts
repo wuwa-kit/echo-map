@@ -1,10 +1,24 @@
-import { readFile } from 'node:fs/promises'
+import { access, readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
-import { mapCatalogDataSchema, mapDataSchema, mapPointLocationsSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
+import { mapCatalogDataSchema, mapDataSchema, mapPointLocationsSchema, officialMapAssetCatalogSchema, officialEchoPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { readMapDataset } from '../scripts/lib/map-data.ts'
-import { isRouteStart } from '../src/domain/explorer-selectors.ts'
+import { buildOfficialAssets, filterOfficialAssets } from '../src/domain/official-assets.ts'
 
 describe('generated application data', () => {
+  it('keeps official navigation names in assets and publishes only official echoes', async () => {
+    const dataset = await readMapDataset()
+    const catalog = officialMapAssetCatalogSchema.parse(JSON.parse(await readFile(new URL('../public/data/map-asset-catalog.json', import.meta.url), 'utf8')))
+    const assets = buildOfficialAssets(dataset, catalog.assets)
+    for (const name of ['中枢信标', '小型信标', '罗蕾莱']) {
+      expect(filterOfficialAssets(assets, 'navigation', null, name).length, name).toBeGreaterThan(0)
+    }
+    const official = officialEchoPointDataSchema.parse(JSON.parse(await readFile(new URL('../public/data/official-echo-points.json', import.meta.url), 'utf8')))
+    expect(official.library.points.length).toBeGreaterThan(0)
+    expect(official.library.points.every(({ kind }) => kind === 'echo')).toBe(true)
+    await expect(access(new URL('../public/data/official-navigation-points.json', import.meta.url))).rejects.toMatchObject({ code: 'ENOENT' })
+    expect(mapPointLocationsSchema.safeParse({ echoLocations: [], navigationPoints: [] }).success).toBe(false)
+  })
+
   it('separates compact map structure, catalogue icons and point coordinates', async () => {
     const mapText = await readFile(new URL('../public/data/map-data.json', import.meta.url), 'utf8')
     const catalogText = await readFile(new URL('../public/data/catalog-data.json', import.meta.url), 'utf8')
@@ -16,11 +30,10 @@ describe('generated application data', () => {
     expect(Object.keys(map).sort()).toEqual(['connectors', 'mapNavigation', 'regionLabels', 'source', 'states', 'version'])
     expect(mapText).not.toContain('iconUrl')
     expect(pointsText).not.toContain('iconUrl')
-    expect(catalog.pointIcons.length).toBeGreaterThan(0)
-    const icons = new Set(catalog.pointIcons.map(({ id }) => id))
-    expect(icons).toEqual(new Set(locations.navigationPoints.map(({ iconId }) => iconId)))
+    expect(catalog).not.toHaveProperty('pointIcons')
+    expect(catalog).not.toHaveProperty('navigationPointGroups')
     expect(locations.echoLocations.every((point) => !('iconId' in point))).toBe(true)
-    expect(Object.keys(locations).sort()).toEqual(['echoLocations', 'navigationPoints'])
+    expect(Object.keys(locations).sort()).toEqual(['echoLocations'])
   })
 
   it.each(['../data/generated/wiki.json', '../public/data/catalog-data.json'])('stores complete C1/C3 lists in %s', async (path) => {
@@ -59,21 +72,7 @@ describe('generated application data', () => {
     const echoes = new Map(parsed.echoes.map((echo) => [echo.id, echo]))
     expect(parsed.echoLocations.every(({ echoId, iconUrl }) => iconUrl === echoes.get(echoId)?.iconUrl)).toBe(true)
     expect(parsed.version).toBe(3)
-    expect(parsed.navigationPoints.length).toBeGreaterThan(0)
-    expect(parsed.navigationPointGroups.length).toBeGreaterThan(0)
-    expect(parsed.navigationPointGroups.some(({ typeIds }) => typeIds.length > 1)).toBe(true)
-    expect(parsed.navigationPoints.every(({ groupId }) => parsed.navigationPointGroups.some(({ id }) => id === groupId))).toBe(true)
-    expect(parsed.navigationPoints.some(({ typeName }) => typeName === '观景点')).toBe(false)
-    expect(parsed.navigationPointGroups.some(({ typeNames }) => typeNames.includes('观景点'))).toBe(false)
-    expect(parsed.report.navigationPointCount).toBe(parsed.navigationPoints.length)
-    expect(parsed.report.navigationPointGroupCount).toBe(parsed.navigationPointGroups.length)
-    expect(parsed.report.navigationIconFetchFailureCount).toBe(0)
-    expect(parsed.report.bossNavigationPointCount).toBeGreaterThan(0)
-    const bossPoints = parsed.navigationPoints.filter(({ kind }) => kind === 'boss')
-    expect(bossPoints.every(({ mode }) => mode === 'fast-travel')).toBe(true)
-    expect(new Set(bossPoints.map(({ groupId }) => groupId))).toEqual(new Set(['kind:boss']))
-    expect(parsed.navigationPointGroups.find(({ id }) => id === 'kind:boss')?.name).toBe('BOSS')
-    expect(parsed.navigationPoints.filter(({ catalogCategoryName }) => catalogCategoryName === '挑战').every(({ mode }) => mode === 'fast-travel')).toBe(true)
-    expect(parsed.report.routeEligibleNavigationPointCount).toBe(parsed.navigationPoints.filter(isRouteStart).length)
+    expect(parsed.navigationPoints).toEqual([])
+    expect(parsed.navigationPointGroups).toEqual([])
   })
 })

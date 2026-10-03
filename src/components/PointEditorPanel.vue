@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import WuButton from './base/WuButton.vue'
-import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouteQuery } from '@vueuse/router'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
@@ -14,18 +14,26 @@ import PointCoordinateFields from './PointCoordinateFields.vue'
 import PointEditorDataPanel from './PointEditorDataPanel.vue'
 import WuDialog from './base/WuDialog.vue'
 import WuMessage from './base/WuMessage.vue'
+import WuCheckBox from './base/WuCheckBox.vue'
+import WuSelect from './base/WuSelect.vue'
+import WuOption from './base/WuOption.vue'
 import WuScrollArea from './base/WuScrollArea.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
 
-const emit = defineEmits<{ returned: [], locateRequested: [] }>()
+const props = defineProps<{
+  locatePosition: (coordinate: [number, number]) => boolean
+  isPositionInView: (coordinate: [number, number]) => boolean
+}>()
+const emit = defineEmits<{ returned: [], locateRequested: [coordinate?: [number, number]] }>()
 const explorer = useExplorerStore()
 const store = usePointEditorStore()
 const tabQuery = useRouteQuery<string>('editorTab', 'navigation', { mode: 'replace' })
 let active = true
-onBeforeUnmount(() => { active = false })
-const { dataset, draft, library, importPreview, allPoints, editorMode, hasUnsavedChanges, editing, dirty, busy, operation, error, notice, recovery, deleted } = storeToRefs(store)
+onBeforeUnmount(() => { active = false; store.resetPositionConfirmation() })
+const { dataset, draft, library, importPreview, allPoints, editorMode, hasUnsavedChanges, editing, dirty, busy, operation, error, notice, recovery, deleted, continueAdding, canContinueAdding, availableFloors, pointLevelId } = storeToRefs(store)
 const { start: expireUndo } = useTimeoutFn(store.dismissDeleted, 8000, { immediate: false })
 const importFile = useTemplateRef<HTMLInputElement>('importFileRef')
+const positionFields = useTemplateRef<InstanceType<typeof PointCoordinateFields>>('positionFieldsRef')
 const candidates = shallowRef<string[]>([])
 const pending = shallowRef<(() => void) | null>(null)
 let resolveLeave: ((result: boolean) => void) | null = null
@@ -75,7 +83,7 @@ function cancelPending(): void {
   resolveLeave = null
 }
 async function continuePending(save: boolean): Promise<void> {
-  if (save && !await (resolveLeave ? store.saveAllForms() : store.savePoint())) {
+  if (save && !await (resolveLeave ? store.saveAllForms() : store.savePoint({ continueAdding: false }))) {
     tabQuery.value = editorMode.value
     cancelPending()
     return
@@ -114,7 +122,18 @@ function switchTab(kind: AuthoredPoint['kind']): void {
 async function save(): Promise<void> {
   if (await store.savePoint()) {
     syncLibrary()
-    }
+  }
+}
+async function confirmPosition(coordinate: [number, number]): Promise<void> {
+  if (busy.value || pending.value || importPreview.value) return
+  const action = store.confirmPosition(props.isPositionInView(coordinate))
+  if (action === 'locate') {
+    props.locatePosition(coordinate)
+  } else if (action === 'save') {
+    await save()
+    await nextTick()
+    if (active) positionFields.value?.focus()
+  }
 }
 function undoDelete(): void {
   if (!deleted.value) return
@@ -128,23 +147,29 @@ async function deletePoint(): Promise<void> {
     expireUndo()
   }
 }
-function addPointAt(request: { kind: AuthoredPoint['kind'], coordinate: [number, number] }): void {
+function addPoint(kind: AuthoredPoint['kind'] = editorMode.value, coordinate?: [number, number]): void {
   if (busy.value) return
-  switchTab(request.kind)
+  switchTab(kind)
   requestAction(() => {
-    store.newPoint(request.kind)
+    store.newPoint(kind)
     store.initializeMapContext({ stateId: explorer.selectedStateId, countryId: explorer.selectedCountryId ?? undefined, levelId: explorer.selectedLevelId ?? undefined, gravityType: explorer.supportsGravity ? explorer.selectedGravity : undefined })
-    store.setCoordinate('x', String(request.coordinate[0]))
-    store.setCoordinate('y', String(request.coordinate[1]))
+    if (coordinate) {
+      store.setCoordinate('x', String(coordinate[0]))
+      store.setCoordinate('y', String(coordinate[1]))
+    }
   })
 }
+function addPointAt(request: { kind: AuthoredPoint['kind'], coordinate: [number, number] }): void {
+  addPoint(request.kind, request.coordinate)
+}
 defineExpose({ selectMapPoints, addPointAt })
-onMounted(async () => {
-  await store.load()
+async function loadEditor(): Promise<void> {
+  await store.load(tabQuery.value === 'echo' ? 'echo' : 'navigation')
   if (!active || store.error) return
-  switchTab(tabQuery.value === 'echo' ? 'echo' : 'navigation')
+  tabQuery.value = editorMode.value
   store.initializeMapContext({ stateId: explorer.selectedStateId, countryId: explorer.selectedCountryId ?? undefined, levelId: explorer.selectedLevelId ?? undefined, gravityType: explorer.supportsGravity ? explorer.selectedGravity : undefined })
-})
+}
+onMounted(loadEditor)
 onBeforeRouteUpdate((to) => {
   if (to.query.editorTab === tabQuery.value || !store.dataset || store.busy) return
   store.switchEditorTab(to.query.editorTab === 'echo' ? 'echo' : 'navigation')
@@ -164,7 +189,7 @@ useEventListener(window, 'beforeunload', (event) => {
 
 <template>
   <div class="min-h-0 flex flex-1 flex-col bg-[#0d1e16] text-[#d7eadf]">
-    <WuMessage v-if="error" :message="error" type="error" :duration="0" @close="store.dismissMessage" />
+    <WuMessage v-if="error" :message="error" type="error" @close="store.dismissMessage" />
     <WuMessage v-else-if="notice" :message="notice" @close="store.dismissMessage" />
     <div class="flex shrink-0 items-center justify-between gap-10px border-b border-[var(--line)] px-16px py-10px">
       <div class="flex items-center gap-14px"><WuButton variant="ghost" size="sm" icon="chevron-left" :disabled="busy" @click="returnToExplorer">返回</WuButton></div>
@@ -179,20 +204,27 @@ useEventListener(window, 'beforeunload', (event) => {
         <div class="flex shrink-0 gap-6px border-b border-[var(--line)] p-12px">
           <WuButton v-for="tab in (['navigation', 'echo'] as const)" :key="tab" class="flex-1" :variant="editorMode === tab ? 'outline' : 'ghost'" :tone="editorMode === tab ? 'accent' : 'neutral'" :disabled="busy" @click="switchTab(tab)">{{ tab === 'navigation' ? '定位点' : '声骸点位' }}</WuButton>
         </div>
-        <div class="flex shrink-0 items-center justify-between px-18px py-14px"><span class="text-14px font-600">{{ existing || draft.replacesOfficialIds?.length ? '编辑' : '新增' }}{{ draft.kind === 'echo' ? '声骸点位' : '定位点' }}</span></div>
+        <div class="flex shrink-0 items-center justify-between px-18px py-14px">
+          <span class="text-14px font-600">{{ existing || draft.replacesOfficialIds?.length ? '编辑' : '新增' }}{{ draft.kind === 'echo' ? '声骸点位' : '定位点' }}</span>
+          <WuButton variant="ghost" tone="accent" size="sm" :disabled="busy" @click="addPoint()">新增点位</WuButton>
+        </div>
         <WuScrollArea class="min-h-0 flex-1" content-class="px-18px pb-18px">
           <div class="mb-8px flex items-center justify-between"><span class="text-13px font-600">位置</span><div class="flex gap-10px"><WuButton variant="ghost" tone="accent" size="sm" @click="emit('locateRequested')">定位</WuButton></div></div>
-          <PointCoordinateFields :key="draft.id" />
+          <PointCoordinateFields :key="draft.id" ref="positionFieldsRef" @locate-requested="confirmPosition" />
+          <WuSelect class="mt-8px" :model-value="pointLevelId" :disabled="busy || !availableFloors.length" @update:model-value="store.setLevel">
+            <WuOption :value="null">主地图</WuOption>
+            <WuOption v-for="floor in availableFloors" :key="floor.id" :value="floor.id">{{ floor.name }}</WuOption>
+          </WuSelect>
           <EchoEditorFields v-if="draft.kind === 'echo'" :key="draft.id" />
           <NavigationEditorFields v-else :key="draft.id" />
         </WuScrollArea>
         <div class="flex shrink-0 items-center gap-10px border-t border-[var(--line)] p-14px">
           <WuButton v-if="existing" variant="ghost" tone="danger" :disabled="busy" :loading="operation === 'delete'" @click="deletePoint">删除</WuButton>
-          <span class="flex-1 text-11px text-[#789788]">{{ dirty ? '未保存' : existing ? '已保存' : '' }}</span>
-          <WuButton variant="solid" tone="accent" :disabled="busy" :loading="operation === 'save' && !pending" @click="save">保存</WuButton>
+          <WuCheckBox v-if="canContinueAdding" class="flex min-h-40px items-center gap-8px text-12px" :model-value="continueAdding" :disabled="busy" @update:model-value="store.setContinueAdding">保存后继续新增</WuCheckBox>
+          <WuButton class="ml-auto" variant="solid" tone="accent" :disabled="busy" :loading="operation === 'save' && !pending" @click="save">保存</WuButton>
         </div>
     </div>
-    <div v-else class="flex flex-1 flex-col items-center justify-center gap-12px text-13px text-[#91ae9e]"><span>{{ busy ? '正在加载…' : '加载失败' }}</span><WuButton v-if="!busy" @click="store.load">重试</WuButton></div>
+    <div v-else class="flex flex-1 flex-col items-center justify-center gap-12px text-13px text-[#91ae9e]"><span>{{ busy ? '正在加载…' : '加载失败' }}</span><WuButton v-if="!busy" @click="loadEditor">重试</WuButton></div>
     <WuDialog :open="importPreview !== null" :dismissible="!busy" @dismiss-requested="closeDataManagement">
       <PointEditorDataPanel @close-requested="closeDataManagement" />
     </WuDialog>

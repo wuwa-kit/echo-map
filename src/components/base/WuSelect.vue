@@ -10,15 +10,17 @@ import type { WuSelectOptionRecord, WuSelectValue } from './select-context.ts'
 const props = withDefaults(defineProps<{
   disabled?: boolean
   invalid?: boolean
+  muted?: boolean
   placeholder?: string
 }>(), {
   disabled: false,
   invalid: false,
+  muted: false,
   placeholder: '请选择',
 })
 
 const model = defineModel<WuSelectValue>({ required: true })
-const trigger = useTemplateRef<HTMLDivElement>('triggerRef')
+const trigger = useTemplateRef<HTMLButtonElement>('triggerRef')
 const popover = useTemplateRef<InstanceType<typeof WuPopover>>('popoverRef')
 const options = shallowRef<readonly WuSelectOptionRecord[]>([])
 const isOpen = shallowRef(false)
@@ -72,13 +74,6 @@ function isSelectedValue(value: WuSelectValue): boolean {
   return Object.is(model.value, value)
 }
 
-function togglePopover(): void {
-  if (props.disabled) {
-    return
-  }
-  popover.value?.toggle()
-}
-
 function chooseOption(option: WuSelectOptionRecord): void {
   if (props.disabled || option.disabled) {
     return
@@ -106,8 +101,11 @@ useProvideWuSelectContext({
 
 <template>
   <div class="group relative grid w-full min-w-0">
-    <div
+    <button
       ref="triggerRef"
+      type="button"
+      :disabled="disabled"
+      :popovertarget="popover?.id"
       :class="[
         invalid
           ? 'border-[#ff8d7e]'
@@ -119,10 +117,9 @@ useProvideWuSelectContext({
           : 'cursor-pointer bg-[#152b24] text-[#dce9e3]',
       ]"
       class="h-38px w-full min-w-0 flex items-center rounded-7px border pl-11px pr-34px text-left text-11px font-inherit shadow-[inset_0_1px_rgba(255,255,255,0.025),0_5px_16px_rgba(0,0,0,0.1)] transition-[border-color,box-shadow,background-color] duration-180"
-      @click="togglePopover"
     >
-      <span class="block min-w-0 truncate">{{ selectedLabel }}</span>
-    </div>
+      <span class="block min-w-0 truncate" :class="muted && !disabled ? 'text-[#789788]' : ''">{{ selectedLabel }}</span>
+    </button>
     <WuSvg
       name="chevron-down"
       class="pointer-events-none absolute right-10px top-1/2 [--wu-svg-h:15px] translate-y-[-50%] text-[#78998d] transition-[color,transform] duration-180 group-hover:text-[#a9cfc0]"

@@ -107,8 +107,7 @@ describe('map navigation destinations', () => {
     expect(echoes.length).toBeGreaterThan(0)
     expect(echoes.some(({ levelId }) => levelId !== null && floors.has(levelId))).toBe(true)
     const points = dataset.navigationPoints.filter(({ stateId }) => stateId === 912)
-    expect(new Set(points.map(({ kind }) => kind))).toEqual(new Set(['beacon', 'nexus', 'boss', 'challenge', 'tacet-field', 'entrance']))
-    expect(points.filter(({ kind }) => kind === 'boss' || kind === 'challenge').every(({ mode }) => mode === 'fast-travel')).toBe(true)
+    expect(points).toEqual([])
   })
 
   it('allows repeat actions on the same shared map after panning, without retaining a selected destination', () => {

@@ -1,52 +1,58 @@
-import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
-import { buildOfficialAssets } from '../src/domain/official-assets.ts'
-import { navigationIconAssets } from '../src/domain/navigation-icons.ts'
+import { navigationIconCatalog } from '../src/domain/navigation-icon-catalog.ts'
+import { navigationIconById, navigationPointIconUrl, navigationTypeIcons } from '../src/domain/navigation-icons.ts'
 import { authoredPointMapDisplay, parsePointLibrary } from '../src/domain/point-library.ts'
 import { referenceDataset } from './fixtures/point-library.ts'
 
-const catalog = officialMapAssetCatalogSchema.parse(JSON.parse(readFileSync(new URL('../public/data/map-asset-catalog.json', import.meta.url), 'utf8')))
-const icons = navigationIconAssets(buildOfficialAssets(referenceDataset, catalog.assets))
-describe('navigation icon picker', () => {
-  it('includes all map icon categories but excludes unrelated assets', () => {
-    for (const category of ['navigation', 'exploration', 'challenge', 'service'] as const) {
-      expect(icons.some((asset) => asset.categories.includes(category))).toBe(true)
+const emptyNavigationDataset = { ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }
+
+describe('local navigation icon picker', () => {
+  it('resolves configured and custom choices without any official point data', () => {
+    expect(navigationTypeIcons(undefined)).toBe(navigationIconCatalog)
+    expect(navigationTypeIcons('service')).toBe(navigationIconCatalog)
+    expect(navigationTypeIcons('small-beacon')).toHaveLength(1)
+    expect(navigationTypeIcons('remnant-settlement')).toHaveLength(2)
+    expect(new Set(navigationIconCatalog.map(({ id }) => id)).size).toBe(navigationIconCatalog.length)
+    expect(new Set(navigationIconCatalog.map(({ url }) => url)).size).toBe(navigationIconCatalog.length)
+  })
+
+  it.each([undefined, 'service'] as const)('searches every name of a shared icon for %s without changing its stored label', (pointType) => {
+    const icon = navigationIconCatalog.find(({ name }) => name.split(' / ').length > 1)
+    if (!icon) throw new Error('需要多名称图标')
+    const original = icon.name
+    for (const name of icon.name.split(' / ')) {
+      expect(navigationTypeIcons(pointType, name).some(({ id }) => id === icon.id)).toBe(true)
     }
-    expect(icons.some((asset) => asset.categories.some((category) => ['tile', 'floor', 'echo', 'sonata'].includes(category)))).toBe(false)
-    expect(new Set(icons.map(({ url }) => url)).size).toBe(icons.length)
+    expect(icon.name).toBe(original)
+    expect(navigationTypeIcons(pointType, '不存在的图标名称xyz')).toEqual([])
   })
-  it('matches every child name of a merged icon', () => {
-    const merged = icons.find((asset) => asset.name.split(' / ').length > 1)
-    expect(merged).toBeDefined()
-    if (!merged) return
-    for (const name of merged.name.split(' / ')) {
-      expect(navigationIconAssets(icons, name).some(({ id }) => id === merged.id)).toBe(true)
-    }
-    expect(navigationIconAssets(icons, '不存在的图标名称xyz')).toEqual([])
-  })
-  it('moves only the first matching child name to the front without changing source data', () => {
-    const source = icons[0]
-    if (!source) throw new Error('缺少测试图标')
-    const asset = { ...source, name: '商店 / NPC甲 / 信标 / NPC乙' }
-    expect(navigationIconAssets([asset], ' npc ')[0]?.name).toBe('NPC甲 / 商店 / 信标 / NPC乙')
-    expect(navigationIconAssets([asset], '信标')[0]?.name).toBe('信标 / 商店 / NPC甲 / NPC乙')
-    expect(navigationIconAssets([asset], '商店')[0]?.name).toBe(asset.name)
-    expect(navigationIconAssets([asset], '')[0]?.name).toBe('商店 / NPC甲 / 信标 / NPC乙')
-    expect(asset.name).toBe('商店 / NPC甲 / 信标 / NPC乙')
-  })
-  it('preserves catalog-only icons through validation and map rendering', () => {
-    const asset = icons.find((asset) => !asset.categories.includes('navigation'))
-    if (!asset) throw new Error('缺少目录图标')
+
+  it('keeps a selected icon valid and visible after all official navigation is removed', () => {
+    const icon = navigationTypeIcons('small-beacon')[0]
+    if (!icon) throw new Error('需要信标图标')
     const point = {
-      gravityType: null, id: 'asset-icon', kind: 'navigation' as const, status: 'verified' as const,
+      gravityType: null, id: 'local-icon', kind: 'navigation' as const, status: 'verified' as const,
       stateId: 8, countryId: null, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
-      name: '自选图标', navigationKind: 'landmark' as const, mode: 'landmark' as const, note: '', iconUrl: asset.url,
+      name: '小型信标', pointType: 'small-beacon' as const, navigationKind: 'beacon' as const, mode: 'fast-travel' as const, note: '', iconId: icon.id,
     }
-    const library = parsePointLibrary({ version: 1, points: [point] }, referenceDataset, 'manual')
+    const library = parsePointLibrary({ version: 1, points: [point] }, emptyNavigationDataset, 'manual')
     const saved = library.points[0]
     if (!saved) throw new Error('缺少保存点位')
-    expect(authoredPointMapDisplay(saved, referenceDataset)?.location.iconUrl).toBe(asset.url)
-    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: 'javascript:alert(1)' }] }, referenceDataset)).toThrow()
+    expect(navigationPointIconUrl(point)).toBe(icon.url)
+    expect(authoredPointMapDisplay(saved, emptyNavigationDataset)?.location.iconUrl).toBe(icon.url)
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: 'official-point-id' }] }, emptyNavigationDataset)).toThrow('未知图标')
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: 'https://example.com/override.png' }] }, emptyNavigationDataset)).toThrow('不能同时设置')
+  })
+
+  it('keeps custom URL images independent from the catalogue and official points', () => {
+    const point = {
+      gravityType: null, id: 'custom-icon', kind: 'navigation' as const, status: 'verified' as const,
+      stateId: 8, countryId: null, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
+      name: '自定义名称', pointType: 'service' as const, navigationKind: 'service' as const, mode: 'landmark' as const, note: '', iconUrl: 'https://example.com/custom.png',
+    }
+    expect(navigationIconById('missing')).toBeUndefined()
+    expect(parsePointLibrary({ version: 1, points: [point] }, emptyNavigationDataset).points[0]).toEqual(point)
+    expect(authoredPointMapDisplay(point, emptyNavigationDataset)?.location.iconUrl).toBe(point.iconUrl)
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: 'javascript:alert(1)' }] }, emptyNavigationDataset)).toThrow()
   })
 })

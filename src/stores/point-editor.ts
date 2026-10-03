@@ -1,21 +1,28 @@
-import { emptyCoordinateInput, coordinateInputPending, commitCoordinateInput, coordinateAxes } from '../components/base/coordinate-input.ts'
+import { emptyCoordinateInput, coordinateInputPending, coordinateInputXY, commitCoordinateInput, coordinateAxes } from '../components/base/coordinate-input.ts'
 import type { CoordinateInputState, CoordinateInputChange } from '../components/base/coordinate-input.ts'
-import { useAssetsStore } from './assets.ts'
-import { navigationIconAssets } from '../domain/navigation-icons.ts'
+import { navigationTypeIcons } from '../domain/navigation-icons.ts'
+import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
-import { authoredPointSchema, navigationPointTypeSchema } from '../domain/schema.ts'
+import { authoredPointSchema, navigationPointTypeSchema, navigationIconUrlSchema } from '../domain/schema.ts'
 import { emptyPointLibrary, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
-import type { AuthoredPoint, MapDataset, PointLibrary } from '../domain/types.ts'
-import type { NavigationMode } from '../domain/types.ts'
+import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary } from '../domain/types.ts'
+import type { NavigationMode, NavigationPointType } from '../domain/types.ts'
 import { combinePointLibraries } from '../domain/point-matching.ts'
 import { readEditorLibrary, saveEditorLibrary } from '../data/editor-client.ts'
 import { loadMapDataset } from '../data/load.ts'
 import { hasGravityMap } from '../domain/gravity.ts'
 import type { GravityType } from '../domain/types.ts'
+import { createFloorCoverage, floorsAtCoordinate } from '../map/floor-coverage.ts'
+import { gameToMapCoordinate } from '../map/projection.ts'
+import { useEqualComputed } from '../composables/useEqualComputed.ts'
 
 const DRAFT_KEY = 'echo-map:point-editor:draft:v1'
+const CONTINUE_ADDING_KEY = 'echo-map:point-editor:continue-adding:v1'
+const RECENT_TYPES_KEY = 'echo-map:point-editor:recent-saved-types:v1'
+const RECENT_TYPES_LIMIT = 4
+const POSITION_CONFIRM_INTERVAL = 600
 
 type EditorKind = AuthoredPoint['kind']
 interface EditorForm {
@@ -52,7 +59,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const mapTileRetry = shallowRef(0)
   const revision = shallowRef('')
   const storage = shallowRef<'project' | 'browser'>('project')
-  const editorMode = shallowRef<EditorKind>('echo')
+  const editorMode = shallowRef<EditorKind>('navigation')
+  const continueAdding = shallowRef(false)
+  const positionConfirmation = shallowRef<{ snapshot: string, pressedAt: number } | null>(null)
+  const recentPointTypes = shallowRef<readonly NavigationPointType[]>([])
   const forms = shallowRef<Record<EditorKind, EditorForm>>({ echo: emptyForm(), navigation: emptyForm() })
   function formField<K extends keyof EditorForm>(key: K) {
     return computed({
@@ -71,6 +81,15 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     field.value = { ...emptyCoordinateInput(), mode: field.value.mode }
   }
   const draft = formField('draft')
+  const pointState = computed(() => dataset.value?.states.find(({ id }) => id === draft.value?.stateId) ?? null)
+  const floorCoverage = computed(() => createFloorCoverage(pointState.value, dataset.value?.source.tileWidth ?? 1024))
+  const availableFloors = useEqualComputed(() => {
+    const coordinate = draft.value ? coordinateInputXY(positionInput.value, draft.value.coordinate) : null
+    return floorsAtCoordinate(floorCoverage.value, coordinate
+      ? gameToMapCoordinate(coordinate[0], coordinate[1], dataset.value?.source.tileWidth) : null)
+      .map(({ id, name }) => ({ id, name }))
+  })
+  const pointLevelId = computed(() => availableFloors.value.some(({ id }) => id === draft.value?.levelId) ? draft.value?.levelId ?? null : null)
   const completePoints = computed(() => freeze(combinePointLibraries(library.value, officialLibrary.value), true).points)
   const baseline = formField('baseline')
   const recovery = formField('recovery')
@@ -87,6 +106,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const inputValues = formField('inputValues')
   const dirty = computed(() => formDirty(forms.value[editorMode.value]))
   const editing = computed(() => draft.value !== null)
+  const canContinueAdding = computed(() => draft.value?.kind === 'navigation'
+    && !draft.value.replacesOfficialIds?.length
+    && !library.value.points.some(({ id }) => id === draft.value?.id))
   const allPoints = completePoints
   const hasUnsavedChanges = computed(() => Object.values(forms.value).some((form) => formDirty(form) || form.recovery !== null))
 
@@ -101,10 +123,12 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   function openDraft(point: AuthoredPoint): void {
+    resetPositionConfirmation()
     resetCoordinateInput()
     resetCoordinateInput(true)
     draft.value = freeze(point, true)
-    baseline.value = JSON.stringify(point)
+    reconcilePointLevel()
+    baseline.value = JSON.stringify(draft.value)
     coordinateText.value = ''
     teleportCoordinateText.value = ''
     monsterSearch.value = ''
@@ -123,6 +147,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
 
   function switchEditorTab(kind: EditorKind): void {
     if (busy.value || kind === editorMode.value) return
+    resetPositionConfirmation()
     const context = draft.value
     cacheDraft()
     editorMode.value = kind
@@ -144,7 +169,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       gravityType: previous?.gravityType ?? null,
       coordinate: { x: null, y: null, z: null }, note: '',
     }
-    openDraft(kind === 'echo' ? { ...base, kind, compositionStatus: 'partial', members: [] } : { ...base, kind, name: '', navigationKind: 'unknown', mode: 'landmark' })
+    openDraft(kind === 'echo' ? { ...base, kind, compositionStatus: 'partial', members: [] } : { ...base, kind, name: '', navigationKind: 'landmark', mode: 'landmark' })
     error.value = ''
     cacheDraft()
   }
@@ -167,31 +192,55 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   function edit(recipe: (point: AuthoredPoint) => void): void {
     if (!draft.value || busy.value) return
     draft.value = freeze(produce(draft.value, recipe), true)
+    reconcilePointLevel()
     error.value = ''
     notice.value = ''
     cacheDraft()
   }
 
+  function reconcilePointLevel(): void {
+    const point = draft.value
+    if (!point?.levelId || !coordinateInputXY(positionInput.value, point.coordinate)
+      || availableFloors.value.some(({ id }) => id === point.levelId)) return
+    draft.value = freeze(produce(point, (point) => { point.levelId = null; point.status = 'draft' }), true)
+  }
+
+  function setLevel(value: string | number | null): void {
+    if (busy.value || !draft.value || typeof value === 'number'
+      || value !== null && !availableFloors.value.some(({ id }) => id === value)
+      || value === draft.value.levelId) return
+    edit((point) => { point.levelId = value; point.status = 'draft' })
+  }
+
   function updateCoordinateInput(teleport: boolean, change: CoordinateInputChange): void {
     if (!draft.value || busy.value) return
+    if (teleport && (draft.value.kind !== 'navigation' || draft.value.mode !== 'fast-travel')) return
     forms.value = produce(forms.value, (forms) => {
       const form = forms[editorMode.value]
       form[teleport ? 'arrivalInput' : 'positionInput'] = change.state
       const point = form.draft
       if (!point || (teleport && point.kind !== 'navigation')) return
       const previous = teleport && point.kind === 'navigation' ? point.teleportCoordinate : point.coordinate
-      if (coordinateAxes.some((axis) => (previous?.[axis] ?? null) !== change.value[axis])) {
+      const emptyArrival = teleport && coordinateAxes.every((axis) => change.value[axis] === null)
+      if (emptyArrival && point.kind === 'navigation') {
+        if (point.teleportCoordinate) {
+          delete point.teleportCoordinate
+          point.status = 'draft'
+        }
+      } else if (coordinateAxes.some((axis) => (previous?.[axis] ?? null) !== change.value[axis])) {
         if (teleport && point.kind === 'navigation') point.teleportCoordinate = change.value
         else point.coordinate = change.value
         point.status = 'draft'
       }
+      const clearedArrival = emptyArrival && change.valid && !coordinateInputPending(change.state)
       for (const axis of coordinateAxes) {
-        if (change.value[axis] === null || (change.state.text === null && change.state.axes[axis] === null)) continue
+        if (!clearedArrival && (change.value[axis] === null || (change.state.text === null && change.state.axes[axis] === null))) continue
         const key = teleport ? `teleport:${axis}` : axis
         delete form.inputErrors[key]
         delete form.inputValues[key]
       }
     })
+    if (!teleport) reconcilePointLevel()
     error.value = ''
     cacheDraft()
   }
@@ -231,6 +280,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   function setTeleportCoordinate(axis: 'x' | 'y' | 'z', value: string): void {
+    if (busy.value || draft.value?.kind !== 'navigation' || draft.value.mode !== 'fast-travel') return
     resetCoordinateInput(true)
     const key = `teleport:${axis}`
     inputValues.value = produce(inputValues.value, (values) => { values[key] = value })
@@ -255,6 +305,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   function applyTeleportCoordinateText(): void {
+    if (busy.value || draft.value?.kind !== 'navigation' || draft.value.mode !== 'fast-travel') return
     try {
       const coordinate = parseCoordinateInput(teleportCoordinateText.value)
       resetCoordinateInput(true)
@@ -379,8 +430,69 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     officialLibrary.value = freeze(official, true)
   }
 
-  async function load(): Promise<void> {
+  function resetPositionConfirmation(): void {
+    positionConfirmation.value = null
+  }
+
+  function confirmPosition(inView: boolean, now = Date.now()): 'locate' | 'wait' | 'save' {
+    const point = draft.value
+    if (busy.value || !point) return 'wait'
+    const xy = coordinateInputXY(positionInput.value, point.coordinate)
+    if (!xy || coordinateInputPending(positionInput.value) || positionInput.value.invalid
+      || coordinateAxes.some((axis) => !Number.isSafeInteger(point.coordinate[axis]))) {
+      resetPositionConfirmation()
+      return xy ? 'locate' : 'wait'
+    }
+    if (!inView) {
+      resetPositionConfirmation()
+      return 'locate'
+    }
+    const snapshot = JSON.stringify(point)
+    const confirmation = positionConfirmation.value
+    if (confirmation?.snapshot !== snapshot || now < confirmation.pressedAt || now - confirmation.pressedAt > POSITION_CONFIRM_INTERVAL) {
+      positionConfirmation.value = { snapshot, pressedAt: now }
+      return 'wait'
+    }
+    resetPositionConfirmation()
+    return 'save'
+  }
+
+  function restoreContinueAdding(): void {
+    try { continueAdding.value = localStorage.getItem(CONTINUE_ADDING_KEY) === 'true' }
+    catch { /* Keep the current preference if storage is unavailable. */ }
+  }
+
+  function setContinueAdding(value: boolean): void {
     if (busy.value) return
+    continueAdding.value = value
+    try { localStorage.setItem(CONTINUE_ADDING_KEY, String(value)) }
+    catch { /* The preference remains available for this session. */ }
+  }
+
+  function restoreRecentPointTypes(): void {
+    try {
+      const cached = localStorage.getItem(RECENT_TYPES_KEY)
+      const parsed = cached ? navigationPointTypeSchema.array().safeParse(JSON.parse(cached)) : null
+      if (parsed?.success) recentPointTypes.value = freeze([...new Set(parsed.data)].slice(0, RECENT_TYPES_LIMIT))
+    } catch { /* Keep recent types in memory if storage is unavailable. */ }
+  }
+
+  function rememberPointType(pointType: NavigationPointType): void {
+    recentPointTypes.value = produce(recentPointTypes.value, (types) => {
+      const index = types.indexOf(pointType)
+      if (index >= 0) types.splice(index, 1)
+      types.unshift(pointType)
+      types.splice(RECENT_TYPES_LIMIT)
+    })
+    try { localStorage.setItem(RECENT_TYPES_KEY, JSON.stringify(recentPointTypes.value)) }
+    catch { /* Recent types remain available for this session. */ }
+  }
+
+  async function load(kind: EditorKind = editorMode.value): Promise<void> {
+    if (busy.value) return
+    restoreContinueAdding()
+    restoreRecentPointTypes()
+    editorMode.value = kind
     if (dataset.value && revision.value) {
       if (!draft.value) newPoint()
       return
@@ -421,13 +533,14 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (busy.value || !dataset.value || !revision.value) return false
     operation.value = action
     error.value = ''
+    notice.value = ''
     try {
       const libraryToSave = parsePointLibrary(next, dataset.value, 'manual')
       const snapshot = await saveEditorLibrary(libraryToSave, revision.value)
       library.value = freeze(snapshot.library, true)
       revision.value = snapshot.revision
       storage.value = snapshot.storage
-      notice.value = storage.value === 'browser' ? '已保存到本机浏览器' : '已保存到本机文件'
+      notice.value = action === 'save' ? '保存成功' : storage.value === 'browser' ? '已保存到本机浏览器' : '已保存到本机文件'
       return true
     } catch (failure) {
       error.value = failure instanceof Error ? failure.message : String(failure)
@@ -436,11 +549,14 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     finally { operation.value = null }
   }
 
-  async function savePoint(): Promise<boolean> {
-    if (!draft.value || !editing.value) return false
+  async function savePoint(options: { continueAdding?: boolean } = {}): Promise<boolean> {
+    if (!draft.value || !editing.value || busy.value) return false
+    resetPositionConfirmation()
+    const addNext = options.continueAdding !== false && continueAdding.value && canContinueAdding.value
+    notice.value = ''
     const position = commitCoordinateInput(positionInput.value, draft.value.coordinate)
     updateCoordinateInput(false, position)
-    const arrival = commitCoordinateInput(arrivalInput.value, draft.value.kind === 'navigation' ? draft.value.teleportCoordinate ?? { x: null, y: null, z: null } : { x: null, y: null, z: null })
+    const arrival = commitCoordinateInput(arrivalInput.value, draft.value.kind === 'navigation' ? draft.value.teleportCoordinate ?? { x: null, y: null, z: null } : { x: null, y: null, z: null }, true)
     updateCoordinateInput(true, arrival)
     if (!position.valid || !arrival.valid) return false
     const errors = { ...inputErrors.value }
@@ -450,7 +566,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (draft.value.kind === 'echo' && !draft.value.members.length) errors.members = '请添加至少一种声骸'
     if (draft.value.kind === 'navigation') {
       if (!draft.value.name.trim()) errors.name = '请填写名称'
-      if (draft.value.navigationKind === 'unknown') errors.icon = '请选择图标'
+      if (!draft.value.iconUrl && !draft.value.iconId) errors.icon = '请选择图标'
       if (draft.value.teleportCoordinate) {
         for (const axis of ['x', 'y', 'z'] as const) {
           if (draft.value.teleportCoordinate[axis] === null) errors[`teleport:${axis}`] = '请填写完整落点，或移除实际传送位置'
@@ -470,8 +586,19 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       else library.points.push(saved)
     })
     if (await commit(next, 'save')) {
+      if (saved.kind === 'navigation' && saved.pointType) rememberPointType(saved.pointType)
       openDraft(saved)
       recovery.value = null
+      if (addNext && saved.kind === 'navigation') {
+        newPoint('navigation')
+        setPointType(saved.pointType ?? null)
+        if (draft.value?.kind === 'navigation') {
+          openDraft(produce(draft.value, (point) => {
+            point.name = saved.pointType ? navigationPointTypes[saved.pointType].names[0] ?? '' : ''
+          }))
+        }
+        notice.value = '保存成功'
+      }
       cacheDraft()
       return true
     }
@@ -484,7 +611,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (!formDirty(forms.value[kind]) && !forms.value[kind].recovery) continue
       switchEditorTab(kind)
       if (recovery.value) recoverDraft()
-      if (!await savePoint()) return false
+      if (!await savePoint({ continueAdding: false })) return false
     }
     switchEditorTab(previous)
     return true
@@ -518,8 +645,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
 
   function resetSession(): void {
     if (busy.value) return
+    resetPositionConfirmation()
     forms.value = { echo: emptyForm(), navigation: emptyForm() }
-    editorMode.value = 'echo'
+    editorMode.value = 'navigation'
     deleted.value = null
     importPreview.value = null
     error.value = ''
@@ -535,58 +663,91 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     newPoint()
   }
 
+  function hasAutomaticNavigationName(point: AuthoredNavigationPoint): boolean {
+    const rule = point.pointType ? navigationPointTypes[point.pointType] : undefined
+    return !point.name.trim() || point.name === rule?.name || rule?.names.length === 1 && point.name === rule.names[0]
+  }
+
   function setPointType(value: string | number | null): void {
+    if (busy.value || draft.value?.kind !== 'navigation') return
     const parsed = navigationPointTypeSchema.safeParse(value)
     if (value !== null && !parsed.success) return
+    if (draft.value.pointType === (parsed.success ? parsed.data : undefined)) return
+    const rule = parsed.success ? navigationPointTypes[parsed.data] : undefined
+    const automaticName = hasAutomaticNavigationName(draft.value)
+    const icons = navigationTypeIcons(parsed.success ? parsed.data : undefined)
+    const selectedIconId = draft.value.iconId
+    const icon = rule?.icons.length && icons.length === 1 ? icons[0] : icons.find(({ id }) => id === selectedIconId)
+    const mode = rule?.defaultMode ?? draft.value.mode
+    clearInputError('pointType')
+    clearInputError('icon')
+    clearInputError('name')
+    if (mode !== 'fast-travel') clearArrivalInput()
     edit((point) => {
       if (point.kind !== 'navigation') return
+      if (rule?.names.length === 1) point.name = rule.names[0]
+      else if (automaticName && rule) point.name = rule.name
       if (parsed.success) point.pointType = parsed.data
       else delete point.pointType
+      point.navigationKind = rule?.kind ?? 'landmark'
+      point.mode = mode
+      delete point.iconId
+      if (rule?.icons.length) delete point.iconUrl
+      if (icon) point.iconId = icon.id
+      if (point.mode !== 'fast-travel') delete point.teleportCoordinate
       point.status = 'draft'
     })
   }
 
-  function setIcon(sourceId: string): void {
-    const source = dataset.value?.navigationPoints.find(({ id }) => id === sourceId)
-    if (!source) return
+  function setIcon(id: string): void {
+    if (busy.value || draft.value?.kind !== 'navigation') return
+    const icon = navigationTypeIcons(draft.value.pointType).find((icon) => icon.id === id)
+    if (!icon) return
+    const names = icon.name.split(' / ')
+    const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
+    const name = rule?.names[0] ?? (names.length === 1 ? names[0] : undefined)
     clearInputError('icon')
+    if (name !== undefined) clearInputError('name')
     edit((point) => {
       if (point.kind !== 'navigation') return
       delete point.iconUrl
-      point.iconSourceId = source.id
-      const group = dataset.value?.navigationPointGroups.find(({ id }) => id === source.groupId)
-      if (!group?.kinds.includes(point.navigationKind)) point.navigationKind = source.kind
-      if (point.mode === 'unknown' || ['boss', 'domain', 'challenge'].includes(point.navigationKind)) point.mode = 'fast-travel'
-    })
-  }
-
-  function setAssetIcon(id: string): void {
-    const asset = navigationIconAssets(useAssetsStore().assets).find((asset) => asset.id === id)
-    if (!asset || busy.value || draft.value?.kind !== 'navigation') return
-    const names = asset.name.split(' / ').map((name) => name.trim()).filter(Boolean)
-    const automaticName = names.length === 1 ? names[0] : undefined
-    if (automaticName) clearInputError('name')
-    const source = dataset.value?.navigationPoints.find((point) => [asset.url, ...asset.tags].includes(point.iconUrl))
-    if (source) setIcon(source.id)
-    clearInputError('icon')
-    edit((point) => {
-      if (point.kind !== 'navigation') return
-      if (!source) {
-        delete point.iconSourceId
-        point.navigationKind = asset.categories.includes('service') ? 'service' : 'landmark'
-      }
-      if (automaticName) point.name = automaticName
-      point.iconUrl = asset.url
+      point.iconId = icon.id
+      if (name !== undefined) point.name = name
       point.status = 'draft'
     })
   }
 
-  function clearTeleportCoordinate(): void {
+  function setIconUrl(value: string): void {
+    if (busy.value || draft.value?.kind !== 'navigation') return
+    const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
+    if (rule?.icons.length) return
+    const url = value.trim()
+    if (url && !navigationIconUrlSchema.safeParse(url).success) {
+      invalidInput('icon', '请输入有效的 HTTPS 图标地址')
+      return
+    }
+    clearInputError('icon')
+    edit((point) => {
+      if (point.kind !== 'navigation') return
+      delete point.iconId
+      if (url) point.iconUrl = url
+      else delete point.iconUrl
+      point.status = 'draft'
+    })
+  }
+
+  function clearArrivalInput(): void {
     resetCoordinateInput(true)
     for (const axis of ['x', 'y', 'z']) {
       clearInputError(`teleport:${axis}`)
       clearInputValue(`teleport:${axis}`)
     }
+    teleportCoordinateText.value = ''
+  }
+
+  function clearTeleportCoordinate(): void {
+    if (busy.value) return
+    clearArrivalInput()
     edit((point) => { if (point.kind === 'navigation') delete point.teleportCoordinate })
   }
 
@@ -659,6 +820,11 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   return {
+    confirmPosition, resetPositionConfirmation,
+    availableFloors, pointLevelId, setLevel,
+    continueAdding: shallowReadonly(continueAdding), canContinueAdding,
+    setContinueAdding,
+    recentPointTypes: shallowReadonly(recentPointTypes),
     positionInput: shallowReadonly(positionInput), arrivalInput: shallowReadonly(arrivalInput), updateCoordinateInput,
     hasUnsavedChanges, editorMode: shallowReadonly(editorMode), completePoints, allPoints, selectGravity, switchEditorTab,
     editing: shallowReadonly(editing), inputValues: shallowReadonly(inputValues), inputErrors: shallowReadonly(inputErrors),
@@ -671,33 +837,30 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy, operation: shallowReadonly(operation), dirty,
     setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, addMember, setMemberCount, adjustMemberCount, removeMember,
-    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setAssetIcon, clearTeleportCoordinate, deletePoint, undoDelete, recoverDraft, previewImport, applyImport,
+    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, undoDelete, recoverDraft, previewImport, applyImport,
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
     setTeleportCoordinateText: (value: string) => { teleportCoordinateText.value = value },
-    setLevel: (value: string | null) => edit((point) => {
-      point.levelId = value
-      point.status = 'draft'
-    }),
     setCountry: (value: number | null) => edit((point) => { point.countryId = value }),
     setNote: (value: string) => edit((point) => { point.note = value }),
     setName: (value: string) => {
+      if (busy.value || draft.value?.kind !== 'navigation') return
+      const fixedName = draft.value.pointType ? navigationPointTypes[draft.value.pointType].names[0] : undefined
+      if (fixedName !== undefined && value !== fixedName) return
       clearInputError('name')
       edit((point) => { if (point.kind === 'navigation') point.name = value })
     },
     setMode: (value: NavigationMode) => {
-      if (value !== 'fast-travel') {
-        resetCoordinateInput(true)
-        for (const axis of ['x', 'y', 'z']) {
-          clearInputError(`teleport:${axis}`)
-          clearInputValue(`teleport:${axis}`)
-        }
-        teleportCoordinateText.value = ''
-      }
+      if (busy.value || draft.value?.kind !== 'navigation') return
+      const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
+      if (rule?.teleportLocked) return
+      const nonTeleportMode = rule?.defaultMode === 'fast-travel' ? 'landmark' : rule?.defaultMode ?? 'landmark'
+      const mode = value === 'fast-travel' ? value : nonTeleportMode
+      if (mode !== 'fast-travel') clearArrivalInput()
       edit((point) => {
         if (point.kind === 'navigation') {
-          point.mode = value
-          if (value !== 'fast-travel') delete point.teleportCoordinate
+          point.mode = mode
+          if (mode !== 'fast-travel') delete point.teleportCoordinate
           point.status = 'draft'
         }
       })

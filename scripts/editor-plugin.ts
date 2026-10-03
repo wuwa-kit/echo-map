@@ -7,7 +7,6 @@ import { readMapDataset, writePublicPointData } from './lib/map-data.ts'
 
 const publicPointPaths = [
   '/data/official-echo-points.json',
-  '/data/official-navigation-points.json',
   '/data/custom-echo-points.json',
   '/data/custom-navigation-points.json',
 ] as const
@@ -55,7 +54,6 @@ export function pointEditorPlugin(): Plugin {
           if (publicPointPaths.some((candidate) => candidate === path) && request.method === 'GET') {
             const data = await writePublicPointData()
             if (path === '/data/official-echo-points.json') return data.officialEcho
-            if (path === '/data/official-navigation-points.json') return data.officialNavigation
             if (path === '/data/custom-echo-points.json') return data.manualEcho
             return data.manualNavigation
           }

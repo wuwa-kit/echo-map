@@ -51,13 +51,15 @@ function supportsLocalMultiSelectSearch(source: string): boolean {
 }
 
 describe('WuSelect Popover', () => {
-  it('选择器和选项完全由 WuPopover 与 div 实现', async () => {
+  it('选择器使用原生按钮切换 WuPopover，选项使用 div 实现', async () => {
     const selectSource = await readFile(selectSourceUrl, 'utf8')
     const optionSource = await readFile(optionSourceUrl, 'utf8')
     const combinedSource = `${selectSource}\n${optionSource}`
 
     expect(selectSource).toContain('<WuPopover')
-    expect(selectSource).not.toMatch(/<(?:select|option|button)\b/)
+    expect(selectSource).not.toMatch(/<(?:select|option)\b/)
+    expect(selectSource).toContain(':popovertarget="popover?.id"')
+    expect(selectSource).not.toContain('@click="togglePopover"')
     expect(optionSource).toContain('<div')
     expect(optionSource).not.toMatch(/<(?:select|option|button)\b/)
     expect(combinedSource).not.toContain('native?:')

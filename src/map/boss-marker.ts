@@ -14,11 +14,11 @@ const OUTER_BORDER = 1.5
 const WHITE_BORDER = 2.5
 const CUT_HALF_WIDTH = 5
 
-export function bossMarkerShape(point: Pick<NavigationPoint, 'kind' | 'typeName'>): PortraitMarkerShape | null {
+export function bossMarkerShape(point: Pick<NavigationPoint, 'kind' | 'pointType'>): PortraitMarkerShape | null {
   if (point.kind !== 'boss') {
     return null
   }
-  return /^.{4}之.$/u.test(point.typeName) ? 'cut-diamond' : 'diamond'
+  return point.pointType === 'weekly-boss' ? 'cut-diamond' : 'diamond'
 }
 
 export function portraitMarkerOutline(shape: PortraitMarkerShape, inset = 0): [number, number][] {

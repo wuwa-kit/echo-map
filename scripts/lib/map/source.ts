@@ -1,8 +1,7 @@
-import { createHash } from 'node:crypto'
-import { fetchBytes, fetchJson, fetchOptionalJson, kuroHeaders, postFormJson } from '../http.ts'
+import { fetchJson, fetchOptionalJson, kuroHeaders, postFormJson } from '../http.ts'
 import { asArray, asNumber, asRecord, asString } from '../raw.ts'
 import { STATIC_ROOT } from './normalize.ts'
-import type { MapConfiguration, MapStatePayload, NavigationPointDraft } from './types.ts'
+import type { MapConfiguration, MapStatePayload } from './types.ts'
 
 const OFFICIAL_API = 'https://api.kurobbs.com'
 
@@ -74,21 +73,4 @@ export async function fetchStatePayloads(configuration: MapConfiguration): Promi
     ])
     return { state, positionData, layerData, catalogData, gravityData }
   }))
-}
-
-export async function fetchNavigationIconHashes(drafts: readonly NavigationPointDraft[]): Promise<Map<string, string | null>> {
-  const iconUrls = [...new Set(drafts
-    .filter(({ kind }) => kind !== 'boss')
-    .map(({ iconUrl: url }) => url)
-    .filter(Boolean))]
-  const hashEntries = await Promise.all(iconUrls.map(async (url) => {
-    try {
-      const bytes = await fetchBytes(url)
-      return [url, createHash('sha256').update(bytes).digest('hex')] as const
-    } catch (error) {
-      console.warn(`定位点图标下载失败，退回独立类型分组：${url}`, error)
-      return [url, null] as const
-    }
-  }))
-  return new Map(hashEntries)
 }

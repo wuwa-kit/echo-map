@@ -160,15 +160,17 @@ function onClosed(): void {
             v-for="option in filteredOptions"
             :key="option.value"
             type="button"
-            class="min-h-40px w-full min-w-0 flex cursor-pointer items-center justify-between gap-8px border-0 rounded-6px px-8px text-left text-12px font-inherit"
-            :class="selectedSet.has(option.value) ? 'bg-[#244b39] text-[#eafff2]' : 'bg-transparent text-[#dce9e3] hover:bg-[#1c372b]'"
+            class="min-h-40px w-full min-w-0 flex cursor-pointer items-center justify-between gap-8px border-0 rounded-6px bg-transparent px-8px text-left text-12px font-inherit transition-[color,background-color] duration-120 hover:bg-[#1c372b]"
+            :class="selectedSet.has(option.value) ? 'text-[#eafff2] font-600' : 'text-[#dce9e3]'"
             @click="toggle(option.value)"
           >
             <span class="min-w-0 flex items-center gap-8px">
               <img v-if="option.iconUrl" loading="lazy" decoding="async" class="h-24px w-24px shrink-0 object-contain" :src="option.iconUrl" />
               <span class="min-w-0 truncate">{{ option.label }}</span>
             </span>
-            <WuSvg v-if="selectedSet.has(option.value)" name="check" class="shrink-0 text-[var(--accent)] [--wu-svg-h:12px]" />
+            <span class="h-16px w-16px shrink-0">
+              <WuSvg v-if="selectedSet.has(option.value)" name="check" class="text-[var(--accent)] [--wu-svg-h:16px]" />
+            </span>
           </button>
         </div>
       </WuScrollArea>

@@ -4,7 +4,7 @@ import { MAP_POINT_ZOOM_RANGES, isMapPointVisibleAtZoom, isPointVisibleAtZoom, m
 import { mapZoomRangeSchema, regionLabelSchema } from '../src/domain/schema.ts'
 import { selectRegionLabels } from '../src/domain/explorer-selectors.ts'
 import type { MapDisplayPoint, RegionLabel } from '../src/domain/types.ts'
-import { referenceDataset } from './fixtures/point-library.ts'
+import { navigationTestDataset as referenceDataset } from './fixtures/navigation-points.ts'
 
 const label: RegionLabel = {
   id: 'test-region', name: '测试地区', stateId: 8, countryId: 1, level: 2,
@@ -29,11 +29,11 @@ describe('map point zoom visibility', () => {
     expect(isMapPointVisibleAtZoom(place, 8)).toBe(true)
   })
 
-  it('uses navigation kind for each point, independently of icon grouping or teleport mode', () => {
+  it('uses navigation type for each point, independently of icon grouping or teleport mode', () => {
     const point = referenceDataset.navigationPoints[0]
     if (!point) throw new Error('需要定位点测试数据')
-    const nexus: MapDisplayPoint = { category: 'navigation', location: { ...point, kind: 'nexus' } }
-    const service: MapDisplayPoint = { category: 'navigation', location: { ...point, kind: 'service' } }
+    const nexus: MapDisplayPoint = { category: 'navigation', location: { ...point, kind: 'nexus', pointType: 'central-beacon' } }
+    const service: MapDisplayPoint = { category: 'navigation', location: { ...point, kind: 'service', pointType: 'service' } }
     expect(isMapPointVisibleAtZoom(nexus, 0)).toBe(false)
     expect(isMapPointVisibleAtZoom(nexus, 1)).toBe(true)
     expect(isMapPointVisibleAtZoom(nexus, 2)).toBe(true)

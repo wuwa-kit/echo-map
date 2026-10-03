@@ -164,7 +164,7 @@ describe('route planning actions', () => {
     expect(store.routePlan).not.toBeNull()
   })
 
-  it('keeps the reported neighboring echoes on one walk instead of returning from the same nexus', async () => {
+  it('plans neighboring official echoes as a continuous walk without official teleport starts', async () => {
     planner.mockImplementation(async (input) => optimizeRoute(input))
     const store = useExplorerStore()
     store.setDataset(dataset)
@@ -182,10 +182,11 @@ describe('route planning actions', () => {
       { x: -462, y: -7939, z: 0 },
       { x: -506, y: -8016, z: 0 },
     ])
-    expect(route.points[first]?.teleportFrom?.coordinate).toEqual({ x: -333, y: -7803, z: 0 })
+    expect(route.points.every(({ teleportFrom }) => !teleportFrom)).toBe(true)
     expect(route.points[first + 1]?.teleportFrom).toBeUndefined()
     const input = planner.mock.calls[0]?.[0]
     if (!input) throw new Error('路线计算输入缺失')
+    expect(input.startPoints).toEqual([])
     expect(route.points).toHaveLength(input.points.length)
     expect(new Set(route.points.map(({ id }) => id))).toEqual(new Set(input.points.map(({ id }) => id)))
     const totalCost = route.points.reduce((cost, point, index) => {
@@ -193,7 +194,6 @@ describe('route planning actions', () => {
       return cost + (previous ? movementCost(previous, point, input) : 0)
     }, 0)
     expect(route.totalCost).toBeCloseTo(totalCost, 8)
-    expect(route.totalCost).toBeLessThan(30_000)
   }, 15_000)
 
   it('restores the combined mobile sheet and keeps the desktop preference independent', () => {

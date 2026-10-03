@@ -1,7 +1,7 @@
 import { officialMapAssetCatalogSchema } from '../domain/schema.ts'
-import { echoPointLibrarySchema, mapCatalogDataSchema, mapDataSchema, navigationPointLibrarySchema, officialEchoPointDataSchema, officialNavigationPointDataSchema } from '../domain/schema.ts'
+import { echoPointLibrarySchema, mapCatalogDataSchema, mapDataSchema, navigationPointLibrarySchema, officialEchoPointDataSchema } from '../domain/schema.ts'
 import { assembleMapDataset } from '../domain/map-data.ts'
-import type { MapDataset, OfficialEchoPointData, OfficialNavigationPointData, PointLibrary } from '../domain/types.ts'
+import type { MapDataset, OfficialEchoPointData, PointLibrary } from '../domain/types.ts'
 import { combinePointLibraryKinds, emptyPointLibrary, parsePointLibrary } from '../domain/point-library.ts'
 
 async function loadMapData() {
@@ -26,23 +26,14 @@ async function loadOfficialEchoPointData(): Promise<OfficialEchoPointData> {
   return officialEchoPointDataSchema.parse(await response.json())
 }
 
-async function loadOfficialNavigationPointData(): Promise<OfficialNavigationPointData> {
-  const response = await fetch('/data/official-navigation-points.json', { cache: 'no-store' })
-  if (response.status === 404) return { locations: [], library: emptyPointLibrary() }
-  if (!response.ok) throw new Error(`官方定位点加载失败：${response.status}`)
-  return officialNavigationPointDataSchema.parse(await response.json())
-}
-
 export async function loadMapDataset(): Promise<{ dataset: MapDataset, officialLibrary: PointLibrary }> {
-  const [map, catalog, officialEcho, officialNavigation] = await Promise.all([
-    loadMapData(), loadMapCatalogData(), loadOfficialEchoPointData(), loadOfficialNavigationPointData(),
+  const [map, catalog, officialEcho] = await Promise.all([
+    loadMapData(), loadMapCatalogData(), loadOfficialEchoPointData(),
   ])
   const dataset = assembleMapDataset(map, catalog, {
     echoLocations: officialEcho.locations,
-    navigationPoints: officialNavigation.locations,
   })
-  const officialLibrary = combinePointLibraryKinds(officialEcho.library, officialNavigation.library)
-  return { dataset, officialLibrary: parsePointLibrary(officialLibrary, dataset, 'official') }
+  return { dataset, officialLibrary: parsePointLibrary(officialEcho.library, dataset, 'official') }
 }
 
 export async function loadPointLibrary(dataset: MapDataset) {

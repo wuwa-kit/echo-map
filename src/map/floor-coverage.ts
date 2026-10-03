@@ -15,6 +15,7 @@ export function floorExtent(floor: MapFloorDefinition | undefined, tileWidth: nu
 export function createFloorCoverage(state: MapStateDefinition | null, tileWidth: number) {
   return (state?.layeredMaps ?? []).map((group) => ({
     id: group.id,
+    floors: group.floors,
     tiles: group.coverage.flatMap((tile) => {
       const extent = layeredTileExtent(tile.tile, tileWidth)
       return extent ? [{ ...tile, extent }] : []
@@ -23,6 +24,31 @@ export function createFloorCoverage(state: MapStateDefinition | null, tileWidth:
 }
 
 type Coverage = ReturnType<typeof createFloorCoverage>
+
+function tileContainsCoordinate(tile: Coverage[number]['tiles'][number], [x, y]: readonly [number, number]): boolean {
+  const { extent: [left, bottom, right, top], size, runs } = tile
+  if (x < left || x >= right || y <= bottom || y > top) return false
+  const column = Math.floor((x - left) * size / (right - left))
+  const row = Math.floor((top - y) * size / (top - bottom))
+  const pixel = row * size + column
+  let low = 0
+  let high = runs.length
+  while (low < high) {
+    const middle = (low + high) >>> 1
+    if ((runs[middle]?.[1] ?? 0) <= pixel) low = middle + 1
+    else high = middle
+  }
+  const run = runs[low]
+  return Boolean(run && run[0] <= pixel && pixel < run[1])
+}
+
+export function floorsAtCoordinate(coverage: Coverage, coordinate: readonly [number, number] | null): MapFloorDefinition[] {
+  if (!coordinate || !coordinate.every(Number.isFinite)) return []
+  return coverage.flatMap((group) => {
+    const tiles = new Set(group.tiles.filter((tile) => tileContainsCoordinate(tile, coordinate)).map(({ tile }) => tile))
+    return group.floors.filter((floor) => floor.tiles.some((path) => tiles.has(path.split('/').at(-1) ?? '')))
+  })
+}
 
 function tileIntersectsViewport(tile: Coverage[number]['tiles'][number], viewport: readonly [number, number, number, number]): boolean {
   const { extent: [left, bottom, right, top], size, runs } = tile

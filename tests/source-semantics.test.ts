@@ -10,9 +10,15 @@ const forbiddenPatterns = [
   /<label\b/i,
   /\balt\s*=/i,
   /\bsr-only\b/i,
-  /\.focus\s*\(/,
   /\.inert\b/,
 ]
+
+// Keyboard point entry resumes in the position field after saving.
+const keyboardEntryFocus = new Map([
+  [new URL('../src/components/base/WuCoordinateInput.vue', import.meta.url).href, "defineExpose({ focus: () => container.value?.querySelector('input')?.focus() })"],
+  [new URL('../src/components/PointCoordinateFields.vue', import.meta.url).href, 'defineExpose({ focus: () => coordinateInput.value?.focus() })'],
+  [new URL('../src/components/PointEditorPanel.vue', import.meta.url).href, 'if (active) positionFields.value?.focus()'],
+])
 
 async function collectSourceFiles(directory: URL): Promise<URL[]> {
   const entries = await readdir(directory, { withFileTypes: true })
@@ -35,6 +41,9 @@ describe('源码语义约束', () => {
       for (const pattern of forbiddenPatterns) {
         expect(source, `${file.pathname} 命中 ${pattern}`).not.toMatch(pattern)
       }
+      const allowedFocus = keyboardEntryFocus.get(file.href)
+      if (allowedFocus) expect(source).toContain(allowedFocus)
+      expect(allowedFocus ? source.replace(allowedFocus, '') : source, `${file.pathname} 包含未授权的焦点调用`).not.toMatch(/\.focus\s*\(/)
     }
   })
 })

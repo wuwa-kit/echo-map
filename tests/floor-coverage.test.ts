@@ -1,13 +1,43 @@
 import { describe, expect, it } from 'vitest'
 import { encodeFloorCoverage, mergeFloorAlpha } from '../scripts/lib/map/floor-coverage.ts'
 import { floorCoverageTileSchema, mapDataSchema } from '../src/domain/schema.ts'
-import { createFloorCoverage, floorGroupsInViewport } from '../src/map/floor-coverage.ts'
+import { createFloorCoverage, floorGroupsInViewport, floorsAtCoordinate } from '../src/map/floor-coverage.ts'
 import { readMapDataset, splitMapDataset } from '../scripts/lib/map-data.ts'
 import type { MapStateDefinition } from '../src/domain/types.ts'
 
 const dataset = await readMapDataset()
 
 describe('generated floor coverage', () => {
+  it('finds floors at a point using the occupied pixels and each floor’s tile list', () => {
+    const reference = dataset.states[0]
+    if (!reference) throw new Error('缺少地图数据')
+    const state: MapStateDefinition = { ...reference, layeredMaps: [
+      { id: 'a', name: '甲区域', coverage: [
+        { tile: '0_1.png', size: 4, runs: [[5, 6]] },
+        { tile: '-1_0.png', size: 4, runs: [[0, 16]] },
+      ], floors: [
+        { id: 'a1', name: '甲上层', layeredMapId: 'a', tiles: ['/a/1/0_1.png'] },
+        { id: 'a2', name: '甲下层', layeredMapId: 'a', tiles: ['/a/2/0_1.png', '/a/2/-1_0.png'] },
+        { id: 'a3', name: '无瓦片层', layeredMapId: 'a', tiles: [] },
+      ] },
+      { id: 'b', name: '乙区域', coverage: [{ tile: '0_1.png', size: 4, runs: [[5, 7]] }], floors: [
+        { id: 'b1', name: '乙层', layeredMapId: 'b', tiles: ['/b/1/0_1.png'] },
+      ] },
+    ] }
+    const coverage = createFloorCoverage(state, 4)
+    const idsAt = (coordinate: [number, number] | null) => floorsAtCoordinate(coverage, coordinate).map(({ id }) => id)
+    expect(idsAt([1.5, 2.5])).toEqual(['a1', 'a2', 'b1'])
+    expect(idsAt([2.5, 2.5])).toEqual(['b1'])
+    expect(idsAt([0.5, 2.5])).toEqual([])
+    expect(idsAt([-3, -1])).toEqual(['a2'])
+    expect(idsAt([-4, 0])).toEqual(['a2'])
+    expect(idsAt([0, 0])).toEqual([])
+    expect(idsAt([-4, -4])).toEqual([])
+    expect(idsAt([100, 100])).toEqual([])
+    expect(idsAt([Number.NaN, 2])).toEqual([])
+    expect(idsAt(null)).toEqual([])
+  })
+
   it('detects every group whose opaque footprint intersects the viewport', () => {
     const reference = dataset.states[0]
     if (!reference) throw new Error('缺少地图数据')
@@ -61,6 +91,9 @@ describe('generated floor coverage', () => {
     expect(floorGroupsInViewport(coverage, viewportAt(-6525.5, 455.5))).toEqual(['57'])
     expect(floorGroupsInViewport(coverage, viewportAt(-6744.5, -0.5))).toEqual(['58'])
     expect(floorGroupsInViewport(coverage, viewportAt(-7160, 1010))).toEqual([])
+    expect([...new Set(floorsAtCoordinate(coverage, [-6502.5, 450.5]).map(({ layeredMapId }) => layeredMapId))]).toEqual(['56'])
+    expect([...new Set(floorsAtCoordinate(coverage, [-6525.5, 455.5]).map(({ layeredMapId }) => layeredMapId))]).toEqual(['57'])
+    expect(floorsAtCoordinate(coverage, [-7160, 1010])).toEqual([])
     for (const state of dataset.states) {
       for (const group of state.layeredMaps) {
         const tiles = new Set(group.floors.flatMap(({ tiles }) => tiles.map((tile) => tile.split('/').at(-1))))

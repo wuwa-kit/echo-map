@@ -1,6 +1,8 @@
 import { z } from 'zod'
+import { navigationPointTypeIds, navigationPointTypes, navigationTypeErrors } from './navigation-point-types.ts'
+import { navigationIconById, navigationTypeIcons } from './navigation-icons.ts'
 import type { RefinementCtx } from 'zod'
-import type { MapDataset } from './types.ts'
+import type { MapDataset, NavigationKind, NavigationMode, NavigationPointType } from './types.ts'
 
 const finiteNumber = z.number().finite()
 const nullableString = z.string().nullable()
@@ -8,6 +10,12 @@ export const gravityTypeSchema = z.union([z.literal(1), z.literal(2)])
 
 export const officialAssetCategorySchema = z.enum(['echo', 'sonata', 'navigation', 'exploration', 'challenge', 'service', 'tile', 'floor', 'gravity'])
 const assetUrlSchema = z.string().url().startsWith('https://')
+export const navigationIconUrlSchema = z.url({ protocol: /^https$/u })
+export const navigationIconDefinitionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  url: navigationIconUrlSchema,
+}).strict()
 export const officialAssetSchema = z.object({
   id: z.string().min(1),
   category: officialAssetCategorySchema,
@@ -30,7 +38,7 @@ export const officialMapAssetCatalogSchema = z.object({
 }).strict().superRefine(({ assets }, context) => {
   const ids = new Set<string>()
   for (const asset of assets) {
-    if (!asset.categories.includes(asset.category) || asset.categories.some((category) => !['exploration', 'challenge', 'service'].includes(category))) context.addIssue({ code: 'custom', message: '地图目录包含未收录分类' })
+    if (!asset.categories.includes(asset.category) || asset.categories.some((category) => !['navigation', 'exploration', 'challenge', 'service'].includes(category))) context.addIssue({ code: 'custom', message: '地图目录包含未收录分类' })
     if (ids.has(asset.id)) context.addIssue({ code: 'custom', message: `重复地图目录资产：${asset.id}` })
     ids.add(asset.id)
   }
@@ -43,7 +51,7 @@ export const navigationKindSchema = z.enum([
   'nexus', 'beacon', 'tacet-field', 'training-ground', 'hologram', 'boss', 'domain',
   'endgame', 'challenge', 'service', 'local-transit', 'entrance', 'landmark', 'unknown',
 ])
-export const navigationPointTypeSchema = z.enum(['central-beacon', 'small-beacon', 'tacet-field', 'echo-settlement', 'weekly-boss', 'normal-boss', 'material-domain'])
+export const navigationPointTypeSchema = z.enum(navigationPointTypeIds)
 export const navigationModeSchema = z.enum(['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown'])
 
 const authoredCoordinateSchema = z.object({
@@ -78,8 +86,8 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     name: z.string().max(100),
     navigationKind: navigationKindSchema,
     pointType: navigationPointTypeSchema.optional(),
-    iconSourceId: z.string().min(1).optional(),
-    iconUrl: z.url({ protocol: /^https$/u }).optional(),
+    iconId: z.string().min(1).optional(),
+    iconUrl: navigationIconUrlSchema.optional(),
     mode: navigationModeSchema,
     teleportCoordinate: authoredCoordinateSchema.optional(),
   }).strict(),
@@ -97,11 +105,21 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
       issue('核验传送落点必须填写完整的整数 XYZ')
     }
     if (point.kind === 'echo' && point.members.length === 0) issue('刷取点至少需要一种怪物')
-    if (point.status === 'verified' && point.kind === 'navigation' && (!point.name.trim() || point.navigationKind === 'unknown' || point.mode === 'unknown')) {
-      issue('定位点需要名称、明确的类型和传送能力')
+    if (point.kind === 'navigation' && (!point.name.trim() || point.navigationKind === 'unknown' || point.mode === 'unknown')) {
+      issue('定位点需要名称和明确的传送能力')
     }
-    if (point.status === 'verified' && point.kind === 'navigation' && ['boss', 'domain', 'challenge'].includes(point.navigationKind) && point.mode !== 'fast-travel') {
-      issue('BOSS、副本与挑战定位点应标记为可直接传送')
+  }
+  if (point.kind === 'navigation') {
+    for (const message of navigationTypeErrors({ ...point, kind: point.navigationKind })) issue(message)
+    const rule = point.pointType ? navigationPointTypes[point.pointType] : undefined
+    const fixedName = rule?.names[0]
+    if (fixedName !== undefined && point.name !== fixedName) issue(`名称固定为“${fixedName}”，不允许自定义`)
+    if (point.iconId && !navigationIconById(point.iconId)) issue('定位点引用了未知图标')
+    if (point.iconId && point.iconUrl) issue('图标 ID 与自定义图标地址不能同时设置')
+    if (point.pointType && rule?.icons.length) {
+      const icons = navigationTypeIcons(point.pointType)
+      if (point.iconId && !icons.some(({ id }) => id === point.iconId)) issue('图标与类型不符')
+      if (point.iconUrl && !icons.some(({ url }) => url === point.iconUrl)) issue('图标不属于所选类型')
     }
   }
   if (point.kind === 'navigation' && point.teleportCoordinate && point.mode !== 'fast-travel') {
@@ -287,11 +305,12 @@ function validateMapGravity(dataset: Pick<MapDataset, 'states' | 'echoLocations'
 }
 
 function validateNavigationTeleportCoordinates(
-  dataset: { navigationPoints: readonly { mode: string, teleportCoordinate?: unknown }[] },
+  dataset: { navigationPoints: readonly { pointType?: NavigationPointType, kind: NavigationKind, mode: NavigationMode, teleportCoordinate?: unknown }[] },
   context: RefinementCtx,
   path: 'navigationPoints' | 'locations' = 'navigationPoints',
 ): void {
   dataset.navigationPoints.forEach((point, index) => {
+    for (const message of navigationTypeErrors(point)) context.addIssue({ code: 'custom', path: [path, index], message })
     if (point.teleportCoordinate && point.mode !== 'fast-travel') context.addIssue({
       code: 'custom', path: [path, index, 'teleportCoordinate'], message: '只有可直接传送的定位点可以填写传送落点',
     })
@@ -338,12 +357,6 @@ const mapDatasetObjectSchema = z.object({
     unmatchedEchoNames: z.array(z.string()),
     provisionalEchoLocationCount: z.number().int().nonnegative(),
     routeEligibleEchoLocationCount: z.number().int().nonnegative(),
-    navigationPointCount: z.number().int().nonnegative(),
-    navigationPointGroupCount: z.number().int().nonnegative(),
-    bossNavigationPointCount: z.number().int().nonnegative(),
-    challengeNavigationPointCount: z.number().int().nonnegative(),
-    navigationIconFetchFailureCount: z.number().int().nonnegative(),
-    routeEligibleNavigationPointCount: z.number().int().nonnegative(),
   }),
   ...wikiCatalogueShape,
   states: z.array(z.object({
@@ -429,6 +442,7 @@ const mapDatasetObjectSchema = z.object({
   })),
   navigationPoints: z.array(z.object({
     ...pointBaseShape,
+    pointType: navigationPointTypeSchema.optional(),
     teleportCoordinate: teleportCoordinateSchema.optional(),
     groupId: z.string().min(1),
     catalogCategoryId: z.string().min(1),
@@ -480,36 +494,21 @@ export const mapDataSchema = mapDatasetObjectSchema.pick({
 })
 
 export const mapCatalogDataSchema = mapDatasetObjectSchema.pick({
-  report: true, sonatas: true, echoes: true, navigationPointGroups: true,
+  report: true, sonatas: true, echoes: true,
 }).extend({
   source: sourceSchema.pick({ wikiFetchedAt: true }).extend({
     sourceUrls: sourceSchema.shape.sourceUrls.pick({ echoCatalogue: true, sonataCatalogue: true }).strict(),
   }).strict(),
-  pointIcons: z.array(z.object({
-    id: z.string().min(1),
-    typeId: pointBaseShape.typeId,
-    typeName: pointBaseShape.typeName,
-    iconUrl: pointBaseShape.iconUrl,
-  }).strict()).refine((icons) => new Set(icons.map(({ id }) => id)).size === icons.length, { message: '点位图标 ID 不能重复' }),
 }).strict().superRefine(validateSonataEchoIds)
 
 export const mapEchoLocationsSchema = z.array(mapDatasetObjectSchema.shape.echoLocations.element
   .omit({ iconUrl: true }).strict())
 
-export const mapNavigationPointsSchema = z.array(mapDatasetObjectSchema.shape.navigationPoints.element
-  .omit({ typeId: true, typeName: true, iconUrl: true }).extend({ iconId: z.string().min(1) }).strict())
-
 export const mapPointLocationsSchema = z.object({
   echoLocations: mapEchoLocationsSchema,
-  navigationPoints: mapNavigationPointsSchema,
-}).strict().superRefine(validateNavigationTeleportCoordinates)
+}).strict()
 
 export const officialEchoPointDataSchema = z.object({
   locations: mapEchoLocationsSchema,
   library: echoPointLibrarySchema,
 }).strict()
-
-export const officialNavigationPointDataSchema = z.object({
-  locations: mapNavigationPointsSchema,
-  library: navigationPointLibrarySchema,
-}).strict().superRefine(({ locations }, context) => validateNavigationTeleportCoordinates({ navigationPoints: locations }, context, 'locations'))

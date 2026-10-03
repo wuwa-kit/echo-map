@@ -8,6 +8,7 @@ import { useAssetsStore } from '../src/stores/assets.ts'
 import { referenceDataset } from './fixtures/point-library.ts'
 import { splitMapDataset } from '../scripts/lib/map-data.ts'
 import { PNG } from 'pngjs'
+import { navigationPoint } from './fixtures/navigation-points.ts'
 
 const mapAssets = normalizeMapAssets([{ state: { id: 8 }, catalogData: [
   { id: 'ts', name: '探索', children: [{ id: 'puzzle', name: '探索谜题', icon: 'icons/shared.png' }, { id: 'race', name: '竞速挑战', icon: 'icons/shared.png' }] },
@@ -17,7 +18,6 @@ const mapAssets = normalizeMapAssets([{ state: { id: 8 }, catalogData: [
 const assets = buildOfficialAssets(referenceDataset)
 const { map, catalog, locations } = splitMapDataset(referenceDataset)
 const officialEchoData = { locations: locations.echoLocations, library: { version: 1, points: [] } }
-const officialNavigationData = { locations: locations.navigationPoints, library: { version: 1, points: [] } }
 
 beforeEach(() => { setActivePinia(createPinia()) })
 
@@ -53,29 +53,14 @@ describe('official asset catalogue', () => {
     }
   })
 
-  it('merges shared URLs while preserving map associations, source IDs and distinct variants', () => {
-    const point = referenceDataset.navigationPoints[0]!
-    const otherState = referenceDataset.states.find(({ id }) => id !== point.stateId)!
-    const dataset = {
-      ...referenceDataset,
-      navigationPoints: [
-        point,
-        { ...point, id: 'other', typeId: 'other-type', typeName: '另一种地标', stateId: otherState.id },
-        { ...point, id: 'variant', iconUrl: 'https://web-static.kurobbs.com/variant.png' },
-        { ...point, id: 'missing', iconUrl: '' },
-        { ...point, id: 'unsafe', iconUrl: 'javascript:alert(1)' },
-      ],
-    }
-    const icons = buildOfficialAssets(dataset).filter(({ category }) => category === 'navigation')
-    expect(icons).toHaveLength(2)
-    const shared = icons.find(({ url }) => url === point.iconUrl)!
-    expect(shared.recordCount).toBe(2)
-    expect(shared.referenceIds).toEqual([point.typeId, 'other-type'])
-    expect(shared.stateIds).toEqual([point.stateId, otherState.id].sort((a, b) => a - b))
-    expect(shared.tags).toContain('另一种地标')
-    expect(shared.sourceUrl).toBe(dataset.source.sourceUrls.officialMap)
-    expect(shared.fetchedAt).toBe(dataset.source.mapFetchedAt)
-    expect(buildOfficialAssets({ ...dataset, navigationPoints: [...dataset.navigationPoints].reverse() }).map(({ id }) => id).sort()).toEqual(buildOfficialAssets(dataset).map(({ id }) => id).sort())
+  it('reads navigation names solely from the asset catalogue, independently of map points', () => {
+    const icon = mapAssets.assets[0]!
+    const navigationAsset = { ...icon, categories: ['navigation' as const], name: '测试定位点资产' }
+    const dataset = { ...referenceDataset, navigationPoints: [navigationPoint()] }
+    expect(buildOfficialAssets(dataset).filter(({ category }) => category === 'navigation')).toEqual([])
+    const assets = buildOfficialAssets(dataset, [navigationAsset])
+    expect(filterOfficialAssets(assets, 'navigation', 8, '测试定位点资产')).toHaveLength(1)
+    expect(buildOfficialAssets({ ...dataset, navigationPoints: [] }, [navigationAsset])).toEqual(assets)
   })
 
   it('builds original and preview tile URLs with negative coordinates and nested floors', () => {
@@ -140,12 +125,10 @@ describe('asset browser state', () => {
       .mockResolvedValueOnce(new Response(null, { status: 503, statusText: 'Unavailable' }))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
       .mockResolvedValueOnce(new Response(JSON.stringify(officialEchoData)))
-      .mockResolvedValueOnce(new Response(JSON.stringify(officialNavigationData)))
       .mockResolvedValueOnce(new Response(JSON.stringify(mapAssets)))
       .mockResolvedValueOnce(new Response(JSON.stringify(map)))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
       .mockResolvedValueOnce(new Response(JSON.stringify(officialEchoData)))
-      .mockResolvedValueOnce(new Response(JSON.stringify(officialNavigationData)))
       .mockResolvedValueOnce(new Response(JSON.stringify(mapAssets)))
     vi.stubGlobal('fetch', fetchMock)
     try {
@@ -167,14 +150,13 @@ describe('asset browser state', () => {
       .mockReturnValueOnce(response.promise)
       .mockResolvedValueOnce(new Response(JSON.stringify(catalog)))
       .mockResolvedValueOnce(new Response(JSON.stringify(officialEchoData)))
-      .mockResolvedValueOnce(new Response(JSON.stringify(officialNavigationData)))
       .mockResolvedValueOnce(new Response(JSON.stringify(mapAssets)))
     vi.stubGlobal('fetch', fetchMock)
     try {
       const store = useAssetsStore()
       const firstLoad = store.load()
       const secondLoad = store.load()
-      expect(fetchMock).toHaveBeenCalledTimes(5)
+      expect(fetchMock).toHaveBeenCalledTimes(4)
       response.resolve(new Response(JSON.stringify(map)))
       await Promise.all([firstLoad, secondLoad])
       expect(store.loading).toBe(false)
@@ -187,22 +169,38 @@ describe('asset browser state', () => {
 
 
 describe('complete official map categories', () => {
-  it('shares one asset across navigation and pixel-deduplicated catalog URL variants', () => {
-    const point = referenceDataset.navigationPoints[0]!
+  it('collects navigation names by catalog ID and table even when no location exists', () => {
+    const catalogData = [
+      { id: 'ts', name: '探索', children: [
+        { id: 'CS_01', name: '中枢信标', icon: 'beacon.png', count: 0 },
+        { id: 'other', name: '中枢信标', icon: 'other.png' },
+      ] },
+      { id: 'boss', name: 'BOSS', children: [{ id: '5034', name: '罗蕾莱', icon: 'boss.png' }] },
+      { id: '8', name: '挑战', children: [{ id: 'new-challenge', name: '新挑战', icon: 'challenge.png', tableName: '大地图-副本挑战' }] },
+      { id: '9', name: 'NPC及服务点', children: [{ id: 'new-service', name: '新服务', icon: 'service.png', tableName: '大地图-NPC' }] },
+    ]
+    const catalog = normalizeMapAssets([{ state: { id: 8 }, catalogData }], 'hash', '2026-10-01', {
+      types: {}, includeTableNames: { '大地图-副本挑战': 'challenge', '大地图-NPC': 'service' },
+    })
+    expect(filterOfficialAssets(catalog.assets, 'navigation', null, '').map(({ name }) => name)).toEqual(['中枢信标', '罗蕾莱', '新挑战', '新服务'])
+    expect(catalog.assets.every((asset) => !('coordinate' in asset) && !('location' in asset))).toBe(true)
+  })
+
+  it('preserves catalogue names, categories and alternate URLs without location records', () => {
     const icon = mapAssets.assets[0]!
     const alternateUrl = 'https://example.com/alternate.png'
-    const catalogIcon = { ...icon, name: '隐海修会 / 埃弗拉德金库', tags: [...icon.tags, alternateUrl] }
-    const combined = buildOfficialAssets({ ...referenceDataset, navigationPoints: [
-      { ...point, typeName: '隐海修会', iconUrl: icon.url },
-      { ...point, id: 'other', typeId: 'other-type', typeName: '埃弗拉德金库', iconUrl: alternateUrl },
-    ] }, [catalogIcon])
+    const catalogIcon = {
+      ...icon, name: '隐海修会 / 埃弗拉德金库', categories: [...icon.categories, 'navigation' as const],
+      tags: [...icon.tags, alternateUrl], referenceIds: [...icon.referenceIds, 'other-type'],
+    }
+    const combined = buildOfficialAssets(referenceDataset, [catalogIcon])
     const navigation = filterOfficialAssets(combined, 'navigation', null, '')
     expect(navigation).toHaveLength(1)
     expect(filterOfficialAssets(combined, 'all', null, '隐海修会')).toEqual(navigation)
     expect(filterOfficialAssets(combined, 'exploration', null, '埃弗拉德金库')).toEqual(navigation)
     expect(navigation[0]?.referenceIds).toContain('other-type')
     expect(navigation[0]?.tags).toContain(alternateUrl)
-    expect(catalogIcon.categories).toEqual(['exploration'])
+    expect(icon.categories).toEqual(['exploration'])
   })
 
   it('merges identical pixels across names and categories while preserving distinct images', async () => {

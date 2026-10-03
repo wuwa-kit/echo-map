@@ -29,7 +29,7 @@ export function parseCoordinateInteger(text: string): number | null {
 
 // Consume entire numeric-looking tokens so decimals, exponents and malformed signs
 // cannot be split into multiple valid coordinates. Letters around a token are not delimiters.
-export function extractCoordinateIntegers(text: string): CoordinateValue | null {
+function extractIntegers(text: string): number[] {
   const numbers: number[] = []
   const tokens = text.matchAll(/[+\-\d.]+(?:[eE][+\-\d.]*)?/gu)
   for (const token of tokens) {
@@ -41,32 +41,49 @@ export function extractCoordinateIntegers(text: string): CoordinateValue | null 
     numbers.push(value)
     if (numbers.length === 3) break
   }
-  const [x, y, z] = numbers
+  return numbers
+}
+
+export function extractCoordinateIntegers(text: string): CoordinateValue | null {
+  const [x, y, z] = extractIntegers(text)
   return x === undefined || y === undefined || z === undefined ? null : { x, y, z }
 }
 
-export function editCoordinateInput(state: CoordinateInputState, value: CoordinateValue, text: string, axis?: CoordinateAxis): CoordinateInputChange {
+export function coordinateInputXY(state: CoordinateInputState, value: CoordinateValue): [number, number] | null {
+  if (state.mode === 'combined' && state.textPending) {
+    const [x, y] = extractIntegers(state.text ?? '')
+    return x === undefined || y === undefined ? null : [x, y]
+  }
+  if (state.axisPending.x || state.axisPending.y || value.x === null || value.y === null) return null
+  return [value.x, value.y]
+}
+
+export function editCoordinateInput(state: CoordinateInputState, value: CoordinateValue, text: string, axis?: CoordinateAxis, allowEmpty = false): CoordinateInputChange {
   if (!axis) return { state: { ...state, text, textPending: true, invalid: false }, value, valid: true }
   const parsed = parseCoordinateInteger(text)
+  const valid = parsed !== null || allowEmpty && text.trim() === ''
   return {
     state: {
       ...state,
       axes: { ...state.axes, [axis]: text },
-      axisPending: { ...state.axisPending, [axis]: parsed === null },
+      axisPending: { ...state.axisPending, [axis]: !valid },
       text: state.textPending ? state.text : null,
       invalid: false,
     },
-    value: parsed === null ? value : { ...value, [axis]: parsed },
-    valid: parsed !== null,
+    value: valid ? { ...value, [axis]: parsed } : value,
+    valid,
   }
 }
 
-export function commitCoordinateInput(state: CoordinateInputState, value: CoordinateValue): CoordinateInputChange {
+export function commitCoordinateInput(state: CoordinateInputState, value: CoordinateValue, allowEmpty = false): CoordinateInputChange {
   if (state.mode === 'axes') {
     const valid = !Object.values(state.axisPending).some(Boolean)
     return { state: { ...state, invalid: !valid }, value, valid }
   }
   if (!state.textPending) return { state, value, valid: true }
+  if (allowEmpty && !state.text?.trim()) {
+    return { state: { ...emptyCoordinateInput(), mode: state.mode }, value: { x: null, y: null, z: null }, valid: true }
+  }
   const parsed = extractCoordinateIntegers(state.text ?? '')
   if (!parsed) return { state: { ...state, invalid: true }, value, valid: false }
   return {
@@ -77,7 +94,7 @@ export function commitCoordinateInput(state: CoordinateInputState, value: Coordi
     value: parsed, valid: true,
   }
 }
-export function switchCoordinateInput(state: CoordinateInputState, value: CoordinateValue, mode: CoordinateInputMode): CoordinateInputChange {
-  const result = commitCoordinateInput(state, value)
+export function switchCoordinateInput(state: CoordinateInputState, value: CoordinateValue, mode: CoordinateInputMode, allowEmpty = false): CoordinateInputChange {
+  const result = commitCoordinateInput(state, value, allowEmpty)
   return { ...result, state: { ...result.state, mode, invalid: false } }
 }
