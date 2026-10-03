@@ -1,62 +1,75 @@
-import { readFile } from 'node:fs/promises'
-import { expect, it } from 'vitest'
-import { assembleMapDataset } from '../src/domain/map-data.ts'
-import { combinePointLibraries } from '../src/domain/point-matching.ts'
-import { combinePointLibraryKinds, libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
-import { echoPointLibrarySchema, mapCatalogDataSchema, mapDataSchema, navigationPointLibrarySchema, officialEchoPointDataSchema } from '../src/domain/schema.ts'
+import { describe, expect, it } from 'vitest'
 import type { RoutePoint, RouteResult } from '../src/domain/types.ts'
 import { optimizeRoute } from '../src/route/optimizer.ts'
-import { createRoutePlanInput } from '../src/route/plan-input.ts'
-import { createRouteGroupCandidates } from '../src/route/route-groups.ts'
+import { fragmentRouteInput } from './fixtures/optimizer-fragments.ts'
 
-async function readJson(path: string): Promise<unknown> {
-  return JSON.parse(await readFile(new URL(path, import.meta.url), 'utf8'))
+function distance(left: RoutePoint, right: RoutePoint): number {
+  return Math.hypot(
+    left.coordinate.x - right.coordinate.x,
+    left.coordinate.y - right.coordinate.y,
+    left.coordinate.z - right.coordinate.z,
+  )
 }
 
-function routePointAt(points: readonly RoutePoint[], x: number, y: number, z: number): number {
-  const index = points.findIndex(({ coordinate }) => (
-    coordinate.x === x && coordinate.y === y && coordinate.z === z
-  ))
-  expect(index).toBeGreaterThanOrEqual(0)
-  return index
+function routeCost(points: readonly RoutePoint[], teleportCosts: ReadonlyMap<string, number>): number {
+  return points.reduce((total, point, index) => {
+    const previous = points[index - 1]
+    return total + Math.min(
+      previous ? distance(previous, point) : Infinity,
+      teleportCosts.get(point.id) ?? Infinity,
+    )
+  }, 0)
 }
 
-function walkingSegmentAt(points: RouteResult['points'], index: number): number {
-  return points.slice(0, index + 1).filter(({ teleportFrom }) => teleportFrom).length
+function walkingSegments(points: RouteResult['points']): RouteResult['points'][] {
+  const segments: RouteResult['points'][] = []
+  let current: RouteResult['points'] = []
+  for (const point of points) {
+    if (point.teleportFrom && current.length > 0) {
+      segments.push(current)
+      current = []
+    }
+    current.push(point)
+  }
+  if (current.length > 0) segments.push(current)
+  return segments
 }
 
-it('rejoins spatially adjacent full-selection fragments instead of teleporting back to the same area', async () => {
-  const map = mapDataSchema.parse(await readJson('../public/data/map-data.json'))
-  const catalog = mapCatalogDataSchema.parse(await readJson('../public/data/catalog-data.json'))
-  const officialEcho = officialEchoPointDataSchema.parse(await readJson('../public/data/official-echo-points.json'))
-  const dataset = assembleMapDataset(map, catalog, {
-    echoLocations: officialEcho.locations,
+describe('route fragment regression', () => {
+  it('joins walking fragments when their endpoints are cheaper to connect than teleporting again', () => {
+    const input = fragmentRouteInput()
+    const result = optimizeRoute(input)
+    expect(result.points).toHaveLength(input.points.length)
+    expect(new Set(result.points.map(({ id }) => id))).toEqual(new Set(input.points.map(({ id }) => id)))
+
+    const segments = walkingSegments(result.points)
+    expect(segments.length).toBeGreaterThan(1)
+    for (const from of segments) {
+      for (const to of segments) {
+        if (from === to) continue
+        const end = from.at(-1)
+        const start = to[0]
+        if (!end || !start?.teleportFrom) throw new Error('测试路线缺少步行分段或传送起点')
+        expect(distance(end, start) + 1e-6).toBeGreaterThanOrEqual(distance(start.teleportFrom, start))
+      }
+    }
   })
-  const official = parsePointLibrary(officialEcho.library, dataset, 'official')
-  const manualEcho = echoPointLibrarySchema.parse(await readJson('../public/data/custom-echo-points.json'))
-  const manualNavigation = navigationPointLibrarySchema.parse(await readJson('../public/data/custom-navigation-points.json'))
-  const manual = parsePointLibrary(combinePointLibraryKinds(manualEcho, manualNavigation), dataset, 'manual')
-  const library = combinePointLibraries({
-    ...manual,
-    points: manual.points.filter(({ status }) => status === 'verified'),
-  }, official)
-  const { echoLocations, navigationPoints } = libraryLocations(library, dataset)
-  const activeEchoIds = new Set(dataset.echoes.map(({ id }) => id))
-  const group = createRouteGroupCandidates(
-    dataset, echoLocations, navigationPoints, activeEchoIds, true,
-  ).find(({ id }) => id === '8:base:1')
-  expect(group).toBeDefined()
-  if (!group) return
 
-  const result = optimizeRoute(createRoutePlanInput(
-    dataset, group.locations, group.navigationPoints, group.stateId, activeEchoIds,
-  ))
-  const firstEnd = routePointAt(result.points, -858, 2570, 0)
-  const adjacentFragment = routePointAt(result.points, -864, 2616, 0)
-  const insertionAnchor = routePointAt(result.points, -907, 2701, 0)
-  const isolatedPoint = routePointAt(result.points, -942, 2689, 0)
-
-  expect(walkingSegmentAt(result.points, adjacentFragment)).toBe(walkingSegmentAt(result.points, firstEnd))
-  expect(walkingSegmentAt(result.points, isolatedPoint)).toBe(walkingSegmentAt(result.points, insertionAnchor))
-  expect(Math.abs(insertionAnchor - isolatedPoint)).toBe(1)
-}, 30_000)
+  // Without global relocation these targets remain isolated, although inserting
+  // them elsewhere saves travel. Check cost rather than one exact neighbor/order.
+  it.each(['target-17', 'target-63'])('places isolated %s where reinserting it cannot shorten the route', (id) => {
+    const input = fragmentRouteInput()
+    const result = optimizeRoute(input)
+    const isolated = result.points.find((point) => point.id === id)
+    if (!isolated) throw new Error(`测试路线缺少点位 ${id}`)
+    const remaining = result.points.filter((point) => point.id !== id)
+    const teleportCosts = new Map(input.points.map((point) => [
+      point.id, Math.min(...input.startPoints.map((start) => distance(start, point))),
+    ]))
+    expect(routeCost(result.points, teleportCosts)).toBeCloseTo(result.totalCost, 6)
+    for (let gap = 0; gap <= remaining.length; gap += 1) {
+      const candidate = [...remaining.slice(0, gap), isolated, ...remaining.slice(gap)]
+      expect(routeCost(candidate, teleportCosts) + 1e-6).toBeGreaterThanOrEqual(result.totalCost)
+    }
+  })
+})
