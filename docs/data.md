@@ -48,7 +48,7 @@ JSON 文件、点位导出和开发服务响应在序列化时省略对象中值
 
 ## 官方点与人工点
 
-官方与人工数据使用相同的点位结构。`data/manual/navigation/` 和 `data/manual/echo/` 分别保存人工定位点和声骸点，`data/generated/official-echo/` 保存官方声骸转换数据。点位没有草稿或核验状态字段；人工库中的记录均经过保存校验，未完成的表单只暂存在浏览器中。官方点通过 `officialIds` 保留来源，人工替代关系通过 `replacesOfficialIds` 表达。
+官方与人工数据使用相同的点位结构。`data/manual/navigation/` 和 `data/manual/echo/` 分别保存人工定位点和声骸点，`data/generated/official-echo/` 保存官方声骸转换数据。点位没有草稿或核验状态字段；人工库中的记录均经过保存校验，未完成的表单只保留在当前页面内存中，刷新或关闭页面后丢弃。官方点通过 `officialIds` 保留来源，人工替代关系通过 `replacesOfficialIds` 表达。
 
 `note` 是可选的人工备注。官方转换不再逐点保存模板说明或固定的 `compositionStatus: "partial"`；来源标识和合并数量由 `officialIds`、`members` 提供。运行时将缺省备注视为空文本、缺省清单状态视为未补齐，发布 JSON 也保持这些字段缺省。官方点仍明确保存 Z=0，人工备注和已补齐状态照常保留。
 

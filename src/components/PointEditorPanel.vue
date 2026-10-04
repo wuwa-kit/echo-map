@@ -31,7 +31,7 @@ const store = usePointEditorStore()
 const tabQuery = useRouteQuery<string>('editorTab', 'navigation', { mode: 'replace' })
 let active = true
 onBeforeUnmount(() => { active = false; store.resetPositionConfirmation() })
-const { dataset, draft, library, importPreview, allPoints, editorMode, hasUnsavedChanges, editing, dirty, busy, operation, error, notice, recovery, deleted, continueAdding, canContinueAdding, availableFloors, pointLevelId } = storeToRefs(store)
+const { dataset, draft, library, importPreview, allPoints, editorMode, hasUnsavedChanges, editing, dirty, busy, operation, error, notice, deleted, continueAdding, canContinueAdding, availableFloors, pointLevelId } = storeToRefs(store)
 const { start: expireUndo } = useTimeoutFn(store.dismissDeleted, 8000, { immediate: false })
 const importFile = useTemplateRef<HTMLInputElement>('importFileRef')
 const positionFields = useTemplateRef<InstanceType<typeof PointCoordinateFields>>('positionFieldsRef')
@@ -230,7 +230,6 @@ useEventListener(window, 'beforeunload', (event) => {
       <PointEditorDataPanel @close-requested="closeDataManagement" />
     </WuDialog>
     <WuDialog :open="pending !== null" :dismissible="!busy" @dismiss-requested="cancelPending"><div class="p-[20px]"><div class="mb-[16px] text-[14px]">当前修改尚未保存</div><div class="flex flex-wrap justify-end gap-[8px]"><WuButton :disabled="busy" @click="cancelPending">继续编辑</WuButton><WuButton :disabled="busy" @click="continuePending(false)">不保存</WuButton><WuButton variant="solid" tone="accent" :disabled="busy" :loading="operation === 'save'" @click="continuePending(true)">保存并继续</WuButton></div></div></WuDialog>
-    <WuDialog :open="recovery !== null" @dismiss-requested="store.dismissRecovery"><div class="p-[20px]"><div class="mb-[16px] text-[14px]">发现上次未保存的编辑</div><div class="flex justify-end gap-[8px]"><WuButton :disabled="busy" @click="store.dismissRecovery">忽略</WuButton><WuButton variant="solid" tone="accent" :disabled="busy" @click="store.recoverDraft">继续编辑</WuButton></div></div></WuDialog>
     <WuDialog :open="candidates.length > 1" @dismiss-requested="candidates = []"><div class="p-[16px]"><div class="mb-[12px] text-[14px]">选择此处点位</div><WuScrollArea class="max-h-[320px]"><button v-for="point in candidatePoints" :key="point.id" type="button" class="mb-[6px] min-h-[40px] w-full cursor-pointer rounded-[7px] border border-[var(--line)] bg-[#142a22] px-[12px] text-left text-[12px] text-[#c7dfd2] hover:bg-[#1c3b2d]" @click="selectPoint(point.id)">{{ dataset ? pointTitle(point, dataset) : '' }}{{ isOfficialPoint(point) ? ' · 官方只读' : '' }}</button></WuScrollArea></div></WuDialog>
   </div>
 </template>

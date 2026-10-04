@@ -6,7 +6,7 @@ import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
 import { navigationPointTypeSchema, navigationIconUrlSchema } from '../domain/schema.ts'
-import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointDraft, parsePointLibrary } from '../domain/point-library.ts'
+import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
 import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision } from '../domain/types.ts'
 import type { NavigationMode, NavigationPointType } from '../domain/types.ts'
 import { combinePointLibraries } from '../domain/point-matching.ts'
@@ -17,9 +17,7 @@ import type { GravityType } from '../domain/types.ts'
 import { createFloorCoverage, floorsAtCoordinate } from '../map/floor-coverage.ts'
 import { gameToMapCoordinate } from '../map/projection.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
-import { serializeJson } from '../utils/json.ts'
 
-const DRAFT_KEY = 'echo-map:point-editor:draft:v1'
 const CONTINUE_ADDING_KEY = 'echo-map:point-editor:continue-adding:v1'
 const RECENT_TYPES_KEY = 'echo-map:point-editor:recent-saved-types:v1'
 const RECENT_TYPES_LIMIT = 4
@@ -31,7 +29,6 @@ interface EditorForm {
   arrivalInput: CoordinateInputState
   draft: AuthoredPoint | null
   baseline: string
-  recovery: AuthoredPoint | null
   monsterSearch: string
   coordinateText: string
   teleportCoordinateText: string
@@ -39,7 +36,7 @@ interface EditorForm {
   inputErrors: Record<string, string>
 }
 function emptyForm(): EditorForm {
-  return { positionInput: emptyCoordinateInput(), arrivalInput: emptyCoordinateInput(), draft: null, baseline: '', recovery: null, monsterSearch: '', coordinateText: '', teleportCoordinateText: '', inputValues: {}, inputErrors: {} }
+  return { positionInput: emptyCoordinateInput(), arrivalInput: emptyCoordinateInput(), draft: null, baseline: '', monsterSearch: '', coordinateText: '', teleportCoordinateText: '', inputValues: {}, inputErrors: {} }
 }
 function formDirty(form: EditorForm): boolean {
   return form.draft !== null && (JSON.stringify(form.draft) !== form.baseline || Object.keys(form.inputErrors).length > 0 || coordinateInputPending(form.positionInput) || coordinateInputPending(form.arrivalInput))
@@ -92,7 +89,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const pointLevelId = computed(() => availableFloors.value.some(({ id }) => id === draft.value?.levelId) ? draft.value?.levelId ?? null : null)
   const completePoints = computed(() => freeze(combinePointLibraries(library.value, officialLibrary.value), true).points)
   const baseline = formField('baseline')
-  const recovery = formField('recovery')
   const deleted = shallowRef<AuthoredPoint | null>(null)
   const importPreview = shallowRef<PointLibrary | null>(null)
   const monsterSearch = formField('monsterSearch')
@@ -110,17 +106,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     && !draft.value.replacesOfficialIds?.length
     && !library.value.points.some(({ id }) => id === draft.value?.id))
   const allPoints = completePoints
-  const hasUnsavedChanges = computed(() => Object.values(forms.value).some((form) => formDirty(form) || form.recovery !== null))
-
-  function cacheDraft(): void {
-    try {
-      if (recovery.value) return
-      if (draft.value && editing.value && dirty.value) localStorage.setItem(`${DRAFT_KEY}:${editorMode.value}`, serializeJson(draft.value))
-      else localStorage.removeItem(`${DRAFT_KEY}:${editorMode.value}`)
-    } catch {
-      notice.value = '自动暂存不可用，请保存后再离开。'
-    }
-  }
+  const hasUnsavedChanges = computed(() => Object.values(forms.value).some(formDirty))
 
   function openDraft(point: AuthoredPoint): void {
     resetPositionConfirmation()
@@ -149,7 +135,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (busy.value || kind === editorMode.value) return
     resetPositionConfirmation()
     const context = draft.value
-    cacheDraft()
     editorMode.value = kind
     error.value = ''
     notice.value = ''
@@ -171,7 +156,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     }
     openDraft(kind === 'echo' ? { ...base, kind, compositionStatus: 'partial', members: [] } : { ...base, kind, name: '', navigationKind: 'landmark', mode: 'landmark' })
     error.value = ''
-    cacheDraft()
   }
 
   function selectPoint(id: string): void {
@@ -186,7 +170,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (!canSwitch()) return
     openDraft(point)
     error.value = ''
-    cacheDraft()
   }
 
   function edit(recipe: (point: AuthoredPoint) => void): void {
@@ -195,7 +178,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     reconcilePointLevel()
     error.value = ''
     notice.value = ''
-    cacheDraft()
   }
 
   function reconcilePointLevel(): void {
@@ -240,7 +222,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     })
     if (!teleport) reconcilePointLevel()
     error.value = ''
-    cacheDraft()
   }
 
   function setCoordinate(axis: 'x' | 'y' | 'z', value: string): void {
@@ -349,7 +330,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
         ? context.gravityType
         : null
     }))
-    cacheDraft()
   }
 
   function addMember(echoId: string): void {
@@ -490,25 +470,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       officialLibrary.value = freeze(official, true)
       revision.value = snapshot.revision
       storage.value = snapshot.storage
-      for (const kind of ['echo', 'navigation'] as const) {
-        if (forms.value[kind].draft) continue
-        try {
-          const cached = localStorage.getItem(`${DRAFT_KEY}:${kind}`)
-          if (!cached) continue
-          const point = parsePointDraft(JSON.parse(cached), reference)
-          if (point.kind === kind) forms.value = produce(forms.value, (state) => { state[kind].recovery = point })
-        } catch { /* Ignore invalid cached input. */ }
-      }
       notice.value = ''
     } catch (failure) { error.value = failure instanceof Error ? failure.message : String(failure) }
     finally { operation.value = null }
-    if (dataset.value && revision.value && !draft.value) {
-      const pendingRecovery = recovery.value
-      // Keep recovery set while creating the blank editor so cacheDraft cannot erase it.
-      newPoint()
-      recovery.value = pendingRecovery
-      if (pendingRecovery) { try { localStorage.setItem(`${DRAFT_KEY}:${editorMode.value}`, serializeJson(pendingRecovery)) } catch { /* Recovery remains available in memory. */ } }
-    }
+    if (dataset.value && revision.value && !draft.value) newPoint()
   }
 
   async function commit(next: PointLibrary, action: 'save' | 'delete' | 'undo' | 'import'): Promise<boolean> {
@@ -570,7 +535,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (await commit(next, 'save')) {
       if (saved.kind === 'navigation' && saved.pointType) rememberPointType(saved.pointType)
       openDraft(saved)
-      recovery.value = null
       if (addNext && saved.kind === 'navigation') {
         newPoint('navigation')
         setPointType(saved.pointType ?? null)
@@ -581,7 +545,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
         }
         notice.value = '保存成功'
       }
-      cacheDraft()
       return true
     }
     return false
@@ -590,9 +553,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   async function saveAllForms(): Promise<boolean> {
     const previous = editorMode.value
     for (const kind of ['echo', 'navigation'] as const) {
-      if (!formDirty(forms.value[kind]) && !forms.value[kind].recovery) continue
+      if (!formDirty(forms.value[kind])) continue
       switchEditorTab(kind)
-      if (recovery.value) recoverDraft()
       if (!await savePoint({ continueAdding: false })) return false
     }
     switchEditorTab(previous)
@@ -619,10 +581,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       baseline.value = JSON.stringify(draft.value)
       newPoint(draft.value?.kind)
     }
-    recovery.value = null
     error.value = ''
     notice.value = ''
-    cacheDraft()
   }
 
   function resetSession(): void {
@@ -634,9 +594,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     importPreview.value = null
     error.value = ''
     notice.value = ''
-    for (const kind of ['echo', 'navigation']) {
-      try { localStorage.removeItem(`${DRAFT_KEY}:${kind}`) } catch { /* Session is cleared in memory. */ }
-    }
   }
 
   function closeEditor(): void {
@@ -752,16 +709,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       }
   }
 
-  function recoverDraft(): void {
-    if (!recovery.value || !canSwitch()) return
-    const cached = recovery.value
-    const saved = library.value.points.find(({ id }) => id === cached.id)
-    openDraft(cached)
-    baseline.value = saved ? JSON.stringify(saved) : ''
-    recovery.value = null
-    cacheDraft()
-  }
-
   function previewImport(text: string): void {
     if (!dataset.value || !canSwitch()) return
     importPreview.value = null
@@ -812,11 +759,11 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     retryMapTiles: () => { mapTileError.value = false; mapTileRetry.value += 1 },
     officialLibrary: shallowReadonly(officialLibrary),
     dataset: shallowReadonly(dataset), library: shallowReadonly(library), draft: shallowReadonly(draft), storage: shallowReadonly(storage),
-    recovery: shallowReadonly(recovery), deleted: shallowReadonly(deleted), importPreview: shallowReadonly(importPreview),
+    deleted: shallowReadonly(deleted), importPreview: shallowReadonly(importPreview),
     monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy, operation: shallowReadonly(operation), dirty,
     setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, addMember, setMemberCount, adjustMemberCount, removeMember,
-    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, undoDelete, recoverDraft, previewImport, applyImport,
+    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, undoDelete, previewImport, applyImport,
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
     setTeleportCoordinateText: (value: string) => { teleportCoordinateText.value = value },
@@ -848,10 +795,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     dismissMessage: () => {
       error.value = ''
       notice.value = ''
-    },
-    dismissRecovery: () => {
-      recovery.value = null
-      cacheDraft()
     },
   }
 })

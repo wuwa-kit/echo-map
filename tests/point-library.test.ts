@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { editorLibraryLocations, parsePointDraft, parsePointLibrary, libraryLocations, parseCoordinateInput } from '../src/domain/point-library.ts'
+import { editorLibraryLocations, parsePointLibrary, libraryLocations, parseCoordinateInput } from '../src/domain/point-library.ts'
 import { createRoutePlanInput } from '../src/route/plan-input.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import { echoComposition } from '../src/map/echo-composition.ts'
@@ -103,12 +103,10 @@ describe('authored point library', () => {
     expect(() => parsePointLibrary({ version: 1, points: [point()] }, referenceDataset)).toThrow()
   })
 
-  it('allows incomplete form recovery but rejects incomplete records before persistence', () => {
+  it('renders incomplete form positions but rejects incomplete records before persistence', () => {
     const draft = { ...mixedPoint(), members: [], coordinate: { x: 1, y: 2, z: null } }
-    expect(parsePointDraft(draft, referenceDataset)).toEqual(draft)
     expect(() => parsePointLibrary({ version: 1, points: [draft] }, referenceDataset)).toThrow('完整的整数 XYZ')
     expect(editorLibraryLocations([draft], referenceDataset, 'echo').echoLocations[0]?.gameCoordinate).toBeNull()
-    expect(() => parsePointDraft({ ...draft, stateId: -1 }, referenceDataset)).toThrow('未知地图')
     expect(() => parsePointLibrary({ version: 1, points: [mixedPoint(), mixedPoint()] }, referenceDataset)).toThrow('重复点位 ID')
   })
 
@@ -185,6 +183,5 @@ it('accepts an unset navigation type on saved points and validates rules when a 
   }
   expect(parsePointLibrary({ version: 1, points: [navigation] }, referenceDataset).points[0]).toEqual(navigation)
   expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, mode: 'unknown' }] }, referenceDataset)).toThrow('传送能力')
-  expect(parsePointDraft(navigation, referenceDataset)).not.toHaveProperty('pointType')
   expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, pointType: 'invalid' }] }, referenceDataset)).toThrow()
 })

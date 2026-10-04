@@ -1,4 +1,4 @@
-import { authoredPointSchema, pointLibrarySchema } from './schema.ts'
+import { pointLibrarySchema } from './schema.ts'
 import type { AuthoredCoordinate, AuthoredPoint, EchoMapLocation, AuthoredEchoLocation, GameCoordinate, MapDataset, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointLibrary, PointQuality } from './types.ts'
 import { gameToMapCoordinate, officialToMapCoordinate } from '../map/projection.ts'
 import { navigationPointTypes } from './navigation-point-types.ts'
@@ -63,12 +63,6 @@ function validatePointReferences(points: readonly AuthoredPoint[], dataset: Poin
       throw new Error(`点位 ${point.id} 引用了白名单外声骸`)
     }
   }
-}
-
-export function parsePointDraft(value: unknown, dataset: PointReferenceDataset): AuthoredPoint {
-  const point = authoredPointSchema.parse(value)
-  validatePointReferences([point], dataset, 'manual')
-  return point
 }
 
 export function parsePointLibrary(value: unknown, dataset: PointReferenceDataset, source?: 'manual' | 'official'): PointLibrary {

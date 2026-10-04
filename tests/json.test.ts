@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { serializeJson } from '../src/utils/json.ts'
-import { libraryLocations, parsePointDraft, parsePointLibrary } from '../src/domain/point-library.ts'
+import { libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
 import { mapDatasetSchema, mapZoomRangeSchema } from '../src/domain/schema.ts'
 import { mixedPoint, referenceDataset } from './fixtures/point-library.ts'
 
@@ -16,7 +16,7 @@ describe('JSON serialization without null object fields', () => {
     expect(() => serializeJson(undefined)).toThrow('序列化')
   })
 
-  it('restores omitted point metadata and empty coordinate inputs without accepting incomplete saved points', () => {
+  it('restores omitted point metadata without accepting incomplete saved points', () => {
     const point = mixedPoint()
     const library = { version: 1, points: [point] }
     const json = serializeJson(library)
@@ -27,7 +27,6 @@ describe('JSON serialization without null object fields', () => {
     const incomplete = { ...point, coordinate: { x: 0, y: null, z: null } }
     const input: unknown = JSON.parse(serializeJson(incomplete))
     expect(input).toHaveProperty('coordinate', { x: 0 })
-    expect(parsePointDraft(input, referenceDataset)).toEqual(incomplete)
     expect(() => parsePointLibrary({ version: 1, points: [input] }, referenceDataset, 'manual')).toThrow('完整的整数 XYZ')
   })
 
