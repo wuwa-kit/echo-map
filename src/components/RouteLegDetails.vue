@@ -42,17 +42,17 @@ function copyDebug(): void {
       <WuButton variant="ghost" size="sm" icon="close" icon-only tooltip="关闭" @click="emit('close')"></WuButton>
     </div>
 
-    <div class="mt-[12px] grid grid-cols-[52px_1fr] gap-x-[8px] gap-y-[4px]">
+    <div class="mt-[12px] grid grid-cols-[max-content_1fr] gap-x-[8px] gap-y-[4px]">
       <span class="text-[#789789]">起点</span><span class="min-w-0 text-[#d7eee3] wrap-break-word">{{ details.from.name }}</span>
-      <span class="text-[#789789]">XYZ</span><span class="font-mono text-[#a9cbb9]">{{ coordinateText(details.from) }}</span>
+      <span class="text-[#789789]">计算 XYZ</span><span class="font-mono text-[#a9cbb9]">{{ coordinateText(details.from) }}</span>
       <span class="text-[#789789]">终点</span><span class="min-w-0 text-[#d7eee3] wrap-break-word">{{ details.to.name }}</span>
-      <span class="text-[#789789]">XYZ</span><span class="font-mono text-[#a9cbb9]">{{ coordinateText(details.to) }}</span>
+      <span class="text-[#789789]">计算 XYZ</span><span class="font-mono text-[#a9cbb9]">{{ coordinateText(details.to) }}</span>
       <span class="text-[#789789]">距离</span><span class="font-mono text-[#75efc3]">{{ details.distance.toFixed(2) }}</span>
     </div>
 
     <div v-if="details.type === 'teleport' && details.previous" class="mt-[10px] rounded-[7px] bg-[#152b23] p-[9px] text-[11px] text-[#9fb8ac]">
       <div>传送前目标：{{ details.previous.name }}</div>
-      <div class="mt-[3px] font-mono">XYZ {{ coordinateText(details.previous) }}</div>
+      <div class="mt-[3px] font-mono">计算 XYZ {{ coordinateText(details.previous) }}</div>
       <div v-if="details.previousDistance !== null" class="mt-[3px]">若直接前往当前目标：{{ details.previousDistance.toFixed(2) }}</div>
     </div>
 

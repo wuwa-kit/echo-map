@@ -5,8 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import { planRouteInWorker } from '../src/route/worker-client.ts'
 import { movementCost, optimizeRoute } from '../src/route/optimizer.ts'
-import type { RouteResult } from '../src/domain/types.ts'
+import type { AuthoredEchoPoint, AuthoredNavigationPoint, RouteResult } from '../src/domain/types.ts'
 import { echoMembers } from '../src/domain/point-library.ts'
+import { mapToGameCoordinate } from '../src/map/projection.ts'
 
 vi.mock('../src/route/worker-client.ts')
 const planner = vi.mocked(planRouteInWorker)
@@ -95,6 +96,57 @@ describe('route planning actions', () => {
     await store.planRoute()
     expect(store.routeError).toBe('')
     expect(store.route).toEqual(result)
+  })
+
+  it.each(['planRoute', 'planAllRoutes'] as const)('%s normalizes legacy starts while preserving Mengzhou and source coordinates', async (action) => {
+    const echoId = dataset.echoes[0]?.id
+    if (!echoId) throw new Error('测试数据缺少声骸')
+    const contexts = ['今州城', '玄方城', '梦枢天罗'].map((name, index) => {
+      const label = dataset.regionLabels.find((region) => region.name === name)
+      if (!label) throw new Error(`缺少测试地区：${name}`)
+      const [x, y] = mapToGameCoordinate(label.coordinate.mapX, label.coordinate.mapY, dataset.source.tileWidth)
+      const echo: AuthoredEchoPoint = {
+        id: `echo-${index}`, kind: 'echo', stateId: label.stateId, levelId: null, gravityType: 1,
+        coordinate: { x: Math.round(x), y: Math.round(y), z: index === 0 ? 0 : 40 },
+        members: [{ echoId, count: 1 }],
+        ...(index === 0 ? { officialIds: ['official-test'] } : {}),
+      }
+      const navigation: AuthoredNavigationPoint = {
+        id: `navigation-${index}`, kind: 'navigation', stateId: label.stateId, levelId: null, gravityType: 1,
+        name, navigationKind: 'beacon', mode: 'fast-travel',
+        coordinate: { ...echo.coordinate, x: Math.round(x) - 10, z: 300 },
+        teleportCoordinate: { ...echo.coordinate, x: Math.round(x) - 5, z: 400 },
+      }
+      return { echo, navigation, expectedZ: index === 0 ? 0 : 400 }
+    })
+    const store = useExplorerStore()
+    store.setDataset(dataset)
+    store.setPointLibrary({ version: 1, points: contexts.flatMap(({ echo, navigation }) => (
+      echo.officialIds ? [navigation] : [navigation, echo]
+    )) })
+    store.setOfficialPointLibrary({ version: 1, points: contexts.flatMap(({ echo }) => echo.officialIds ? [echo] : []) })
+    store.toggleEcho(echoId)
+    planner.mockImplementation(async (input) => optimizeRoute(input))
+
+    await store[action]()
+
+    expect(store.routeError).toBe('')
+    expect(planner).toHaveBeenCalledTimes(action === 'planRoute' ? 1 : 2)
+    const starts = planner.mock.calls.flatMap(([input]) => input.startPoints)
+    const expected = contexts.filter(({ navigation }) => action === 'planAllRoutes' || navigation.stateId === 8)
+    expect(starts).toHaveLength(expected.length)
+    for (const { navigation, expectedZ } of expected) {
+      expect(starts.find(({ id }) => id === navigation.id)).toMatchObject({
+        coordinate: { ...navigation.teleportCoordinate, z: expectedZ }, isTeleportArrival: true,
+      })
+      expect(store.allNavigationPoints.find(({ id }) => id === navigation.id)).toMatchObject({
+        gameCoordinate: navigation.coordinate, teleportCoordinate: navigation.teleportCoordinate,
+      })
+    }
+    const routes = store.routePlan?.groups.map(({ route }) => route) ?? [store.route]
+    expect(routes.flatMap((route) => route?.points ?? []).find(({ id }) => id === 'echo-0')?.teleportFrom).toMatchObject({
+      id: 'navigation-0', coordinate: { z: 0 },
+    })
   })
 
   it('plans every populated map context independently and keeps the plan while switching maps', async () => {

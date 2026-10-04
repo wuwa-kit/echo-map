@@ -1,5 +1,6 @@
 import type { EchoMapLocation, MapDataset, NavigationPoint, PointLocationBase, RoutePoint } from '../domain/types.ts'
 import { navigationRouteCoordinate } from '../domain/point-library.ts'
+import { isOfficialEchoMapIncluded } from '../domain/official-echo-scope.ts'
 import { gameToMapCoordinate } from '../map/projection.ts'
 import type { RoutePlanInput } from './optimizer.ts'
 
@@ -26,8 +27,12 @@ export function createRoutePlanInput(
     }
   }
   function toStartRoutePoint(location: NavigationPoint): RoutePoint {
-    const coordinate = navigationRouteCoordinate(location)
-    if (!coordinate) throw new Error(`传送点 ${location.id} 缺少 XYZ`)
+    const sourceCoordinate = navigationRouteCoordinate(location)
+    if (!sourceCoordinate) throw new Error(`传送点 ${location.id} 缺少 XYZ`)
+    // Match the placeholder height of official echoes without changing authored coordinates.
+    const coordinate = dataset && isOfficialEchoMapIncluded(
+      dataset, location.stateId, [location.coordinate.mapX, location.coordinate.mapY],
+    ) ? { ...sourceCoordinate, z: 0 } : sourceCoordinate
     const isTeleportArrival = location.teleportCoordinate !== undefined
     return {
       id: location.id,
