@@ -33,6 +33,31 @@ beforeEach(() => {
 })
 
 describe('point management actions', () => {
+  it('shows no browser management rows until a local edit exists and removes a row when it is reverted', async () => {
+    const store = usePointEditorStore()
+    await store.load()
+    expect(store.managedPoints).toEqual([])
+    expect(store.library.points.map(point => point.id)).toEqual(['published'])
+    store.selectPoint('published')
+    store.setNote('本地修改')
+    expect(await store.savePoint()).toBe(true)
+    expect(store.managedPoints).toHaveLength(1)
+    expect(store.managedPoints[0]).toMatchObject({ id: 'published', operation: 'modified', status: 'pending' })
+    expect(await store.managePoints(['published'], 'published')).toBe(true)
+    expect(store.managedPoints).toEqual([])
+    expect(store.library.points.map(point => point.id)).toEqual(['published'])
+  })
+
+  it('continues listing and exporting project files when using the project editor', async () => {
+    const library = { version: 1 as const, points: [navigation('project')] }
+    vi.mocked(readEditorLibrary).mockResolvedValue({ library, revision: {}, storage: 'project' })
+    const store = usePointEditorStore()
+    await store.load()
+    expect(store.managedPoints.map(row => row.id)).toEqual(['project'])
+    expect(store.managedPoints[0]?.operation).toBeNull()
+    expect(store.createPointExport('navigation')?.data).toEqual(library)
+  })
+
   it('exports only selected changes of the requested kind, with full workspace available as a separate backup', async () => {
     stored = editWorkspace(stored, { version: 1, points: [...stored.published.points, navigation('a'), navigation('b'), mixedPoint()] })
     const store = usePointEditorStore()
@@ -57,7 +82,7 @@ describe('point management actions', () => {
     expect(store.createPointExport('navigation')).toBeNull()
     expect(store.createPointExport('navigation', undefined, true)).not.toBeNull()
     expect(await store.managePoints(['published'], 'local')).toBe(true)
-    expect(store.managedPoints[0]?.status).toBe('modified')
+    expect(store.managedPoints[0]).toMatchObject({ operation: 'modified', status: 'pending' })
     expect(store.workspace?.changes[0]?.before?.note).toBe('website')
     expect(store.createPointExport('navigation')).not.toBeNull()
   })
@@ -77,7 +102,7 @@ describe('point management actions', () => {
     await store.load()
     expect(await store.managePoints(['published'], 'delete')).toBe(true)
     expect(store.library.points).toEqual([])
-    expect(store.managedPoints[0]?.status).toBe('deleted')
+    expect(store.managedPoints[0]).toMatchObject({ operation: 'deleted', status: 'pending' })
     expect(await store.managePoints(['published'], 'published')).toBe(true)
     expect(store.library.points.map(point => point.id)).toEqual(['published'])
   })

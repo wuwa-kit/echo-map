@@ -202,7 +202,8 @@ export interface PointWorkspace {
   changes: LocalPointChange[]
 }
 
-export type LocalPointStatus = 'published' | 'added' | 'modified' | 'deleted' | 'adopted' | 'conflict' | 'review'
+export type LocalPointOperation = 'added' | 'modified' | 'deleted'
+export type LocalPointStatus = 'pending' | 'adopted' | 'conflict' | 'review'
 
 export interface PointManagementRow {
   id: string
@@ -210,7 +211,8 @@ export interface PointManagementRow {
   before: AuthoredPoint | null
   local: AuthoredPoint | null
   published: AuthoredPoint | null
-  status: LocalPointStatus
+  operation: LocalPointOperation | null
+  status: LocalPointStatus | 'published'
   duplicateIds: string[]
 }
 

@@ -9,13 +9,39 @@ const library = (...points: AuthoredPoint[]): PointLibrary => ({ version: 1, poi
 const workspace = (...points: AuthoredPoint[]): PointWorkspace => ({ version: 1, published: library(...points), changes: [] })
 
 describe('local point synchronization', () => {
+  it('lists only the three local operation kinds and leaves untouched published points on the map', () => {
+    const untouched = mixedPoint('untouched')
+    const changed = mixedPoint('changed')
+    const deleted = mixedPoint('deleted')
+    const added = mixedPoint('added')
+    const state = editWorkspace(workspace(untouched, changed, deleted), library(untouched, { ...changed, note: '本地修改' }, added))
+    expect(managementRows(workspace(untouched, changed, deleted))).toEqual([])
+    expect(managementRows(state).map(row => [row.id, row.operation, row.status])).toEqual([
+      ['changed', 'modified', 'pending'], ['deleted', 'deleted', 'pending'], ['added', 'added', 'pending'],
+    ])
+    expect(workspaceLibrary(state).points.map(point => point.id)).toEqual(['untouched', 'changed', 'added'])
+    expect(managementRows(resolveWorkspace(state, ['changed', 'deleted', 'added'], 'published'))).toEqual([])
+  })
+
+  it('keeps operation kinds independent from adoption and conflict status', () => {
+    const original = mixedPoint('modified')
+    const added = mixedPoint('added')
+    const deleted = mixedPoint('deleted')
+    const local = editWorkspace(workspace(original, deleted), library({ ...original, note: '本地版本' }, added))
+    const updated = { ...local, published: library({ ...original, note: '网站版本' }, added) }
+    expect(managementRows(updated).map(row => [row.id, row.operation, row.status])).toEqual([
+      ['modified', 'modified', 'conflict'], ['deleted', 'deleted', 'adopted'], ['added', 'added', 'adopted'],
+    ])
+    expect(managementRows(resolveWorkspace(updated, ['added', 'deleted'], 'cleanup')).map(row => row.id)).toEqual(['modified'])
+  })
+
   it('preserves local edits while adopting unrelated website updates', () => {
     const original = mixedPoint()
     const local = { ...original, note: '本地修改' }
     const edited = editWorkspace(workspace(original), library(local))
     const updated = { ...edited, published: library(original, mixedPoint('new-published')) }
     expect(workspaceLibrary(updated).points).toEqual([local, mixedPoint('new-published')])
-    expect(managementRows(updated).find(row => row.id === original.id)?.status).toBe('modified')
+    expect(managementRows(updated).find(row => row.id === original.id)).toMatchObject({ operation: 'modified', status: 'pending' })
     expect(edited.changes[0]?.before).toEqual(original)
   })
 
@@ -42,7 +68,7 @@ describe('local point synchronization', () => {
     expect(managementRows(editedAgain)[0]?.status).toBe('conflict')
     const keepLocal = resolveWorkspace(updated, [original.id], 'local')
     expect(keepLocal.changes[0]?.before).toEqual(remote)
-    expect(managementRows(keepLocal)[0]?.status).toBe('modified')
+    expect(managementRows(keepLocal)[0]).toMatchObject({ operation: 'modified', status: 'pending' })
     const keepWebsite = resolveWorkspace(updated, [original.id], 'published')
     expect(keepWebsite.changes).toEqual([])
     expect(workspaceLibrary(keepWebsite)).toEqual(library(remote))
@@ -51,7 +77,7 @@ describe('local point synchronization', () => {
   it('tracks deletion, distinguishes website edits from adoption, and can restore a deleted point', () => {
     const original = mixedPoint()
     const deleted = editWorkspace(workspace(original), library())
-    expect(managementRows(deleted)[0]?.status).toBe('deleted')
+    expect(managementRows(deleted)[0]).toMatchObject({ operation: 'deleted', status: 'pending' })
     expect(workspaceLibrary(deleted).points).toEqual([])
     expect(managementRows({ ...deleted, published: library({ ...original, note: '更新' }) })[0]?.status).toBe('conflict')
     expect(managementRows({ ...deleted, published: library() })[0]?.status).toBe('adopted')
@@ -78,7 +104,7 @@ describe('local point synchronization', () => {
     expect(reviewed.changes).toHaveLength(1)
     expect(managementRows(reviewed)[0]?.status).toBe('review')
     expect(workspaceLibrary(reviewed).points).toEqual([local, mixedPoint('new')])
-    expect(managementRows(resolveWorkspace(reviewed, [point.id], 'local'))[0]?.status).toBe('modified')
+    expect(managementRows(resolveWorkspace(reviewed, [point.id], 'local'))[0]).toMatchObject({ operation: 'modified', status: 'pending' })
   })
 
   it('only suggests nearby duplicates of a compatible type, floor, gravity and height', () => {

@@ -11,7 +11,8 @@ import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
 import { projectPath, readJson } from './lib/files.ts'
 import { parsePointLibrary, splitPointLibrary } from '../src/domain/point-library.ts'
-import { parsePointWorkspace } from '../src/domain/local-points.ts'
+import { changeOperation, changeStatus, parsePointWorkspace } from '../src/domain/local-points.ts'
+import { localPointOperationSchema, localPointStatusSchema } from '../src/domain/schema.ts'
 import { readMapDataset, readOfficialPointData } from './lib/map-data.ts'
 import { inferOfficialEchoCountryId, OFFICIAL_ECHO_MERGE_DIAMETER } from './lib/official-point-library.ts'
 
@@ -30,6 +31,11 @@ for (const asset of assets) {
 }
 const pointLibrary = await readPointLibrary(projectPath('data', 'manual'), dataset, 'manual')
 parsePointWorkspace({ version: 1, published: pointLibrary, changes: [] }, dataset)
+for (const point of pointLibrary.points) {
+  const change = { id: point.id, before: null, after: point, needsReview: false }
+  localPointOperationSchema.parse(changeOperation(change))
+  localPointStatusSchema.parse(changeStatus(change, point))
+}
 const manual = splitPointLibrary(pointLibrary)
 const official = await readOfficialPointData(dataset)
 const officialEcho = officialEchoPointDataSchema.parse(official.echo)

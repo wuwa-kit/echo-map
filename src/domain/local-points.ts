@@ -1,5 +1,5 @@
 import { produce } from 'immer'
-import type { AuthoredPoint, LocalPointChange, LocalPointStatus, PointLibrary, PointManagementRow, PointWorkspace } from './types.ts'
+import type { AuthoredPoint, LocalPointChange, LocalPointOperation, LocalPointStatus, PointLibrary, PointManagementRow, PointWorkspace } from './types.ts'
 import type { MapDataset } from './types.ts'
 import { pointWorkspaceSchema } from './schema.ts'
 import { parsePointLibrary } from './point-library.ts'
@@ -43,6 +43,10 @@ export function changeStatus(change: LocalPointChange, published: AuthoredPoint 
   if (change.needsReview) return 'review'
   if (samePoint(change.after, published)) return 'adopted'
   if (!samePoint(change.before, published)) return 'conflict'
+  return 'pending'
+}
+
+export function changeOperation(change: LocalPointChange): LocalPointOperation {
   return !change.after ? 'deleted' : change.before ? 'modified' : 'added'
 }
 
@@ -100,7 +104,6 @@ function similarPoint(a: AuthoredPoint, b: AuthoredPoint): boolean {
 
 export function managementRows(workspace: PointWorkspace): PointManagementRow[] {
   const published = new Map(workspace.published.points.map(point => [point.id, point]))
-  const changes = new Map(workspace.changes.map(change => [change.id, change]))
   const cells = new Map<string, AuthoredPoint[]>()
   for (const point of published.values()) {
     const key = pointCell(point)
@@ -108,13 +111,13 @@ export function managementRows(workspace: PointWorkspace): PointManagementRow[] 
     cell.push(point)
     cells.set(key, cell)
   }
-  return [...new Set([...changes.keys(), ...published.keys()])].flatMap(id => {
-    const change = changes.get(id)
+  return workspace.changes.flatMap(change => {
+    const id = change.id
     const current = published.get(id) ?? null
-    const point = change?.after ?? current ?? change?.before
+    const point = change.after ?? change.before
     if (!point) return []
     const duplicateIds: string[] = []
-    if (change?.after && !current) {
+    if (change.after && !current) {
       for (const dx of [-1, 0, 1]) for (const dy of [-1, 0, 1]) {
         for (const candidate of cells.get(pointCell(point, dx, dy)) ?? []) {
           const a = point.coordinate
@@ -124,8 +127,12 @@ export function managementRows(workspace: PointWorkspace): PointManagementRow[] 
         }
       }
     }
-    return [{ id, point, before: change?.before ?? null, local: change ? change.after : current, published: current, status: change ? changeStatus(change, current) : 'published', duplicateIds }]
+    return [{ id, point, before: change.before, local: change.after, published: current, operation: changeOperation(change), status: changeStatus(change, current), duplicateIds }]
   })
+}
+
+export function projectManagementRows(library: PointLibrary): PointManagementRow[] {
+  return library.points.map(point => ({ id: point.id, point, before: point, local: point, published: point, operation: null, status: 'published', duplicateIds: [] }))
 }
 
 export function pointExportFilename(title: string, date = new Date()): string {

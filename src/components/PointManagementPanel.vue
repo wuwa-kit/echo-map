@@ -5,7 +5,8 @@ import { useRouteQuery } from '@vueuse/router'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { usePointManagementStore } from '../stores/point-management.ts'
 import type { PointManagementAction } from '../stores/point-management.ts'
-import type { AuthoredPoint, LocalPointStatus } from '../domain/types.ts'
+import type { AuthoredPoint, LocalPointOperation, LocalPointStatus, PointManagementRow } from '../domain/types.ts'
+import { localPointOperationSchema, localPointStatusSchema } from '../domain/schema.ts'
 import { pointTitle, MODE_NAMES, NAVIGATION_NAMES } from '../domain/point-library.ts'
 import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { pointRegionResolver } from '../domain/point-region.ts'
@@ -22,12 +23,14 @@ import WuScrollArea from './base/WuScrollArea.vue'
 const emit = defineEmits<{ closeRequested: []; editRequested: [id: string]; locateRequested: [point: AuthoredPoint]; changed: [] }>()
 const editor = usePointEditorStore()
 const manager = usePointManagementStore()
-const { managedPoints, dataset, storage, busy, hasUnsavedChanges, error, notice, operation } = storeToRefs(editor)
+const { managedPoints, workspace, dataset, storage, busy, hasUnsavedChanges, error, notice, operation } = storeToRefs(editor)
 const { search, selected, detailId, pending, page } = storeToRefs(manager)
 const details = useTemplateRef<HTMLElement>('detailsRef')
 const kindQuery = useRouteQuery<string>('pointsKind', 'navigation', { mode: 'replace' })
 const mapQuery = useRouteQuery<string>('pointsMap', '', { mode: 'replace' })
 const statusQuery = useRouteQuery<string>('pointsStatus', 'all', { mode: 'replace' })
+const operationQuery = useRouteQuery<string>('pointsOperation', 'all', { mode: 'replace' })
+const duplicateQuery = useRouteQuery<string>('pointsDuplicate', '0', { mode: 'replace' })
 const kind = computed(() => kindQuery.value === 'echo' ? 'echo' : 'navigation')
 const regions = computed(() => {
   const reference = dataset.value
@@ -40,8 +43,12 @@ const mapOptions = computed(() => [
   ...[...new Map([...regions.value.values()].flatMap(region => region ? [[region.id, region] as const] : [])).values()].map(region => ({ value: `region:${region.id}`, label: region.label })),
 ])
 const mapId = computed(() => mapOptions.value.some(option => option.value === mapQuery.value) ? mapQuery.value : '')
-const statuses: Record<LocalPointStatus, string> = { published: '已发布', added: '本地新增', modified: '本地修改', deleted: '本地删除', adopted: '已收录', conflict: '存在冲突', review: '待确认' }
-const status = computed(() => ['all', 'local', 'duplicate', ...Object.keys(statuses)].includes(statusQuery.value) ? statusQuery.value : 'all')
+const operations: Record<LocalPointOperation, string> = { added: '新增点位', modified: '修改官方点位', deleted: '删除官方点位' }
+const statuses: Record<LocalPointStatus, string> = { pending: '待收录', adopted: '已收录', conflict: '存在冲突', review: '待确认' }
+const status = computed(() => localPointStatusSchema.safeParse(statusQuery.value).data ?? 'all')
+const operationFilter = computed(() => localPointOperationSchema.safeParse(operationQuery.value).data ?? 'all')
+const duplicatesOnly = computed(() => duplicateQuery.value === '1')
+const statusLabel = (row: PointManagementRow) => row.status === 'published' ? '项目点位' : statuses[row.status]
 const stateNames = computed(() => new Map(dataset.value?.states.map(state => [state.id, state.name]) ?? []))
 const floorNames = computed(() => new Map(dataset.value?.states.flatMap(state => state.layeredMaps.flatMap(map => map.floors.map(floor => [floor.id, floor.name] as const))) ?? []))
 const title = (point: AuthoredPoint) => dataset.value ? pointTitle(point, dataset.value) : point.id
@@ -52,7 +59,9 @@ const filtered = computed(() => {
   const query = search.value.trim().toLocaleLowerCase()
   return managedPoints.value.filter(row => row.point.kind === kind.value
     && (!mapId.value || String(row.point.stateId) === mapId.value || `region:${regions.value.get(row.id)?.id}` === mapId.value)
-    && (storage.value === 'project' || status.value === 'all' || (status.value === 'local' ? row.status !== 'published' : status.value === 'duplicate' ? row.duplicateIds.length > 0 : row.status === status.value))
+    && (storage.value === 'project' || operationFilter.value === 'all' || row.operation === operationFilter.value)
+    && (storage.value === 'project' || status.value === 'all' || row.status === status.value)
+    && (storage.value === 'project' || !duplicatesOnly.value || row.duplicateIds.length > 0)
     && (!query || `${title(row.point)} ${regionName(row.point)} ${row.id} ${coordinates(row.point)} ${row.point.note ?? ''}`.toLocaleLowerCase().includes(query)))
 })
 const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / 50)))
@@ -62,6 +71,13 @@ const selectedIds = computed(() => new Set(selected.value))
 const selectedRows = computed(() => filtered.value.filter(row => selectedIds.value.has(row.id)))
 const allChecked = computed(() => visible.value.length > 0 && visible.value.every(row => selectedIds.value.has(row.id)))
 const detail = computed(() => managedPoints.value.find(row => row.id === detailId.value))
+const duplicatePoints = computed(() => {
+  const ids = new Set(detail.value?.duplicateIds ?? [])
+  return workspace.value?.published.points.filter(point => ids.has(point.id)) ?? []
+})
+const emptyMessage = computed(() => storage.value === 'browser'
+  ? managedPoints.value.length ? '当前筛选下没有本地修改记录' : '还没有本地修改。可在地图上新增、编辑或删除点位。'
+  : '当前范围没有点位')
 const canChange = computed(() => !busy.value && !hasUnsavedChanges.value)
 async function showDetail(id: string): Promise<void> {
   manager.showDetail(id)
@@ -91,9 +107,11 @@ const comparison = computed(() => {
   const versions = [values(detail.value.status === 'published' ? detail.value.published : detail.value.before), values(detail.value.local), values(detail.value.published)]
   return [...new Set(versions.flatMap(value => Object.keys(value)))].map(label => ({ label, values: versions.map(value => value[label] ?? '—') }))
 })
-function filter(field: 'kind' | 'map' | 'status', value: string | number | null): void {
+function filter(field: 'kind' | 'map' | 'status' | 'operation' | 'duplicate', value: string | number | null): void {
   if (field === 'kind') kindQuery.value = value === 'echo' ? 'echo' : 'navigation'
   else if (field === 'map') mapQuery.value = String(value ?? '')
+  else if (field === 'operation') operationQuery.value = String(value ?? 'all')
+  else if (field === 'duplicate') duplicateQuery.value = value === '1' ? '1' : '0'
   else statusQuery.value = String(value ?? 'all')
   manager.resetSelection()
 }
@@ -118,15 +136,17 @@ function exportChanges(): void {
 <template>
   <div class="flex h-[min(820px,calc(100dvh-48px))] flex-col max-sm:h-dvh">
     <div class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-[20px] py-[14px]">
-      <div><div class="text-[18px] font-semibold">{{ storage === 'browser' ? '本地点位管理' : '项目点位管理' }}</div><div class="mt-[4px] text-[12px] text-[#91ae9e]">{{ storage === 'browser' ? '管理本地修改，对比网站更新' : '管理当前项目已保存的人工点位' }}</div></div>
+      <div><div class="text-[18px] font-semibold">{{ storage === 'browser' ? '本地点位管理' : '项目点位管理' }}</div><div class="mt-[4px] text-[12px] text-[#91ae9e]">{{ storage === 'browser' ? '仅显示本地新增、修改和删除记录' : '管理当前项目已保存的人工点位' }}</div></div>
       <WuButton variant="ghost" :disabled="busy" @click="emit('closeRequested')">关闭</WuButton>
     </div>
     <div class="flex shrink-0 flex-wrap gap-[8px] p-[14px]">
       <WuSelect class="!w-[130px]" :model-value="kind" @update:model-value="filter('kind', $event)"><WuOption value="navigation">定位点</WuOption><WuOption value="echo">声骸点位</WuOption></WuSelect>
       <WuSelect class="!w-[180px] grow" :model-value="mapId" @update:model-value="filter('map', $event)"><WuOption value="">全部地图 / 地区</WuOption><WuOption v-for="option in mapOptions" :key="option.value" :value="option.value">{{ option.label }}</WuOption></WuSelect>
-      <WuSelect v-if="storage === 'browser'" class="!w-[130px]" :model-value="status" @update:model-value="filter('status', $event)"><WuOption value="all">全部状态</WuOption><WuOption value="local">本地记录</WuOption><WuOption v-for="(label, value) in statuses" :key="value" :value="value">{{ label }}</WuOption><WuOption value="duplicate">疑似重复</WuOption></WuSelect>
+      <WuSelect v-if="storage === 'browser'" class="!w-[140px]" :model-value="operationFilter" @update:model-value="filter('operation', $event)"><WuOption value="all">全部操作类型</WuOption><WuOption v-for="(label, value) in operations" :key="value" :value="value">{{ label }}</WuOption></WuSelect>
+      <WuSelect v-if="storage === 'browser'" class="!w-[130px]" :model-value="status" @update:model-value="filter('status', $event)"><WuOption value="all">全部同步状态</WuOption><WuOption v-for="(label, value) in statuses" :key="value" :value="value">{{ label }}</WuOption></WuSelect>
       <WuInput class="min-w-[160px] flex-1" :model-value="search" placeholder="搜索名称、坐标或备注" @update:model-value="manager.setSearch" />
       <WuButton :disabled="!canChange" :loading="operation === 'load'" @click="refresh">检查更新</WuButton>
+      <WuCheckBox v-if="storage === 'browser'" class="flex items-center gap-[6px] text-[12px] text-[#91ae9e]" :model-value="duplicatesOnly" @update:model-value="filter('duplicate', $event ? '1' : '0')">仅疑似重复</WuCheckBox>
     </div>
     <div v-if="hasUnsavedChanges" class="px-[16px] pb-[10px] text-[12px] text-[#dec594]">请先保存编辑表单；导出仅包含已保存内容。</div>
     <div v-if="error || notice" class="px-[16px] pb-[10px] text-[13px]" :class="error ? 'text-[#ffad9f]' : 'text-[#91ae9e]'">{{ error || notice }}</div>
@@ -134,30 +154,36 @@ function exportChanges(): void {
       <div class="mb-[10px] flex items-center gap-[8px] text-[12px] text-[#91ae9e] md:hidden"><WuCheckBox :model-value="allChecked" @update:model-value="manager.selectMany(visible.map(row => row.id), $event)" />选择本页</div>
       <div class="grid gap-[8px] md:hidden">
         <div v-for="row in visible" :key="row.id" class="rounded-[8px] border border-[var(--line)] p-[12px]">
-          <div class="flex items-center gap-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /><span class="min-w-0 flex-1 truncate text-[14px]">{{ title(row.point) }}</span><span class="text-[12px] text-[#dec594]">{{ storage === 'project' ? '项目点位' : statuses[row.status] }}</span></div>
+          <div class="flex items-center gap-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /><span class="min-w-0 flex-1 truncate text-[14px]">{{ title(row.point) }}</span><span class="text-[12px] text-[#dec594]">{{ statusLabel(row) }}</span></div>
+          <div v-if="row.operation" class="mt-[8px] text-[12px] text-[#d7eadf]">{{ operations[row.operation] }}</div>
           <div class="mt-[8px] text-[12px] leading-6 text-[#91ae9e]">{{ regionName(row.point) }} · {{ floor(row.point) }}<div>{{ coordinates(row.point) }}<span v-if="row.duplicateIds.length" class="ml-[10px] text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</span></div></div>
           <div class="mt-[8px] flex gap-[8px]"><WuButton size="sm" @click="emit('locateRequested', row.point)">定位</WuButton><WuButton size="sm" :disabled="!row.local || busy" @click="emit('editRequested', row.id)">编辑</WuButton><WuButton size="sm" tone="accent" @click="showDetail(row.id)">详情</WuButton></div>
         </div>
       </div>
       <div class="hidden overflow-x-auto md:block">
         <table class="w-full min-w-[760px] border-collapse text-left text-[13px]">
-          <thead class="text-[#91ae9e]"><tr class="border-b border-[var(--line)]"><th class="w-[36px] p-[10px]"><WuCheckBox :model-value="allChecked" :indeterminate="!allChecked && visible.some(row => selectedIds.has(row.id))" @update:model-value="manager.selectMany(visible.map(row => row.id), $event)" /></th><th class="p-[10px]">点位 / 坐标</th><th class="p-[10px]">地图 / 楼层</th><th class="p-[10px]">状态</th><th class="p-[10px]">操作</th></tr></thead>
+          <thead class="text-[#91ae9e]"><tr class="border-b border-[var(--line)]"><th class="w-[36px] p-[10px]"><WuCheckBox :model-value="allChecked" :indeterminate="!allChecked && visible.some(row => selectedIds.has(row.id))" @update:model-value="manager.selectMany(visible.map(row => row.id), $event)" /></th><th class="p-[10px]">点位 / 坐标</th><th class="p-[10px]">地图 / 楼层</th><th v-if="storage === 'browser'" class="p-[10px]">操作类型</th><th class="p-[10px]">{{ storage === 'browser' ? '同步状态' : '状态' }}</th><th class="p-[10px]">管理</th></tr></thead>
           <tbody><tr v-for="row in visible" :key="row.id" class="border-b border-[var(--line)]" :class="detailId === row.id ? 'bg-[#1b392d]' : 'hover:bg-[#173025]'">
             <td class="p-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /></td>
             <td class="max-w-[250px] p-[10px]"><div class="truncate">{{ title(row.point) }}</div><div class="mt-[4px] text-[12px] text-[#91ae9e]">{{ coordinates(row.point) }}</div></td>
             <td class="p-[10px]"><div>{{ regionName(row.point) }}</div><div class="mt-[4px] text-[12px] text-[#91ae9e]">{{ floor(row.point) }}</div></td>
-            <td class="p-[10px]"><span :class="row.status === 'conflict' || row.status === 'review' ? 'text-[#dec594]' : 'text-[#91ae9e]'">{{ storage === 'project' ? '项目点位' : statuses[row.status] }}</span><div v-if="row.duplicateIds.length" class="mt-[4px] text-[12px] text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</div></td>
+            <td v-if="storage === 'browser'" class="p-[10px]">{{ row.operation ? operations[row.operation] : '' }}</td>
+            <td class="p-[10px]"><span :class="row.status === 'conflict' || row.status === 'review' ? 'text-[#dec594]' : 'text-[#91ae9e]'">{{ statusLabel(row) }}</span><div v-if="row.duplicateIds.length" class="mt-[4px] text-[12px] text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</div></td>
             <td class="p-[10px]"><div class="flex gap-[8px]"><WuButton size="sm" variant="ghost" @click="emit('locateRequested', row.point)">定位</WuButton><WuButton size="sm" variant="ghost" :disabled="!row.local || busy" @click="emit('editRequested', row.id)">编辑</WuButton><WuButton size="sm" variant="ghost" tone="accent" @click="showDetail(row.id)">详情</WuButton></div></td>
           </tr></tbody>
         </table>
       </div>
-      <div v-if="!filtered.length" class="py-[60px] text-center text-[14px] text-[#91ae9e]">当前范围没有点位</div>
+      <div v-if="!filtered.length" class="py-[60px] text-center text-[14px] text-[#91ae9e]">{{ emptyMessage }}</div>
       <div v-if="detail" ref="detailsRef" class="order-first mb-[18px] rounded-[8px] border border-[var(--line)] bg-[#0b1e17] p-[14px]">
         <div class="flex items-center justify-between gap-[8px]"><span class="font-semibold">{{ title(detail.point) }} · 版本对比</span><WuButton variant="ghost" size="sm" @click="manager.showDetail(null)">收起</WuButton></div>
         <div class="mt-[6px] break-all text-[11px] text-[#91ae9e]">{{ detail.id }}</div>
         <div v-if="detail.status === 'review'" class="mt-[10px] text-[12px] text-[#dec594]">旧快照缺少修改前的版本，请核对网站内容后选择保留哪一版。</div>
         <div class="mt-[12px] overflow-x-auto"><table class="w-full min-w-[650px] table-fixed text-left text-[12px]"><thead><tr><th class="w-[90px] p-[8px]">字段</th><th class="p-[8px]">{{ detail.status === 'review' ? '首次对比参考' : '修改前' }}</th><th class="p-[8px]">本地版本</th><th class="p-[8px]">网站版本</th></tr></thead><tbody><tr v-for="field in comparison" :key="field.label" class="border-t border-[var(--line)]"><td class="p-[8px] text-[#91ae9e]">{{ field.label }}</td><td v-for="(value, index) in field.values" :key="index" class="break-all p-[8px]" :class="field.values[1] !== field.values[2] && index > 0 ? 'text-[#dec594]' : ''">{{ value }}</td></tr></tbody></table></div>
-        <div v-if="detail.duplicateIds.length" class="mt-[12px] flex flex-wrap items-center gap-[8px] text-[12px] text-[#dec594]"><span>附近的已发布点位：</span><WuButton v-for="id in detail.duplicateIds" :key="id" size="sm" @click="showDetail(id)">{{ title(managedPoints.find(row => row.id === id)?.point ?? detail.point) }}</WuButton><span>距离接近仅作为提示，请核对后再移除本地新增点。</span></div>
+        <div v-if="duplicatePoints.length" class="mt-[12px] text-[12px] text-[#dec594]">
+          <div>附近的已发布点位，仅供核对：</div>
+          <div v-for="point in duplicatePoints" :key="point.id" class="mt-[8px] flex flex-wrap items-center gap-[8px]"><span>{{ title(point) }} · {{ floor(point) }} · {{ coordinates(point) }}</span><WuButton size="sm" @click="emit('locateRequested', point)">定位</WuButton></div>
+          <div class="mt-[8px]">距离接近仅作为提示，请核对后再移除本地新增点。</div>
+        </div>
         <div v-if="storage === 'browser' && detail.status !== 'published'" class="mt-[14px] flex flex-wrap gap-[8px]">
           <WuButton v-if="detail.status === 'adopted'" :disabled="!canChange" @click="request('cleanup', [detail.id])">清理本地副本</WuButton>
           <WuButton v-else :disabled="!canChange" @click="request('published', [detail.id])">{{ detail.published ? '使用网站版本' : '移除本地记录' }}</WuButton>

@@ -8,7 +8,7 @@ import { freeze, produce } from 'immer'
 import { navigationPointTypeSchema, navigationIconUrlSchema, pointTransferSchema } from '../domain/schema.ts'
 import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
 import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision, PointWorkspace } from '../domain/types.ts'
-import { editWorkspace, managementRows, parsePointWorkspace, pointExportFilename, resolveWorkspace, samePoint, workspaceLibrary } from '../domain/local-points.ts'
+import { editWorkspace, managementRows, parsePointWorkspace, pointExportFilename, projectManagementRows, resolveWorkspace, samePoint, workspaceLibrary } from '../domain/local-points.ts'
 import type { NavigationMode, NavigationPointType } from '../domain/types.ts'
 import { combinePointLibraries } from '../domain/point-matching.ts'
 import { readEditorLibrary, saveEditorLibrary } from '../data/editor-client.ts'
@@ -56,7 +56,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const importWorkspace = shallowRef<PointWorkspace | null>(null)
   const importReplaceAll = shallowRef(true)
   const importLabel = shallowRef('替换全部人工点位')
-  const managedPoints = computed(() => freeze(managementRows(workspace.value ?? { version: 1, published: library.value, changes: [] }), true))
+  const managedPoints = computed(() => freeze(workspace.value ? managementRows(workspace.value) : projectManagementRows(library.value), true))
   const officialLibrary = shallowRef<PointLibrary>(freeze(emptyPointLibrary(), true))
   const mapTileError = shallowRef(false)
   const mapTileRetry = shallowRef(0)

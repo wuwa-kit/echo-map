@@ -145,6 +145,9 @@ export const navigationPointLibrarySchema = pointLibrarySchema.superRefine(({ po
   if (points.some(({ kind }) => kind !== 'navigation')) context.addIssue({ code: 'custom', message: '定位点文件不能包含声骸点位' })
 })
 
+export const localPointOperationSchema = z.enum(['added', 'modified', 'deleted'])
+export const localPointStatusSchema = z.enum(['pending', 'adopted', 'conflict', 'review'])
+
 export const localPointChangeSchema = z.object({
   id: z.string().min(1).max(100),
   before: savedPointSchema.nullable().default(null),
