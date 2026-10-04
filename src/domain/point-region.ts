@@ -12,6 +12,12 @@ export interface PointRegion {
   label: string
 }
 
+export function pointRegionPath(region: PointRegion | null, stateId: number, mapName: string): string {
+  if (!region) return mapName
+  if (stateId === MAIN_MAP_STATE_ID || mapName === region.name) return region.label
+  return `${region.label}-${mapName}`
+}
+
 const resolvers = new WeakMap<RegionDataset, ReturnType<typeof buildResolver>>()
 
 function buildResolver(dataset: RegionDataset) {

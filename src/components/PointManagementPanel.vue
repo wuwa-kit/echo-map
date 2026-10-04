@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, nextTick, useTemplateRef } from 'vue'
+import { computed, nextTick, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useEventListener, useMediaQuery, useResizeObserver } from '@vueuse/core'
 import { useRouteQuery } from '@vueuse/router'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { usePointManagementStore } from '../stores/point-management.ts'
@@ -9,23 +10,33 @@ import type { AuthoredPoint, LocalPointOperation, LocalPointStatus, PointManagem
 import { localPointOperationSchema, localPointStatusSchema } from '../domain/schema.ts'
 import { pointTitle, MODE_NAMES, NAVIGATION_NAMES } from '../domain/point-library.ts'
 import { navigationPointTypes } from '../domain/navigation-point-types.ts'
-import { pointRegionResolver } from '../domain/point-region.ts'
+import { pointRegionPath, pointRegionResolver } from '../domain/point-region.ts'
 import type { PointRegion } from '../domain/point-region.ts'
 import { gameToMapCoordinate } from '../map/projection.ts'
+import { mapStateName } from '../route/route-groups.ts'
 import { downloadJson } from '../utils/download-json.ts'
+import { virtualListWindow } from '../utils/virtual-list.ts'
+import { pointMapFilterCounts, pointMapFilterOptions, pointMapFilterSelection, pointMapScopeValues } from './point-map-options.ts'
 import WuButton from './base/WuButton.vue'
 import WuInput from './base/WuInput.vue'
 import WuSelect from './base/WuSelect.vue'
 import WuOption from './base/WuOption.vue'
 import WuCheckBox from './base/WuCheckBox.vue'
 import WuScrollArea from './base/WuScrollArea.vue'
+import WuCascader from './base/WuCascader.vue'
 
 const emit = defineEmits<{ closeRequested: []; editRequested: [id: string]; locateRequested: [point: AuthoredPoint]; changed: [] }>()
 const editor = usePointEditorStore()
 const manager = usePointManagementStore()
 const { managedPoints, workspace, dataset, storage, busy, hasUnsavedChanges, error, notice, operation } = storeToRefs(editor)
-const { search, selected, detailId, pending, page } = storeToRefs(manager)
+const { search, selected, detailId, pending } = storeToRefs(manager)
 const details = useTemplateRef<HTMLElement>('detailsRef')
+const scrollArea = useTemplateRef<InstanceType<typeof WuScrollArea>>('scrollAreaRef')
+const rows = useTemplateRef<HTMLElement>('rowsRef')
+const viewport = computed(() => scrollArea.value?.viewport ?? null)
+const desktop = useMediaQuery('(min-width: 768px)')
+const rowHeight = computed(() => desktop.value ? 72 : storage.value === 'browser' ? 192 : 168)
+const metrics = shallowRef({ top: 0, height: 0 })
 const kindQuery = useRouteQuery<string>('pointsKind', 'navigation', { mode: 'replace' })
 const mapQuery = useRouteQuery<string>('pointsMap', '', { mode: 'replace' })
 const statusQuery = useRouteQuery<string>('pointsStatus', 'all', { mode: 'replace' })
@@ -38,11 +49,6 @@ const regions = computed(() => {
   const resolve = pointRegionResolver(reference)
   return new Map(managedPoints.value.map(({ point }) => [point.id, resolve(point.stateId, gameToMapCoordinate(point.coordinate.x ?? 0, point.coordinate.y ?? 0, reference.source.tileWidth))]))
 })
-const mapOptions = computed(() => [
-  ...(dataset.value?.states.map(state => ({ value: String(state.id), label: state.name })) ?? []),
-  ...[...new Map([...regions.value.values()].flatMap(region => region ? [[region.id, region] as const] : [])).values()].map(region => ({ value: `region:${region.id}`, label: region.label })),
-])
-const mapId = computed(() => mapOptions.value.some(option => option.value === mapQuery.value) ? mapQuery.value : '')
 const operations: Record<LocalPointOperation, string> = { added: '新增点位', modified: '修改官方点位', deleted: '删除官方点位' }
 const statuses: Record<LocalPointStatus, string> = { pending: '待收录', adopted: '已收录', conflict: '存在冲突', review: '待确认' }
 const status = computed(() => localPointStatusSchema.safeParse(statusQuery.value).data ?? 'all')
@@ -50,26 +56,33 @@ const operationFilter = computed(() => localPointOperationSchema.safeParse(opera
 const duplicatesOnly = computed(() => duplicateQuery.value === '1')
 const statusLabel = (row: PointManagementRow) => row.status === 'published' ? '项目点位' : statuses[row.status]
 const stateNames = computed(() => new Map(dataset.value?.states.map(state => [state.id, state.name]) ?? []))
+const mapNames = computed(() => {
+  const reference = dataset.value
+  return new Map(reference?.states.map(state => [state.id, mapStateName(reference, state.id)]) ?? [])
+})
 const floorNames = computed(() => new Map(dataset.value?.states.flatMap(state => state.layeredMaps.flatMap(map => map.floors.map(floor => [floor.id, floor.name] as const))) ?? []))
 const title = (point: AuthoredPoint) => dataset.value ? pointTitle(point, dataset.value) : point.id
-const regionName = (point: AuthoredPoint) => regions.value.get(point.id)?.label ?? stateNames.value.get(point.stateId) ?? String(point.stateId)
+const regionName = (point: AuthoredPoint) => pointRegionPath(regions.value.get(point.id) ?? null, point.stateId, mapNames.value.get(point.stateId) ?? String(point.stateId))
 const floor = (point: AuthoredPoint) => point.levelId ? floorNames.value.get(point.levelId) ?? point.levelId : '主地图'
 const coordinates = (point: AuthoredPoint) => `${point.coordinate.x}, ${point.coordinate.y}, ${point.coordinate.z}`
-const filtered = computed(() => {
+const availableRows = computed(() => {
   const query = search.value.trim().toLocaleLowerCase()
   return managedPoints.value.filter(row => row.point.kind === kind.value
-    && (!mapId.value || String(row.point.stateId) === mapId.value || `region:${regions.value.get(row.id)?.id}` === mapId.value)
     && (storage.value === 'project' || operationFilter.value === 'all' || row.operation === operationFilter.value)
     && (storage.value === 'project' || status.value === 'all' || row.status === status.value)
     && (storage.value === 'project' || !duplicatesOnly.value || row.duplicateIds.length > 0)
     && (!query || `${title(row.point)} ${regionName(row.point)} ${row.id} ${coordinates(row.point)} ${row.point.note ?? ''}`.toLocaleLowerCase().includes(query)))
 })
-const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / 50)))
-const currentPage = computed(() => Math.min(page.value, totalPages.value))
-const visible = computed(() => filtered.value.slice((currentPage.value - 1) * 50, currentPage.value * 50))
+const mapCounts = computed(() => pointMapFilterCounts(availableRows.value.map(row => row.point), regions.value))
+const mapOptions = computed(() => dataset.value ? pointMapFilterOptions(dataset.value, mapCounts.value) : [])
+const mapSelection = computed(() => pointMapFilterSelection(mapOptions.value, mapQuery.value))
+const filtered = computed(() => availableRows.value.filter(row => pointMapScopeValues(row.point.stateId, regions.value.get(row.id) ?? null).includes(mapSelection.value.value)))
+const listWindow = computed(() => virtualListWindow(filtered.value.length, rowHeight.value, metrics.value.top, metrics.value.height))
+const visible = computed(() => filtered.value.slice(listWindow.value.start, listWindow.value.end))
 const selectedIds = computed(() => new Set(selected.value))
 const selectedRows = computed(() => filtered.value.filter(row => selectedIds.value.has(row.id)))
-const allChecked = computed(() => visible.value.length > 0 && visible.value.every(row => selectedIds.value.has(row.id)))
+const allChecked = computed(() => filtered.value.length > 0 && selectedRows.value.length === filtered.value.length)
+const partlyChecked = computed(() => !allChecked.value && selectedRows.value.length > 0)
 const detail = computed(() => managedPoints.value.find(row => row.id === detailId.value))
 const duplicatePoints = computed(() => {
   const ids = new Set(detail.value?.duplicateIds ?? [])
@@ -79,10 +92,25 @@ const emptyMessage = computed(() => storage.value === 'browser'
   ? managedPoints.value.length ? '当前筛选下没有本地修改记录' : '还没有本地修改。可在地图上新增、编辑或删除点位。'
   : '当前范围没有点位')
 const canChange = computed(() => !busy.value && !hasUnsavedChanges.value)
+function measure(): void {
+  if (!viewport.value || !rows.value) return
+  metrics.value = {
+    top: viewport.value.getBoundingClientRect().top - rows.value.getBoundingClientRect().top,
+    height: viewport.value.clientHeight,
+  }
+}
+useEventListener(viewport, 'scroll', measure, { passive: true })
+useResizeObserver([viewport, rows, details], measure)
+watch([filtered, desktop], async () => {
+  await nextTick()
+  if (viewport.value) viewport.value.scrollTop = 0
+  measure()
+}, { flush: 'post' })
 async function showDetail(id: string): Promise<void> {
   manager.showDetail(id)
   await nextTick()
   details.value?.scrollIntoView({ block: 'start' })
+  measure()
 }
 const actionLabels: Record<PointManagementAction, string> = { delete: '删除所选点位', published: '撤销本地修改，使用网站版本', local: '确认保留本地版本', cleanup: '清理已收录的本地副本' }
 const actionNotes: Record<PointManagementAction, string> = {
@@ -141,7 +169,21 @@ function exportChanges(): void {
     </div>
     <div class="flex shrink-0 flex-wrap gap-[8px] p-[14px]">
       <WuSelect class="!w-[130px]" :model-value="kind" @update:model-value="filter('kind', $event)"><WuOption value="navigation">定位点</WuOption><WuOption value="echo">声骸点位</WuOption></WuSelect>
-      <WuSelect class="!w-[180px] grow" :model-value="mapId" @update:model-value="filter('map', $event)"><WuOption value="">全部地图 / 地区</WuOption><WuOption v-for="option in mapOptions" :key="option.value" :value="option.value">{{ option.label }}</WuOption></WuSelect>
+      <div class="min-w-0 w-[180px] grow sm:w-[220px]">
+        <WuCascader
+          :options="mapOptions" :selected-value="mapSelection.value" :initial-expanded-values="mapSelection.expandedValues"
+          :placeholder="mapSelection.label" root-label="一级地区" compact :popover-gap="6"
+          class="!justify-between !text-[11px] !shadow-none [--wu-cascader-height:38px] [--wu-cascader-padding:11px]"
+          @select="filter('map', $event)"
+        >
+          <template #header="{ close }">
+            <div class="flex shrink-0 items-center justify-between gap-[12px] border-b border-[var(--line)] px-[10px] py-[6px]">
+              <span class="text-[12px] text-[#91ae9e]">地图 / 地区</span>
+              <WuButton size="sm" variant="ghost" tone="accent" @click="filter('map', ''); close()">全部</WuButton>
+            </div>
+          </template>
+        </WuCascader>
+      </div>
       <WuSelect v-if="storage === 'browser'" class="!w-[140px]" :model-value="operationFilter" @update:model-value="filter('operation', $event)"><WuOption value="all">全部操作类型</WuOption><WuOption v-for="(label, value) in operations" :key="value" :value="value">{{ label }}</WuOption></WuSelect>
       <WuSelect v-if="storage === 'browser'" class="!w-[130px]" :model-value="status" @update:model-value="filter('status', $event)"><WuOption value="all">全部同步状态</WuOption><WuOption v-for="(label, value) in statuses" :key="value" :value="value">{{ label }}</WuOption></WuSelect>
       <WuInput class="min-w-[160px] flex-1" :model-value="search" placeholder="搜索名称、坐标或备注" @update:model-value="manager.setSearch" />
@@ -150,27 +192,38 @@ function exportChanges(): void {
     </div>
     <div v-if="hasUnsavedChanges" class="px-[16px] pb-[10px] text-[12px] text-[#dec594]">请先保存编辑表单；导出仅包含已保存内容。</div>
     <div v-if="error || notice" class="px-[16px] pb-[10px] text-[13px]" :class="error ? 'text-[#ffad9f]' : 'text-[#91ae9e]'">{{ error || notice }}</div>
-    <WuScrollArea class="min-h-0 flex-1" content-class="flex flex-col px-[14px] pb-[14px]">
-      <div class="mb-[10px] flex items-center gap-[8px] text-[12px] text-[#91ae9e] md:hidden"><WuCheckBox :model-value="allChecked" @update:model-value="manager.selectMany(visible.map(row => row.id), $event)" />选择本页</div>
-      <div class="grid gap-[8px] md:hidden">
-        <div v-for="row in visible" :key="row.id" class="rounded-[8px] border border-[var(--line)] p-[12px]">
-          <div class="flex items-center gap-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /><span class="min-w-0 flex-1 truncate text-[14px]">{{ title(row.point) }}</span><span class="text-[12px] text-[#dec594]">{{ statusLabel(row) }}</span></div>
-          <div v-if="row.operation" class="mt-[8px] text-[12px] text-[#d7eadf]">{{ operations[row.operation] }}</div>
-          <div class="mt-[8px] text-[12px] leading-6 text-[#91ae9e]">{{ regionName(row.point) }} · {{ floor(row.point) }}<div>{{ coordinates(row.point) }}<span v-if="row.duplicateIds.length" class="ml-[10px] text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</span></div></div>
-          <div class="mt-[8px] flex gap-[8px]"><WuButton size="sm" @click="emit('locateRequested', row.point)">定位</WuButton><WuButton size="sm" :disabled="!row.local || busy" @click="emit('editRequested', row.id)">编辑</WuButton><WuButton size="sm" tone="accent" @click="showDetail(row.id)">详情</WuButton></div>
+    <WuScrollArea ref="scrollAreaRef" class="min-h-0 flex-1" content-class="flex flex-col px-[14px] pb-[14px] [overflow-anchor:none]">
+      <template v-if="!desktop">
+        <WuCheckBox class="mb-[10px] flex items-center gap-[8px] text-[12px] text-[#91ae9e]" :model-value="allChecked" :indeterminate="partlyChecked" @update:model-value="manager.selectMany(filtered.map(row => row.id), $event)">全选当前筛选结果</WuCheckBox>
+        <div ref="rowsRef" class="relative shrink-0" :style="{ height: `${listWindow.height}px` }">
+          <div class="absolute inset-x-0 top-0" :style="{ transform: `translateY(${listWindow.before}px)` }">
+            <div v-for="row in visible" :key="row.id" :style="{ height: `${rowHeight}px` }" class="pb-[8px]">
+              <div class="h-full overflow-hidden rounded-[8px] border border-[var(--line)] p-[12px]">
+                <div class="flex items-center gap-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /><span class="min-w-0 flex-1 truncate text-[14px]" :title="title(row.point)">{{ title(row.point) }}</span><span class="shrink-0 text-[12px] text-[#dec594]">{{ statusLabel(row) }}</span></div>
+                <div v-if="row.operation" class="mt-[8px] text-[12px] text-[#d7eadf]">{{ operations[row.operation] }}</div>
+                <div class="mt-[8px] text-[12px] leading-6 text-[#91ae9e]"><div class="truncate" :title="`${regionName(row.point)} · ${floor(row.point)}`">{{ regionName(row.point) }} · {{ floor(row.point) }}</div><div class="flex gap-[10px]"><span class="min-w-0 truncate" :title="coordinates(row.point)">{{ coordinates(row.point) }}</span><span v-if="row.duplicateIds.length" class="shrink-0 text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</span></div></div>
+                <div class="mt-[8px] flex gap-[8px]"><WuButton size="sm" @click="emit('locateRequested', row.point)">定位</WuButton><WuButton size="sm" :disabled="!row.local || busy" @click="emit('editRequested', row.id)">编辑</WuButton><WuButton size="sm" tone="accent" @click="showDetail(row.id)">详情</WuButton></div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="hidden overflow-x-auto md:block">
-        <table class="w-full min-w-[760px] border-collapse text-left text-[13px]">
-          <thead class="text-[#91ae9e]"><tr class="border-b border-[var(--line)]"><th class="w-[36px] p-[10px]"><WuCheckBox :model-value="allChecked" :indeterminate="!allChecked && visible.some(row => selectedIds.has(row.id))" @update:model-value="manager.selectMany(visible.map(row => row.id), $event)" /></th><th class="p-[10px]">点位 / 坐标</th><th class="p-[10px]">地图 / 楼层</th><th v-if="storage === 'browser'" class="p-[10px]">操作类型</th><th class="p-[10px]">{{ storage === 'browser' ? '同步状态' : '状态' }}</th><th class="p-[10px]">管理</th></tr></thead>
-          <tbody><tr v-for="row in visible" :key="row.id" class="border-b border-[var(--line)]" :class="detailId === row.id ? 'bg-[#1b392d]' : 'hover:bg-[#173025]'">
+      </template>
+      <div v-else class="shrink-0 overflow-x-auto">
+        <table class="w-full min-w-[860px] table-fixed border-collapse text-left text-[13px] leading-[18px]">
+          <colgroup><col class="w-[36px]" /><col /><col class="w-[240px]" /><col v-if="storage === 'browser'" class="w-[112px]" /><col class="w-[120px]" /><col class="w-[174px]" /></colgroup>
+          <thead class="text-[#91ae9e]"><tr class="border-b border-[var(--line)]"><th class="p-[10px]"><WuCheckBox title="全选当前筛选结果" :model-value="allChecked" :indeterminate="partlyChecked" @update:model-value="manager.selectMany(filtered.map(row => row.id), $event)" /></th><th class="p-[10px]">点位 / 坐标</th><th class="p-[10px]">地图 / 楼层</th><th v-if="storage === 'browser'" class="p-[10px]">操作类型</th><th class="p-[10px]">{{ storage === 'browser' ? '同步状态' : '状态' }}</th><th class="p-[10px]">管理</th></tr></thead>
+          <tbody ref="rowsRef">
+            <tr v-if="listWindow.before"><td :colspan="storage === 'browser' ? 6 : 5" class="border-0 p-0" :style="{ height: `${listWindow.before}px` }" /></tr>
+            <tr v-for="row in visible" :key="row.id" class="border-b border-[var(--line)]" :style="{ height: `${rowHeight}px` }" :class="detailId === row.id ? 'bg-[#1b392d]' : 'hover:bg-[#173025]'">
             <td class="p-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /></td>
-            <td class="max-w-[250px] p-[10px]"><div class="truncate">{{ title(row.point) }}</div><div class="mt-[4px] text-[12px] text-[#91ae9e]">{{ coordinates(row.point) }}</div></td>
-            <td class="p-[10px]"><div>{{ regionName(row.point) }}</div><div class="mt-[4px] text-[12px] text-[#91ae9e]">{{ floor(row.point) }}</div></td>
-            <td v-if="storage === 'browser'" class="p-[10px]">{{ row.operation ? operations[row.operation] : '' }}</td>
+            <td class="p-[10px]"><div class="truncate" :title="title(row.point)">{{ title(row.point) }}</div><div class="mt-[4px] truncate text-[12px] text-[#91ae9e]" :title="coordinates(row.point)">{{ coordinates(row.point) }}</div></td>
+            <td class="p-[10px]"><div class="truncate" :title="regionName(row.point)">{{ regionName(row.point) }}</div><div class="mt-[4px] truncate text-[12px] text-[#91ae9e]" :title="floor(row.point)">{{ floor(row.point) }}</div></td>
+            <td v-if="storage === 'browser'" class="whitespace-nowrap p-[10px]">{{ row.operation ? operations[row.operation] : '' }}</td>
             <td class="p-[10px]"><span :class="row.status === 'conflict' || row.status === 'review' ? 'text-[#dec594]' : 'text-[#91ae9e]'">{{ statusLabel(row) }}</span><div v-if="row.duplicateIds.length" class="mt-[4px] text-[12px] text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</div></td>
             <td class="p-[10px]"><div class="flex gap-[8px]"><WuButton size="sm" variant="ghost" @click="emit('locateRequested', row.point)">定位</WuButton><WuButton size="sm" variant="ghost" :disabled="!row.local || busy" @click="emit('editRequested', row.id)">编辑</WuButton><WuButton size="sm" variant="ghost" tone="accent" @click="showDetail(row.id)">详情</WuButton></div></td>
-          </tr></tbody>
+            </tr>
+            <tr v-if="listWindow.after"><td :colspan="storage === 'browser' ? 6 : 5" class="border-0 p-0" :style="{ height: `${listWindow.after}px` }" /></tr>
+          </tbody>
         </table>
       </div>
       <div v-if="!filtered.length" class="py-[60px] text-center text-[14px] text-[#91ae9e]">{{ emptyMessage }}</div>
@@ -194,7 +247,7 @@ function exportChanges(): void {
     <div class="shrink-0 border-t border-[var(--line)] p-[14px]">
       <div v-if="pending" class="mb-[12px] rounded-[8px] border border-[#745f38] bg-[#261f14] p-[12px]"><div class="text-[13px]">{{ actionLabels[pending.action] }} · {{ pending.ids.length }} 条</div><div class="mt-[6px] text-[12px] text-[#dec594]">{{ storage === 'project' && pending.action === 'delete' ? '将从项目文件删除所选点位。' : actionNotes[pending.action] }}可先导出完整备份。</div><div class="mt-[10px] flex gap-[8px]"><WuButton :disabled="!canChange" tone="danger" @click="confirm">确认操作</WuButton><WuButton :disabled="busy" @click="manager.cancelAction">取消</WuButton></div></div>
       <div class="flex flex-wrap items-center gap-[8px] text-[12px] text-[#91ae9e]">
-        <span>共 {{ filtered.length }} 条 · 已选 {{ selectedRows.length }} 条</span><div class="ml-auto flex items-center gap-[8px]"><WuButton size="sm" :disabled="currentPage === 1" @click="manager.setPage(currentPage - 1)">上一页</WuButton><span>{{ currentPage }} / {{ totalPages }}</span><WuButton size="sm" :disabled="currentPage === totalPages" @click="manager.setPage(currentPage + 1)">下一页</WuButton></div>
+        <span>共 {{ filtered.length }} 条 · 已选 {{ selectedRows.length }} 条</span>
       </div>
       <div class="mt-[12px] flex flex-wrap gap-[8px]">
         <WuButton size="sm" tone="danger" :disabled="!canChange || !selectedRows.some(row => row.local)" @click="request('delete')">删除所选</WuButton>

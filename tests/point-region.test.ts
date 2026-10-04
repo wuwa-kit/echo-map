@@ -1,11 +1,26 @@
 import { describe, expect, it } from 'vitest'
-import { pointRegionResolver } from '../src/domain/point-region.ts'
+import { pointRegionPath, pointRegionResolver } from '../src/domain/point-region.ts'
+import { mapStateName } from '../src/route/route-groups.ts'
 import { pointFilePath, readPointFiles } from '../scripts/lib/point-files.ts'
 import { projectPath } from '../scripts/lib/files.ts'
 import { mapToGameCoordinate } from '../src/map/projection.ts'
 import { mixedPoint, referenceDataset } from './fixtures/point-library.ts'
 
 describe('second-level point regions', () => {
+  it.each([
+    ['梦枢天罗', '瑝珑-梦州-梦枢天罗'],
+    ['阿维纽林', '黎那汐塔-拉古那-阿维纽林'],
+    ['泰缇斯之底', '黑海岸-泰缇斯之底'],
+    ['蚀刻平原', '罗伊冰原-拉海洛'],
+    ['恒黯之原', '罗伊冰原-黯原'],
+    ['玄方城', '瑝珑-梦州'],
+  ])('shows the region hierarchy including the independent submap of %s when present', (name, expected) => {
+    const label = referenceDataset.regionLabels.find(label => label.name === name)
+    if (!label) throw new Error(`缺少地区 ${name}`)
+    const region = pointRegionResolver(referenceDataset)(label.stateId, [label.coordinate.mapX, label.coordinate.mapY])
+    expect(pointRegionPath(region, label.stateId, mapStateName(referenceDataset, label.stateId))).toBe(expected)
+  })
+
   it.each([
     ['今州城', '1-1'], ['玄方城', '1-8'], ['拉古那城', '3-3'],
     ['七丘', '3-4'], ['冰原运输港', '4-6'], ['黑海岸群岛', '900'],

@@ -2,6 +2,7 @@ export interface WuCascaderOption {
   value: string
   label: string
   description?: string
+  count?: number
   disabled?: boolean
   children?: readonly WuCascaderOption[]
 }
