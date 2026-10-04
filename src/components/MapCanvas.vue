@@ -22,6 +22,7 @@ import { useExplorerStore } from '../stores/explorer.ts'
 import { gameToMapCoordinate, mapToGameCoordinate } from '../map/projection.ts'
 import { createOfficialBaseLayers } from '../map/official-base-layers.ts'
 import { createPointLayers, mapFeaturesPointIds } from '../map/point-layers.ts'
+import { mapResolutionForZoom } from '../map/point-visibility.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
 import type { RouteLegDetails } from '../map/route-layer.ts'
@@ -131,7 +132,10 @@ function isMapMoving(): boolean {
   return Boolean(view?.getAnimating() || view?.getInteracting())
 }
 const points = createPointLayers(isMapMoving)
-const editorPoints = createPointLayers(isMapMoving, { onStyleChange: () => selectionLayer.changed() })
+const editorPoints = createPointLayers(isMapMoving, {
+  forceVisibleCategory: () => editor.editorMode,
+  onStyleChange: () => selectionLayer.changed(),
+})
 const floors = createFloorLayers(projection, { dimBase: true, onError: store.reportFloorTileError })
 const routeLayer = createRouteLayer(points.layers)
 const viewport = useMapViewport({
@@ -207,7 +211,9 @@ function rebuildDraft(): void {
 }
 
 function rebuildRoute(): void {
-  routeLayer.update(props.editing ? [] : mapRoutes.value)
+  const routes = props.editing ? [] : mapRoutes.value
+  points.setVisibleRoutes(routes)
+  routeLayer.update(routes)
   selectedRouteLeg.value = null
 }
 
@@ -259,7 +265,7 @@ function applyMapNavigation(): void {
   const request = mapNavigationRequest.value
   if (!request || !map) return
   const region = dataset.value?.regionLabels.find(({ id }) => id === request.regionId)
-  if (region) viewport.locate([region.coordinate.mapX, region.coordinate.mapY], 2.3)
+  if (region) viewport.locate([region.coordinate.mapX, region.coordinate.mapY], mapResolutionForZoom(region.level === 3 ? 12 : 6))
   store.completeMapNavigation()
 }
 

@@ -10,6 +10,7 @@ import { authoredPointMapDisplay, libraryLocations } from '../src/domain/point-l
 import { createEchoMarkerStyles, ECHO_MARKER_SIZES, echoMarkerSize } from '../src/map/echo-marker.ts'
 import { createEditorSelectionStyle } from '../src/map/editor-marker.ts'
 import { createPointLayers } from '../src/map/point-layers.ts'
+import { mapResolutionForZoom } from '../src/map/point-visibility.ts'
 import { createPortraitMarkerStyles, PORTRAIT_MARKER_CANVAS_SIZE, PORTRAIT_MARKER_SIZES } from '../src/map/boss-marker.ts'
 import { createPointMarkerStyles } from '../src/map/point-marker-styles.ts'
 import { smallEcho, eliteEcho, mixedPoint } from './fixtures/point-library.ts'
@@ -362,7 +363,7 @@ describe('echo marker appearance', () => {
   })
 
   it('uses a circular composition for neighboring locations and a diamond for one location', () => {
-    let resolution = 4
+    let resolution = mapResolutionForZoom(9)
     const points = createPointLayers()
     const { echoLocations } = libraryLocations({ version: 1, points: [mixedPoint('first'), mixedPoint('second')] }, referenceDataset)
     const cluster = new Feature({
@@ -391,7 +392,7 @@ describe('echo marker appearance', () => {
     expect(Array.isArray(single) && single.every((style) => style.getText() === null)).toBe(true)
     expect(painted.at(-1)?.[0]?.vertices).toHaveLength(4)
 
-    resolution = 8
+    resolution = mapResolutionForZoom(8.99)
     expect(render?.(cluster, resolution)).toBeUndefined()
     expect(cluster.get('locations')).toEqual([])
     points.dispose()

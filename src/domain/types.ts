@@ -153,6 +153,8 @@ export interface AuthoredEchoPoint extends AuthoredPointBase {
 
 export type NavigationPointType = keyof typeof navigationPointTypes
 
+export type MapDisplayTier = 'always' | 'far' | 'near'
+
 export interface NavigationIconDefinition {
   id: string
   name: string
@@ -168,7 +170,7 @@ export interface NavigationTypeDefinition {
   icons: readonly string[]
   // Names are either custom (empty) or fixed (one value), never selectable.
   names: readonly [] | readonly [string]
-  minZoom: number
+  displayTier: MapDisplayTier
 }
 
 export interface AuthoredNavigationPoint extends AuthoredPointBase {
@@ -176,6 +178,7 @@ export interface AuthoredNavigationPoint extends AuthoredPointBase {
   name: string
   navigationKind: NavigationKind
   pointType?: NavigationPointType
+  displayTier?: MapDisplayTier
   iconId?: string
   iconUrl?: string
   mode: NavigationMode
@@ -244,6 +247,7 @@ export type NavigationKind =
 
 export interface NavigationPoint extends PointLocationBase {
   pointType?: NavigationPointType
+  displayTier?: MapDisplayTier
   groupId: string
   catalogCategoryId: string
   catalogCategoryName: string

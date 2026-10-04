@@ -127,6 +127,7 @@ export function authoredPointMapDisplay(
   const iconUrl = navigationPointIconUrl(point)
   if (iconUrl) location.iconUrl = iconUrl
   location.pointType = point.pointType
+  if (point.displayTier !== undefined) location.displayTier = point.displayTier
   if (!teleportCoordinate) delete location.teleportCoordinate
   return { category: 'navigation', location }
 }

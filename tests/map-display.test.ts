@@ -7,8 +7,9 @@ import Icon from 'ol/style/Icon.js'
 import RegularShape from 'ol/style/RegularShape.js'
 import Style from 'ol/style/Style.js'
 import { createPointLayers, mapFeaturePointIds, mapFeaturesPointIds } from '../src/map/point-layers.ts'
-import type { MapDisplayPoint, NavigationPoint, RegionLabel } from '../src/domain/types.ts'
-import { navigationTestDataset as referenceDataset } from './fixtures/navigation-points.ts'
+import { mapResolutionForZoom } from '../src/map/point-visibility.ts'
+import type { MapDisplayPoint, NavigationPoint, RegionLabel, RoutePoint, RouteResult } from '../src/domain/types.ts'
+import { navigationPoint, navigationTestDataset as referenceDataset } from './fixtures/navigation-points.ts'
 
 class MarkerPath {
   moveTo() {}
@@ -186,7 +187,8 @@ describe('map display layer integration', () => {
       const members: Feature[] = cluster.get('features')
       expect(members).toHaveLength(1)
       expect(members.flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual([id])
-      expect(layer?.getStyleFunction()?.(cluster, 8)).toBeUndefined()
+      expect(layer?.getStyleFunction()?.(cluster, mapResolutionForZoom(8.99))).toBeUndefined()
+      expect(layer?.getStyleFunction()?.(cluster, mapResolutionForZoom(9))).toBeDefined()
     }
     points.update([], navigation.slice(0, 1), [], [])
     expect(backgroundNavigation?.getSource()?.getFeatures()).toEqual([])
@@ -300,12 +302,13 @@ describe('map display layer integration', () => {
       const geometry = feature.getGeometry()
       if (!(geometry instanceof Point)) throw new Error('文字定位需要 XY 点几何')
       expect(geometry.getCoordinates()).toEqual([30, 40])
-      expect(Boolean(render?.(feature, 64))).toBe(level === 1)
-      expect(Boolean(render?.(feature, 32))).toBe(level === 1)
-      expect(Boolean(render?.(feature, 16))).toBe(level === 2)
-      expect(Boolean(render?.(feature, 4))).toBe(level >= 2)
-      expect(Boolean(render?.(feature, 2))).toBe(level === 3)
-      const style = render?.(feature, level === 1 ? 64 : 4)
+      expect(Boolean(render?.(feature, 64))).toBe(level === 2)
+      for (const zoom of [0, 8.99, 9, 16, 35]) {
+        expect(Boolean(render?.(feature, mapResolutionForZoom(zoom)))).toBe(level === (zoom < 9 ? 2 : 3))
+      }
+      expect(mapFeaturePointIds(feature)).toBeUndefined()
+      if (level === 1) continue
+      const style = render?.(feature, mapResolutionForZoom(level === 2 ? 0 : 9))
       expect(style).toBeInstanceOf(Style)
       if (!(style instanceof Style)) throw new Error('需要文字样式')
       expect(style.getText()?.getFill()?.getColor()).toBe('#ffffff')
@@ -316,7 +319,7 @@ describe('map display layer integration', () => {
     points.dispose()
   })
 
-  it('hides teleport markers at world scale and restores nexuses in overview before beacons', () => {
+  it('keeps nexuses visible at every scale and adds beacons from step 9', () => {
     const points = createPointLayers()
     const point = referenceDataset.navigationPoints[0]
     if (!point) throw new Error('需要定位点测试数据')
@@ -332,15 +335,10 @@ describe('map display layer integration', () => {
     if (!render) throw new Error('定位点需要缩放样式函数')
     for (const feature of features) {
       const isNexus = mapFeaturePointIds(feature)?.[0] === 'nexus'
-      expect(render(feature, 64)).toBeUndefined()
-      expect(render(feature, 32.01)).toBeUndefined()
-      expect(Boolean(render(feature, 32))).toBe(isNexus)
-      expect(Boolean(render(feature, 24))).toBe(isNexus)
-      expect(Boolean(render(feature, 16))).toBe(isNexus)
-      expect(Boolean(render(feature, 8.01))).toBe(isNexus)
-      expect(render(feature, 8)).toBeDefined()
-      expect(render(feature, 2)).toBeDefined()
-      expect(render(feature, 64)).toBeUndefined()
+      expect(Boolean(render(feature, 64))).toBe(isNexus)
+      for (const zoom of [0, 8.99, 9, 16, 35, 0]) {
+        expect(Boolean(render(feature, mapResolutionForZoom(zoom)))).toBe(isNexus || zoom >= 9)
+      }
     }
     expect(layer?.getSource()?.getFeatures()).toEqual(features)
     points.dispose()
@@ -365,7 +363,139 @@ describe('map display layer integration', () => {
     points.dispose()
   })
 
-  it('uses the shared zoom rules with individual editor features and de-duplicates overlapping hits', () => {
+  it('forces only teleports used by the visible routes and restores normal visibility when routes change', () => {
+    const points = createPointLayers()
+    const echo = referenceDataset.echoLocations[0]
+    if (!echo) throw new Error('需要声骸测试数据')
+    const navigation: NavigationPoint[] = [
+      navigationPoint('small-beacon'),
+      navigationPoint('weekly-boss'),
+      { ...navigationPoint('small-beacon'), id: 'other-floor', levelId: 'a2' },
+      { ...navigationPoint('service'), id: 'custom-travel', mode: 'fast-travel', gameCoordinate: null },
+      { ...navigationPoint('normal-boss'), mode: 'landmark' },
+      navigationPoint('gondola'),
+      navigationPoint('layer-entrance'),
+      navigationPoint('service'),
+    ]
+    const label: RegionLabel = {
+      id: 'region', name: '测试地区', level: 2, stateId: 8, countryId: 1,
+      coordinate: { rawX: 0, rawY: 0, mapX: 0, mapY: 0 },
+    }
+    points.update([{ ...echo, levelId: 'a1' }], navigation.map((point) => ({ ...point, iconUrl: '' })), [label], referenceDataset.echoes, undefined, 'a1')
+    const projection = new Projection({ code: 'TEST:ROUTE-VISIBILITY', units: 'pixels' })
+    points.finishInteraction([-100000, -100000, 100000, 100000], 64, projection)
+    const navigationLayers = [points.layers[2], points.layers[4]]
+    const originalFeatures = navigationLayers.map((layer) => layer?.getSource()?.getFeatures())
+    const echoLayer = points.layers[1]
+    const echoFeature = echoLayer?.getSource()?.getFeatures()[0]
+    const labelLayer = points.layers[0]
+    const labelFeature = labelLayer?.getSource()?.getFeatures()[0]
+    if (!echoFeature || !labelFeature) throw new Error('需要声骸和地名图层')
+
+    const target: RoutePoint = {
+      id: echo.id, name: '声骸目标', echoId: null, stateId: 8, levelId: 'a1',
+      coordinate: { x: 10, y: 20, z: 0 }, mapCoordinate: [10, 20],
+    }
+    const firstRoute: RouteResult = {
+      points: [
+        { ...target, teleportFrom: { ...target, id: 'test:small-beacon', isTeleportArrival: true, mapCoordinate: [100, 200] } },
+        { ...target, id: 'second-target', teleportFrom: { ...target, id: 'other-floor', levelId: 'a2' } },
+      ],
+      totalCost: 10, algorithm: 'exact', startPointId: 'test:small-beacon',
+    }
+    const secondRoute: RouteResult = {
+      points: [{ ...target, teleportFrom: { ...target, id: 'test:weekly-boss' } }],
+      totalCost: 10, algorithm: 'exact', startPointId: 'test:weekly-boss',
+    }
+    const walkingRoute: RouteResult = {
+      points: [target, { ...target, id: 'walking-target' }],
+      totalCost: 10, algorithm: 'exact', startPointId: null,
+    }
+    const scenarios = [
+      { routes: [], ids: [] },
+      { routes: [firstRoute], ids: ['test:small-beacon', 'other-floor'] },
+      { routes: [firstRoute, secondRoute], ids: ['test:small-beacon', 'other-floor', 'test:weekly-boss'] },
+      { routes: [secondRoute], ids: ['test:weekly-boss'] },
+      { routes: [walkingRoute], ids: [] },
+      { routes: [firstRoute], ids: ['test:small-beacon', 'other-floor'] },
+      { routes: [], ids: [] },
+    ]
+    for (const [scenarioIndex, { routes, ids }] of scenarios.entries()) {
+      const revisions = navigationLayers.map((layer) => layer?.getRevision() ?? 0)
+      points.setVisibleRoutes(routes)
+      for (const [index, layer] of navigationLayers.entries()) {
+        expect(layer?.getSource()?.getFeatures()).toEqual(originalFeatures[index])
+        if (scenarioIndex > 0) expect(layer?.getRevision()).toBeGreaterThan(revisions[index] ?? 0)
+        for (const feature of originalFeatures[index] ?? []) {
+          const point = feature.get('mapPoint') as MapDisplayPoint
+          if (point.category !== 'navigation') throw new Error('需要定位点图层')
+          for (const resolution of [128, 64, 16]) {
+            expect(Boolean(layer?.getStyleFunction()?.(feature, resolution))).toBe(ids.includes(point.location.id) || point.location.kind === 'boss')
+          }
+          expect(layer?.getStyleFunction()?.(feature, 2)).toBeDefined()
+        }
+      }
+      expect(echoLayer?.getStyleFunction()?.(echoFeature, 64)).toBeUndefined()
+      expect(echoLayer?.getStyleFunction()?.(echoFeature, mapResolutionForZoom(9))).toBeDefined()
+      expect(labelLayer?.getStyleFunction()?.(labelFeature, 64)).toBeDefined()
+      expect(labelLayer?.getStyleFunction()?.(labelFeature, mapResolutionForZoom(9))).toBeUndefined()
+    }
+    points.setVisibleRoutes([firstRoute])
+    points.update([], [], [], [])
+    expect(navigationLayers.flatMap((layer) => layer?.getSource()?.getFeatures() ?? [])).toEqual([])
+    points.dispose()
+  })
+
+  it.each(['clustered', 'individual'] as const)('forces the current editor category at every scale with %s echoes', (echoGrouping) => {
+    let forcedCategory: 'echo' | 'navigation' | null = null
+    const points = createPointLayers(() => false, { echoGrouping, forceVisibleCategory: () => forcedCategory })
+    const echo = referenceDataset.echoLocations[0]
+    if (!echo) throw new Error('需要声骸测试数据')
+    const service = navigationPoint('service')
+    const labels: RegionLabel[] = [1, 2, 3].map((level) => ({
+      id: `label-${level}`, name: `地区 ${level}`, level, stateId: 8, countryId: 1,
+      coordinate: { rawX: 0, rawY: 0, mapX: 0, mapY: 0 },
+    }))
+    points.update([
+      { ...echo, id: 'floor-echo', levelId: 'a1' },
+      { ...echo, id: 'base-echo', levelId: null },
+    ], [
+      { ...service, id: 'floor-service', levelId: 'a1', iconUrl: '' },
+      { ...service, id: 'base-service', levelId: null, iconUrl: '' },
+    ], labels, referenceDataset.echoes, undefined, 'a1')
+    points.finishInteraction([-100000, -100000, 100000, 100000], 64, new Projection({ code: 'TEST:EDITOR-VISIBILITY', units: 'pixels' }))
+
+    for (const mode of [null, 'navigation', 'echo', 'navigation', null] as const) {
+      forcedCategory = mode
+      for (const zoom of [0, 8.99, 9, 15.99, 16, 35, 0]) {
+        const resolution = mapResolutionForZoom(zoom)
+        for (const index of [1, 3]) {
+          const layer = points.layers[index]
+          const feature = layer?.getSource()?.getFeatures()[0]
+          if (!feature) throw new Error('需要声骸图层')
+          const visible = Boolean(layer?.getStyleFunction()?.(feature, resolution))
+          expect(visible).toBe(mode === 'echo' || zoom >= 9)
+          if (visible) expect(mapFeaturePointIds(feature)).toEqual([index === 1 ? 'floor-echo' : 'base-echo'])
+          else if (echoGrouping === 'clustered') expect(mapFeaturePointIds(feature)).toBeUndefined()
+        }
+        for (const index of [2, 4]) {
+          const layer = points.layers[index]
+          const feature = layer?.getSource()?.getFeatures()[0]
+          if (!feature) throw new Error('需要定位点图层')
+          expect(Boolean(layer?.getStyleFunction()?.(feature, resolution))).toBe(mode === 'navigation' || zoom >= 16)
+        }
+        const labelLayer = points.layers[0]
+        for (const feature of labelLayer?.getSource()?.getFeatures() ?? []) {
+          const point = feature.get('mapPoint') as MapDisplayPoint
+          if (point.category !== 'region-name') throw new Error('需要地名图层')
+          expect(Boolean(labelLayer?.getStyleFunction()?.(feature, resolution))).toBe(point.location.level === (zoom < 9 ? 2 : 3))
+        }
+      }
+    }
+    points.dispose()
+  })
+
+  it('uses the shared zoom rules with individual features by default and de-duplicates overlapping hits', () => {
     const points = createPointLayers(() => false, { echoGrouping: 'individual' })
     const echo = referenceDataset.echoLocations[0]
     const boss = referenceDataset.navigationPoints.find(({ kind }) => kind === 'boss')
@@ -378,10 +508,10 @@ describe('map display layer integration', () => {
     const bossFeature = points.layers[2]?.getSource()?.getFeatures()[0]
     if (!echoFeature || !bossFeature) throw new Error('编辑地图需要独立点位 Feature')
 
-    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, 8)).toBeUndefined()
-    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, 4)).toBeDefined()
-    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, 16)).toBeUndefined()
-    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, 8)).toBeDefined()
+    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, mapResolutionForZoom(8.99))).toBeUndefined()
+    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, mapResolutionForZoom(9))).toBeDefined()
+    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, 64)).toBeDefined()
+    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, mapResolutionForZoom(9))).toBeDefined()
     expect(mapFeaturesPointIds([bossFeature, bossFeature, echoFeature])).toEqual([boss.id, echo.id])
     points.dispose()
   })

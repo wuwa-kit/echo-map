@@ -13,6 +13,7 @@ import { createFloorCoverage, floorExtent, floorGroupsInViewport } from '../src/
 import { createFloorLayers } from '../src/map/floor-layers.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import type { AuthoredNavigationPoint, MapStateDefinition } from '../src/domain/types.ts'
+import { mapResolutionForZoom } from '../src/map/point-visibility.ts'
 import { emptyPointLibrary } from '../src/domain/point-library.ts'
 import { mixedPoint, smallEcho } from './fixtures/point-library.ts'
 
@@ -226,7 +227,7 @@ describe('floor groups in the canvas viewport', () => {
     expect(store.nearbyFloorGroups).toEqual([])
   })
 
-  it('hides the switcher below local map scale without changing the selected floor, viewport or route', () => {
+  it('hides the switcher below step 16 without changing the selected floor, viewport or route', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
     expect(store.floorSwitcherVisible).toBe(false)
@@ -238,14 +239,14 @@ describe('floor groups in the canvas viewport', () => {
     store.setRoute({ points: [], totalCost: 2, algorithm: 'exact', startPointId: null })
     const route = store.route
     const viewport = store.mapViewport
-    store.setFloorViewport(viewportAt(768, 768), 4)
+    store.setFloorViewport(viewportAt(768, 768), mapResolutionForZoom(16))
     expect(store.floorSwitcherVisible).toBe(true)
-    store.setFloorViewport(viewportAt(768, 768), 4.01)
+    store.setFloorViewport(viewportAt(768, 768), mapResolutionForZoom(15.99))
     expect(store.floorSwitcherVisible).toBe(false)
     expect(store.selectedLevelId).toBe('a2')
     expect(store.route).toBe(route)
     expect(store.mapViewport).toBe(viewport)
-    store.setFloorViewport(viewportAt(768, 768), 4)
+    store.setFloorViewport(viewportAt(768, 768), mapResolutionForZoom(16))
     expect(store.floorSwitcherVisible).toBe(true)
     expect(store.selectedLevelId).toBe('a2')
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toContain('a')

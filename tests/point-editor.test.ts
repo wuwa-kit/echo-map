@@ -12,6 +12,7 @@ import { navigationPointTypeIds, navigationPointTypes } from '../src/domain/navi
 import { navigationIconById, navigationTypeIcons } from '../src/domain/navigation-icons.ts'
 import { editorLibraryLocations, libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
+import { isMapPointVisibleAtZoom } from '../src/map/point-visibility.ts'
 
 vi.mock('../src/data/load.ts')
 vi.mock('../src/data/editor-client.ts')
@@ -56,6 +57,50 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('point editor actions', () => {
+  it.each(['always', 'far', 'near'] as const)('persists the %s display tier through saving, reloading and library conversion', async (displayTier) => {
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    store.setPointType('small-beacon')
+    store.setCoordinateText('100, 100, 20')
+    store.applyCoordinateText()
+    store.setDisplayTier(displayTier)
+    expect(await store.savePoint()).toBe(true)
+    const saved = disk.points[0]
+    if (!saved || saved.kind !== 'navigation') throw new Error('需要定位点数据')
+    expect(saved.displayTier).toBe(displayTier)
+    const parsed = parsePointLibrary(JSON.parse(JSON.stringify(disk)), referenceDataset)
+    expect(parsed.points[0]).toEqual(saved)
+    const location = libraryLocations(parsed, referenceDataset).navigationPoints[0]
+    if (!location) throw new Error('需要地图定位点')
+    for (const zoom of [0, 9, 16, 35]) {
+      expect(isMapPointVisibleAtZoom({ category: 'navigation', location }, zoom)).toBe(zoom >= (displayTier === 'always' ? 0 : displayTier === 'far' ? 9 : 16))
+    }
+    expect(() => parsePointLibrary({ ...disk, points: [{ ...saved, displayTier: 'invalid' }] }, referenceDataset)).toThrow()
+    setActivePinia(createPinia())
+    const reopened = usePointEditorStore()
+    await reopened.load('navigation')
+    reopened.selectPoint(saved.id)
+    expect(reopened.draft).toMatchObject({ displayTier })
+    expect(reopened.dirty).toBe(false)
+    for (const invalid of [null, 1, 'invalid']) reopened.setDisplayTier(invalid)
+    expect(reopened.draft).toMatchObject({ displayTier })
+    expect(reopened.dirty).toBe(false)
+    reopened.setPointType('central-beacon')
+    expect(reopened.draft).not.toHaveProperty('displayTier')
+    const changed = editorLibraryLocations(reopened.draft ? [reopened.draft] : [], referenceDataset, 'navigation').navigationPoints[0]
+    if (!changed) throw new Error('需要编辑中的定位点')
+    expect(isMapPointVisibleAtZoom({ category: 'navigation', location: changed }, 0)).toBe(true)
+  })
+
+  it('does not assign a display override to echoes', async () => {
+    const store = usePointEditorStore()
+    await store.load('echo')
+    const snapshot = store.draft
+    store.setDisplayTier('always')
+    expect(store.draft).toBe(snapshot)
+    expect(store.draft).not.toHaveProperty('displayTier')
+  })
+
   it.each(['navigation', 'echo'] as const)('offers floors covering the %s position and preserves the selection through saving and reopening', async (kind) => {
     const dataset = floorEditorDataset()
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset, officialLibrary: { version: 1, points: [] } })

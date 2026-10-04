@@ -4,11 +4,11 @@ import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
 import { mapZoomRangeSchema, officialAssetSchema, officialEchoPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { navigationIconById } from '../src/domain/navigation-icons.ts'
 import { navigationIconCatalog } from '../src/domain/navigation-icon-catalog.ts'
-import { navigationIconDefinitionSchema } from '../src/domain/schema.ts'
+import { mapDisplayTierSchema, navigationIconDefinitionSchema } from '../src/domain/schema.ts'
 import { navigationPointTypeIds, navigationPointTypes } from '../src/domain/navigation-point-types.ts'
 import { officialNavigationTypeIds } from './lib/map/navigation-types.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
-import { MAP_POINT_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
+import { MAP_POINT_ZOOM_RANGES, MAP_TIER_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
 import { projectPath, readJson } from './lib/files.ts'
 import { parsePointLibrary, splitPointLibrary } from '../src/domain/point-library.ts'
 import { changeOperation, changeStatus, parsePointWorkspace } from '../src/domain/local-points.ts'
@@ -53,6 +53,7 @@ for (const icon of navigationIconCatalog) {
 }
 for (const type of navigationPointTypeIds) {
   const rule = navigationPointTypes[type]
+  mapDisplayTierSchema.parse(rule.displayTier)
   if (new Set(rule.icons).size !== rule.icons.length) errors.push(`${rule.name} 的图标列表有重复项`)
   if (rule.names.length > 1 || rule.names.some((name) => !name.trim())) errors.push(`${rule.name} 的名称只能为空列表或单个固定名称`)
   if (rule.icons.some((id) => !navigationIconById(id))) errors.push(`${rule.name} 的图标列表引用了未知图标`)
@@ -66,7 +67,7 @@ for (const state of dataset.states) {
   }
 }
 
-for (const range of Object.values(MAP_POINT_ZOOM_RANGES)) mapZoomRangeSchema.parse(range)
+for (const range of [...Object.values(MAP_POINT_ZOOM_RANGES), ...Object.values(MAP_TIER_ZOOM_RANGES)]) mapZoomRangeSchema.parse(range)
 const officialById = new Map(dataset.echoLocations.map((point) => [point.id, point]))
 const officialEchoById = new Map(dataset.echoLocations.map((point) => [point.id, point]))
 const convertedOfficialIds = new Set<string>()
@@ -143,7 +144,8 @@ for (const id of officialById.keys()) {
   if (!convertedOfficialIds.has(id)) errors.push(`官方来源 ${id} 未转换到点位库`)
 }
 for (const label of dataset.regionLabels) {
-  mapZoomRangeSchema.parse(mapPointZoomRange({ category: 'region-name', location: label }))
+  const range = mapPointZoomRange({ category: 'region-name', location: label })
+  if (range) mapZoomRangeSchema.parse(range)
   if (!dataset.states.some(({ id }) => id === label.stateId)) {
     errors.push(`文字定位点 ${label.name} 引用了不存在的地图 ${label.stateId}`)
   }

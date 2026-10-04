@@ -5,7 +5,7 @@ import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
-import { navigationPointTypeSchema, navigationIconUrlSchema, pointTransferSchema } from '../domain/schema.ts'
+import { mapDisplayTierSchema, navigationPointTypeSchema, navigationIconUrlSchema, pointTransferSchema } from '../domain/schema.ts'
 import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
 import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision, PointWorkspace } from '../domain/types.ts'
 import { editWorkspace, managementRows, parsePointWorkspace, pointExportFilename, projectManagementRows, resolveWorkspace, samePoint, workspaceLibrary } from '../domain/local-points.ts'
@@ -652,11 +652,21 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (parsed.success) point.pointType = parsed.data
       else delete point.pointType
       point.navigationKind = rule?.kind ?? 'landmark'
+      delete point.displayTier
       point.mode = mode
       delete point.iconId
       if (rule?.icons.length) delete point.iconUrl
       if (icon) point.iconId = icon.id
       if (point.mode !== 'fast-travel') delete point.teleportCoordinate
+    })
+  }
+
+  function setDisplayTier(value: string | number | null): void {
+    if (busy.value || draft.value?.kind !== 'navigation') return
+    const parsed = mapDisplayTierSchema.safeParse(value)
+    if (!parsed.success) return
+    edit((point) => {
+      if (point.kind === 'navigation') point.displayTier = parsed.data
     })
   }
 
@@ -904,7 +914,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy, operation: shallowReadonly(operation), dirty,
     setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, followMapState, addMember, setMemberCount, adjustMemberCount, removeMember,
-    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, undoDelete, previewImport, applyImport,
+    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setDisplayTier, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, undoDelete, previewImport, applyImport,
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
     setTeleportCoordinateText: (value: string) => { teleportCoordinateText.value = value },

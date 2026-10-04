@@ -1,69 +1,62 @@
-import type { MapDisplayPoint, MapZoomRange, NavigationKind, NavigationPoint } from '../domain/types.ts'
-import { navigationPointTypes } from '../domain/navigation-point-types.ts'
+import type { MapDisplayPoint, MapDisplayTier, MapZoomRange, NavigationPoint } from '../domain/types.ts'
+import { navigationPointDisplayTier } from '../domain/navigation-point-types.ts'
+import { MAP_DISPLAY_TIERS } from '../domain/map-display-tier.ts'
+import { OFFICIAL_SCALE_BASE, TILE_WIDTH } from './projection.ts'
 
-// A display zoom measures actual map scale, independently of each base map's View/URL zoom.
-export const MAP_ZOOM_BASE_RESOLUTION = 64
-export const MAP_ZOOM_LEVELS = {
-  world: { name: '全图', minZoom: 0 },
-  overview: { name: '远景', minZoom: 1 },
-  region: { name: '区域', minZoom: 2 },
-  surroundings: { name: '周边', minZoom: 3 },
-  local: { name: '局部', minZoom: 4 },
-  detail: { name: '细节', minZoom: 5 },
+// Approximate the measured 35 wheel steps using a fixed reference canvas.
+// Actual canvas size and the base map's OpenLayers/URL zoom do not affect visibility.
+export const MAP_ZOOM_CALIBRATION = {
+  referenceWidth: 1024,
+  farGameSpan: 3400,
+  nearGameSpan: 1000,
+  steps: 35,
 } as const
+const baseResolution = MAP_ZOOM_CALIBRATION.farGameSpan * TILE_WIDTH / OFFICIAL_SCALE_BASE / MAP_ZOOM_CALIBRATION.referenceWidth
+const scaleRatio = MAP_ZOOM_CALIBRATION.farGameSpan / MAP_ZOOM_CALIBRATION.nearGameSpan
 
-type MapZoomLevel = keyof typeof MAP_ZOOM_LEVELS
+function tierRange(tier: MapDisplayTier): Readonly<MapZoomRange> {
+  return Object.freeze({ minZoom: MAP_DISPLAY_TIERS[tier].minZoom, maxZoom: null })
+}
 
-function fromLevel(level: MapZoomLevel, until?: MapZoomLevel): Readonly<MapZoomRange> {
-  return Object.freeze({
-    minZoom: MAP_ZOOM_LEVELS[level].minZoom,
-    maxZoom: until === undefined ? null : MAP_ZOOM_LEVELS[until].minZoom,
-  })
+export const MAP_TIER_ZOOM_RANGES = {
+  always: tierRange('always'),
+  far: tierRange('far'),
+  near: tierRange('near'),
 }
 
 export const MAP_POINT_ZOOM_RANGES = {
-  echo: fromLevel('local'),
-  'country-name': fromLevel('world', 'region'),
-  'region-name': fromLevel('region', 'detail'),
-  'place-name': fromLevel('local'),
-  nexus: fromLevel('overview'),
-  beacon: fromLevel('surroundings'),
-  'tacet-field': fromLevel('surroundings'),
-  'training-ground': fromLevel('surroundings'),
-  hologram: fromLevel('surroundings'),
-  boss: fromLevel('surroundings'),
-  domain: fromLevel('surroundings'),
-  endgame: fromLevel('surroundings'),
-  challenge: fromLevel('surroundings'),
-  'local-transit': fromLevel('local'),
-  entrance: fromLevel('local'),
-  landmark: fromLevel('detail'),
-  service: fromLevel('detail'),
-  unknown: fromLevel('detail'),
-} as const satisfies Record<NavigationKind | 'echo' | 'country-name' | 'region-name' | 'place-name', Readonly<MapZoomRange>>
+  echo: MAP_TIER_ZOOM_RANGES.far,
+  'region-name': Object.freeze({ minZoom: 0, maxZoom: MAP_DISPLAY_TIERS.far.minZoom }),
+  'place-name': MAP_TIER_ZOOM_RANGES.far,
+}
 
 export function mapZoomForResolution(resolution: number): number {
-  return Number.isFinite(resolution) && resolution > 0
-    ? Math.log2(MAP_ZOOM_BASE_RESOLUTION / resolution)
+  if (!Number.isFinite(resolution) || resolution <= 0) return Number.NaN
+  // Further zooming out keeps always-visible icons and district names visible.
+  return Math.max(0, MAP_ZOOM_CALIBRATION.steps * Math.log(baseResolution / resolution) / Math.log(scaleRatio))
+}
+
+export function mapResolutionForZoom(zoom: number): number {
+  return Number.isFinite(zoom) && zoom >= 0
+    ? baseResolution / scaleRatio ** (zoom / MAP_ZOOM_CALIBRATION.steps)
     : Number.NaN
 }
 
-export function navigationPointZoomRange(point: Pick<NavigationPoint, 'kind' | 'pointType'>): Readonly<MapZoomRange> {
-  if (point.pointType) return { minZoom: navigationPointTypes[point.pointType].minZoom, maxZoom: null }
-  return MAP_POINT_ZOOM_RANGES[point.kind]
+export function navigationPointZoomRange(point: Pick<NavigationPoint, 'kind' | 'pointType' | 'displayTier'>): Readonly<MapZoomRange> {
+  return MAP_TIER_ZOOM_RANGES[navigationPointDisplayTier(point)]
 }
 
-export function mapPointZoomRange(point: MapDisplayPoint): Readonly<MapZoomRange> {
+export function mapPointZoomRange(point: MapDisplayPoint): Readonly<MapZoomRange> | null {
   switch (point.category) {
     case 'echo': return MAP_POINT_ZOOM_RANGES.echo
     case 'navigation': return navigationPointZoomRange(point.location)
-    case 'region-name': return point.location.level === 1 ? MAP_POINT_ZOOM_RANGES['country-name']
-      : point.location.level === 2 ? MAP_POINT_ZOOM_RANGES['region-name'] : MAP_POINT_ZOOM_RANGES['place-name']
+    case 'region-name': return point.location.level === 2 ? MAP_POINT_ZOOM_RANGES['region-name']
+      : point.location.level === 3 ? MAP_POINT_ZOOM_RANGES['place-name'] : null
   }
 }
 
-export function isPointVisibleAtZoom(range: Readonly<MapZoomRange>, zoom: number): boolean {
-  if (!Number.isFinite(zoom)) return false
+export function isPointVisibleAtZoom(range: Readonly<MapZoomRange> | null, zoom: number): boolean {
+  if (!range || !Number.isFinite(zoom)) return false
   // Stabilize both sides of a shared boundary during fractional zoom animations.
   const roundedZoom = Math.round(zoom * 1e6) / 1e6
   return roundedZoom >= range.minZoom && (range.maxZoom === null || roundedZoom < range.maxZoom)
@@ -73,10 +66,9 @@ export function isMapPointVisibleAtZoom(point: MapDisplayPoint, zoom: number): b
   return isPointVisibleAtZoom(mapPointZoomRange(point), zoom)
 }
 
-export function mapZoomRangeLabel(range: Readonly<MapZoomRange>): string {
-  if (range.minZoom === 0 && range.maxZoom === null) return '全景至细节'
-  const level = Object.values(MAP_ZOOM_LEVELS).find(({ minZoom }) => minZoom === range.minZoom)
-  const until = Object.values(MAP_ZOOM_LEVELS).find(({ minZoom }) => minZoom === range.maxZoom)
-  return range.maxZoom === null ? `${level?.name ?? range.minZoom}起显示`
-    : `${level?.name ?? range.minZoom}至${until?.name ?? range.maxZoom}前显示`
+export function mapZoomRangeLabel(range: Readonly<MapZoomRange> | null): string {
+  if (!range) return '仅用于地图导航'
+  const tier = Object.values(MAP_DISPLAY_TIERS).find(({ minZoom }) => minZoom === range.minZoom)
+  return range.maxZoom === null ? tier?.name ?? `第 ${range.minZoom} 格起显示`
+    : `第 ${range.minZoom} 至 ${range.maxZoom} 格前显示`
 }

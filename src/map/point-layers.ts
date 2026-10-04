@@ -13,7 +13,7 @@ import Stroke from 'ol/style/Stroke.js'
 import Style from 'ol/style/Style.js'
 import Text from 'ol/style/Text.js'
 import { bossMarkerShape } from './boss-marker.ts'
-import type { EchoDefinition, EchoMapLocation, MapDisplayPoint, NavigationPoint, RegionLabel } from '../domain/types.ts'
+import type { EchoDefinition, EchoMapLocation, MapDisplayPoint, NavigationPoint, RegionLabel, RouteResult } from '../domain/types.ts'
 import { isMapPointVisibleAtZoom, isPointVisibleAtZoom, MAP_POINT_ZOOM_RANGES, mapZoomForResolution } from './point-visibility.ts'
 import { createPointMarkerStyles } from './point-marker-styles.ts'
 
@@ -71,6 +71,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   exportMode?: boolean
   pixelRatio?: number
   echoGrouping?: 'clustered' | 'individual'
+  forceVisibleCategory?: () => 'echo' | 'navigation' | null
   onStyleChange?: () => void
 } = {}) {
   const echoSource = new VectorSource()
@@ -151,6 +152,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   let clusterStyleCache = new WeakMap<FeatureLike, { members: Feature<Point>[]; locations: EchoMapLocation[]; styles: Style[] }>()
   const labelStyleCache = new globalThis.Map<string, Style>()
   let selectedLevelId: string | null = null
+  let routeTeleportIds = new Set<string>()
 
   const echoLayer = new VectorLayer({
     source: clusters ?? echoSource,
@@ -212,7 +214,8 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
 
   function clusterStyle(feature: FeatureLike, resolution: number): Style[] | undefined {
     const zoom = mapZoomForResolution(resolution)
-    if (!options.exportMode && !isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES.echo, zoom)) {
+    const forced = options.exportMode || options.forceVisibleCategory?.() === 'echo'
+    if (!forced && !isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES.echo, zoom)) {
       if (feature instanceof Feature && feature.get('locations')?.length) feature.set('locations', [], true)
       return undefined
     }
@@ -224,7 +227,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     }
     const locations = members.flatMap((member) => {
       const point = member.get('mapPoint') as MapDisplayPoint
-      return point.category === 'echo' && (options.exportMode || isMapPointVisibleAtZoom(point, zoom)) ? [point.location] : []
+      return point.category === 'echo' && (forced || isMapPointVisibleAtZoom(point, zoom)) ? [point.location] : []
     })
     if (feature instanceof Feature) feature.set('locations', locations, true)
     if (locations.length === 0) return undefined
@@ -246,8 +249,18 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
 
   function pointStyle(feature: FeatureLike, resolution: number): Style | Style[] | undefined {
     const point = feature.get('mapPoint') as MapDisplayPoint
-    if (!options.exportMode && !isMapPointVisibleAtZoom(point, mapZoomForResolution(resolution))) return undefined
+    const forced = point.category === options.forceVisibleCategory?.()
+      || (point.category === 'navigation' && point.location.mode === 'fast-travel' && routeTeleportIds.has(point.location.id))
+    if (!options.exportMode && !forced && !isMapPointVisibleAtZoom(point, mapZoomForResolution(resolution))) return undefined
     return pointMarkerStyle(point, selectedLevelId === null)
+  }
+
+  function setVisibleRoutes(routes: readonly RouteResult[]): void {
+    const ids = new Set(routes.flatMap(({ points }) => points.flatMap(({ teleportFrom }) => teleportFrom ? [teleportFrom.id] : [])))
+    if (ids.size === routeTeleportIds.size && [...ids].every((id) => routeTeleportIds.has(id))) return
+    routeTeleportIds = ids
+    navigationLayer.changed()
+    backgroundNavigationLayer.changed()
   }
 
   function pointMarkerStyle(point: MapDisplayPoint, includeFloorBadge: boolean): Style | Style[] | undefined {
@@ -337,7 +350,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   }
 
   return {
-    layers, update, dispose,
+    layers, update, dispose, setVisibleRoutes,
     ready: markerStyles.ready,
     styleFor: (point: MapDisplayPoint) => pointMarkerStyle(point, true),
     finishInteraction: (extent: Extent, resolution: number, projection: Projection, separatePoints = false) => {

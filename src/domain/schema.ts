@@ -52,6 +52,7 @@ export const navigationKindSchema = z.enum([
   'endgame', 'challenge', 'service', 'local-transit', 'entrance', 'landmark', 'unknown',
 ])
 export const navigationPointTypeSchema = z.enum(navigationPointTypeIds)
+export const mapDisplayTierSchema = z.enum(['always', 'far', 'near'])
 export const navigationModeSchema = z.enum(['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown'])
 
 const authoredCoordinateSchema = z.object({
@@ -84,6 +85,7 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     name: z.string().max(100),
     navigationKind: navigationKindSchema,
     pointType: navigationPointTypeSchema.optional(),
+    displayTier: mapDisplayTierSchema.optional(),
     iconId: z.string().min(1).optional(),
     iconUrl: navigationIconUrlSchema.optional(),
     mode: navigationModeSchema,
@@ -472,6 +474,7 @@ const mapDatasetObjectSchema = z.object({
   navigationPoints: z.array(z.object({
     ...pointBaseShape,
     pointType: navigationPointTypeSchema.optional(),
+    displayTier: mapDisplayTierSchema.optional(),
     teleportCoordinate: teleportCoordinateSchema.optional(),
     groupId: z.string().min(1),
     catalogCategoryId: z.string().min(1),

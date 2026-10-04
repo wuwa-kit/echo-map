@@ -1,9 +1,10 @@
-import type { NavigationKind, NavigationMode, NavigationPointType, NavigationTypeDefinition } from './types.ts'
+import type { MapDisplayTier, NavigationKind, NavigationMode, NavigationPoint, NavigationPointType, NavigationTypeDefinition } from './types.ts'
+import { NAVIGATION_KIND_DISPLAY_TIERS } from './map-display-tier.ts'
 
-function defineType(type: Omit<NavigationTypeDefinition, 'minZoom'>): NavigationTypeDefinition {
+function defineType(type: Omit<NavigationTypeDefinition, 'displayTier'> & { displayTier?: MapDisplayTier }): NavigationTypeDefinition {
   return {
+    displayTier: NAVIGATION_KIND_DISPLAY_TIERS[type.kind],
     ...type,
-    minZoom: type.kind === 'nexus' ? 1 : type.kind === 'local-transit' || type.kind === 'entrance' ? 4 : type.kind === 'service' ? 5 : 3,
   }
 }
 
@@ -44,6 +45,7 @@ export const navigationPointTypes = {
     names: [],
   }),
   'nightmare-boss': defineType({
+    displayTier: 'far',
     name: '梦魇 BOSS', kind: 'boss', defaultMode: 'fast-travel', teleportLocked: false,
     icons: ['icon-468be257f951b306', 'icon-86723158f9b8fb72', 'icon-998ee6d72e5e7ba7', 'icon-5d69abc0dd477e2f', 'icon-9a55aab6fd62592e', 'icon-037620842007a024', 'icon-77fe3b9e30342f61', 'icon-fd5bac1b69ba7763', 'icon-c088f57a65b4ef83', 'icon-297227e62170479c', 'icon-54cb799bcd01abd9'],
     names: [],
@@ -64,7 +66,18 @@ export const navigationPointTypes = {
     names: ['逆境深塔'],
   }),
   'challenge': defineType({
+    displayTier: 'far',
     name: '其他副本与挑战', kind: 'challenge', defaultMode: 'fast-travel', teleportLocked: true,
+    icons: [],
+    names: [],
+  }),
+  'special-challenge': defineType({
+    name: '特殊挑战', kind: 'endgame', defaultMode: 'fast-travel', teleportLocked: true,
+    icons: [],
+    names: [],
+  }),
+  'regional-challenge': defineType({
+    name: '区域挑战', kind: 'challenge', defaultMode: 'fast-travel', teleportLocked: false,
     icons: [],
     names: [],
   }),
@@ -136,6 +149,10 @@ export const navigationPointTypes = {
 }
 
 export const navigationPointTypeIds = Object.keys(navigationPointTypes) as NavigationPointType[]
+
+export function navigationPointDisplayTier(point: Pick<NavigationPoint, 'kind' | 'pointType' | 'displayTier'>): MapDisplayTier {
+  return point.displayTier ?? (point.pointType ? navigationPointTypes[point.pointType].displayTier : NAVIGATION_KIND_DISPLAY_TIERS[point.kind])
+}
 
 export function navigationTypeErrors(point: { pointType?: NavigationPointType, kind: NavigationKind, mode: NavigationMode }): string[] {
   if (!point.pointType) return []

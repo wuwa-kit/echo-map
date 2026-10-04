@@ -6,7 +6,8 @@ import { storeToRefs } from 'pinia'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import WuSelect from './base/WuSelect.vue'
 import WuOption from './base/WuOption.vue'
-import { navigationPointTypeIds, navigationPointTypes } from '../domain/navigation-point-types.ts'
+import { navigationPointDisplayTier, navigationPointTypeIds, navigationPointTypes } from '../domain/navigation-point-types.ts'
+import { MAP_DISPLAY_TIERS } from '../domain/map-display-tier.ts'
 import WuInput from './base/WuInput.vue'
 import WuCheckBox from './base/WuCheckBox.vue'
 import WuPopover from './base/WuPopover.vue'
@@ -21,6 +22,8 @@ const iconPopover = useTemplateRef<InstanceType<typeof WuPopover>>('iconPopoverR
 const iconSearch = shallowRef('')
 const selectedType = computed(() => draft.value?.kind === 'navigation' ? draft.value.pointType : undefined)
 const rule = computed(() => selectedType.value ? navigationPointTypes[selectedType.value] : undefined)
+const displayTier = computed(() => draft.value?.kind === 'navigation'
+  ? navigationPointDisplayTier({ ...draft.value, kind: draft.value.navigationKind }) : 'near')
 const hiddenTypes = new Set([
   'tower-of-adversity', 'wind-marker', 'hidden-entrance',
   'challenge', 'service',
@@ -52,6 +55,10 @@ function selectIcon(id: string): void {
       </div>
     </WuSelect>
     <div v-if="inputErrors.pointType" class="mt-[4px] text-[11px] text-[#ffad9f]">{{ inputErrors.pointType }}</div>
+    <div class="mb-[6px] mt-[18px] text-[13px] font-semibold">缩放显示</div>
+    <WuSelect :model-value="displayTier" :disabled="busy" @update:model-value="store.setDisplayTier">
+      <WuOption v-for="(tier, value) in MAP_DISPLAY_TIERS" :key="value" :value="value">{{ tier.name }}</WuOption>
+    </WuSelect>
     <div class="mb-[6px] mt-[18px] text-[13px] font-semibold">名称与图标</div>
     <div class="flex items-start gap-[8px]">
       <WuButton ref="iconAnchorRef" icon-only :tone="inputErrors.icon ? 'danger' : 'neutral'" :tooltip="fixedIcon ? '图标由类型决定' : iconUrl ? '更换图标' : '选择图标'" :disabled="busy || fixedIcon" :popovertarget="iconPopover?.id">
