@@ -20,15 +20,15 @@ function hasUnconditionalPopoverDisplayClass(source: string): boolean {
 function usesCompactSelectList(source: string): boolean {
   const popoverTag = source.match(/<WuPopover\b[^>]*>/s)?.[0] ?? ''
   const scrollAreaTag = source.match(/<WuScrollArea\b[^>]*>/s)?.[0] ?? ''
-  return popoverTag.includes('p-4px')
+  return popoverTag.includes('p-[4px]')
     && scrollAreaTag.includes('size="sm"')
     && !scrollAreaTag.includes('viewport-class=')
 }
 
 function hasCompactScrollbarVariant(source: string): boolean {
   return source.includes("size?: 'md' | 'sm'")
-    && source.includes("'bottom-1px right-0 top-1px w-4px'")
-    && source.includes("'w-2px'")
+    && source.includes("'bottom-[1px] right-0 top-[1px] w-[4px]'")
+    && source.includes("'w-[2px]'")
 }
 
 function usesAdaptiveMultiSelectSummary(multiSelectSource: string, overflowRowSource: string): boolean {
@@ -72,10 +72,10 @@ describe('WuSelect Popover', () => {
   })
 
   it('紧凑选项列表不叠加额外水平边距', async () => {
-    expect(usesCompactSelectList('<WuPopover class="p-4px"><WuScrollArea size="sm">')).toBe(true)
+    expect(usesCompactSelectList('<WuPopover class="p-[4px]"><WuScrollArea size="sm">')).toBe(true)
     expect(
       usesCompactSelectList(
-        '<WuPopover class="p-4px"><WuScrollArea size="sm" viewport-class="px-6px">',
+        '<WuPopover class="p-[4px]"><WuScrollArea size="sm" viewport-class="px-[6px]">',
       ),
     ).toBe(false)
     expect(usesCompactSelectList(await readFile(selectSourceUrl, 'utf8'))).toBe(true)
@@ -84,8 +84,8 @@ describe('WuSelect Popover', () => {
   it('为小尺寸容器提供更窄且更贴边的滚动条', async () => {
     const compactFixture = [
       "size?: 'md' | 'sm'",
-      "'bottom-1px right-0 top-1px w-4px'",
-      "'w-2px'",
+      "'bottom-[1px] right-0 top-[1px] w-[4px]'",
+      "'w-[2px]'",
     ].join('\n')
     expect(hasCompactScrollbarVariant(compactFixture)).toBe(true)
     expect(hasCompactScrollbarVariant("size?: 'md'")).toBe(false)

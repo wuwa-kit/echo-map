@@ -118,7 +118,7 @@ describe('WuButton interactions', () => {
       icon: () => h('svg', { 'data-icon': 'custom' }),
       default: () => '不显示的文本',
     })
-    expect(button.props.class).toContain('h-32px w-32px p-0')
+    expect(button.props.class).toContain('h-[32px] w-[32px] p-0')
     expect(button.props.title).toBeUndefined()
     expect(button.props.tooltip).toBeUndefined()
     expect(vTooltip.mounted).toHaveBeenCalledWith(button, expect.objectContaining({ value: '关闭' }), expect.anything(), null)

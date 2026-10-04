@@ -88,11 +88,11 @@ function onClosed(): void {
       type="button"
       :disabled="disabled"
       :popovertarget="popoverId"
-      class="h-40px w-full min-w-0 flex cursor-pointer items-center justify-between gap-7px rounded-7px border border-[var(--line)] bg-[#152b24] px-10px text-left text-12px text-[#dce9e3] font-inherit outline-none hover:border-[rgba(101,241,194,0.36)] disabled:cursor-not-allowed disabled:opacity-50"
+      class="h-[40px] w-full min-w-0 flex cursor-pointer items-center justify-between gap-[7px] rounded-[7px] border border-[var(--line)] bg-[#152b24] px-[10px] text-left text-[12px] text-[#dce9e3] [font-family:inherit] outline-none hover:border-[rgba(101,241,194,0.36)] disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span v-if="selectedOptions.length === 0" class="min-w-0 truncate">{{ allLabel }}</span>
-      <span v-else-if="selectedOptions.length === 1" class="min-w-0 flex items-center gap-7px">
-        <img v-if="selectedOptions[0]?.iconUrl" class="h-20px w-20px shrink-0 object-contain" :src="selectedOptions[0].iconUrl" />
+      <span v-else-if="selectedOptions.length === 1" class="min-w-0 flex items-center gap-[7px]">
+        <img v-if="selectedOptions[0]?.iconUrl" class="h-[20px] w-[20px] shrink-0 object-contain" :src="selectedOptions[0].iconUrl" />
         <span class="min-w-0 truncate">{{ selectedOptions[0]?.label }}</span>
       </span>
       <WuOverflowRow
@@ -103,7 +103,7 @@ function onClosed(): void {
         :items="selectedOptions"
       >
         <template #item="{ item: option }">
-          <img class="h-20px w-20px object-contain" :src="option.iconUrl" />
+          <img class="h-[20px] w-[20px] object-contain" :src="option.iconUrl" />
         </template>
         <template #suffix="{ hiddenCount }">
           <span v-if="hiddenCount > 0" class="text-[#91ab9d]">+{{ hiddenCount }}</span>
@@ -119,19 +119,19 @@ function onClosed(): void {
       width="trigger"
       :max-height="320"
       :gap="6"
-      class="border border-[rgba(169,207,192,0.18)] rounded-9px bg-[rgba(8,20,17,0.98)] p-4px text-[#dce9e3] shadow-[0_18px_48px_rgba(0,0,0,0.42)] [&:popover-open]:overflow-visible"
+      class="border border-[rgba(169,207,192,0.18)] rounded-[9px] bg-[rgba(8,20,17,0.98)] p-[4px] text-[#dce9e3] shadow-[0_18px_48px_rgba(0,0,0,0.42)] [&:popover-open]:overflow-visible"
       @opened="onOpened"
       @closed="onClosed"
     >
-      <div v-if="searchPlaceholder" class="absolute bottom-[calc(100%+6px)] left-0 h-40px w-full min-w-0 flex box-border items-center gap-7px rounded-7px border border-[rgba(101,241,194,0.55)] bg-[#152b24] px-10px text-12px text-[#dce9e3] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
+      <div v-if="searchPlaceholder" class="absolute bottom-[calc(100%+6px)] left-0 h-[40px] w-full min-w-0 flex box-border items-center gap-[7px] rounded-[7px] border border-[rgba(101,241,194,0.55)] bg-[#152b24] px-[10px] text-[12px] text-[#dce9e3] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
         <WuSvg name="search" class="shrink-0 text-[#6f887f] [--wu-svg-h:14px]" />
         <WuInput v-model="searchQuery" class="flex-1" variant="plain" size="sm" type="text" :placeholder="searchPlaceholder" />
         <WuButton v-if="searchQuery" variant="ghost" size="xs" icon="close" icon-only tooltip="清除搜索" @click="clearSearch"></WuButton>
         <WuButton variant="ghost" tone="accent" size="xs" icon-only tooltip="收起选项" @click="popover?.hide()"><template #icon><WuSvg name="chevron-down" class="rotate-180" /></template></WuButton>
       </div>
-      <div class="min-h-40px flex items-center justify-between gap-8px border-b border-[var(--line)] px-8px py-5px">
+      <div class="min-h-[40px] flex items-center justify-between gap-[8px] border-b border-[var(--line)] px-[8px] py-[5px]">
         <WuCheckBox
-          class="flex shrink-0 items-center gap-6px text-11px text-[#8fa69d]"
+          class="flex shrink-0 items-center gap-[6px] text-[11px] text-[#8fa69d]"
           :model-value="allCurrentSelected"
           :indeterminate="someCurrentSelected"
           :disabled="filteredOptions.length === 0"
@@ -146,29 +146,29 @@ function onClosed(): void {
           :items="selectedOptions"
         >
           <template #item="{ item: option }">
-            <img class="h-20px w-20px object-contain" :src="option.iconUrl" />
+            <img class="h-[20px] w-[20px] object-contain" :src="option.iconUrl" />
           </template>
           <template #suffix="{ hiddenCount }">
-            <span v-if="hiddenCount > 0" class="text-11px text-[#91ab9d]">+{{ hiddenCount }}</span>
+            <span v-if="hiddenCount > 0" class="text-[11px] text-[#91ab9d]">+{{ hiddenCount }}</span>
           </template>
         </WuOverflowRow>
       </div>
       <WuScrollArea size="sm">
-        <div class="flex flex-col gap-3px p-4px">
-          <div v-if="filteredOptions.length === 0" class="px-8px py-18px text-center text-12px text-[#789087]">没有匹配的{{ label }}</div>
+        <div class="flex flex-col gap-[3px] p-[4px]">
+          <div v-if="filteredOptions.length === 0" class="px-[8px] py-[18px] text-center text-[12px] text-[#789087]">没有匹配的{{ label }}</div>
           <button
             v-for="option in filteredOptions"
             :key="option.value"
             type="button"
-            class="min-h-40px w-full min-w-0 flex cursor-pointer items-center justify-between gap-8px border-0 rounded-6px bg-transparent px-8px text-left text-12px font-inherit transition-[color,background-color] duration-120 hover:bg-[#1c372b]"
-            :class="selectedSet.has(option.value) ? 'text-[#eafff2] font-600' : 'text-[#dce9e3]'"
+            class="min-h-[40px] w-full min-w-0 flex cursor-pointer items-center justify-between gap-[8px] border-0 rounded-[6px] bg-transparent px-[8px] text-left text-[12px] [font-family:inherit] transition-[color,background-color] duration-120 hover:bg-[#1c372b]"
+            :class="selectedSet.has(option.value) ? 'text-[#eafff2] font-semibold' : 'text-[#dce9e3]'"
             @click="toggle(option.value)"
           >
-            <span class="min-w-0 flex items-center gap-8px">
-              <img v-if="option.iconUrl" loading="lazy" decoding="async" class="h-24px w-24px shrink-0 object-contain" :src="option.iconUrl" />
+            <span class="min-w-0 flex items-center gap-[8px]">
+              <img v-if="option.iconUrl" loading="lazy" decoding="async" class="h-[24px] w-[24px] shrink-0 object-contain" :src="option.iconUrl" />
               <span class="min-w-0 truncate">{{ option.label }}</span>
             </span>
-            <span class="h-16px w-16px shrink-0">
+            <span class="h-[16px] w-[16px] shrink-0">
               <WuSvg v-if="selectedSet.has(option.value)" name="check" class="text-[var(--accent)] [--wu-svg-h:16px]" />
             </span>
           </button>

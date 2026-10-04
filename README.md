@@ -33,4 +33,4 @@ pnpm dev
 - [官方资产浏览](docs/asset-browser.md)
 - [人工点位录入](docs/point-editor.md)
 
-项目使用 pnpm、Node.js、TypeScript、Vue 3、OpenLayers、Pinia 和 UnoCSS 构建。
+项目使用 pnpm、Node.js、TypeScript、Vue 3、OpenLayers、Pinia 和 Tailwind CSS 构建。

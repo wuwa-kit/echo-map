@@ -131,7 +131,7 @@ defineExpose({ isOpen, isSupported, show: open, hide, updatePosition })
   ><slot /></span>
   <span
     ref="panelRef" popover="manual" :hidden="!isSupported"
-    class="wu-floating-motion pointer-events-none fixed inset-auto m-0 w-max box-border select-none overflow-hidden break-words border-0 rounded-5px bg-[#e5eee7] px-10px py-6px text-12px text-[#263b31] font-400 leading-18px shadow-lg [&:popover-open]:block"
+    class="wu-floating-motion pointer-events-none fixed inset-auto m-0 w-max box-border select-none overflow-hidden wrap-break-word border-0 rounded-[5px] bg-[#e5eee7] px-[10px] py-[6px] text-[12px] text-[#263b31] font-normal leading-[18px] shadow-lg [&:popover-open]:block"
     @toggle="onToggle"
   ><slot name="content">{{ content }}</slot></span>
 </template>

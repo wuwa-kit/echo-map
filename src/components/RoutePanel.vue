@@ -38,13 +38,13 @@ function generateRoutes(): void {
 </script>
 
 <template>
-  <div v-if="selectedEchoIds.length > 0" class="p-16px">
-    <div class="grid grid-cols-2 gap-8px">
+  <div v-if="selectedEchoIds.length > 0" class="p-[16px]">
+    <div class="grid grid-cols-2 gap-[8px]">
       <WuButton class="w-full" size="lg" :variant="planning ? 'outline' : 'solid'" :tone="planning ? 'neutral' : 'accent'" :disabled="generateDisabled" @click="generateRoutes">
         {{ generateLabel }}
       </WuButton>
       <WuButton class="w-full" size="lg" tone="accent" :disabled="exportDisabled" :loading="exportStore.status === 'running'" @click="exportStore.start">导出路线</WuButton>
     </div>
-    <div v-if="routeError" class="mt-8px text-12px text-[#ff9f92]">{{ routeError }}</div>
+    <div v-if="routeError" class="mt-[8px] text-[12px] text-[#ff9f92]">{{ routeError }}</div>
   </div>
 </template>

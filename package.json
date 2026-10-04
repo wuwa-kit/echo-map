@@ -19,6 +19,7 @@
     "data:convert-official": "node scripts/convert-official-points.ts"
   },
   "dependencies": {
+    "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "@types/pngjs": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
@@ -29,8 +30,8 @@
     "ol": "catalog:",
     "pinia": "catalog:",
     "pngjs": "catalog:",
+    "tailwindcss": "catalog:",
     "typescript": "catalog:",
-    "unocss": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:",
     "vue": "catalog:",

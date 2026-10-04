@@ -49,7 +49,7 @@ describe('control panel layout', () => {
     expect(routePanelSource).toContain('>导出路线</WuButton>')
     expect(routePanelSource).toContain(':loading="exportStore.status === \'running\'"')
     expect(routePanelSource).not.toContain(':loading="planning"')
-    expect(routePanelSource).toContain('class="grid grid-cols-2 gap-8px"')
+    expect(routePanelSource).toContain('class="grid grid-cols-2 gap-[8px]"')
     expect(routePanelSource).toContain("const exportDisabled = computed(() => planning.value || (!routePlan.value && !route.value) || exportStore.status === 'running')")
     expect(routePanelSource).toContain(':disabled="exportDisabled"')
     expect(routePanelSource).not.toContain('<button v-if="routePlan || route"')

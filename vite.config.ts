@@ -1,10 +1,10 @@
+import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
-import UnoCSS from 'unocss/vite'
 import { pointEditorPlugin } from './scripts/editor-plugin.ts'
 
 export default defineConfig({
-  plugins: [UnoCSS(), vue(), pointEditorPlugin()],
+  plugins: [tailwindcss(), vue(), pointEditorPlugin()],
   worker: {
     format: 'es',
   },

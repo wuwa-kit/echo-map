@@ -27,30 +27,30 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="panelRef" popover="manual" class="fixed inset-0 m-0 h-[100dvh] max-h-none w-full max-w-none border-0 bg-[#07110ff5] p-0 text-[#e7f5ee]">
-    <div class="mx-auto h-full max-w-900px flex flex-col">
-      <div class="shrink-0 flex items-center justify-between gap-12px border-b border-[#294539] p-16px">
-        <div class="text-18px font-600">路线长图</div>
+    <div class="mx-auto h-full max-w-[900px] flex flex-col">
+      <div class="shrink-0 flex items-center justify-between gap-[12px] border-b border-[#294539] p-[16px]">
+        <div class="text-[18px] font-semibold">路线长图</div>
         <WuButton size="lg" @click="store.close">{{ status === 'running' ? '取消并关闭' : '关闭' }}</WuButton>
       </div>
-      <div v-if="status === 'running'" class="flex flex-1 flex-col items-center justify-center gap-16px p-24px">
-        <div class="text-16px">{{ progress.message }}</div>
-        <div class="text-14px text-[#afc6bb]">{{ progress.completed }} / {{ progress.total || '…' }} 张子图</div>
-        <div class="text-center text-13px text-[#afc6bb]">正在生成固定双列路线图和手机分卷，请保持页面打开。</div>
+      <div v-if="status === 'running'" class="flex flex-1 flex-col items-center justify-center gap-[16px] p-[24px]">
+        <div class="text-[16px]">{{ progress.message }}</div>
+        <div class="text-[14px] text-[#afc6bb]">{{ progress.completed }} / {{ progress.total || '…' }} 张子图</div>
+        <div class="text-center text-[13px] text-[#afc6bb]">正在生成固定双列路线图和手机分卷，请保持页面打开。</div>
       </div>
-      <div v-else-if="status === 'error' || status === 'cancelled'" class="flex flex-1 flex-col items-center justify-center gap-16px p-24px">
-        <div class="text-15px text-[#efc697]">{{ error || '生成已取消' }}</div>
+      <div v-else-if="status === 'error' || status === 'cancelled'" class="flex flex-1 flex-col items-center justify-center gap-[16px] p-[24px]">
+        <div class="text-[15px] text-[#efc697]">{{ error || '生成已取消' }}</div>
         <WuButton size="lg" variant="solid" tone="accent" @click="store.retry">重新生成</WuButton>
       </div>
       <template v-else-if="artifacts">
-        <div class="shrink-0 border-b border-[#294539] p-16px">
-          <div v-tooltip="artifacts.title" class="line-clamp-2 text-15px">{{ artifacts.title }}</div>
-          <div class="mt-6px text-12px text-[#afc6bb]">{{ artifacts.routes.length }} 张路线图 · 固定 2 列 · {{ artifacts.maps.length }} 张分地图 · {{ artifacts.pages.length }} 张手机分卷</div>
-          <div class="mt-12px flex gap-8px overflow-x-auto whitespace-nowrap pb-4px">
+        <div class="shrink-0 border-b border-[#294539] p-[16px]">
+          <div v-tooltip="artifacts.title" class="line-clamp-2 text-[15px]">{{ artifacts.title }}</div>
+          <div class="mt-[6px] text-[12px] text-[#afc6bb]">{{ artifacts.routes.length }} 张路线图 · 固定 2 列 · {{ artifacts.maps.length }} 张分地图 · {{ artifacts.pages.length }} 张手机分卷</div>
+          <div class="mt-[12px] flex gap-[8px] overflow-x-auto whitespace-nowrap pb-[4px]">
             <a v-for="(route, index) in artifacts.routes" :key="route.url" :href="route.url" :download="`${route.filename}.jpg`" :class="buttonClasses({ variant: 'solid', tone: 'accent', size: 'lg' })">{{ artifacts.routes.length === 1 ? '保存路线图' : `路线图 ${index + 1} / ${artifacts.routes.length}` }}</a>
             <a v-for="map in artifacts.maps" :key="map.url" :href="map.url" :download="`${map.filename}.jpg`" :class="buttonClasses({ tone: 'accent', size: 'lg' })">{{ map.parts === 1 ? map.title : `${map.title} ${map.part} / ${map.parts}` }}</a>
             <a v-for="(page, index) in artifacts.pages" :key="page.url" :href="page.url" :download="`${artifacts.filename}-手机-${String(index + 1).padStart(2, '0')}.jpg`" :class="buttonClasses({ size: 'lg' })">分卷 {{ index + 1 }}</a>
           </div>
-          <div class="mt-10px text-12px text-[#afc6bb]">下方预览{{ artifacts.routes.length === 1 ? '路线图' : '第一张路线图' }}，可长按保存。</div>
+          <div class="mt-[10px] text-[12px] text-[#afc6bb]">下方预览{{ artifacts.routes.length === 1 ? '路线图' : '第一张路线图' }}，可长按保存。</div>
         </div>
         <div v-if="artifacts.routes[0]" class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <img :src="artifacts.routes[0].url" :width="artifacts.routes[0].width" :height="artifacts.routes[0].height" decoding="async" class="block h-auto w-full" />

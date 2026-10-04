@@ -28,7 +28,7 @@ describe('point detail hints', () => {
     expect(detailsSource).toContain('`XYZ ${coordinate.x}, ${coordinate.y}, ${coordinate.z}`')
     expect(detailsSource).toContain('<MapPointPopup')
     expect(detailsSource).toContain('<EchoPointMember')
-    expect(detailsSource).toContain('max-h-320px')
+    expect(detailsSource).toContain('max-h-[320px]')
     expect(detailsSource).toContain('store.selectPointCandidate(candidate.point.id)')
     expect(detailsSource).toContain('store.returnToPointCandidates()')
     expect(detailsSource).toContain('navigationPointCandidates.value.map')

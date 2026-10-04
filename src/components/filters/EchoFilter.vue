@@ -52,13 +52,13 @@ const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCovera
 </script>
 
 <template>
-  <div id="echo-filters" class="border-b border-[var(--line)] p-18px">
-    <div class="mb-13px">
+  <div id="echo-filters" class="border-b border-[var(--line)] p-[18px]">
+    <div class="mb-[13px]">
       <div>
-        <span class="block text-12px min-[1024px]:text-8px text-[#608176] font-800 tracking-[0.18em]">声骸目标</span>
+        <span class="block text-[12px] min-[1024px]:text-[8px] text-[#608176] font-extrabold tracking-[0.18em]">声骸目标</span>
       </div>
     </div>
-    <div class="mb-10px">
+    <div class="mb-[10px]">
       <div class="min-w-0">
         <WuMultiSelect
           id="sonata-filter-select"
@@ -71,57 +71,57 @@ const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCovera
         />
       </div>
     </div>
-    <div class="mb-10px flex h-44px w-full min-[1024px]:h-34px items-center gap-7px border border-[var(--line)] rounded-7px bg-[rgba(21,40,35,0.78)] px-10px text-[#6f887f] focus-within:border-[rgba(101,241,194,0.55)]">
+    <div class="mb-[10px] flex h-[44px] w-full min-[1024px]:h-[34px] items-center gap-[7px] border border-[var(--line)] rounded-[7px] bg-[rgba(21,40,35,0.78)] px-[10px] text-[#6f887f] focus-within:border-[rgba(101,241,194,0.55)]">
       <WuSvg name="search" class="shrink-0 [--wu-svg-h:14px]" />
       <WuInput variant="plain" size="sm" :model-value="echoSearch" type="search" placeholder="搜索当前声骸列表" @update:model-value="store.setEchoSearch" />
     </div>
-    <div class="mb-9px flex items-center justify-between gap-7px">
+    <div class="mb-[9px] flex items-center justify-between gap-[7px]">
       <WuCheckBox
-        class="flex shrink-0 items-center gap-6px text-12px min-[1024px]:text-9px text-[#8fa69d]"
+        class="flex shrink-0 items-center gap-[6px] text-[12px] min-[1024px]:text-[9px] text-[#8fa69d]"
         :model-value="allCurrentSelected"
         :indeterminate="someCurrentSelected"
         :disabled="candidateEchoes.length === 0"
         @update:model-value="setCurrentSelection"
       >{{ currentSelectedCount }} / {{ candidateEchoes.length }}</WuCheckBox>
-      <div class="flex shrink-0 gap-5px">
+      <div class="flex shrink-0 gap-[5px]">
         <WuButton v-for="option in costOptions" :key="option.value" :size="compact ? 'lg' : 'xs'" :tone="activeCostFilterSet.has(option.value) ? 'accent' : 'neutral'" @click="toggleCostFilter(option.value)">{{ option.label }}</WuButton>
       </div>
     </div>
     <WuScrollArea
-      class="h-290px"
-      content-class="flex flex-col gap-4px pr-2px"
+      class="h-[290px]"
+      content-class="flex flex-col gap-[4px] pr-[2px]"
     >
       <div
         v-if="echoSearch.trim() !== '' && filteredEchoes.length === 0"
-        class="h-290px flex items-center justify-center px-16px text-center text-12px text-[var(--muted)]"
+        class="h-[290px] flex items-center justify-center px-[16px] text-center text-[12px] text-[var(--muted)]"
       >未找到匹配的声骸</div>
       <button
         v-for="echo in filteredEchoes"
         :key="echo.id"
-        class="grid min-h-48px w-full cursor-pointer grid-cols-[40px_minmax(0,1fr)_20px] items-center rounded-6px border px-8px py-4px pl-4px text-left font-inherit"
+        class="grid min-h-[48px] w-full cursor-pointer grid-cols-[40px_minmax(0,1fr)_20px] items-center rounded-[6px] border px-[8px] py-[4px] pl-[4px] text-left [font-family:inherit]"
         :class="selectedEchoIds.includes(echo.id)
           ? 'border-[rgba(101,241,194,0.34)] bg-[rgba(34,65,55,0.66)]'
           : 'border-transparent bg-[rgba(25,43,38,0.48)] hover:border-[rgba(101,241,194,0.34)] hover:bg-[rgba(34,65,55,0.66)]'"
         type="button"
         @click="store.toggleEcho(echo.id)"
       >
-        <img loading="lazy" decoding="async" class="h-38px w-38px object-contain" :src="echo.iconUrl" />
-        <span class="flex overflow-hidden flex-col items-start gap-3px">
-          <span class="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-14px min-[1024px]:text-11px text-[#dce9e3] font-[560]">{{ echo.name }}</span>
+        <img loading="lazy" decoding="async" class="h-[38px] w-[38px] object-contain" :src="echo.iconUrl" />
+        <span class="flex overflow-hidden flex-col items-start gap-[3px]">
+          <span class="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[14px] min-[1024px]:text-[11px] text-[#dce9e3] font-[560]">{{ echo.name }}</span>
           <span
-            class="text-12px min-[1024px]:text-9px"
+            class="text-[12px] min-[1024px]:text-[9px]"
             :class="(locationCoverageByEcho.get(echo.id)?.current ?? 0) === 0 && (locationCoverageByEcho.get(echo.id)?.total ?? 0) > 0 ? 'text-[#d3b680]' : 'text-[#70877e]'"
           >COST {{ echo.cost }} · 当前 {{ locationCoverageByEcho.get(echo.id)?.current ?? 0 }} / 全部 {{ locationCoverageByEcho.get(echo.id)?.total ?? 0 }} 处<span v-if="(locationCoverageByEcho.get(echo.id)?.stateCount ?? 0) > 1"> · {{ locationCoverageByEcho.get(echo.id)?.stateCount }} 图</span></span>
         </span>
         <WuSvg :name="selectedEchoIds.includes(echo.id) ? 'check' : 'plus'" class="text-[var(--accent)] [--wu-svg-h:14px]" />
       </button>
     </WuScrollArea>
-    <div v-if="selectedEchoes.length" class="mt-10px min-w-0 border-t border-[var(--line)] pt-10px">
-      <div class="min-w-0 overflow-x-auto overscroll-x-contain pb-2px">
-        <div class="w-max flex gap-5px">
+    <div v-if="selectedEchoes.length" class="mt-[10px] min-w-0 border-t border-[var(--line)] pt-[10px]">
+      <div class="min-w-0 overflow-x-auto overscroll-x-contain pb-[2px]">
+        <div class="w-max flex gap-[5px]">
           <WuTooltip v-for="echo in selectedEchoes" :key="echo.id" :content="echo.name" placement="top" :gap="6" class="shrink-0">
-            <button type="button" class="h-36px w-36px shrink-0 flex cursor-pointer items-center justify-center rounded-6px border border-[rgba(101,241,194,0.34)] bg-[rgba(34,65,55,0.66)] p-2px hover:border-[rgba(101,241,194,0.72)] hover:bg-[#264b3c]" @click="store.toggleEcho(echo.id)">
-              <img class="h-30px w-30px object-contain" :src="echo.iconUrl" />
+            <button type="button" class="h-[36px] w-[36px] shrink-0 flex cursor-pointer items-center justify-center rounded-[6px] border border-[rgba(101,241,194,0.34)] bg-[rgba(34,65,55,0.66)] p-[2px] hover:border-[rgba(101,241,194,0.72)] hover:bg-[#264b3c]" @click="store.toggleEcho(echo.id)">
+              <img class="h-[30px] w-[30px] object-contain" :src="echo.iconUrl" />
             </button>
           </WuTooltip>
         </div>

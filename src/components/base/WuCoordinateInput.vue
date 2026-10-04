@@ -46,9 +46,9 @@ function filterAxisInput(axis: CoordinateAxis, event: Event): void {
 </script>
 
 <template>
-  <div ref="containerRef" class="flex items-start gap-6px" @keydown="interruptKey" @focusout="emit('confirmationInterrupted')" @compositionstart="emit('confirmationInterrupted')">
+  <div ref="containerRef" class="flex items-start gap-[6px]" @keydown="interruptKey" @focusout="emit('confirmationInterrupted')" @compositionstart="emit('confirmationInterrupted')">
     <WuInput v-if="state.mode === 'combined'" class="min-w-0 flex-1 font-mono" :model-value="combinedText" placeholder="X, Y, Z" :disabled="disabled" :invalid="invalid || state.invalid" @update:model-value="edit($event)" @blur="commit" @confirm="confirm($event)" />
-    <div v-else class="min-w-0 flex flex-1 gap-6px">
+    <div v-else class="min-w-0 flex flex-1 gap-[6px]">
       <WuInput v-for="axis in coordinateAxes" :key="axis" class="min-w-0 flex-1 font-mono" :tooltip="axis.toUpperCase()" :placeholder="axis.toUpperCase()" inputmode="text" :model-value="axisText(axis)" :disabled="disabled" :invalid="invalid || (state.axisPending[axis] && parseCoordinateInteger(axisText(axis)) === null)" @input.capture="filterAxisInput(axis, $event)" @compositionend.capture="filterAxisInput(axis, $event)" @update:model-value="edit($event, axis)" @blur="commit" @confirm="confirm($event, axis)" />
     </div>
     <WuButton icon-only :icon="state.mode === 'combined' ? 'coordinate-axes' : 'coordinate-combined'" :tooltip="state.mode === 'combined' ? '切换为分轴输入' : '切换为整组输入'" :disabled="disabled" @click="toggle"></WuButton>

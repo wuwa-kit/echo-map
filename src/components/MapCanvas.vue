@@ -345,13 +345,13 @@ onBeforeUnmount(() => {
 <template>
   <div class="relative h-full w-full min-h-0 min-w-0">
     <span ref="contextAnchorRef" class="pointer-events-none fixed h-0 w-0" :style="{ left: `${contextPosition.x}px`, top: `${contextPosition.y}px` }" />
-    <WuPopover ref="contextMenuRef" :anchor="contextAnchor" :disabled="!editing || editor.busy" :width="144" :gap="0" class="rounded-8px border border-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
+    <WuPopover ref="contextMenuRef" :anchor="contextAnchor" :disabled="!editing || editor.busy" :width="144" :gap="0" class="rounded-[8px] border border-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
       <WuButton variant="ghost" @click="requestPoint('navigation')">添加定位</WuButton>
       <WuButton variant="ghost" @click="requestPoint('echo')">添加声骸</WuButton>
     </WuPopover>
     <PointDetails v-if="!editing" />
     <RouteLegDetailsPopup v-if="!editing && selectedRouteLeg" :details="selectedRouteLeg" @close="selectedRouteLeg = null" />
-    <div v-if="baseTileError" class="absolute left-1/2 top-12px z-70 flex max-w-[90%] translate-x--1/2 items-center gap-10px rounded-8px bg-[#35261eed] px-12px py-8px text-12px text-[#f1d7b4]">
+    <div v-if="baseTileError" class="absolute left-1/2 top-[12px] z-70 flex max-w-[90%] -translate-x-1/2 items-center gap-[10px] rounded-[8px] bg-[#35261eed] px-[12px] py-[8px] text-[12px] text-[#f1d7b4]">
       <span>{{ selectedGravity === 2 ? '反重力' : '' }}底图部分加载失败</span>
       <WuButton size="sm" @click="store.retryBaseTiles">重试</WuButton>
     </div>
@@ -360,7 +360,7 @@ onBeforeUnmount(() => {
       @contextmenu="openContextMenu"
       class="absolute inset-0 [background:linear-gradient(rgba(101,241,194,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(101,241,194,0.025)_1px,transparent_1px),#0c1715] [background-size:32px_32px]"
     />
-    <div :style="floorDockStyle" class="pointer-events-none absolute bottom-[var(--floor-dock-bottom)] right-[var(--floor-dock-right)] z-70 max-h-[var(--floor-dock-height)] flex flex-col items-start gap-4px" :class="shortFloorDock ? 'left-[max(60px,env(safe-area-inset-left))]' : 'left-[max(8px,env(safe-area-inset-left))]'">
+    <div :style="floorDockStyle" class="pointer-events-none absolute bottom-[var(--floor-dock-bottom)] right-[var(--floor-dock-right)] z-70 max-h-[var(--floor-dock-height)] flex flex-col items-start gap-[4px]" :class="shortFloorDock ? 'left-[max(60px,env(safe-area-inset-left))]' : 'left-[max(8px,env(safe-area-inset-left))]'">
       <FloorSwitcher
         :selected-level-id="selectedLevelId" :floor-request="floorRequest" :floor-groups="nearbyFloorGroups"
         :visible="floorSwitcherVisible" :compact-floors="compactFloors"

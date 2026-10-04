@@ -38,9 +38,9 @@ const canScroll = computed(() => !props.unbounded && scrollHeight.value > client
 const scrollRange = computed(() => Math.max(0, scrollHeight.value - clientHeight.value))
 const actualMinThumbSize = computed(() => props.minThumbSize ?? (props.size === 'sm' ? 20 : 28))
 const trackSizeClass = computed(() => props.size === 'sm'
-  ? 'bottom-1px right-0 top-1px w-4px'
-  : 'bottom-3px right-2px top-3px w-8px')
-const thumbSizeClass = computed(() => props.size === 'sm' ? 'w-2px' : 'w-4px')
+  ? 'bottom-[1px] right-0 top-[1px] w-[4px]'
+  : 'bottom-[3px] right-[2px] top-[3px] w-[8px]')
+const thumbSizeClass = computed(() => props.size === 'sm' ? 'w-[2px]' : 'w-[4px]')
 const thumbHeight = computed(() => {
   if (!canScroll.value || trackHeight.value === 0) {
     return 0

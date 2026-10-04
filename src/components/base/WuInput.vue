@@ -42,11 +42,11 @@ const events = createInputEvents(props, {
     :value="modelValue ?? ''"
     :disabled="disabled"
     :readonly="readonly"
-    class="block w-full min-w-0 text-16px text-[#e1f0e8] font-inherit outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[#6f887f] disabled:cursor-not-allowed disabled:opacity-50"
+    class="block w-full min-w-0 text-[16px] text-[#e1f0e8] [font-family:inherit] outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[#6f887f] disabled:cursor-not-allowed disabled:opacity-50"
     :class="[
-      variant === 'plain' ? 'h-full border-0 bg-transparent p-0' : 'rounded-7px border bg-[#12271f]',
-      variant === 'outline' ? (size === 'sm' ? 'h-36px px-6px' : 'min-h-40px px-10px') : '',
-      size === 'sm' ? 'lg:text-13px' : 'lg:text-14px',
+      variant === 'plain' ? 'h-full border-0 bg-transparent p-0' : 'rounded-[7px] border bg-[#12271f]',
+      variant === 'outline' ? (size === 'sm' ? 'h-[36px] px-[6px]' : 'min-h-[40px] px-[10px]') : '',
+      size === 'sm' ? 'lg:text-[13px]' : 'lg:text-[14px]',
       invalid
         ? 'border-[#ff8d7e] focus-visible:border-[#ffad9f] focus-visible:shadow-[0_0_0_2px_rgba(255,141,126,0.13)]'
         : 'border-[var(--line)] focus-visible:border-[var(--accent)]',

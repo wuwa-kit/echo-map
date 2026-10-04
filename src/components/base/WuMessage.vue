@@ -54,9 +54,9 @@ defineExpose({ show, close })
 <template>
   <div
     v-bind="$attrs" ref="panelRef" popover="manual" :hidden="!isSupported"
-    class="wu-floating-motion fixed inset-x-0 bottom-auto top-12px mx-auto my-0 w-max max-w-[calc(100vw-24px)] border rounded-7px px-12px py-9px text-13px leading-18px backdrop-blur-8px [&:popover-open]:flex"
+    class="wu-floating-motion fixed inset-x-0 bottom-auto top-[12px] mx-auto my-0 w-max max-w-[calc(100vw-24px)] border rounded-[7px] px-[12px] py-[9px] text-[13px] leading-[18px] backdrop-blur-[8px] [&:popover-open]:flex"
     :class="colorClass"
   >
-    <span class="min-w-0 whitespace-pre-wrap break-words">{{ message }}</span>
+    <span class="min-w-0 whitespace-pre-wrap wrap-break-word">{{ message }}</span>
   </div>
 </template>

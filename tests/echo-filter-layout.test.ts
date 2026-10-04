@@ -16,7 +16,7 @@ describe('echo list filtering', () => {
     expect(source).toContain('store.deselectCandidateEchoes()')
     expect(source).not.toContain('替换为当前结果')
     expect(source).not.toContain('replaceSelectedEchoesWithFiltered')
-    expect(source).toContain('class="h-290px"')
+    expect(source).toContain('class="h-[290px]"')
     expect(source).toContain('v-for="echo in filteredEchoes"')
     expect(source).toContain('v-for="echo in selectedEchoes"')
     expect(source).toContain(':content="echo.name" placement="top"')

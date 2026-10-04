@@ -15,7 +15,7 @@ describe('map canvas coordinate display', () => {
     expect(source).not.toContain('@mouseleave=')
     expect(source).not.toContain('clearPointerCoordinate')
     expect(source).not.toContain('invisible: !pointerCoordinateText')
-    expect(source).toContain('flex flex-col items-start gap-4px')
+    expect(source).toContain('flex flex-col items-start gap-[4px]')
     expect(source).toContain("'left-[max(60px,env(safe-area-inset-left))]'")
   })
 })

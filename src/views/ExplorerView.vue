@@ -60,8 +60,8 @@ const mapPadding = shallowRef<MapPadding>([16, 16, 16, 16])
 const mapDockBottom = shallowRef(8)
 const controlVisible = computed(() => compact.value ? mobileSheet.value === 'filters' : !controlPanelCollapsed.value)
 const compactPanelClass = computed(() => shortLandscape.value
-  ? 'bottom-[var(--mobile-bar-height)] right-[max(12px,env(safe-area-inset-right))] top-[max(12px,env(safe-area-inset-top))] w-[min(360px,calc(100%_-_24px))] rounded-14px'
-  : 'bottom-[var(--mobile-bar-height)] inset-x-0 max-h-[min(70%,calc(100%_-_var(--mobile-bar-height)_-_220px))] rounded-t-18px')
+  ? 'bottom-[var(--mobile-bar-height)] right-[max(12px,env(safe-area-inset-right))] top-[max(12px,env(safe-area-inset-top))] w-[min(360px,calc(100%_-_24px))] rounded-[14px]'
+  : 'bottom-[var(--mobile-bar-height)] inset-x-0 max-h-[min(70%,calc(100%_-_var(--mobile-bar-height)_-_220px))] rounded-t-[18px]')
 
 function updateMapPadding(): void {
   if (!stage.value) {
@@ -165,14 +165,14 @@ const loadError = computed(() => {
     class="fixed inset-x-0 top-[var(--viewport-top)] h-[var(--viewport-height)] overflow-hidden bg-[#07100f]"
     :style="{ '--viewport-height': `${viewportHeight}px`, '--viewport-top': `${viewportTop}px` }"
   >
-    <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center gap-14px p-24px text-center text-14px text-[#9ab0a7]">
-      <span class="h-34px w-34px animate-spin border-2 border-[rgba(101,241,194,0.16)] border-t-[var(--accent)] rounded-full" />
-      <div class="text-20px text-[#e4f0eb]">正在装载地图数据</div>
+    <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center gap-[14px] p-[24px] text-center text-[14px] text-[#9ab0a7]">
+      <span class="h-[34px] w-[34px] animate-spin border-2 border-[rgba(101,241,194,0.16)] border-t-[var(--accent)] rounded-full" />
+      <div class="text-[20px] text-[#e4f0eb]">正在装载地图数据</div>
       <div>加载声骸、地图与楼层信息…</div>
     </div>
-    <div v-else-if="loadError" class="absolute inset-0 flex flex-col items-center justify-center gap-14px p-24px text-center text-14px text-[#9ab0a7]">
-      <div class="text-20px text-[#e4f0eb]">地图数据无法加载</div>
-      <div class="max-w-full break-words">{{ loadError }}</div>
+    <div v-else-if="loadError" class="absolute inset-0 flex flex-col items-center justify-center gap-[14px] p-[24px] text-center text-[14px] text-[#9ab0a7]">
+      <div class="text-[20px] text-[#e4f0eb]">地图数据无法加载</div>
+      <div class="max-w-full wrap-break-word">{{ loadError }}</div>
       <WuButton size="lg" tone="accent" @click="reloadDataset()">重新加载</WuButton>
     </div>
     <div
@@ -181,7 +181,7 @@ const loadError = computed(() => {
       class="relative h-full w-full min-h-0 min-w-0 overflow-hidden bg-[#101c1a] [--control-panel-width:340px] [--mobile-bar-height:calc(72px+env(safe-area-inset-bottom))] [--safe-top:env(safe-area-inset-top)] [--safe-right:env(safe-area-inset-right)] [--safe-bottom:env(safe-area-inset-bottom)] [--safe-left:env(safe-area-inset-left)]"
     >
       <MapCanvas ref="mapCanvasRef" :padding="mapPadding" :dock-bottom="mapDockBottom" :editing="editingMode" @editor-points-selected="selectEditorPoints" @point-add-requested="addEditorPoint" />
-      <div v-if="!compact || mobileSheet === null" class="absolute left-[max(8px,var(--safe-left))] top-[max(8px,var(--safe-top))] z-90 flex items-start gap-4px">
+      <div v-if="!compact || mobileSheet === null" class="absolute left-[max(8px,var(--safe-left))] top-[max(8px,var(--safe-top))] z-90 flex items-start gap-[4px]">
         <MapNavigationCascader
           id="map-navigation-trigger" :dataset="dataset" :state-id="store.selectedStateId" :center="store.mapViewport?.center ?? null"
           :class="compact ? '[--wu-cascader-height:44px] [--wu-cascader-gap:4px] [--wu-cascader-padding:9px]' : '[--wu-cascader-height:40px] [--wu-cascader-gap:6px] [--wu-cascader-padding:11px]'"
@@ -195,8 +195,8 @@ const loadError = computed(() => {
         class="absolute z-80 min-h-0 flex flex-col overflow-hidden border border-[var(--line)] bg-[var(--panel)] shadow-xl transition-transform duration-300 ease-out motion-reduce:transition-none"
         :class="compact ? compactPanelClass : ['inset-y-0 right-0 w-[var(--control-panel-width)]', controlPanelCollapsed ? 'pointer-events-none translate-x-full' : 'translate-x-0']"
       >
-        <div v-if="compact" class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-16px py-6px">
-          <span v-if="!editingMode" class="text-16px font-600">筛选与路线</span>
+        <div v-if="compact" class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-[16px] py-[6px]">
+          <span v-if="!editingMode" class="text-[16px] font-semibold">筛选与路线</span>
           <WuButton size="lg" variant="ghost" tone="accent" @click="closeSheet">查看地图</WuButton>
         </div>
         <PointEditorPanel v-if="editingMode" ref="editorPanelRef" :locate-position="coordinate => mapCanvas?.locateDraft(coordinate) ?? false" :is-position-in-view="coordinate => mapCanvas?.isDraftInView(coordinate) ?? false" @returned="leaveEditor" @locate-requested="mapCanvas?.locateDraft($event)" />
@@ -204,7 +204,7 @@ const loadError = computed(() => {
       </div>
       <div
         v-if="!compact"
-        class="absolute top-14px z-90 transition-[right] duration-300 ease-out motion-reduce:transition-none"
+        class="absolute top-[14px] z-90 transition-[right] duration-300 ease-out motion-reduce:transition-none"
         :class="controlPanelCollapsed ? 'right-0' : 'right-[var(--control-panel-width)]'"
       >
         <WuButton variant="solid" size="lg" icon-only :tooltip="controlPanelCollapsed ? '展开面板' : '收起面板'" @click="store.toggleControlPanel">
@@ -214,10 +214,10 @@ const loadError = computed(() => {
       <div
         v-if="compact"
         ref="mobileBarRef"
-        class="absolute inset-x-0 bottom-0 z-90 flex h-[var(--mobile-bar-height)] items-start border-t border-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-10px"
+        class="absolute inset-x-0 bottom-0 z-90 flex h-[var(--mobile-bar-height)] items-start border-t border-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-[10px]"
       >
         <WuButton class="w-full" size="lg" :variant="mobileSheet === 'filters' ? 'solid' : 'outline'" tone="accent" @click="openSheet('filters')">
-          {{ editingMode ? '点位录入' : planning ? '路线优化中…' : '筛选与路线' }}<span v-if="!editingMode && selectedEchoIds.length" class="ml-6px text-[var(--accent)]">{{ selectedEchoIds.length }}</span>
+          {{ editingMode ? '点位录入' : planning ? '路线优化中…' : '筛选与路线' }}<span v-if="!editingMode && selectedEchoIds.length" class="ml-[6px] text-[var(--accent)]">{{ selectedEchoIds.length }}</span>
         </WuButton>
       </div>
     </div>

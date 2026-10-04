@@ -50,7 +50,7 @@ defineExpose({ show, hide, isSupported })
 <template>
   <dialog
     v-bind="$attrs" ref="panelRef"
-    class="wu-dialog m-auto max-h-[calc(100dvh-32px)] w-[min(420px,calc(100vw-24px))] overflow-hidden border border-[#416353] rounded-10px bg-[#10231cf7] p-0 text-[#d7eadf] shadow-[0_24px_80px_rgba(0,0,0,0.58)]"
+    class="wu-dialog m-auto max-h-[calc(100dvh-32px)] w-[min(420px,calc(100vw-24px))] overflow-hidden border border-[#416353] rounded-[10px] bg-[#10231cf7] p-0 text-[#d7eadf] shadow-[0_24px_80px_rgba(0,0,0,0.58)]"
     @cancel="onCancel" @click="onClick"
   >
     <slot />
