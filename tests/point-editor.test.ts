@@ -2,6 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick, watchEffect } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { usePointEditorStore } from '../src/stores/point-editor.ts'
+import { useExplorerStore } from '../src/stores/explorer.ts'
 import { loadMapAssetCatalog, loadMapDataset } from '../src/data/load.ts'
 import { readEditorLibrary, saveEditorLibrary } from '../src/data/editor-client.ts'
 import { referenceDataset, mixedPoint, smallEcho, eliteEcho } from './fixtures/point-library.ts'
@@ -435,6 +436,77 @@ describe('point editor actions', () => {
     store.initializeMapContext({ stateId: -1, levelId: 'unknown', gravityType: 2 })
     expect(store.draft).toMatchObject({ stateId: gravityState.id, levelId: null, gravityType: 2 })
     expect(store.dirty).toBe(false)
+  })
+
+  it.each(['navigation', 'echo'] as const)('keeps %s input and saves on the map selected after starting a new point', async (kind) => {
+    const store = usePointEditorStore()
+    const explorer = useExplorerStore()
+    explorer.setDataset(referenceDataset)
+    await store.load(kind)
+    if (kind === 'navigation') store.setPointType('small-beacon')
+    else store.addMember(smallEcho.id)
+    store.setCoordinateText('100, 200, 30')
+    store.applyCoordinateText()
+    store.setNote('保留录入内容')
+    const previous = store.draft
+    expect(store.confirmPosition(true, 0)).toBe('wait')
+    const destination = referenceDataset.regionLabels.find(({ stateId, id }) => stateId !== explorer.selectedStateId
+      && referenceDataset.mapNavigation.some(({ regionIds }) => regionIds.includes(id)))
+    if (!destination || !previous) throw new Error('缺少跨地图测试数据')
+
+    explorer.navigateToRegion(destination.id)
+    store.followMapState(explorer.selectedStateId)
+
+    expect(store.draft).toMatchObject({ ...previous, stateId: destination.stateId, levelId: null, gravityType: null })
+    expect(store.dirty).toBe(true)
+    expect(store.confirmPosition(false, 100)).toBe('locate')
+    expect(store.confirmPosition(true, 200)).toBe('wait')
+    expect(store.confirmPosition(true, 300)).toBe('save')
+    expect(await store.savePoint()).toBe(true)
+    expect(disk.points[0]).toMatchObject({ id: previous.id, stateId: destination.stateId, coordinate: previous.coordinate, note: previous.note })
+  })
+
+  it('preserves pending coordinate buffers while clearing floor and gravity from the previous map', async () => {
+    vi.mocked(loadMapDataset).mockResolvedValue({ dataset: floorEditorDataset(), officialLibrary: { version: 1, points: [] } })
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    store.initializeMapContext({ stateId: 8, levelId: 'a2' })
+    store.setPointType('small-beacon')
+    const empty = { x: null, y: null, z: null }
+    store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, empty, '100, 100'))
+    store.updateCoordinateInput(true, editCoordinateInput(store.arrivalInput, empty, '110,'))
+    const position = store.positionInput
+    const arrival = store.arrivalInput
+    expect(store.pointLevelId).toBe('a2')
+    store.followMapState(8)
+    expect(store.pointLevelId).toBe('a2')
+    store.followMapState(903)
+    expect(store.draft).toMatchObject({ stateId: 903, levelId: null, gravityType: 1 })
+    store.selectGravity(2)
+    store.followMapState(900)
+    expect(store.draft).toMatchObject({ stateId: 900, levelId: null, gravityType: null })
+    expect(store.positionInput).toBe(position)
+    expect(store.arrivalInput).toBe(arrival)
+    expect(store.confirmPosition(false)).toBe('locate')
+    expect(await store.savePoint()).toBe(false)
+  })
+
+  it('keeps an empty new point pristine and ignores invalid maps or an existing point', async () => {
+    disk = { version: 1, points: [mixedPoint()] }
+    const store = usePointEditorStore()
+    await store.load('echo')
+    store.followMapState(900)
+    expect(store.draft?.stateId).toBe(900)
+    expect(store.dirty).toBe(false)
+    const empty = store.draft
+    store.followMapState(-1)
+    expect(store.draft).toBe(empty)
+    store.selectPoint('mixed-point')
+    store.setNote('已有点位的修改')
+    const existing = store.draft
+    store.followMapState(900)
+    expect(store.draft).toBe(existing)
+    expect(store.draft?.stateId).toBe(8)
   })
 
   it('saves nearby points independently and stays on the saved point', async () => {

@@ -49,6 +49,10 @@ function selectEditorPoints(ids: string[]): void {
   if (compact.value) store.setMobileSheet('filters')
   else if (store.controlPanelCollapsed) store.toggleControlPanel()
 }
+function navigateToRegion(id: string): void {
+  store.navigateToRegion(id)
+  if (editingMode.value) editor.followMapState(store.selectedStateId)
+}
 async function locateManagedPoint(point: AuthoredPoint): Promise<void> {
   if (store.selectedStateId !== point.stateId) store.selectState(point.stateId)
   const reference = store.dataset
@@ -204,7 +208,7 @@ const loadError = computed(() => {
         <MapNavigationCascader
           id="map-navigation-trigger" :dataset="dataset" :state-id="store.selectedStateId" :center="store.mapViewport?.center ?? null"
           :class="compact ? '[--wu-cascader-height:44px] [--wu-cascader-gap:4px] [--wu-cascader-padding:9px]' : '[--wu-cascader-height:40px] [--wu-cascader-gap:6px] [--wu-cascader-padding:11px]'"
-          @region-selected="store.navigateToRegion"
+          @region-selected="navigateToRegion"
         />
         <GravitySwitcher :compact="compact" :selected-gravity="store.selectedGravity" :supports-gravity="store.supportsGravity" @gravity-selected="store.selectGravity" />
       </div>

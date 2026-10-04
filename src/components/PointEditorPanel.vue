@@ -136,6 +136,7 @@ function selectMapPoints(ids: string[]): void {
 }
 function switchTab(kind: AuthoredPoint['kind']): void {
   store.switchEditorTab(kind)
+  store.followMapState(explorer.selectedStateId)
   tabQuery.value = editorMode.value
 }
 async function save(): Promise<void> {
@@ -192,6 +193,7 @@ onMounted(loadEditor)
 onBeforeRouteUpdate((to) => {
   if (to.query.editorTab === tabQuery.value || !store.dataset || store.busy) return
   store.switchEditorTab(to.query.editorTab === 'echo' ? 'echo' : 'navigation')
+  store.followMapState(explorer.selectedStateId)
 })
 onBeforeRouteLeave(() => {
   if (busy.value) return false

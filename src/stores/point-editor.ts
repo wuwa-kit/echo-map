@@ -338,6 +338,21 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     }))
   }
 
+  function followMapState(stateId: number): void {
+    const point = draft.value
+    const state = dataset.value?.states.find(({ id }) => id === stateId)
+    if (busy.value || !point || !state || point.stateId === stateId || point.replacesOfficialIds?.length
+      || library.value.points.some(({ id }) => id === point.id)) return
+    const pristine = !dirty.value
+    resetPositionConfirmation()
+    edit((point) => {
+      point.stateId = stateId
+      point.levelId = null
+      point.gravityType = hasGravityMap(state) ? 1 : null
+    })
+    if (pristine) baseline.value = JSON.stringify(draft.value)
+  }
+
   function addMember(echoId: string): void {
     if (!dataset.value?.echoes.some(({ id }) => id === echoId)) return
     clearInputError('members')
@@ -888,7 +903,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     deleted: shallowReadonly(deleted), importPreview: shallowReadonly(importPreview),
     monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy, operation: shallowReadonly(operation), dirty,
-    setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, addMember, setMemberCount, adjustMemberCount, removeMember,
+    setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, followMapState, addMember, setMemberCount, adjustMemberCount, removeMember,
     resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, undoDelete, previewImport, applyImport,
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
