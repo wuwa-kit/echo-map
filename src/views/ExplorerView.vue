@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import WuButton from '../components/base/WuButton.vue'
-import { computed, onBeforeUnmount, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAsyncState, useEventListener, useMediaQuery, useResizeObserver, useWindowSize } from '@vueuse/core'
 import { useRouteQuery } from '@vueuse/router'
+import { useRouter } from 'vue-router'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import PointEditorPanel from '../components/PointEditorPanel.vue'
 import ControlPanel from '../components/ControlPanel.vue'
@@ -19,9 +20,13 @@ import { useExplorerStore } from '../stores/explorer.ts'
 import type { AuthoredPoint, MapDataset } from '../domain/types.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
 import type { ExplorerUrlSnapshot, MobileSheet } from '../url/explorer-url.ts'
+import { createExplorerQueryValues } from '../url/explorer-url.ts'
+import { pointRegionResolver } from '../domain/point-region.ts'
+import { gameToMapCoordinate } from '../map/projection.ts'
 
 const store = useExplorerStore()
 const editor = usePointEditorStore()
+const router = useRouter()
 const modeQuery = useRouteQuery<string>('mode', 'use', { mode: 'replace' })
 const editingMode = computed(() => modeQuery.value === 'edit')
 const editorPanel = useTemplateRef<InstanceType<typeof PointEditorPanel>>('editorPanelRef')
@@ -43,6 +48,20 @@ function selectEditorPoints(ids: string[]): void {
   editorPanel.value?.selectMapPoints(ids)
   if (compact.value) store.setMobileSheet('filters')
   else if (store.controlPanelCollapsed) store.toggleControlPanel()
+}
+async function locateManagedPoint(point: AuthoredPoint): Promise<void> {
+  if (store.selectedStateId !== point.stateId) store.selectState(point.stateId)
+  const reference = store.dataset
+  if (reference) {
+    const region = pointRegionResolver(reference)(point.stateId, gameToMapCoordinate(point.coordinate.x ?? 0, point.coordinate.y ?? 0, reference.source.tileWidth))
+    store.selectCountry(region?.countryId ?? null)
+  }
+  if (point.gravityType) store.selectGravity(point.gravityType)
+  store.selectLevel(point.levelId)
+  await nextTick()
+  // Finish the context navigation before publishing the new viewport query.
+  await router.replace({ query: { ...router.currentRoute.value.query, ...createExplorerQueryValues(urlSnapshot.value) } })
+  mapCanvas.value?.locateManagedPoint(point)
 }
 onBeforeUnmount(store.clearRoute)
 const { controlPanelCollapsed, dataset, mobileSheet, planning, selectedEchoIds } = storeToRefs(store)
@@ -199,7 +218,7 @@ const loadError = computed(() => {
           <span v-if="!editingMode" class="text-[16px] font-semibold">筛选与路线</span>
           <WuButton size="lg" variant="ghost" tone="accent" @click="closeSheet">查看地图</WuButton>
         </div>
-        <PointEditorPanel v-if="editingMode" ref="editorPanelRef" :locate-position="coordinate => mapCanvas?.locateDraft(coordinate) ?? false" :is-position-in-view="coordinate => mapCanvas?.isDraftInView(coordinate) ?? false" @returned="leaveEditor" @locate-requested="mapCanvas?.locateDraft($event)" />
+        <PointEditorPanel v-if="editingMode" ref="editorPanelRef" :locate-position="coordinate => mapCanvas?.locateDraft(coordinate) ?? false" :is-position-in-view="coordinate => mapCanvas?.isDraftInView(coordinate) ?? false" @returned="leaveEditor" @locate-requested="mapCanvas?.locateDraft($event)" @managed-locate-requested="locateManagedPoint" />
         <ControlPanel v-else :compact="compact" @edit-requested="enterEditor" />
       </div>
       <div

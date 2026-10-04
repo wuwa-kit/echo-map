@@ -5,9 +5,10 @@ import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
-import { navigationPointTypeSchema, navigationIconUrlSchema } from '../domain/schema.ts'
+import { navigationPointTypeSchema, navigationIconUrlSchema, pointTransferSchema } from '../domain/schema.ts'
 import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
-import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision } from '../domain/types.ts'
+import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision, PointWorkspace } from '../domain/types.ts'
+import { editWorkspace, managementRows, parsePointWorkspace, pointExportFilename, resolveWorkspace, samePoint, workspaceLibrary } from '../domain/local-points.ts'
 import type { NavigationMode, NavigationPointType } from '../domain/types.ts'
 import { combinePointLibraries } from '../domain/point-matching.ts'
 import { readEditorLibrary, saveEditorLibrary } from '../data/editor-client.ts'
@@ -51,6 +52,11 @@ interface PointEditorMapContext {
 export const usePointEditorStore = defineStore('point-editor', () => {
   const dataset = shallowRef<MapDataset | null>(null)
   const library = shallowRef<PointLibrary>(freeze(emptyPointLibrary(), true))
+  const workspace = shallowRef<PointWorkspace | null>(null)
+  const importWorkspace = shallowRef<PointWorkspace | null>(null)
+  const importReplaceAll = shallowRef(true)
+  const importLabel = shallowRef('替换全部人工点位')
+  const managedPoints = computed(() => freeze(managementRows(workspace.value ?? { version: 1, published: library.value, changes: [] }), true))
   const officialLibrary = shallowRef<PointLibrary>(freeze(emptyPointLibrary(), true))
   const mapTileError = shallowRef(false)
   const mapTileRetry = shallowRef(0)
@@ -96,7 +102,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const teleportCoordinateText = formField('teleportCoordinateText')
   const error = shallowRef('')
   const notice = shallowRef('')
-  const operation = shallowRef<'load' | 'save' | 'delete' | 'undo' | 'import' | null>(null)
+  const operation = shallowRef<'load' | 'save' | 'delete' | 'undo' | 'import' | 'manage' | null>(null)
   const busy = computed(() => operation.value !== null)
   const inputErrors = formField('inputErrors')
   const inputValues = formField('inputValues')
@@ -470,23 +476,25 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       officialLibrary.value = freeze(official, true)
       revision.value = snapshot.revision
       storage.value = snapshot.storage
+      workspace.value = snapshot.workspace ? freeze(parsePointWorkspace(snapshot.workspace, reference), true) : null
       notice.value = ''
     } catch (failure) { error.value = failure instanceof Error ? failure.message : String(failure) }
     finally { operation.value = null }
     if (dataset.value && revision.value && !draft.value) newPoint()
   }
 
-  async function commit(next: PointLibrary, action: 'save' | 'delete' | 'undo' | 'import'): Promise<boolean> {
+  async function commit(next: PointLibrary, action: 'save' | 'delete' | 'undo' | 'import' | 'manage', nextWorkspace?: PointWorkspace): Promise<boolean> {
     if (busy.value || !dataset.value || !revision.value) return false
     operation.value = action
     error.value = ''
     notice.value = ''
     try {
       const libraryToSave = parsePointLibrary(next, dataset.value, 'manual')
-      const snapshot = await saveEditorLibrary(libraryToSave, revision.value, library.value, action === 'import')
+      const snapshot = await saveEditorLibrary(libraryToSave, revision.value, library.value, action === 'import' && importReplaceAll.value, nextWorkspace)
       library.value = freeze(snapshot.library, true)
       revision.value = snapshot.revision
       storage.value = snapshot.storage
+      workspace.value = snapshot.workspace ? freeze(snapshot.workspace, true) : null
       notice.value = action === 'save' ? '保存成功' : storage.value === 'browser' ? '已保存到本机浏览器' : '已保存到本机文件'
       return true
     } catch (failure) {
@@ -712,8 +720,44 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   function previewImport(text: string): void {
     if (!dataset.value || !canSwitch()) return
     importPreview.value = null
+    importWorkspace.value = null
+    importReplaceAll.value = true
     try {
-      const incoming = parsePointLibrary(JSON.parse(text), dataset.value, 'manual')
+      const value: unknown = JSON.parse(text)
+      const transfer = pointTransferSchema.safeParse(value)
+      let incoming: PointLibrary
+      if (transfer.success) {
+        const data = transfer.data
+        if (data.format === 'point-backup') {
+          if (!workspace.value) throw new Error('本地备份只能在浏览器存储模式恢复；提交项目请使用“导出修改”。')
+          const restored = { ...data.workspace, published: workspace.value.published }
+          parsePointWorkspace(restored, dataset.value)
+          importWorkspace.value = freeze(restored, true)
+          incoming = workspaceLibrary(restored)
+          importLabel.value = '恢复本地备份，并与当前网站数据对比'
+        } else {
+          if (data.changes.some(change => change.needsReview)) throw new Error('修改文件包含未确认的旧数据，请先确认后重新导出。')
+          const points = new Map(library.value.points.map(point => [point.id, point]))
+          for (const change of data.changes) {
+            for (const point of [change.before, change.after]) if (point) parsePointLibrary({ version: 1, points: [point] }, dataset.value, 'manual')
+            const current = points.get(change.id) ?? null
+            if (samePoint(current, change.after)) continue
+            if (!samePoint(current, change.before)) throw new Error(`点位 ${change.id} 与当前数据有冲突，请先在管理界面核对。未导入任何修改。`)
+            if (change.after) points.set(change.id, change.after)
+            else points.delete(change.id)
+          }
+          incoming = { version: 1, points: [...points.values()] }
+          if (workspace.value) {
+            importWorkspace.value = freeze(editWorkspace(workspace.value, incoming), true)
+          }
+          importReplaceAll.value = false
+          importLabel.value = '合并文件中的点位修改，其余点位保留'
+        }
+      } else {
+        incoming = parsePointLibrary(value, dataset.value, 'manual')
+        importLabel.value = '替换全部人工点位'
+      }
+      incoming = parsePointLibrary(incoming, dataset.value, 'manual')
       importPreview.value = freeze(incoming, true)
       error.value = ''
     }
@@ -726,10 +770,91 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       error.value = '请先保存两个表单中的修改，再导入点位。'
       return
     }
-    if (await commit(importPreview.value, 'import')) {
+    const previous = library.value
+    if (await commit(importPreview.value, 'import', importWorkspace.value ?? undefined)) {
       importPreview.value = null
+      importWorkspace.value = null
       deleted.value = null
+      refreshSavedForms(previous)
     }
+  }
+
+  function refreshSavedForms(previous: PointLibrary): void {
+    const savedIds = new Set(previous.points.map(point => point.id))
+    const current = new Map(library.value.points.map(point => [point.id, point]))
+    forms.value = produce(forms.value, forms => {
+      for (const kind of ['echo', 'navigation'] as const) {
+        const point = forms[kind].draft
+        if (!point || !savedIds.has(point.id)) continue
+        const saved = current.get(point.id)
+        if (saved && samePoint(point, saved)) continue
+        forms[kind] = saved ? { ...emptyForm(), draft: saved, baseline: JSON.stringify(saved) } : emptyForm()
+      }
+    })
+    if (!draft.value) newPoint()
+  }
+
+  async function refreshPublishedPoints(): Promise<boolean> {
+    if (busy.value || hasUnsavedChanges.value) return false
+    operation.value = 'load'
+    error.value = ''
+    try {
+      const snapshot = await readEditorLibrary()
+      if (!dataset.value) return false
+      library.value = freeze(parsePointLibrary(snapshot.library, dataset.value, 'manual'), true)
+      workspace.value = snapshot.workspace ? freeze(parsePointWorkspace(snapshot.workspace, dataset.value), true) : null
+      revision.value = snapshot.revision
+      storage.value = snapshot.storage
+      forms.value = { echo: emptyForm(), navigation: emptyForm() }
+      deleted.value = null
+      notice.value = '已检查最新点位数据'
+      return true
+    } catch (failure) {
+      error.value = failure instanceof Error ? failure.message : String(failure)
+      return false
+    } finally { operation.value = null; if (!draft.value) newPoint() }
+  }
+
+  async function managePoints(ids: readonly string[], action: 'delete' | 'published' | 'local' | 'cleanup'): Promise<boolean> {
+    if (busy.value || hasUnsavedChanges.value || ids.length === 0) return false
+    const selected = new Set(ids)
+    let nextWorkspace = workspace.value ?? undefined
+    let next = library.value
+    if (action === 'delete') {
+      next = produce(next, draft => { draft.points = draft.points.filter(point => !selected.has(point.id)) })
+      if (nextWorkspace) nextWorkspace = editWorkspace(nextWorkspace, next)
+    } else {
+      if (!nextWorkspace) return false
+      nextWorkspace = resolveWorkspace(nextWorkspace, ids, action)
+      next = workspaceLibrary(nextWorkspace)
+    }
+    if (!await commit(next, 'manage', nextWorkspace)) return false
+    forms.value = { echo: emptyForm(), navigation: emptyForm() }
+    deleted.value = null
+    newPoint()
+    return true
+  }
+
+  function createPointExport(kind: EditorKind, ids?: readonly string[], backup = false): { filename: string; data: unknown } | null {
+    if (busy.value) return null
+    const now = new Date()
+    const exportedAt = now.toISOString()
+    if (backup) return {
+      filename: pointExportFilename('本地点位备份', now),
+      data: workspace.value ? { format: 'point-backup', version: 1, exportedAt, workspace: workspace.value } : library.value,
+    }
+    const selected = ids ? new Set(ids) : null
+    const rows = managedPoints.value.filter(row => row.point.kind === kind && (!selected || selected.has(row.id)))
+    const title = kind === 'navigation' ? '定位点' : '声骸点位'
+    if (!workspace.value) return { filename: pointExportFilename(title, now), data: { version: 1, points: rows.flatMap(row => row.local ? [row.local] : []) } }
+    const changed = rows.filter(row => row.status !== 'published' && row.status !== 'adopted')
+    if (!changed.length) { error.value = '当前范围没有可导出的本地修改'; return null }
+    if (changed.some(row => row.status === 'conflict' || row.status === 'review')) {
+      error.value = '请先处理所选范围内的冲突和待确认记录，再导出修改；完整备份仍可导出。'
+      return null
+    }
+    const changedIds = new Set(changed.map(row => row.id))
+    return { filename: pointExportFilename(`${title}修改`, now), data: { format: 'point-changes', version: 1, exportedAt, changes: workspace.value.changes.filter(change => changedIds.has(change.id)) } }
   }
 
   function invalidInput(key: string, message: string): void {
@@ -746,6 +871,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   return {
+    workspace: shallowReadonly(workspace), managedPoints, managePoints, refreshPublishedPoints, createPointExport, importLabel: shallowReadonly(importLabel),
     confirmPosition, resetPositionConfirmation,
     availableFloors, pointLevelId, setLevel,
     continueAdding: shallowReadonly(continueAdding), canContinueAdding,
@@ -790,7 +916,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       })
     },
     dismissDeleted: () => { deleted.value = null },
-    cancelImport: () => { importPreview.value = null },
+    cancelImport: () => { importPreview.value = null; importWorkspace.value = null },
     reportError: (value: string) => { error.value = value },
     dismissMessage: () => {
       error.value = ''

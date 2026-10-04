@@ -3,7 +3,7 @@ import WuButton from './base/WuButton.vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouteQuery } from '@vueuse/router'
-import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { useEventListener, useTimeoutFn } from '@vueuse/core'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { isOfficialPoint, pointTitle } from '../domain/point-library.ts'
@@ -12,6 +12,8 @@ import EchoEditorFields from './EchoEditorFields.vue'
 import NavigationEditorFields from './NavigationEditorFields.vue'
 import PointCoordinateFields from './PointCoordinateFields.vue'
 import PointEditorDataPanel from './PointEditorDataPanel.vue'
+import PointManagementPanel from './PointManagementPanel.vue'
+import { usePointManagementStore } from '../stores/point-management.ts'
 import WuDialog from './base/WuDialog.vue'
 import WuMessage from './base/WuMessage.vue'
 import WuCheckBox from './base/WuCheckBox.vue'
@@ -19,15 +21,20 @@ import WuSelect from './base/WuSelect.vue'
 import WuOption from './base/WuOption.vue'
 import WuScrollArea from './base/WuScrollArea.vue'
 import { useExplorerStore } from '../stores/explorer.ts'
-import { serializeJson } from '../utils/json.ts'
+import { downloadJson } from '../utils/download-json.ts'
 
 const props = defineProps<{
   locatePosition: (coordinate: [number, number]) => boolean
   isPositionInView: (coordinate: [number, number]) => boolean
 }>()
-const emit = defineEmits<{ returned: [], locateRequested: [coordinate?: [number, number]] }>()
+const emit = defineEmits<{ returned: [], locateRequested: [coordinate?: [number, number]], managedLocateRequested: [point: AuthoredPoint] }>()
 const explorer = useExplorerStore()
 const store = usePointEditorStore()
+const manager = usePointManagementStore()
+const router = useRouter()
+const managerQuery = useRouteQuery<string>('pointsManager', '', { mode: 'replace' })
+const managerKind = useRouteQuery<string>('pointsKind', 'navigation', { mode: 'replace' })
+const exportOpen = shallowRef(false)
 const tabQuery = useRouteQuery<string>('editorTab', 'navigation', { mode: 'replace' })
 let active = true
 onBeforeUnmount(() => { active = false; store.resetPositionConfirmation() })
@@ -42,6 +49,7 @@ const existing = computed(() => library.value.points.some(({ id }) => id === dra
 const candidatePoints = computed(() => allPoints.value.filter(({ id }) => candidates.value.includes(id)))
 function returnToExplorer(): void {
   if (busy.value) return
+  managerQuery.value = ''
   store.resetSession()
   emit('returned')
 }
@@ -49,12 +57,22 @@ function syncLibrary(): void {
   explorer.setPointLibrary(store.library)
 }
 function exportJson(): void {
-  const url = URL.createObjectURL(new Blob([`${serializeJson(library.value, 2)}\n`], { type: 'application/json' }))
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'echo-map-points.json'
-  link.click()
-  URL.revokeObjectURL(url)
+  const file = store.createPointExport(editorMode.value)
+  downloadJson(file)
+  if (file) exportOpen.value = false
+}
+function openManagement(): void {
+  manager.reset()
+  managerKind.value = editorMode.value
+  managerQuery.value = 'open'
+}
+function editManagedPoint(id: string): void {
+  managerQuery.value = ''
+  selectPoint(id)
+}
+async function locateManagedPoint(point: AuthoredPoint): Promise<void> {
+  await router.replace({ query: { ...router.currentRoute.value.query, pointsManager: undefined } })
+  emit('managedLocateRequested', point)
 }
 async function importJson(event: Event): Promise<void> {
   if (!(event.target instanceof HTMLInputElement)) return
@@ -195,8 +213,9 @@ useEventListener(window, 'beforeunload', (event) => {
     <div class="flex shrink-0 items-center justify-between gap-[10px] border-b border-[var(--line)] px-[16px] py-[10px]">
       <div class="flex items-center gap-[14px]"><WuButton variant="ghost" size="sm" icon="chevron-left" :disabled="busy" @click="returnToExplorer">返回</WuButton></div>
       <div class="flex items-center gap-[14px]">
+        <WuButton variant="ghost" tone="accent" size="sm" :disabled="busy || !dataset" @click="openManagement">管理点位</WuButton>
         <WuButton variant="ghost" tone="accent" size="sm" :disabled="busy || !dataset || hasUnsavedChanges" :tooltip="hasUnsavedChanges ? '请先保存录入内容' : '导入点位'" @click="importFile?.click()">导入</WuButton>
-        <WuButton variant="ghost" tone="accent" size="sm" :disabled="busy || !dataset" tooltip="导出已保存的点位" @click="exportJson">导出</WuButton>
+        <WuButton variant="ghost" tone="accent" size="sm" :disabled="busy || !dataset" tooltip="导出修改或完整备份" @click="exportOpen = true">导出</WuButton>
       </div>
     </div>
     <input ref="importFileRef" type="file" accept="application/json,.json" class="hidden" @change="importJson" />
@@ -226,6 +245,16 @@ useEventListener(window, 'beforeunload', (event) => {
         </div>
     </div>
     <div v-else class="flex flex-1 flex-col items-center justify-center gap-[12px] text-[13px] text-[#91ae9e]"><span>{{ busy ? '正在加载…' : '加载失败' }}</span><WuButton v-if="!busy" @click="loadEditor">重试</WuButton></div>
+    <WuDialog :open="managerQuery === 'open' && !!dataset" :dismissible="!busy" class="!w-[min(1100px,calc(100vw-32px))] max-sm:!m-0 max-sm:!h-dvh max-sm:!max-h-dvh max-sm:!max-w-none max-sm:!w-screen max-sm:!rounded-none" @dismiss-requested="managerQuery = ''">
+      <PointManagementPanel v-if="managerQuery === 'open' && dataset" @close-requested="managerQuery = ''" @changed="syncLibrary" @edit-requested="editManagedPoint" @locate-requested="locateManagedPoint" />
+    </WuDialog>
+    <WuDialog :open="exportOpen" @dismiss-requested="exportOpen = false"><div class="p-[20px]">
+      <div class="text-[16px] font-semibold">导出{{ editorMode === 'navigation' ? '定位点' : '声骸点位' }}</div>
+      <div class="my-[12px] text-[13px] leading-6 text-[#91ae9e]">{{ store.storage === 'browser' ? '导出当前类别的本地修改，供维护方合并。完整备份包含两类点位的全部本地记录。' : '导出当前类别的已保存点位，或备份全部人工点位。' }}</div>
+      <div v-if="hasUnsavedChanges" class="mb-[12px] text-[12px] text-[#dec594]">尚未保存的编辑不会导出。</div>
+      <div v-if="error" class="mb-[12px] text-[12px] text-[#ffad9f]">{{ error }}</div>
+      <div class="flex flex-wrap gap-[8px]"><WuButton tone="accent" variant="solid" @click="exportJson">{{ store.storage === 'browser' ? '导出修改' : '导出点位' }}</WuButton><WuButton @click="downloadJson(store.createPointExport(editorMode, undefined, true)); exportOpen = false">完整备份</WuButton><WuButton variant="ghost" @click="exportOpen = false">取消</WuButton></div>
+    </div></WuDialog>
     <WuDialog :open="importPreview !== null" :dismissible="!busy" @dismiss-requested="closeDataManagement">
       <PointEditorDataPanel @close-requested="closeDataManagement" />
     </WuDialog>

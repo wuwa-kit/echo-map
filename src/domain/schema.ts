@@ -145,6 +145,33 @@ export const navigationPointLibrarySchema = pointLibrarySchema.superRefine(({ po
   if (points.some(({ kind }) => kind !== 'navigation')) context.addIssue({ code: 'custom', message: '定位点文件不能包含声骸点位' })
 })
 
+export const localPointChangeSchema = z.object({
+  id: z.string().min(1).max(100),
+  before: savedPointSchema.nullable().default(null),
+  after: savedPointSchema.nullable().default(null),
+  needsReview: z.boolean(),
+}).strict().superRefine((change, context) => {
+  if ((!change.before && !change.after) || [change.before, change.after].some(point => point && point.id !== change.id)) {
+    context.addIssue({ code: 'custom', message: '修改记录必须保留相同的点位 ID' })
+  }
+  if (change.before && change.after && change.before.kind !== change.after.kind) context.addIssue({ code: 'custom', message: '同一条记录不能改变点位类别' })
+})
+
+const localPointChangesSchema = z.array(localPointChangeSchema).max(100000).superRefine((changes, context) => {
+  if (new Set(changes.map(({ id }) => id)).size !== changes.length) context.addIssue({ code: 'custom', message: '修改记录的点位 ID 重复' })
+})
+
+export const pointWorkspaceSchema = z.object({
+  version: z.literal(1),
+  published: pointLibrarySchema,
+  changes: localPointChangesSchema,
+}).strict()
+
+export const pointTransferSchema = z.discriminatedUnion('format', [
+  z.object({ format: z.literal('point-changes'), version: z.literal(1), exportedAt: z.iso.datetime(), changes: localPointChangesSchema }).strict(),
+  z.object({ format: z.literal('point-backup'), version: z.literal(1), exportedAt: z.iso.datetime(), workspace: pointWorkspaceSchema }).strict(),
+])
+
 export const gameCoordinateSchema = z.object({
   x: finiteNumber,
   y: finiteNumber,

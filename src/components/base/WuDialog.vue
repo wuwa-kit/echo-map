@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, useTemplateRef, watch } from 'vue'
+import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue'
 import { useSupported } from '@vueuse/core'
 
 defineOptions({ inheritAttrs: false })
@@ -42,6 +42,7 @@ watch(() => [props.open, isSupported.value] as const, ([open, supported]) => {
   if (open && supported) show()
   else hide()
 }, { immediate: true, flush: 'post' })
+onMounted(() => { if (props.open) show() })
 onBeforeUnmount(hide)
 
 defineExpose({ show, hide, isSupported })

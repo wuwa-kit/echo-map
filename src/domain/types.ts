@@ -189,6 +189,31 @@ export interface PointLibrary {
   points: AuthoredPoint[]
 }
 
+export interface LocalPointChange {
+  id: string
+  before: AuthoredPoint | null
+  after: AuthoredPoint | null
+  needsReview: boolean
+}
+
+export interface PointWorkspace {
+  version: 1
+  published: PointLibrary
+  changes: LocalPointChange[]
+}
+
+export type LocalPointStatus = 'published' | 'added' | 'modified' | 'deleted' | 'adopted' | 'conflict' | 'review'
+
+export interface PointManagementRow {
+  id: string
+  point: AuthoredPoint
+  before: AuthoredPoint | null
+  local: AuthoredPoint | null
+  published: AuthoredPoint | null
+  status: LocalPointStatus
+  duplicateIds: string[]
+}
+
 export interface AuthoredEchoLocation extends PointLocationBase {
   members: EchoMember[]
   note: string

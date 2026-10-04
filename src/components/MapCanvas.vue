@@ -62,7 +62,12 @@ function locateDraft(coordinate?: [number, number]): boolean {
   const display = authoredPointMapDisplay(draft, dataset.value)
   return display ? viewport.locate([display.location.coordinate.mapX, display.location.coordinate.mapY]) : false
 }
-defineExpose({ locateDraft, isDraftInView })
+function locateManagedPoint(point: AuthoredPoint): boolean {
+  if (!dataset.value || point.stateId !== store.selectedStateId) return false
+  const display = authoredPointMapDisplay(point, dataset.value)
+  return display ? viewport.locate([display.location.coordinate.mapX, display.location.coordinate.mapY], Math.min(map?.getView().getResolution() ?? 1, 1)) : false
+}
+defineExpose({ locateDraft, isDraftInView, locateManagedPoint })
 const {
   activeState,
   dataset,

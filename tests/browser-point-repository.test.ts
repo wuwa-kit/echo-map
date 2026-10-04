@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { IDBFactory, IDBObjectStore as FakeObjectStore } from 'fake-indexeddb'
-import { initializeBrowserPointLibrary, readBrowserPointSnapshot, readBrowserPointVersion, readBrowserPointVersions, saveBrowserPointLibrary } from '../src/data/browser-point-repository.ts'
+import { initializeBrowserPointLibrary, readBrowserPointSnapshot, readBrowserPointVersion, readBrowserPointVersions, saveBrowserPointLibrary, synchronizeBrowserPoints } from '../src/data/browser-point-repository.ts'
 import { mixedPoint } from './fixtures/point-library.ts'
 import type { PointLibrary } from '../src/domain/types.ts'
 
@@ -12,6 +12,38 @@ beforeEach(() => vi.stubGlobal('indexedDB', new IDBFactory()))
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 describe('IndexedDB point repository', () => {
+  it('persists baseline changes, recognizes published adoption, and rejects a save from before synchronization', async () => {
+    const initial = await initializeBrowserPointLibrary(library('original'))
+    const edited = await saveBrowserPointLibrary(library('local'), initial.revision)
+    const synced = await synchronizeBrowserPoints(library('local'), edited)
+    expect(synced.workspace?.changes[0]?.before?.note).toBe('original')
+    expect(synced.workspace?.published).toEqual(library('local'))
+    expect(await readBrowserPointSnapshot()).toEqual(synced)
+    expect(await synchronizeBrowserPoints(library('local'), synced)).toEqual(synced)
+    await expect(saveBrowserPointLibrary(library('stale'), edited.revision)).rejects.toThrow('其他页面更新')
+    expect(await readBrowserPointVersion(edited.revision)).toEqual(edited.library)
+  })
+
+  it('preserves a legacy full snapshot and requires confirmation of its differences', async () => {
+    await initializeBrowserPointLibrary(library())
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('echo-map:point-editor', 1)
+      request.onerror = () => reject(request.error)
+      request.onsuccess = () => {
+        const database = request.result
+        const transaction = database.transaction('library', 'readwrite')
+        transaction.objectStore('library').put({ library: library('legacy'), revision: 'legacy' }, 'current')
+        transaction.oncomplete = () => { database.close(); resolve() }
+        transaction.onabort = () => { database.close(); reject(transaction.error) }
+      }
+    })
+    const legacy = await readBrowserPointSnapshot()
+    if (!legacy) throw new Error('Expected old snapshot')
+    const synced = await synchronizeBrowserPoints(library('published'), legacy)
+    expect(synced.library).toEqual(library('legacy'))
+    expect(synced.workspace?.changes[0]?.needsReview).toBe(true)
+    expect(await readBrowserPointVersion('legacy')).toEqual(library('legacy'))
+  })
   it('initializes once across concurrent pages without overwriting an existing library', async () => {
     expect(await readBrowserPointSnapshot()).toBeNull()
     const [first, second] = await Promise.all([
