@@ -84,6 +84,76 @@ describe('official asset catalogue', () => {
 })
 
 describe('asset browser state', () => {
+  it('navigates only the current results without wrapping or replacing the grid data', () => {
+    const store = useAssetsStore()
+    store.setDataset(referenceDataset)
+    store.selectCategory('echo')
+    store.selectMap(8)
+    store.setSearch('C1')
+    const results = store.filteredAssets
+    const categories = store.categories
+    const [first, second] = results
+    const last = results.at(-1)
+    if (!first || !second || !last) throw new Error('测试数据缺少当前地图的 C1 声骸')
+
+    store.selectAdjacentAsset(1)
+    expect(store.selectedAsset).toBeNull()
+    store.selectAsset(first.id)
+    expect(store.selectedIndex).toBe(0)
+    store.selectAdjacentAsset(-1)
+    expect(store.selectedAsset?.id).toBe(first.id)
+    store.selectAdjacentAsset(1)
+    expect(store.selectedAsset?.id).toBe(second.id)
+    store.selectAdjacentAsset(-1)
+    expect(store.selectedAsset?.id).toBe(first.id)
+    store.selectAsset(last.id)
+    store.selectAdjacentAsset(1)
+    expect(store.selectedIndex).toBe(results.length - 1)
+    expect(store.selectedAsset?.id).toBe(last.id)
+    store.selectAsset(null)
+    expect(store.selectedIndex).toBe(-1)
+    expect(store.selectedAsset).toBeNull()
+    expect(store.filteredAssets).toBe(results)
+    expect(store.categories).toBe(categories)
+    expect(store.filters).toEqual({ category: 'echo', stateId: 8, selectedId: null })
+    expect(store.search).toBe('C1')
+  })
+
+  it('handles one result and clears the selection when searching excludes it', () => {
+    const store = useAssetsStore()
+    store.setDataset(referenceDataset)
+    store.selectCategory('sonata')
+    const asset = store.filteredAssets[0]
+    if (!asset) throw new Error('测试数据缺少合鸣效果')
+    store.setSearch(asset.url)
+    expect(store.filteredAssets).toHaveLength(1)
+    store.selectAsset(asset.id)
+    for (const direction of [-1, 1] as const) {
+      store.selectAdjacentAsset(direction)
+      expect(store.selectedAsset?.id).toBe(asset.id)
+    }
+    store.setSearch('no-such-asset')
+    expect(store.filters.selectedId).toBeNull()
+    store.selectAsset(asset.id)
+    store.selectAdjacentAsset(1)
+    expect(store.selectedAsset).toBeNull()
+    expect(store.selectedIndex).toBe(-1)
+  })
+
+  it('restores a detail link only when the asset belongs to the restored scope', () => {
+    const store = useAssetsStore()
+    store.setDataset(referenceDataset)
+    const tile = assets.find(({ category, stateIds }) => category === 'tile' && stateIds.includes(8))
+    if (!tile) throw new Error('测试数据缺少地图 8 瓦片')
+    store.restoreQuery({ category: 'tile', map: '8', asset: tile.id })
+    expect(store.selectedAsset?.id).toBe(tile.id)
+    expect(store.selectedIndex).toBeGreaterThanOrEqual(0)
+    store.restoreQuery({ category: 'echo', map: '8', asset: tile.id })
+    expect(store.filters.selectedId).toBeNull()
+    store.restoreQuery({ category: 'tile', map: '903', asset: tile.id })
+    expect(store.filters.selectedId).toBeNull()
+  })
+
   it('validates URL state against the current dataset', () => {
     const store = useAssetsStore()
     store.setDataset(referenceDataset)

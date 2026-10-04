@@ -69,8 +69,17 @@
 }
 
 .wu-dialog::backdrop {
+  opacity: 0;
   background: rgba(2, 8, 6, 0.72);
   backdrop-filter: blur(2px);
+  transition:
+    opacity 160ms ease,
+    overlay 160ms allow-discrete,
+    display 160ms allow-discrete;
+}
+
+.wu-dialog[open]::backdrop {
+  opacity: 1;
 }
 
 @starting-style {
@@ -80,7 +89,7 @@
   }
 
   .wu-dialog[open]::backdrop {
-    background: rgba(2, 8, 6, 0);
+    opacity: 0;
   }
 }
 

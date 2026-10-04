@@ -20,11 +20,14 @@ export const useAssetsStore = defineStore('assets', () => {
   const search = shallowRef('')
   let pendingLoad: Promise<void> | null = null
   const filters = shallowRef<AssetBrowserState>(freeze({ category: 'all', stateId: null, selectedId: null }))
+  const category = computed(() => filters.value.category)
+  const stateId = computed(() => filters.value.stateId)
   const assets = computed(() => freeze(dataset.value ? buildOfficialAssets(dataset.value, mapAssets.value) : [], true))
-  const filteredAssets = computed(() => freeze(filterOfficialAssets(assets.value, filters.value.category, filters.value.stateId, search.value), true))
-  const selectedAsset = computed(() => assets.value.find(({ id }) => id === filters.value.selectedId) ?? null)
+  const filteredAssets = computed(() => freeze(filterOfficialAssets(assets.value, category.value, stateId.value, search.value), true))
+  const selectedIndex = computed(() => filteredAssets.value.findIndex(({ id }) => id === filters.value.selectedId))
+  const selectedAsset = computed(() => filteredAssets.value[selectedIndex.value] ?? null)
   const categories = computed(() => {
-    const scoped = filterOfficialAssets(assets.value, 'all', filters.value.stateId, search.value)
+    const scoped = filterOfficialAssets(assets.value, 'all', stateId.value, search.value)
     return freeze([
       { id: 'all' as const, name: '全部资产', description: '浏览所有已收录资源', count: scoped.length },
       ...assetCategories.map((category) => ({ ...category, count: scoped.filter((asset) => asset.categories.includes(category.id)).length })),
@@ -57,9 +60,10 @@ export const useAssetsStore = defineStore('assets', () => {
     const category = parsedCategory.success ? parsedCategory.data : 'all'
     const requestedMap = typeof query.map === 'string' && /^\d+$/u.test(query.map) ? Number(query.map) : null
     const stateId = dataset.value?.states.some(({ id }) => id === requestedMap) ? requestedMap : null
+    const scoped = filterOfficialAssets(assets.value, category, stateId, search.value)
     filters.value = freeze({
       category, stateId,
-      selectedId: typeof query.asset === 'string' && assets.value.some(({ id }) => id === query.asset) ? query.asset : null,
+      selectedId: typeof query.asset === 'string' && scoped.some(({ id }) => id === query.asset) ? query.asset : null,
     })
   }
 
@@ -79,12 +83,19 @@ export const useAssetsStore = defineStore('assets', () => {
 
   function setSearch(value: string): void {
     search.value = value
+    if (selectedIndex.value < 0) selectAsset(null)
   }
 
   function selectAsset(id: string | null): void {
     filters.value = produce(filters.value, (draft) => {
-      draft.selectedId = assets.value.some((asset) => asset.id === id) ? id : null
+      draft.selectedId = filteredAssets.value.some((asset) => asset.id === id) ? id : null
     })
+  }
+
+  function selectAdjacentAsset(direction: -1 | 1): void {
+    if (selectedIndex.value < 0) return
+    const asset = filteredAssets.value[selectedIndex.value + direction]
+    if (asset) selectAsset(asset.id)
   }
 
   function resetFilters(): void {
@@ -95,7 +106,7 @@ export const useAssetsStore = defineStore('assets', () => {
   return {
     dataset: shallowReadonly(dataset), loading: shallowReadonly(loading), error: shallowReadonly(error),
     search: shallowReadonly(search), filters: shallowReadonly(filters),
-    assets, filteredAssets, selectedAsset, categories,
-    setDataset, load, restoreQuery, selectCategory, selectMap, setSearch, selectAsset, resetFilters,
+    assets, filteredAssets, selectedAsset, selectedIndex, categories,
+    setDataset, load, restoreQuery, selectCategory, selectMap, setSearch, selectAsset, selectAdjacentAsset, resetFilters,
   }
 })
