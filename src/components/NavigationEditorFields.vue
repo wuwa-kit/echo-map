@@ -15,6 +15,11 @@ import WuScrollArea from './base/WuScrollArea.vue'
 import PointCoordinateFields from './PointCoordinateFields.vue'
 
 const store = usePointEditorStore()
+const typeOptions = navigationPointTypeIds.map((value) => ({
+  value,
+  name: navigationPointTypes[value].name,
+  iconUrl: navigationTypeIcons(value)[0]?.url,
+}))
 const { draft, busy, inputErrors } = storeToRefs(store)
 const iconAnchor = useTemplateRef<InstanceType<typeof WuButton>>('iconAnchorRef')
 const iconPopover = useTemplateRef<InstanceType<typeof WuPopover>>('iconPopoverRef')
@@ -47,7 +52,12 @@ function selectIcon(id: string): void {
     <WuSelect :model-value="draft.pointType ?? null" :muted="!draft.pointType" :invalid="Boolean(inputErrors.pointType)" :disabled="busy" @update:model-value="store.setPointType">
       <WuOption :value="null"><span class="text-[#789788]">未设置</span></WuOption>
       <div class="grid grid-cols-2 gap-[4px]">
-        <WuOption v-for="value in navigationPointTypeIds" :key="value" :value="value" class="min-w-0">{{ navigationPointTypes[value].name }}</WuOption>
+        <WuOption v-for="option in typeOptions" :key="option.value" :value="option.value" class="min-w-0">
+          <span class="flex min-w-0 items-center gap-[6px]">
+            <img v-if="option.iconUrl" :src="option.iconUrl" class="h-[24px] w-[24px] shrink-0 object-contain" loading="lazy" />
+            <span class="truncate">{{ option.name }}</span>
+          </span>
+        </WuOption>
       </div>
     </WuSelect>
     <div v-if="inputErrors.pointType" class="mt-[4px] text-[11px] text-[#ffad9f]">{{ inputErrors.pointType }}</div>
