@@ -2,6 +2,22 @@
   "version": 1,
   "points": [
     {
+      "id": "0086eb9b-24e7-482a-b04c-66ae6a4a2bb3",
+      "stateId": 8,
+      "coordinate": {
+        "x": -330,
+        "y": 3137,
+        "z": 67
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "00971da4-8728-4a23-8edc-e01083f93eb2",
       "stateId": 8,
       "coordinate": {
@@ -50,12 +66,76 @@
       "mode": "fast-travel"
     },
     {
+      "id": "04c64fbc-4278-490c-8b2d-d628c3451a3b",
+      "stateId": 8,
+      "coordinate": {
+        "x": 720,
+        "y": 3008,
+        "z": 18
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "0968d81d-b846-47e1-8beb-bd2c6e1bcd54",
+      "stateId": 8,
+      "coordinate": {
+        "x": -254,
+        "y": 1473,
+        "z": 215
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "0c5dfe5d-32fe-4380-9b82-7042a0baae0b",
+      "stateId": 8,
+      "coordinate": {
+        "x": -448,
+        "y": 2794,
+        "z": 82
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "0f33136c-4c02-4922-aa9c-f508209f8ff7",
       "stateId": 8,
       "coordinate": {
         "x": -452,
         "y": -269,
         "z": 252
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "10044e49-1927-4034-a868-057f828a4828",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1159,
+        "y": 2130,
+        "z": 6
       },
       "note": "",
       "kind": "navigation",
@@ -98,12 +178,60 @@
       "mode": "fast-travel"
     },
     {
+      "id": "19b3ded3-f03d-4ddc-97db-d226a3ccbacd",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2077,
+        "y": 3176,
+        "z": -50
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "1d53c6c7-80cb-4c10-8117-32262b10f51e",
       "stateId": 8,
       "coordinate": {
         "x": 791,
         "y": -768,
         "z": 5
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1eaab57b-96ca-401f-b76a-373c19a74167",
+      "stateId": 8,
+      "coordinate": {
+        "x": 199,
+        "y": 2902,
+        "z": 30
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1fac0dae-9e44-4160-8243-ef2edf1b354f",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2372,
+        "y": 3188,
+        "z": -61
       },
       "note": "",
       "kind": "navigation",
@@ -127,6 +255,22 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "23a67564-a8f9-47e4-b89a-384c418e7d55",
+      "stateId": 8,
+      "coordinate": {
+        "x": -493,
+        "y": 2944,
+        "z": 46
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
     },
     {
@@ -178,6 +322,201 @@
       "mode": "fast-travel"
     },
     {
+      "id": "2d303f1b-7f25-4ff5-b388-6596dcd159a8",
+      "stateId": 8,
+      "coordinate": {
+        "x": -286,
+        "y": 1892,
+        "z": 15
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "30742c35-9f0d-40ca-8072-c58bd9281fa8",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2552,
+        "y": 3363,
+        "z": -7
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "3105ae0b-c2c7-4ef5-9eb5-a4ab25084731",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2845,
+        "y": 3189,
+        "z": 9
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "31b041a1-7152-4186-b3f8-c65f7f6e1594",
+      "stateId": 8,
+      "levelId": "-1/3",
+      "coordinate": {
+        "x": 2687,
+        "y": 3060,
+        "z": -94
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "36cf15fe-e676-4bbb-b335-e291898f3051",
+      "stateId": 8,
+      "coordinate": {
+        "x": -423,
+        "y": 1284,
+        "z": 32
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "3a6ff1f4-2484-4bff-b21f-da08e04f978e",
+      "stateId": 8,
+      "levelId": "-3/2",
+      "coordinate": {
+        "x": 2598,
+        "y": 3211,
+        "z": -56
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "3d028e03-0e46-44d1-aa5a-f5af8c33faf6",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2340,
+        "y": 3488,
+        "z": 2
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "41bc45db-db22-4ab7-a838-943540fa44e7",
+      "stateId": 8,
+      "coordinate": {
+        "x": -692,
+        "y": 668,
+        "z": 64
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "44326ce8-8270-4f8c-80a4-f0ac4dea4ce1",
+      "stateId": 8,
+      "coordinate": {
+        "x": -756,
+        "y": 1273,
+        "z": 50
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "45569051-a9bd-4e7d-aa55-bad2a0a4a38f",
+      "stateId": 8,
+      "levelId": "-1/7",
+      "coordinate": {
+        "x": -215,
+        "y": 1860,
+        "z": -177
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "5126d5f8-1d61-4ee4-af98-e38712f2dccb",
+      "stateId": 8,
+      "coordinate": {
+        "x": -140,
+        "y": 2788,
+        "z": 201
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "5a6bfad3-d761-4395-9fac-f68556b88d6f",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1357,
+        "y": 746,
+        "z": 115
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "5b77dc12-0369-4064-8899-e452fb43c74b",
       "stateId": 8,
       "coordinate": {
@@ -210,6 +549,22 @@
       "mode": "landmark"
     },
     {
+      "id": "67e716e7-ce64-414f-b2e0-696b8df7587c",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2207,
+        "y": 3265,
+        "z": -75
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "6f3ba4e1-294e-44f7-8add-c8fb9e59f176",
       "stateId": 8,
       "coordinate": {
@@ -223,6 +578,54 @@
       "navigationKind": "boss",
       "pointType": "weekly-boss",
       "iconId": "icon-78b29f1de7502d44",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "6f6d191b-2ca3-4107-a205-7a9c446fb627",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1124,
+        "y": 441,
+        "z": 71
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "71f238bb-011e-4528-b787-3d3f6169deec",
+      "stateId": 8,
+      "coordinate": {
+        "x": -193,
+        "y": 2590,
+        "z": 83
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "74c8e370-16a5-4982-aadf-c14c0b66536d",
+      "stateId": 8,
+      "coordinate": {
+        "x": -385,
+        "y": 441,
+        "z": 73
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
     },
     {
@@ -242,12 +645,141 @@
       "mode": "fast-travel"
     },
     {
+      "id": "7f305b84-e6cb-4860-87e4-be737128b24b",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2755,
+        "y": 3474,
+        "z": 121
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "808f9c32-b973-4198-9736-08b041a989c8",
+      "stateId": 8,
+      "coordinate": {
+        "x": 134,
+        "y": 2628,
+        "z": 32
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "80a8a46d-d75d-4fff-a4f5-499b092bfff4",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1243,
+        "y": 1163,
+        "z": 115
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "81bdacc7-9a9e-493b-bf29-c5cd4ada16e0",
+      "stateId": 8,
+      "levelId": "-2/1",
+      "coordinate": {
+        "x": 2210,
+        "y": 3351,
+        "z": -88
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "832f8b36-a860-4620-ba58-4d4effe6417b",
+      "stateId": 8,
+      "coordinate": {
+        "x": -873,
+        "y": 434,
+        "z": 101
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "83d6a2d5-9df5-497d-8633-89800f14555b",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2640,
+        "y": 3517,
+        "z": 6
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "863bae60-60e2-420d-8d5c-199d6b28ebca",
       "stateId": 8,
       "coordinate": {
         "x": -735,
         "y": -23,
         "z": 205
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "863bbd8a-888f-4cc5-9f50-f7d4851304bc",
+      "stateId": 8,
+      "coordinate": {
+        "x": -968,
+        "y": 1405,
+        "z": 6
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "88493b84-6006-4202-8ddf-526b312996ea",
+      "stateId": 8,
+      "coordinate": {
+        "x": 858,
+        "y": 3192,
+        "z": 37
       },
       "note": "",
       "kind": "navigation",
@@ -290,6 +822,86 @@
       "mode": "fast-travel"
     },
     {
+      "id": "94ea1227-eb60-4f60-bee2-dd58929a9e98",
+      "stateId": 8,
+      "coordinate": {
+        "x": 547,
+        "y": 3229,
+        "z": 21
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "97f7d596-b90b-436c-98a0-70c4840e611c",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1345,
+        "y": 2116,
+        "z": 34
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "98778ca5-3959-4fe9-bba2-624c3cfa547f",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2662,
+        "y": 3110,
+        "z": 13
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "9c80acfb-b2c4-4825-8068-1b980691c034",
+      "stateId": 8,
+      "coordinate": {
+        "x": -431,
+        "y": 1140,
+        "z": 47
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "9da97746-66a5-49c2-b4ce-cecd3c09fca6",
+      "stateId": 8,
+      "coordinate": {
+        "x": -123,
+        "y": 731,
+        "z": 15
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "a11cb469-9099-4793-a8e6-dabbd5062cc3",
       "stateId": 8,
       "coordinate": {
@@ -322,6 +934,38 @@
       "mode": "fast-travel"
     },
     {
+      "id": "a707e18d-3e63-4bba-b4fe-8d57e2bd20e7",
+      "stateId": 8,
+      "coordinate": {
+        "x": -294,
+        "y": 995,
+        "z": 27
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "a770a2e7-0c56-4550-9c34-66efec4ffa7c",
+      "stateId": 8,
+      "coordinate": {
+        "x": -176,
+        "y": 1940,
+        "z": -13
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "ad2e4fcb-e835-41fc-a14f-9c6d8126ca1a",
       "stateId": 8,
       "coordinate": {
@@ -338,12 +982,60 @@
       "mode": "fast-travel"
     },
     {
+      "id": "af12555c-cea3-4bd5-b109-d3fec7e03ccf",
+      "stateId": 8,
+      "coordinate": {
+        "x": -440,
+        "y": 690,
+        "z": 26
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "b02d9ba8-2010-4ff3-a2c4-a71a6fdb3995",
       "stateId": 8,
       "coordinate": {
         "x": 459,
         "y": -890,
         "z": 7
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b31534d4-3ad1-4e79-ba58-eab9898bff9b",
+      "stateId": 8,
+      "coordinate": {
+        "x": -207,
+        "y": 1400,
+        "z": 328
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b56bf413-9718-49aa-91fd-b56dd27c1b0c",
+      "stateId": 8,
+      "coordinate": {
+        "x": -929,
+        "y": 2559,
+        "z": 75
       },
       "note": "",
       "kind": "navigation",
@@ -370,12 +1062,76 @@
       "mode": "fast-travel"
     },
     {
+      "id": "b6ea8f34-5306-4782-a7be-83c329cc41c5",
+      "stateId": 8,
+      "coordinate": {
+        "x": 1054,
+        "y": 2842,
+        "z": 43
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b7381bce-db11-4822-a162-fd324cea703a",
+      "stateId": 8,
+      "coordinate": {
+        "x": -76,
+        "y": 2959,
+        "z": 74
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "b7df7966-e728-4167-9a63-94d7e22439c8",
       "stateId": 8,
       "coordinate": {
         "x": -322,
         "y": -608,
         "z": 317
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b80ce97e-5ba2-416e-80b8-7156196ac4a2",
+      "stateId": 8,
+      "coordinate": {
+        "x": -436,
+        "y": 1814,
+        "z": -108
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ba9f85d4-3e46-4a8a-85cb-4250f2adc9de",
+      "stateId": 8,
+      "coordinate": {
+        "x": 320,
+        "y": 3105,
+        "z": 29
       },
       "note": "",
       "kind": "navigation",
@@ -402,12 +1158,108 @@
       "mode": "landmark"
     },
     {
+      "id": "bf893483-daaf-407e-9d60-d3b0a59894a3",
+      "stateId": 8,
+      "coordinate": {
+        "x": -25,
+        "y": 2313,
+        "z": 16
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "bfa5e401-2750-4fce-8423-ee692a6384d1",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1048,
+        "y": 2305,
+        "z": 32
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c36b56c9-6406-4fe5-8d41-8def010228fc",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1220,
+        "y": 705,
+        "z": 123
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c534f09e-86b7-4a8c-9f1d-4b972ecf2ee7",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2639,
+        "y": 2958,
+        "z": 36
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "c7885958-b0e3-4757-9cb2-58c39e12bcd0",
       "stateId": 8,
       "coordinate": {
         "x": 13,
         "y": -757,
         "z": 197
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c944d789-f744-4ee8-8a78-9cc3a418a352",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2010,
+        "y": 3001,
+        "z": -32
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ccf75598-be3c-455a-84e9-07e5641552fb",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2867,
+        "y": 3278,
+        "z": 315
       },
       "note": "",
       "kind": "navigation",
@@ -450,6 +1302,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "d5d5e17f-4436-489a-8597-e5e10e1891b0",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2430,
+        "y": 2904,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "d6bc8aa0-52e4-4e90-9346-6e05629c44d9",
       "stateId": 8,
       "coordinate": {
@@ -463,6 +1331,54 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "da30aca6-80fb-41b9-ba97-13c775bfe3de",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1001,
+        "y": 934,
+        "z": 42
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "db2906e9-0b30-4531-90c1-91affc5eb376",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1365,
+        "y": 1704,
+        "z": 22
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "dbd7aabf-3d65-45d5-aa59-29a113f757bc",
+      "stateId": 8,
+      "coordinate": {
+        "x": -610,
+        "y": 1067,
+        "z": 4
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
     },
     {
@@ -514,6 +1430,54 @@
       "mode": "fast-travel"
     },
     {
+      "id": "e32b06b2-232f-4bf0-b978-5f047bfc89c8",
+      "stateId": 8,
+      "coordinate": {
+        "x": 852,
+        "y": 2561,
+        "z": 80
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "e9c64439-e8ad-4597-9c39-461b52c20ab0",
+      "stateId": 8,
+      "coordinate": {
+        "x": 3046,
+        "y": 3269,
+        "z": 6
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "eb9dee77-cb0a-409a-9a0a-188909a11363",
+      "stateId": 8,
+      "coordinate": {
+        "x": -25,
+        "y": 3147,
+        "z": 33
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
       "id": "ee181c55-c545-46ed-92b6-707e01e17528",
       "stateId": 8,
       "coordinate": {
@@ -559,6 +1523,102 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "f51b408b-6b2a-4f78-bad8-5cdd6692a724",
+      "stateId": 8,
+      "coordinate": {
+        "x": -88,
+        "y": 462,
+        "z": 69
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "f74ea92c-7119-4108-b934-18c60f9147de",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2891,
+        "y": 2887,
+        "z": 68
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "f7f467db-7274-4060-a6f1-44ad1236a5aa",
+      "stateId": 8,
+      "coordinate": {
+        "x": 752,
+        "y": 2760,
+        "z": 46
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "fa947ae0-3457-4870-96c7-6995a697f7a1",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1016,
+        "y": 1787,
+        "z": 54
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "fd819ed3-7e39-4c64-8376-cc3cb8883f45",
+      "stateId": 8,
+      "coordinate": {
+        "x": -620,
+        "y": 2506,
+        "z": 169
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "febb6a35-a8d0-46a9-8dfe-f39dce7ad373",
+      "stateId": 8,
+      "coordinate": {
+        "x": -124,
+        "y": 1249,
+        "z": 159
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
     }
   ]
