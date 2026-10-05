@@ -4,7 +4,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplate
 import { storeToRefs } from 'pinia'
 import { useRouteQuery } from '@vueuse/router'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
-import { useEventListener, useTimeoutFn } from '@vueuse/core'
+import { useEventListener } from '@vueuse/core'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { isOfficialPoint, pointTitle } from '../domain/point-library.ts'
 import type { AuthoredPoint } from '../domain/types.ts'
@@ -40,12 +40,11 @@ const exportOpen = shallowRef(false)
 const tabQuery = useRouteQuery<string>('editorTab', 'navigation', { mode: 'replace' })
 let active = true
 onBeforeUnmount(() => { active = false; store.resetPositionConfirmation() })
-const { dataset, draft, library, importPreview, allPoints, editorMode, hasUnsavedChanges, editing, dirty, busy, operation, error, notice, deleted, continueAdding, canContinueAdding, availableFloors, pointLevelId } = storeToRefs(store)
+const { dataset, draft, library, importPreview, allPoints, editorMode, hasUnsavedChanges, editing, dirty, busy, operation, error, notice, continueAdding, canContinueAdding, availableFloors, pointLevelId } = storeToRefs(store)
 const floorOptions = computed(() => floorSelectOptions(
   dataset.value?.states.find(({ id }) => id === draft.value?.stateId)?.layeredMaps ?? [],
   availableFloors.value,
 ))
-const { start: expireUndo } = useTimeoutFn(store.dismissDeleted, 8000, { immediate: false })
 const importFile = useTemplateRef<HTMLInputElement>('importFileRef')
 const positionFields = useTemplateRef<InstanceType<typeof PointCoordinateFields>>('positionFieldsRef')
 const candidates = shallowRef<string[]>([])
@@ -161,16 +160,10 @@ async function confirmPosition(coordinate: [number, number]): Promise<void> {
     if (active) positionFields.value?.focus()
   }
 }
-function undoDelete(): void {
-  if (!deleted.value) return
-  switchTab(deleted.value.kind)
-  requestAction(() => { void store.undoDelete().then(syncLibrary) })
-}
 async function deletePoint(): Promise<void> {
   await store.deletePoint()
   if (!error.value) {
     syncLibrary()
-    expireUndo()
   }
 }
 function addPoint(kind: AuthoredPoint['kind'] = editorMode.value, coordinate?: [number, number]): void {
@@ -227,7 +220,6 @@ useEventListener(window, 'beforeunload', (event) => {
       </div>
     </div>
     <input ref="importFileRef" type="file" accept="application/json,.json" class="hidden" @change="importJson" />
-    <div v-if="deleted" class="flex shrink-0 items-center gap-[10px] px-[16px] py-[6px] text-[12px]"><span>点位已删除</span><WuButton size="sm" :disabled="busy" :loading="operation === 'undo'" @click="undoDelete">撤销</WuButton></div>
     <div v-if="dataset && draft" class="min-h-0 flex flex-1 flex-col">
         <div class="flex shrink-0 gap-[6px] border-b border-[var(--line)] p-[12px]">
           <WuButton v-for="tab in (['navigation', 'echo'] as const)" :key="tab" class="flex-1" :variant="editorMode === tab ? 'outline' : 'ghost'" :tone="editorMode === tab ? 'accent' : 'neutral'" :disabled="busy" @click="switchTab(tab)">{{ tab === 'navigation' ? '定位点' : '声骸点位' }}</WuButton>

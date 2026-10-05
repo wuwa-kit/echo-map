@@ -298,7 +298,7 @@ describe('point editor actions', () => {
     expect(store.error).toBe('')
   })
 
-  it('exposes the current operation and clears loading after saves, deletions, undo, and imports', async () => {
+  it('exposes the current operation and clears loading after saves, deletions, and imports', async () => {
     disk = { version: 1, points: [mixedPoint()] }
     const store = usePointEditorStore()
     const loading = store.load('echo')
@@ -316,10 +316,6 @@ describe('point editor actions', () => {
     const deleting = store.deletePoint()
     expect(store.operation).toBe('delete')
     await deleting
-    expect(store.operation).toBeNull()
-    const undoing = store.undoDelete()
-    expect(store.operation).toBe('undo')
-    await undoing
     expect(store.operation).toBeNull()
     store.previewImport(JSON.stringify({ version: 1, points: [] }))
     const importing = store.applyImport()
@@ -988,7 +984,7 @@ describe('point editor actions', () => {
     expect(store.draft?.gravityType).toBeNull()
   })
 
-  it('deletes and restores a point without losing its data', async () => {
+  it('deletes a point and opens a new draft with a success message', async () => {
     disk = { version: 1, points: [mixedPoint()] }
     const store = usePointEditorStore()
     await store.load('echo')
@@ -996,10 +992,10 @@ describe('point editor actions', () => {
     await store.deletePoint()
     expect(disk.points).toEqual([])
     expect(store.editing).toBe(true)
-    await store.undoDelete()
-    expect(disk.points).toEqual([mixedPoint()])
-    expect(store.editing).toBe(true)
-    expect(store.deleted).toBeNull()
+    expect(store.library.points).toEqual([])
+    expect(store.draft?.id).not.toBe('mixed-point')
+    expect(store.dirty).toBe(false)
+    expect(store.notice).toBe('点位已删除')
   })
 
   it('previews complete imports and rejects foreign references without writing', async () => {

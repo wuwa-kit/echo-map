@@ -92,14 +92,13 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const pointLevelId = computed(() => availableFloors.value.some(({ id }) => id === draft.value?.levelId) ? draft.value?.levelId ?? null : null)
   const completePoints = computed(() => freeze(combinePointLibraries(library.value, officialLibrary.value), true).points)
   const baseline = formField('baseline')
-  const deleted = shallowRef<AuthoredPoint | null>(null)
   const importPreview = shallowRef<PointLibrary | null>(null)
   const monsterSearch = formField('monsterSearch')
   const coordinateText = formField('coordinateText')
   const teleportCoordinateText = formField('teleportCoordinateText')
   const error = shallowRef('')
   const notice = shallowRef('')
-  const operation = shallowRef<'load' | 'save' | 'delete' | 'undo' | 'import' | 'manage' | null>(null)
+  const operation = shallowRef<'load' | 'save' | 'delete' | 'import' | 'manage' | null>(null)
   const busy = computed(() => operation.value !== null)
   const inputErrors = formField('inputErrors')
   const inputValues = formField('inputValues')
@@ -492,7 +491,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (dataset.value && revision.value && !draft.value) newPoint()
   }
 
-  async function commit(next: PointLibrary, action: 'save' | 'delete' | 'undo' | 'import' | 'manage', nextWorkspace?: PointWorkspace): Promise<boolean> {
+  async function commit(next: PointLibrary, action: 'save' | 'delete' | 'import' | 'manage', nextWorkspace?: PointWorkspace): Promise<boolean> {
     if (busy.value || !dataset.value || !revision.value) return false
     operation.value = action
     error.value = ''
@@ -504,7 +503,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       revision.value = snapshot.revision
       storage.value = snapshot.storage
       workspace.value = snapshot.workspace ? freeze(snapshot.workspace, true) : null
-      notice.value = action === 'save' ? '保存成功' : storage.value === 'browser' ? '已保存到本机浏览器' : '已保存到本机文件'
+      notice.value = action === 'save' ? '保存成功' : action === 'delete' ? '点位已删除' : storage.value === 'browser' ? '已保存到本机浏览器' : '已保存到本机文件'
       return true
     } catch (failure) {
       error.value = failure instanceof Error ? failure.message : String(failure)
@@ -615,7 +614,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     resetPositionConfirmation()
     forms.value = { echo: emptyForm(), navigation: emptyForm() }
     editorMode.value = 'navigation'
-    deleted.value = null
     importPreview.value = null
     error.value = ''
     notice.value = ''
@@ -715,22 +713,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     const point = library.value.points.find(({ id }) => id === draft.value?.id)
     if (!point) return
     if (await commit(produce(library.value, (library) => { library.points = library.points.filter(({ id }) => id !== point.id) }), 'delete')) {
-      deleted.value = point
       baseline.value = JSON.stringify(draft.value)
       inputErrors.value = {}
       newPoint(point.kind)
     }
-  }
-
-  async function undoDelete(): Promise<void> {
-    const point = deleted.value
-    if (!point) return
-    switchEditorTab(point.kind)
-    if (!canSwitch()) return
-    if (await commit(produce(library.value, (library) => { library.points.push(point) }), 'undo')) {
-      deleted.value = null
-      openDraft(point)
-      }
   }
 
   function previewImport(text: string): void {
@@ -790,7 +776,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (await commit(importPreview.value, 'import', importWorkspace.value ?? undefined)) {
       importPreview.value = null
       importWorkspace.value = null
-      deleted.value = null
       refreshSavedForms(previous)
     }
   }
@@ -822,7 +807,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       revision.value = snapshot.revision
       storage.value = snapshot.storage
       forms.value = { echo: emptyForm(), navigation: emptyForm() }
-      deleted.value = null
       notice.value = '已检查最新点位数据'
       return true
     } catch (failure) {
@@ -846,7 +830,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     }
     if (!await commit(next, 'manage', nextWorkspace)) return false
     forms.value = { echo: emptyForm(), navigation: emptyForm() }
-    deleted.value = null
     newPoint()
     return true
   }
@@ -901,11 +884,11 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     retryMapTiles: () => { mapTileError.value = false; mapTileRetry.value += 1 },
     officialLibrary: shallowReadonly(officialLibrary),
     dataset: shallowReadonly(dataset), library: shallowReadonly(library), draft: shallowReadonly(draft), storage: shallowReadonly(storage),
-    deleted: shallowReadonly(deleted), importPreview: shallowReadonly(importPreview),
+    importPreview: shallowReadonly(importPreview),
     monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy, operation: shallowReadonly(operation), dirty,
     setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, followMapState, addMember, setMemberCount, adjustMemberCount, removeMember,
-    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, undoDelete, previewImport, applyImport,
+    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, previewImport, applyImport,
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
     setTeleportCoordinateText: (value: string) => { teleportCoordinateText.value = value },
@@ -931,7 +914,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
         }
       })
     },
-    dismissDeleted: () => { deleted.value = null },
     cancelImport: () => { importPreview.value = null; importWorkspace.value = null },
     reportError: (value: string) => { error.value = value },
     dismissMessage: () => {
