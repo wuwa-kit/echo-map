@@ -265,6 +265,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "b49c2b8e-fe75-48f4-9ef2-cca3ede679ea",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1462,
+        "y": -8308,
+        "z": 2
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "星海迷途之扉",
+      "navigationKind": "boss",
+      "pointType": "weekly-boss",
+      "iconId": "icon-0293dd81e6330bbc",
+      "mode": "fast-travel"
+    },
+    {
       "id": "c1b5031a-da53-4ea3-9aa6-f0e47a571a86",
       "stateId": 8,
       "levelId": "-1/46",

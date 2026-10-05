@@ -18,6 +18,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "0be72a7f-30c6-4f52-bf0e-7b7dcbd7e918",
+      "stateId": 8,
+      "coordinate": {
+        "x": 7452,
+        "y": 5920,
+        "z": 88
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
       "id": "0f904428-92e1-47bf-a770-75338b432ad1",
       "stateId": 8,
       "coordinate": {
@@ -162,6 +178,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "28913e72-6dfb-4f6a-b6b1-ac1187dd4acd",
+      "stateId": 8,
+      "coordinate": {
+        "x": 8198,
+        "y": 5838,
+        "z": -7
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
       "id": "2ad47705-c80b-4da6-a45a-6736d0baa00a",
       "stateId": 8,
       "coordinate": {
@@ -274,6 +306,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "5be70abb-d00d-4ce6-b6e1-256e1b9a80c6",
+      "stateId": 8,
+      "coordinate": {
+        "x": 9408,
+        "y": 5059,
+        "z": 5
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
       "id": "646fa081-d59a-455c-ac43-027ca5799d0a",
       "stateId": 8,
       "coordinate": {
@@ -319,6 +367,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "72d5e286-55b2-4fc6-baf8-6aef0dfa9fee",
+      "stateId": 8,
+      "coordinate": {
+        "x": 6638,
+        "y": 5542,
+        "z": 1
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "彼世猩红之幕",
+      "navigationKind": "boss",
+      "pointType": "weekly-boss",
+      "iconId": "icon-b8049d7e44bc5c38",
       "mode": "fast-travel"
     },
     {
@@ -595,6 +659,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "ccc05e15-7cb3-49dd-8f81-7794ee892b6f",
+      "stateId": 8,
+      "coordinate": {
+        "x": 7080,
+        "y": 5692,
+        "z": 2
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
       "id": "cd4d16a9-e8ff-4705-a7c0-55a7d6ec811a",
       "stateId": 8,
       "coordinate": {
@@ -656,6 +736,38 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "e6774638-9f79-46aa-9496-8e889c6aff3a",
+      "stateId": 8,
+      "coordinate": {
+        "x": 8254,
+        "y": 6785,
+        "z": 103
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ea8648b3-710a-4356-ae41-95c1ac35538e",
+      "stateId": 8,
+      "coordinate": {
+        "x": 8572,
+        "y": 5638,
+        "z": 30
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
       "mode": "fast-travel"
     },
     {

@@ -212,6 +212,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "63a5474a-5656-426f-be5b-811b046f5967",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11016,
+        "y": 13839,
+        "z": 340
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "烬夜天启之章",
+      "navigationKind": "boss",
+      "pointType": "weekly-boss",
+      "iconId": "icon-73b2a425df2c9e5a",
+      "mode": "fast-travel"
+    },
+    {
       "id": "712f7c84-1ebf-4428-8357-74f2d7cd95eb",
       "stateId": 8,
       "coordinate": {

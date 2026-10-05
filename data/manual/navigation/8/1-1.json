@@ -66,6 +66,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "03a72a28-23ba-4ba0-8512-733a54d6a62b",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1518,
+        "y": 765,
+        "z": 46
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "昔日咏叹之钟",
+      "navigationKind": "boss",
+      "pointType": "weekly-boss",
+      "iconId": "icon-4f065a956e8f24da",
+      "mode": "fast-travel"
+    },
+    {
       "id": "04c64fbc-4278-490c-8b2d-d628c3451a3b",
       "stateId": 8,
       "coordinate": {
@@ -452,6 +468,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "42e96670-dc96-4ef4-beab-36b77026c8fc",
+      "stateId": 8,
+      "coordinate": {
+        "x": -866,
+        "y": 1283,
+        "z": 46
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
       "id": "44326ce8-8270-4f8c-80a4-f0ac4dea4ce1",
       "stateId": 8,
       "coordinate": {
@@ -626,6 +658,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "782dfadd-0f0f-49b6-bb0b-57176a1f6b54",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1102,
+        "y": 2641,
+        "z": 21
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
       "mode": "fast-travel"
     },
     {
@@ -966,6 +1014,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "a98c28c9-7f4e-4a81-bfec-8d10cddee99f",
+      "stateId": 8,
+      "coordinate": {
+        "x": -450,
+        "y": 883,
+        "z": 4
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
       "id": "ad2e4fcb-e835-41fc-a14f-9c6d8126ca1a",
       "stateId": 8,
       "coordinate": {
@@ -1126,6 +1190,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "b80d6a5f-c21f-4afa-8629-39ed02bc8e01",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2909,
+        "y": 3372,
+        "z": 321
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "时序命定之争",
+      "navigationKind": "boss",
+      "pointType": "weekly-boss",
+      "iconId": "icon-a46a8fa6579284db",
+      "mode": "fast-travel"
+    },
+    {
       "id": "ba9f85d4-3e46-4a8a-85cb-4250f2adc9de",
       "stateId": 8,
       "coordinate": {
@@ -1251,6 +1331,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "cae62355-dbff-4d7f-9864-2cfd8928df46",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1209,
+        "y": 2007,
+        "z": 5
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
       "mode": "fast-travel"
     },
     {
@@ -1395,6 +1491,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "dc15ffca-d652-4217-bb59-7a4e7b565244",
+      "stateId": 8,
+      "coordinate": {
+        "x": -537,
+        "y": 427,
+        "z": 71
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无序边境之火",
+      "navigationKind": "boss",
+      "pointType": "weekly-boss",
+      "iconId": "icon-2d5708b02039025b",
       "mode": "fast-travel"
     },
     {
@@ -1574,6 +1686,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "fa401ebe-0777-49f6-a856-1e99a5612a98",
+      "stateId": 8,
+      "coordinate": {
+        "x": 63,
+        "y": 2056,
+        "z": 85
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
       "id": "fa947ae0-3457-4870-96c7-6995a697f7a1",
       "stateId": 8,
       "coordinate": {
@@ -1587,6 +1715,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "fb0a6535-ebfb-4882-87b8-d1d470f07718",
+      "stateId": 8,
+      "coordinate": {
+        "x": -361,
+        "y": 2312,
+        "z": 67
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
       "mode": "fast-travel"
     },
     {

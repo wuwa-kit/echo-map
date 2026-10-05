@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "points": [
+    {
+      "id": "2439f8ae-748c-4532-ad5b-fd947538d3c6",
+      "stateId": 910,
+      "coordinate": {
+        "x": -4,
+        "y": -109,
+        "z": 2
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦魇聚落",
+      "navigationKind": "challenge",
+      "pointType": "echo-settlement",
+      "iconId": "icon-fbd442ad82816fef",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "982e4b89-80f1-4a95-88de-e79ae7aeaad6",
+      "stateId": 910,
+      "coordinate": {
+        "x": 32,
+        "y": 56,
+        "z": 2
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "作战准备",
+      "navigationKind": "landmark",
+      "iconId": "icon-4208140538da7f73",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "bd0ee6e9-4f99-41a6-8542-ae1d5252aca7",
+      "stateId": 910,
+      "coordinate": {
+        "x": 6,
+        "y": 38,
+        "z": 1
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "中枢信标",
+      "navigationKind": "nexus",
+      "pointType": "central-beacon",
+      "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    }
+  ]
+}

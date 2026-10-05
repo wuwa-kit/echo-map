@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "points": [
+    {
+      "id": "2bf9105b-4b94-4150-9b81-aa8e66ea8941",
+      "stateId": 902,
+      "coordinate": {
+        "x": 2420,
+        "y": 471,
+        "z": 97
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "360da665-a57e-44f2-812b-4c8737b539d7",
+      "stateId": 902,
+      "levelId": "-1/15",
+      "coordinate": {
+        "x": 2358,
+        "y": 862,
+        "z": 25
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "46b53933-a97c-42f5-b241-c6d5c76b8b92",
+      "stateId": 902,
+      "levelId": "-1/16",
+      "coordinate": {
+        "x": 2517,
+        "y": 472,
+        "z": 97
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "5230a20c-7858-4749-b1cd-0d678c895567",
+      "stateId": 902,
+      "levelId": "-1/17",
+      "coordinate": {
+        "x": 2443,
+        "y": -409,
+        "z": 174
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "55b597de-66b4-4843-b762-f8102ebd90f4",
+      "stateId": 902,
+      "levelId": "-1/14",
+      "coordinate": {
+        "x": 1851,
+        "y": 687,
+        "z": 66
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "69d30306-35db-454a-a5d6-2c538ccb8fd5",
+      "stateId": 902,
+      "coordinate": {
+        "x": 2346,
+        "y": -277,
+        "z": 156
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "717921c1-4be5-4497-a644-14aef47c249c",
+      "stateId": 902,
+      "levelId": "-1/17",
+      "coordinate": {
+        "x": 2516,
+        "y": -451,
+        "z": 178
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸挑战·刀伶操控",
+      "navigationKind": "landmark",
+      "iconId": "icon-c5e90965dd115169",
+      "mode": "landmark"
+    },
+    {
+      "id": "8b534168-cfe0-40a2-864e-6f2faecd271f",
+      "stateId": 902,
+      "levelId": "-1/17",
+      "coordinate": {
+        "x": 2518,
+        "y": -476,
+        "z": 178
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "9618c06a-1d81-4abb-bfbb-1ba47e944523",
+      "stateId": 902,
+      "coordinate": {
+        "x": 2740,
+        "y": -487,
+        "z": 133
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "9b3dc13a-11f1-4561-bf85-0351c58bf722",
+      "stateId": 902,
+      "coordinate": {
+        "x": 2369,
+        "y": 731,
+        "z": 22
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "a954adfc-8178-4150-afbc-03c69e691759",
+      "stateId": 902,
+      "coordinate": {
+        "x": 2385,
+        "y": 462,
+        "z": 93
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b320eae5-c4a1-46fc-b829-d0d03824c5cd",
+      "stateId": 902,
+      "levelId": "-3/16",
+      "coordinate": {
+        "x": 2510,
+        "y": 400,
+        "z": 136
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "bb4fbb96-083f-49ff-a5d2-9c9ae1bf85ea",
+      "stateId": 902,
+      "coordinate": {
+        "x": 2359,
+        "y": 764,
+        "z": 26
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "e19f0f36-a45a-4e5d-852e-335fdebcbc9d",
+      "stateId": 902,
+      "levelId": "-2/15",
+      "coordinate": {
+        "x": 2312,
+        "y": 783,
+        "z": 44
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸挑战·刀伶操控",
+      "navigationKind": "landmark",
+      "iconId": "icon-c5e90965dd115169",
+      "mode": "landmark"
+    },
+    {
+      "id": "e6538cb0-0123-4961-a078-baeb72164c3c",
+      "stateId": 902,
+      "coordinate": {
+        "x": 1840,
+        "y": 669,
+        "z": 66
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    }
+  ]
+}

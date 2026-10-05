@@ -117,6 +117,38 @@
       "mode": "fast-travel"
     },
     {
+      "id": "2f5f3d16-e57b-41f7-b5de-0dbbe2845b16",
+      "stateId": 906,
+      "coordinate": {
+        "x": -245,
+        "y": -6789,
+        "z": 306
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "32de1e5d-6721-4967-8c6a-30d0b17e8b21",
+      "stateId": 906,
+      "coordinate": {
+        "x": 0,
+        "y": -6202,
+        "z": 296
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
       "id": "34b18760-266e-4699-a2ab-605aa59a622b",
       "stateId": 906,
       "coordinate": {
@@ -130,6 +162,22 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "35b71b23-27a6-49d5-b18d-14392165524a",
+      "stateId": 906,
+      "coordinate": {
+        "x": -436,
+        "y": -5424,
+        "z": 352
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
       "mode": "fast-travel"
     },
     {

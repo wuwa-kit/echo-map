@@ -1,0 +1,548 @@
+{
+  "version": 1,
+  "points": [
+    {
+      "id": "072f814e-861a-4d68-81e4-3897f24b0015",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1624,
+        "y": 1343,
+        "z": -66
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "乐曲调律",
+      "navigationKind": "landmark",
+      "iconId": "icon-abd9e917ae1a1b00",
+      "mode": "landmark"
+    },
+    {
+      "id": "09df9658-c601-4651-af34-b287f168858f",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1716,
+        "y": 1533,
+        "z": -23
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "0b7e8472-2929-47f6-b6ea-accc4b25bb4f",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1599,
+        "y": 1462,
+        "z": 53
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "乐曲调律",
+      "navigationKind": "landmark",
+      "iconId": "icon-abd9e917ae1a1b00",
+      "mode": "landmark"
+    },
+    {
+      "id": "12ee3eb6-1a8c-47a2-9cf2-f03859a42bef",
+      "stateId": 905,
+      "coordinate": {
+        "x": 3527,
+        "y": -91,
+        "z": -440
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "乐曲调律",
+      "navigationKind": "landmark",
+      "iconId": "icon-abd9e917ae1a1b00",
+      "mode": "landmark"
+    },
+    {
+      "id": "1bd42276-6ee7-41a3-b6d9-ce07bef9620c",
+      "stateId": 905,
+      "coordinate": {
+        "x": 3255,
+        "y": 51,
+        "z": -454
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1c2512f4-b043-4756-8c81-831e64ba8629",
+      "stateId": 905,
+      "coordinate": {
+        "x": -438,
+        "y": -240,
+        "z": 473
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "运能维护",
+      "navigationKind": "landmark",
+      "iconId": "icon-39ead57e1c6cf6cb",
+      "mode": "landmark"
+    },
+    {
+      "id": "248dcff5-e223-4b7f-9b42-64015dc6b466",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1985,
+        "y": 1361,
+        "z": -71
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "2fe505e8-f601-4666-bb5b-8870d3fa0045",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1643,
+        "y": 1377,
+        "z": -66
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "3bd589fa-5656-46b6-a984-bb98765d8fab",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1850,
+        "y": 1712,
+        "z": 41
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "乐曲调律",
+      "navigationKind": "landmark",
+      "iconId": "icon-abd9e917ae1a1b00",
+      "mode": "landmark"
+    },
+    {
+      "id": "451b7344-bab0-4e6f-b743-9050e4a047bf",
+      "stateId": 905,
+      "coordinate": {
+        "x": 58,
+        "y": -91,
+        "z": 472
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "运能维护",
+      "navigationKind": "landmark",
+      "iconId": "icon-39ead57e1c6cf6cb",
+      "mode": "landmark"
+    },
+    {
+      "id": "5fb4cf19-61aa-4adb-a01d-bdcb26c943e8",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1980,
+        "y": 1650,
+        "z": -7
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦魇·赫卡忒",
+      "navigationKind": "boss",
+      "pointType": "nightmare-boss",
+      "iconId": "icon-297227e62170479c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "60839b52-3f4b-4e78-b9be-92c3d8c628ec",
+      "stateId": 905,
+      "coordinate": {
+        "x": -237,
+        "y": -267,
+        "z": 472
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "乐曲调律",
+      "navigationKind": "landmark",
+      "iconId": "icon-abd9e917ae1a1b00",
+      "mode": "landmark"
+    },
+    {
+      "id": "63bd565d-6c44-4e50-a332-cf127297f61e",
+      "stateId": 905,
+      "coordinate": {
+        "x": -13,
+        "y": -17,
+        "z": 468
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "708b87d8-718e-49a9-a527-6c10b79016d0",
+      "stateId": 905,
+      "coordinate": {
+        "x": 13,
+        "y": -398,
+        "z": 473
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "71e48b2a-984e-4277-b6f1-959e4e448ffd",
+      "stateId": 905,
+      "coordinate": {
+        "x": 88,
+        "y": -243,
+        "z": 481
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "804acc0b-a8a2-4e0a-905c-27fad9a0b81b",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1868,
+        "y": 1731,
+        "z": 39
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "80c7873a-c68d-496f-879b-fdef8e4d2229",
+      "stateId": 905,
+      "coordinate": {
+        "x": 3501,
+        "y": -185,
+        "z": -436
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦魇聚落",
+      "navigationKind": "challenge",
+      "pointType": "echo-settlement",
+      "iconId": "icon-fbd442ad82816fef",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "81d2d7c3-4a97-4a97-acc2-a0d97098d9ad",
+      "stateId": 905,
+      "coordinate": {
+        "x": -2218,
+        "y": -160,
+        "z": -442
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-a760dfcbafaa746d",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "851f914f-3092-4ec8-9aed-26466cdd4e87",
+      "stateId": 905,
+      "coordinate": {
+        "x": 3238,
+        "y": 53,
+        "z": -457
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "乐曲调律",
+      "navigationKind": "landmark",
+      "iconId": "icon-abd9e917ae1a1b00",
+      "mode": "landmark"
+    },
+    {
+      "id": "86963e3a-c6b8-4326-be79-e3bb8b030dd1",
+      "stateId": 905,
+      "coordinate": {
+        "x": -373,
+        "y": -192,
+        "z": 478
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "8c5ebbf8-01b6-4212-83c5-503e637d3bf9",
+      "stateId": 905,
+      "coordinate": {
+        "x": -349,
+        "y": 15,
+        "z": 471
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "90dc7c41-ece9-40f6-bec5-957e348ad600",
+      "stateId": 905,
+      "coordinate": {
+        "x": -251,
+        "y": -207,
+        "z": 472
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "9bf24c2b-7a56-4c94-916f-8bd76691b09d",
+      "stateId": 905,
+      "coordinate": {
+        "x": -63,
+        "y": -319,
+        "z": 473
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "运能维护",
+      "navigationKind": "landmark",
+      "iconId": "icon-39ead57e1c6cf6cb",
+      "mode": "landmark"
+    },
+    {
+      "id": "9c47ca0b-2227-40b1-b78b-50de7d68523f",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1960,
+        "y": 1593,
+        "z": -5
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "afef722f-956b-4170-b2ac-d290422d7bfb",
+      "stateId": 905,
+      "coordinate": {
+        "x": 0,
+        "y": -44,
+        "z": 469
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "bd34695e-d41e-4d55-9e20-f07ad7483a08",
+      "stateId": 905,
+      "levelId": "-1/22",
+      "coordinate": {
+        "x": -206,
+        "y": -234,
+        "z": 261
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "c9462c2c-7258-4aa0-9a38-4edca1e93647",
+      "stateId": 905,
+      "coordinate": {
+        "x": -2227,
+        "y": -181,
+        "z": -443
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "乐曲调律",
+      "navigationKind": "landmark",
+      "iconId": "icon-abd9e917ae1a1b00",
+      "mode": "landmark"
+    },
+    {
+      "id": "d3f50a16-e9ab-41a7-80dd-59eb19e7e96a",
+      "stateId": 905,
+      "coordinate": {
+        "x": 1628,
+        "y": 1406,
+        "z": -74
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "d637a36f-5b7a-401e-833a-ae56a460af23",
+      "stateId": 905,
+      "coordinate": {
+        "x": 3747,
+        "y": -203,
+        "z": -426
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "d6cc046f-0937-4884-a130-eab5d78b834c",
+      "stateId": 905,
+      "coordinate": {
+        "x": -2424,
+        "y": -170,
+        "z": -403
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "e6c8211c-c09a-4f83-9643-deeff6fe4ccb",
+      "stateId": 905,
+      "coordinate": {
+        "x": -163,
+        "y": 32,
+        "z": 546
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "乐曲调律",
+      "navigationKind": "landmark",
+      "iconId": "icon-abd9e917ae1a1b00",
+      "mode": "landmark"
+    },
+    {
+      "id": "f4dedafc-a337-4250-a1a7-749218c2c8d5",
+      "stateId": 905,
+      "coordinate": {
+        "x": -236,
+        "y": -10,
+        "z": 468
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "圣箱寻物",
+      "navigationKind": "landmark",
+      "iconId": "icon-7d1ca55ece071431",
+      "mode": "landmark"
+    },
+    {
+      "id": "f6bacbfc-d159-4c9e-b003-a15887aa0c7d",
+      "stateId": 905,
+      "coordinate": {
+        "x": 2014,
+        "y": 1402,
+        "z": -68
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "小型信标",
+      "navigationKind": "beacon",
+      "pointType": "small-beacon",
+      "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "f8bdbdc6-b6ee-4593-8a10-9565805d14c2",
+      "stateId": 905,
+      "coordinate": {
+        "x": -3716,
+        "y": 2151,
+        "z": 2001
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "芬莱克",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-5afd5e6a9a84c32d",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -3674,
+        "y": 2151,
+        "z": 2000
+      }
+    },
+    {
+      "id": "facf4529-92c4-4905-bb1b-19299e911480",
+      "stateId": 905,
+      "coordinate": {
+        "x": -3035,
+        "y": 3835,
+        "z": 1692
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "彼岸之镜",
+      "navigationKind": "landmark",
+      "iconId": "icon-f6f7a26538b8e2e7",
+      "mode": "fast-travel"
+    }
+  ]
+}

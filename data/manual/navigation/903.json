@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "points": [
+    {
+      "gravityType": 1,
+      "id": "6ab10eda-cb0e-47a2-81f6-190941c2e4f7",
+      "stateId": 903,
+      "coordinate": {
+        "x": 0,
+        "y": 60,
+        "z": 684
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "命途断章之轮",
+      "navigationKind": "boss",
+      "pointType": "weekly-boss",
+      "iconId": "icon-9aa63034f2f89720",
+      "mode": "fast-travel"
+    }
+  ]
+}
