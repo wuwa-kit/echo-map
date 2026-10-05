@@ -1726,10 +1726,10 @@ it('allows retry after the initial editor library load fails', async () => {
   expect(store.error).toBe('')
 })
 
-it('keeps the last six distinct icon selections across new points and ignores invalid selections', async () => {
+it('persists the last ten distinct icon selections across new points and reloads', async () => {
   const store = usePointEditorStore()
   await store.load('navigation')
-  const icons = navigationTypeIcons(undefined).slice(0, 8)
+  const icons = navigationTypeIcons(undefined).slice(0, 12)
   for (const icon of icons) store.setIcon(icon.id)
   expect(store.recentIconIds).toEqual(icons.slice(2).reverse().map(({ id }) => id))
   const reused = icons[4]
@@ -1740,6 +1740,10 @@ it('keeps the last six distinct icon selections across new points and ignores in
   store.setIcon('unknown-icon')
   store.newPoint()
   expect(store.recentIconIds).toEqual(expected)
+  setActivePinia(createPinia())
+  const reopened = usePointEditorStore()
+  await reopened.load('navigation')
+  expect(reopened.recentIconIds).toEqual(expected)
 })
 
 it('updates the name with fixed artwork on type changes but preserves edits when reselecting the same type', async () => {
@@ -1754,4 +1758,36 @@ it('updates the name with fixed artwork on type changes but preserves edits when
   expect(store.draft).toMatchObject({ name: '自定义材料本' })
   store.setPointType('entrance')
   expect(store.draft).toMatchObject({ name: '入口', iconId: navigationPointTypes.entrance.icons[0] })
+})
+
+it('restores only ten distinct known icon IDs from local preferences', async () => {
+  const ids = navigationTypeIcons(undefined).slice(0, 12).map(({ id }) => id)
+  cache.set('echo-map:point-editor:recent-icons:v1', JSON.stringify([null, 12, 'unknown', ids[0], ...ids]))
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  expect(store.recentIconIds).toEqual(ids.slice(0, 10))
+})
+
+it.each(['invalid-json', '{}', 'null'])('ignores malformed recent icon preferences: %s', async (saved) => {
+  cache.set('echo-map:point-editor:recent-icons:v1', saved)
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  expect(store.recentIconIds).toEqual([])
+  expect(store.error).toBe('')
+})
+
+it('keeps icon selection usable when local storage is unavailable', async () => {
+  vi.stubGlobal('localStorage', {
+    getItem: () => { throw new Error('Storage unavailable') },
+    setItem: () => { throw new Error('Storage unavailable') },
+  })
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  const icon = navigationTypeIcons(undefined)[0]
+  if (!icon) throw new Error('需要图标')
+  store.setIcon(icon.id)
+  expect(store.draft).toMatchObject({ iconId: icon.id })
+  await store.load('navigation')
+  expect(store.recentIconIds).toEqual([icon.id])
+  expect(store.error).toBe('')
 })

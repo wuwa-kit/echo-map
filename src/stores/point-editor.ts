@@ -1,6 +1,6 @@
 import { emptyCoordinateInput, coordinateInputPending, coordinateInputXY, commitCoordinateInput, coordinateAxes } from '../components/base/coordinate-input.ts'
 import type { CoordinateInputState, CoordinateInputChange } from '../components/base/coordinate-input.ts'
-import { navigationTypeIcons } from '../domain/navigation-icons.ts'
+import { navigationIconById, navigationTypeIcons } from '../domain/navigation-icons.ts'
 import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
@@ -20,6 +20,8 @@ import { gameToMapCoordinate } from '../map/projection.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
 
 const CONTINUE_ADDING_KEY = 'echo-map:point-editor:continue-adding:v1'
+const RECENT_ICONS_KEY = 'echo-map:point-editor:recent-icons:v1'
+const RECENT_ICONS_LIMIT = 10
 const POSITION_CONFIRM_INTERVAL = 600
 
 type EditorKind = AuthoredPoint['kind']
@@ -63,6 +65,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const editorMode = shallowRef<EditorKind>('navigation')
   const continueAdding = shallowRef(false)
   const recentIconIds = shallowRef<readonly string[]>([])
+  let recentIconsRestored = false
   const positionConfirmation = shallowRef<{ snapshot: string, pressedAt: number } | null>(null)
   const forms = shallowRef<Record<EditorKind, EditorForm>>({ echo: emptyForm(), navigation: emptyForm() })
   function formField<K extends keyof EditorForm>(key: K) {
@@ -461,6 +464,17 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     catch { /* Keep the current preference if storage is unavailable. */ }
   }
 
+  function restoreRecentIcons(): void {
+    if (recentIconsRestored) return
+    recentIconsRestored = true
+    try {
+      const saved: unknown = JSON.parse(localStorage.getItem(RECENT_ICONS_KEY) ?? '[]')
+      if (!Array.isArray(saved)) return
+      const ids = saved.filter((id): id is string => typeof id === 'string' && Boolean(navigationIconById(id)))
+      recentIconIds.value = Object.freeze([...new Set(ids)].slice(0, RECENT_ICONS_LIMIT))
+    } catch { /* Ignore invalid or unavailable local preferences. */ }
+  }
+
   function setContinueAdding(value: boolean): void {
     if (busy.value) return
     continueAdding.value = value
@@ -471,6 +485,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   async function load(kind: EditorKind = editorMode.value): Promise<void> {
     if (busy.value) return
     restoreContinueAdding()
+    restoreRecentIcons()
     editorMode.value = kind
     if (dataset.value && revision.value) {
       if (!draft.value) newPoint()
@@ -662,8 +677,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       const index = ids.indexOf(id)
       if (index !== -1) ids.splice(index, 1)
       ids.unshift(id)
-      ids.splice(6)
+      ids.splice(RECENT_ICONS_LIMIT)
     })
+    try { localStorage.setItem(RECENT_ICONS_KEY, JSON.stringify(recentIconIds.value)) }
+    catch { /* Recent icons remain available for this session. */ }
     const names = icon.name.split(' / ')
     const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
     const name = rule?.names[0] ?? (names.length === 1 ? names[0] : undefined)
