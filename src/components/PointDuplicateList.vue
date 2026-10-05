@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vTooltip } from './base/tooltip.ts'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { isOfficialPoint, pointTitle } from '../domain/point-library.ts'
 import { navigationPointIconUrl } from '../domain/navigation-icons.ts'
@@ -24,7 +25,7 @@ function coordinates(point: AuthoredPoint): string {
       </div>
       <div class="min-w-0 flex-1">
         <div class="truncate font-semibold text-[#c7dfd2]">{{ store.dataset ? pointTitle(candidate.point, store.dataset) : candidate.point.id }}</div>
-        <div class="mt-[3px] truncate text-[#91ae9e]" :title="`距离 ${candidate.distance.toFixed(1)} · ${coordinates(candidate.point)}`">距离 {{ candidate.distance.toFixed(1) }} · {{ coordinates(candidate.point) }}</div>
+        <div class="mt-[3px] truncate text-[#91ae9e]" v-tooltip="`距离 ${candidate.distance.toFixed(1)} · ${coordinates(candidate.point)}`">距离 {{ candidate.distance.toFixed(1) }} · {{ coordinates(candidate.point) }}</div>
       </div>
     </div>
   </WuScrollArea>

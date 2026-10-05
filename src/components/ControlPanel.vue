@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { buttonClasses } from './base/button-styles.ts'
+import { vTooltip } from './base/tooltip.ts'
 import WuButton from './base/WuButton.vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
@@ -14,6 +15,7 @@ defineEmits<{ editRequested: [] }>()
 
 const store = useExplorerStore()
 const { dataset } = storeToRefs(store)
+const lastCommitTime = __LAST_COMMIT_TIME__
 </script>
 
 <template>
@@ -25,16 +27,26 @@ const { dataset } = storeToRefs(store)
             <WuSvg name="brand" class="shrink-0 text-[var(--accent)] [--wu-svg-h:34px]" />
             <div class="min-w-0 leading-none">
               <span class="block font-serif text-[21px] text-[#f1faf5] font-medium tracking-[0.12em]">声巡</span>
-              <span class="mt-[6px] block truncate text-[7px] text-[#789087] font-bold tracking-[0.15em]">WUTHERING ECHO ROUTE</span>
             </div>
           </div>
-          <span
-            class="shrink-0 text-right text-[12px] min-[1024px]:text-[8px] text-[#71877e] leading-[1.45]"
-            :data-datetime="dataset.source.generatedAt"
-          >
-            <span class="block">数据</span>
-            <span class="block">{{ new Date(dataset.source.generatedAt).toLocaleDateString('zh-CN') }}</span>
-          </span>
+          <div class="flex shrink-0 items-center gap-[8px] text-[#71877e]">
+            <span
+              class="text-right text-[12px] min-[1024px]:text-[8px] leading-[1.45]"
+              :data-datetime="lastCommitTime"
+              v-tooltip="'最新提交时间'"
+            >
+              {{ new Date(lastCommitTime).toLocaleString('zh-CN', { hour12: false }) }}
+            </span>
+            <a
+              href="https://github.com/wuwa-kit/echo-map"
+              target="_blank"
+              rel="noopener noreferrer"
+              v-tooltip="'查看 GitHub 仓库'"
+              class="shrink-0 transition-colors hover:text-[#f1faf5]"
+            >
+              <WuSvg name="github" class="[--wu-svg-h:16px]" />
+            </a>
+          </div>
         </div>
       </div>
 

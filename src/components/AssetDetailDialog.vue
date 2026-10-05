@@ -55,7 +55,7 @@ const fetchedAt = computed(() => {
 
       <div class="min-h-0 flex flex-1 items-center gap-[16px] p-[12px] sm:p-[20px]">
         <div v-if="frame.assets.length > 1" class="hidden shrink-0 sm:block">
-          <WuButton icon="chevron-left" icon-only size="lg" title="上一项" :disabled="frame.selectedIndex <= 0" @click="emit('navigate', -1)" />
+          <WuButton icon="chevron-left" icon-only size="lg" tooltip="上一项" :disabled="frame.selectedIndex <= 0" @click="emit('navigate', -1)" />
         </div>
         <WuScrollArea :key="frame.asset.id" class="h-full min-w-0 flex-1 rounded-[9px] border border-[var(--line)] bg-[#10251c]" content-class="p-[16px] sm:p-[24px]">
           <div class="grid min-w-0 gap-[20px] sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] sm:gap-[24px]">
@@ -79,7 +79,7 @@ const fetchedAt = computed(() => {
           </div>
         </WuScrollArea>
         <div v-if="frame.assets.length > 1" class="hidden shrink-0 sm:block">
-          <WuButton icon="chevron-right" icon-only size="lg" title="下一项" :disabled="frame.selectedIndex >= frame.assets.length - 1" @click="emit('navigate', 1)" />
+          <WuButton icon="chevron-right" icon-only size="lg" tooltip="下一项" :disabled="frame.selectedIndex >= frame.assets.length - 1" @click="emit('navigate', 1)" />
         </div>
       </div>
 

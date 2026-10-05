@@ -35,6 +35,7 @@
 
 ## Vue 组件
 
+- 禁止使用原生 `title` 属性提供悬浮提示，包括静态属性、动态绑定及通过 DOM 设置；统一使用项目现有的 `v-tooltip` 指令、`WuTooltip` 组件或基础组件提供的 `tooltip` 属性。
 - Vue 组件使用 `<script setup lang="ts">` 和 PascalCase 文件名。
 - 通用、可跨业务场景复用的基础组件统一放在 `src/components/base/`，组件名和文件名必须以 `Wu` 开头，例如 `WuSvg.vue`。
 - 页面或领域功能组件可使用描述业务职责的名称，例如 `MapCanvas.vue`、`RoutePanel.vue`；不要为了满足前缀规则把领域组件伪装成基础组件。

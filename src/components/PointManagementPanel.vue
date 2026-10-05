@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vTooltip } from './base/tooltip.ts'
 import { computed, nextTick, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useEventListener, useMediaQuery, useResizeObserver } from '@vueuse/core'
@@ -199,9 +200,9 @@ function exportChanges(): void {
           <div class="absolute inset-x-0 top-0" :style="{ transform: `translateY(${listWindow.before}px)` }">
             <div v-for="row in visible" :key="row.id" :style="{ height: `${rowHeight}px` }" class="pb-[8px]">
               <div class="h-full overflow-hidden rounded-[8px] border border-[var(--line)] p-[12px]">
-                <div class="flex items-center gap-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /><span class="min-w-0 flex-1 truncate text-[14px]" :title="title(row.point)">{{ title(row.point) }}</span><span class="shrink-0 text-[12px] text-[#dec594]">{{ statusLabel(row) }}</span></div>
+                <div class="flex items-center gap-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /><span class="min-w-0 flex-1 truncate text-[14px]" v-tooltip="title(row.point)">{{ title(row.point) }}</span><span class="shrink-0 text-[12px] text-[#dec594]">{{ statusLabel(row) }}</span></div>
                 <div v-if="row.operation" class="mt-[8px] text-[12px] text-[#d7eadf]">{{ operations[row.operation] }}</div>
-                <div class="mt-[8px] text-[12px] leading-6 text-[#91ae9e]"><div class="truncate" :title="`${regionName(row.point)} · ${floor(row.point)}`">{{ regionName(row.point) }} · {{ floor(row.point) }}</div><div class="flex gap-[10px]"><span class="min-w-0 truncate" :title="coordinates(row.point)">{{ coordinates(row.point) }}</span><span v-if="row.duplicateIds.length" class="shrink-0 text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</span></div></div>
+                <div class="mt-[8px] text-[12px] leading-6 text-[#91ae9e]"><div class="truncate" v-tooltip="`${regionName(row.point)} · ${floor(row.point)}`">{{ regionName(row.point) }} · {{ floor(row.point) }}</div><div class="flex gap-[10px]"><span class="min-w-0 truncate" v-tooltip="coordinates(row.point)">{{ coordinates(row.point) }}</span><span v-if="row.duplicateIds.length" class="shrink-0 text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</span></div></div>
                 <div class="mt-[8px] flex gap-[8px]"><WuButton size="sm" @click="emit('locateRequested', row.point)">定位</WuButton><WuButton size="sm" :disabled="!row.local || busy" @click="emit('editRequested', row.id)">编辑</WuButton><WuButton size="sm" tone="accent" @click="showDetail(row.id)">详情</WuButton></div>
               </div>
             </div>
@@ -211,13 +212,13 @@ function exportChanges(): void {
       <div v-else class="shrink-0 overflow-x-auto">
         <table class="w-full min-w-[860px] table-fixed border-collapse text-left text-[13px] leading-[18px]">
           <colgroup><col class="w-[36px]" /><col /><col class="w-[240px]" /><col v-if="storage === 'browser'" class="w-[112px]" /><col class="w-[120px]" /><col class="w-[174px]" /></colgroup>
-          <thead class="text-[#91ae9e]"><tr class="border-b border-[var(--line)]"><th class="p-[10px]"><WuCheckBox title="全选当前筛选结果" :model-value="allChecked" :indeterminate="partlyChecked" @update:model-value="manager.selectMany(filtered.map(row => row.id), $event)" /></th><th class="p-[10px]">点位 / 坐标</th><th class="p-[10px]">地图 / 楼层</th><th v-if="storage === 'browser'" class="p-[10px]">操作类型</th><th class="p-[10px]">{{ storage === 'browser' ? '同步状态' : '状态' }}</th><th class="p-[10px]">管理</th></tr></thead>
+          <thead class="text-[#91ae9e]"><tr class="border-b border-[var(--line)]"><th class="p-[10px]"><WuCheckBox v-tooltip="'全选当前筛选结果'" :model-value="allChecked" :indeterminate="partlyChecked" @update:model-value="manager.selectMany(filtered.map(row => row.id), $event)" /></th><th class="p-[10px]">点位 / 坐标</th><th class="p-[10px]">地图 / 楼层</th><th v-if="storage === 'browser'" class="p-[10px]">操作类型</th><th class="p-[10px]">{{ storage === 'browser' ? '同步状态' : '状态' }}</th><th class="p-[10px]">管理</th></tr></thead>
           <tbody ref="rowsRef">
             <tr v-if="listWindow.before"><td :colspan="storage === 'browser' ? 6 : 5" class="border-0 p-0" :style="{ height: `${listWindow.before}px` }" /></tr>
             <tr v-for="row in visible" :key="row.id" class="border-b border-[var(--line)]" :style="{ height: `${rowHeight}px` }" :class="detailId === row.id ? 'bg-[#1b392d]' : 'hover:bg-[#173025]'">
             <td class="p-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /></td>
-            <td class="p-[10px]"><div class="truncate" :title="title(row.point)">{{ title(row.point) }}</div><div class="mt-[4px] truncate text-[12px] text-[#91ae9e]" :title="coordinates(row.point)">{{ coordinates(row.point) }}</div></td>
-            <td class="p-[10px]"><div class="truncate" :title="regionName(row.point)">{{ regionName(row.point) }}</div><div class="mt-[4px] truncate text-[12px] text-[#91ae9e]" :title="floor(row.point)">{{ floor(row.point) }}</div></td>
+            <td class="p-[10px]"><div class="truncate" v-tooltip="title(row.point)">{{ title(row.point) }}</div><div class="mt-[4px] truncate text-[12px] text-[#91ae9e]" v-tooltip="coordinates(row.point)">{{ coordinates(row.point) }}</div></td>
+            <td class="p-[10px]"><div class="truncate" v-tooltip="regionName(row.point)">{{ regionName(row.point) }}</div><div class="mt-[4px] truncate text-[12px] text-[#91ae9e]" v-tooltip="floor(row.point)">{{ floor(row.point) }}</div></td>
             <td v-if="storage === 'browser'" class="whitespace-nowrap p-[10px]">{{ row.operation ? operations[row.operation] : '' }}</td>
             <td class="p-[10px]"><span :class="row.status === 'conflict' || row.status === 'review' ? 'text-[#dec594]' : 'text-[#91ae9e]'">{{ statusLabel(row) }}</span><div v-if="row.duplicateIds.length" class="mt-[4px] text-[12px] text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</div></td>
             <td class="p-[10px]"><div class="flex gap-[8px]"><WuButton size="sm" variant="ghost" @click="emit('locateRequested', row.point)">定位</WuButton><WuButton size="sm" variant="ghost" :disabled="!row.local || busy" @click="emit('editRequested', row.id)">编辑</WuButton><WuButton size="sm" variant="ghost" tone="accent" @click="showDetail(row.id)">详情</WuButton></div></td>

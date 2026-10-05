@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vTooltip } from './tooltip.ts'
 import WuButton from './WuButton.vue'
 import { computed, shallowRef, useAttrs, useId, useTemplateRef } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
@@ -87,7 +88,7 @@ function browseTo(depth: number): void {
     <button
       v-bind="attrs" ref="triggerRef" type="button" :disabled="disabled"
       class="h-[var(--wu-cascader-height,44px)] w-full min-w-0 flex cursor-pointer items-center justify-center gap-[var(--wu-cascader-gap,10px)] border border-[var(--line)] rounded-[8px] bg-[#152b24] px-[var(--wu-cascader-padding,14px)] text-[14px] text-[#eaf4ef] shadow-lg hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
-      :popovertarget="panelId" :title="placeholder"
+      :popovertarget="panelId" v-tooltip="placeholder"
     >
       <span class="min-w-0 truncate">{{ placeholder }}</span>
       <WuSvg name="chevron-right" class="shrink-0 text-[var(--accent)] [--wu-svg-h:14px]" :class="isOpen ? 'rotate-90' : ''" />
