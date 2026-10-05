@@ -5,11 +5,11 @@ import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
-import { mapDisplayTierSchema, navigationPointTypeSchema, navigationIconUrlSchema, pointTransferSchema } from '../domain/schema.ts'
+import { navigationPointTypeSchema, navigationIconUrlSchema, pointTransferSchema } from '../domain/schema.ts'
 import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
 import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision, PointWorkspace } from '../domain/types.ts'
 import { editWorkspace, managementRows, parsePointWorkspace, pointExportFilename, projectManagementRows, resolveWorkspace, samePoint, workspaceLibrary } from '../domain/local-points.ts'
-import type { NavigationMode, NavigationPointType } from '../domain/types.ts'
+import type { NavigationMode } from '../domain/types.ts'
 import { combinePointLibraries } from '../domain/point-matching.ts'
 import { readEditorLibrary, saveEditorLibrary } from '../data/editor-client.ts'
 import { loadMapDataset } from '../data/load.ts'
@@ -20,8 +20,6 @@ import { gameToMapCoordinate } from '../map/projection.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
 
 const CONTINUE_ADDING_KEY = 'echo-map:point-editor:continue-adding:v1'
-const RECENT_TYPES_KEY = 'echo-map:point-editor:recent-saved-types:v1'
-const RECENT_TYPES_LIMIT = 4
 const POSITION_CONFIRM_INTERVAL = 600
 
 type EditorKind = AuthoredPoint['kind']
@@ -65,7 +63,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const editorMode = shallowRef<EditorKind>('navigation')
   const continueAdding = shallowRef(false)
   const positionConfirmation = shallowRef<{ snapshot: string, pressedAt: number } | null>(null)
-  const recentPointTypes = shallowRef<readonly NavigationPointType[]>([])
   const forms = shallowRef<Record<EditorKind, EditorForm>>({ echo: emptyForm(), navigation: emptyForm() })
   function formField<K extends keyof EditorForm>(key: K) {
     return computed({
@@ -454,29 +451,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     catch { /* The preference remains available for this session. */ }
   }
 
-  function restoreRecentPointTypes(): void {
-    try {
-      const cached = localStorage.getItem(RECENT_TYPES_KEY)
-      const parsed = cached ? navigationPointTypeSchema.array().safeParse(JSON.parse(cached)) : null
-      if (parsed?.success) recentPointTypes.value = freeze([...new Set(parsed.data)].slice(0, RECENT_TYPES_LIMIT))
-    } catch { /* Keep recent types in memory if storage is unavailable. */ }
-  }
-
-  function rememberPointType(pointType: NavigationPointType): void {
-    recentPointTypes.value = produce(recentPointTypes.value, (types) => {
-      const index = types.indexOf(pointType)
-      if (index >= 0) types.splice(index, 1)
-      types.unshift(pointType)
-      types.splice(RECENT_TYPES_LIMIT)
-    })
-    try { localStorage.setItem(RECENT_TYPES_KEY, JSON.stringify(recentPointTypes.value)) }
-    catch { /* Recent types remain available for this session. */ }
-  }
-
   async function load(kind: EditorKind = editorMode.value): Promise<void> {
     if (busy.value) return
     restoreContinueAdding()
-    restoreRecentPointTypes()
     editorMode.value = kind
     if (dataset.value && revision.value) {
       if (!draft.value) newPoint()
@@ -556,7 +533,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       else library.points.push(saved)
     })
     if (await commit(next, 'save')) {
-      if (saved.kind === 'navigation' && saved.pointType) rememberPointType(saved.pointType)
       openDraft(saved)
       if (addNext && saved.kind === 'navigation') {
         newPoint('navigation')
@@ -652,21 +628,11 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (parsed.success) point.pointType = parsed.data
       else delete point.pointType
       point.navigationKind = rule?.kind ?? 'landmark'
-      delete point.displayTier
       point.mode = mode
       delete point.iconId
-      if (rule?.icons.length) delete point.iconUrl
+      if (rule) delete point.iconUrl
       if (icon) point.iconId = icon.id
       if (point.mode !== 'fast-travel') delete point.teleportCoordinate
-    })
-  }
-
-  function setDisplayTier(value: string | number | null): void {
-    if (busy.value || draft.value?.kind !== 'navigation') return
-    const parsed = mapDisplayTierSchema.safeParse(value)
-    if (!parsed.success) return
-    edit((point) => {
-      if (point.kind === 'navigation') point.displayTier = parsed.data
     })
   }
 
@@ -689,8 +655,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
 
   function setIconUrl(value: string): void {
     if (busy.value || draft.value?.kind !== 'navigation') return
-    const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
-    if (rule?.icons.length) return
+    if (draft.value.pointType) return
     const url = value.trim()
     if (url && !navigationIconUrlSchema.safeParse(url).success) {
       invalidInput('icon', '请输入有效的 HTTPS 图标地址')
@@ -901,7 +866,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     availableFloors, pointLevelId, setLevel,
     continueAdding: shallowReadonly(continueAdding), canContinueAdding,
     setContinueAdding,
-    recentPointTypes: shallowReadonly(recentPointTypes),
     positionInput: shallowReadonly(positionInput), arrivalInput: shallowReadonly(arrivalInput), updateCoordinateInput,
     hasUnsavedChanges, editorMode: shallowReadonly(editorMode), completePoints, allPoints, selectGravity, switchEditorTab,
     editing: shallowReadonly(editing), inputValues: shallowReadonly(inputValues), inputErrors: shallowReadonly(inputErrors),
@@ -914,7 +878,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy, operation: shallowReadonly(operation), dirty,
     setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, followMapState, addMember, setMemberCount, adjustMemberCount, removeMember,
-    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setDisplayTier, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, undoDelete, previewImport, applyImport,
+    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, undoDelete, previewImport, applyImport,
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
     setTeleportCoordinateText: (value: string) => { teleportCoordinateText.value = value },

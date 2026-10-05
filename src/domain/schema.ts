@@ -85,7 +85,6 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     name: z.string().max(100),
     navigationKind: navigationKindSchema,
     pointType: navigationPointTypeSchema.optional(),
-    displayTier: mapDisplayTierSchema.optional(),
     iconId: z.string().min(1).optional(),
     iconUrl: navigationIconUrlSchema.optional(),
     mode: navigationModeSchema,
@@ -106,10 +105,10 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     if (fixedName !== undefined && point.name !== fixedName) issue(`名称固定为“${fixedName}”，不允许自定义`)
     if (point.iconId && !navigationIconById(point.iconId)) issue('定位点引用了未知图标')
     if (point.iconId && point.iconUrl) issue('图标 ID 与自定义图标地址不能同时设置')
+    if (point.pointType && point.iconUrl) issue('只有未设置类型的定位点可以填写自定义图标地址')
     if (point.pointType && rule?.icons.length) {
       const icons = navigationTypeIcons(point.pointType)
       if (point.iconId && !icons.some(({ id }) => id === point.iconId)) issue('图标与类型不符')
-      if (point.iconUrl && !icons.some(({ url }) => url === point.iconUrl)) issue('图标不属于所选类型')
     }
   }
   if (point.kind === 'navigation' && point.teleportCoordinate && point.mode !== 'fast-travel') {
@@ -474,7 +473,6 @@ const mapDatasetObjectSchema = z.object({
   navigationPoints: z.array(z.object({
     ...pointBaseShape,
     pointType: navigationPointTypeSchema.optional(),
-    displayTier: mapDisplayTierSchema.optional(),
     teleportCoordinate: teleportCoordinateSchema.optional(),
     groupId: z.string().min(1),
     catalogCategoryId: z.string().min(1),

@@ -42,7 +42,7 @@ export function mapResolutionForZoom(zoom: number): number {
     : Number.NaN
 }
 
-export function navigationPointZoomRange(point: Pick<NavigationPoint, 'kind' | 'pointType' | 'displayTier'>): Readonly<MapZoomRange> {
+export function navigationPointZoomRange(point: Pick<NavigationPoint, 'pointType'>): Readonly<MapZoomRange> {
   return MAP_TIER_ZOOM_RANGES[navigationPointDisplayTier(point)]
 }
 

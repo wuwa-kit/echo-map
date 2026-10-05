@@ -6,7 +6,7 @@ import { navigationIconById } from '../src/domain/navigation-icons.ts'
 import { navigationIconCatalog } from '../src/domain/navigation-icon-catalog.ts'
 import { mapDisplayTierSchema, navigationIconDefinitionSchema } from '../src/domain/schema.ts'
 import { navigationPointTypeIds, navigationPointTypes } from '../src/domain/navigation-point-types.ts'
-import { officialNavigationTypeIds } from './lib/map/navigation-types.ts'
+import { officialNavigationTypeIds, unclassifiedNavigationTypeIds } from './lib/map/navigation-types.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_ZOOM_RANGES, MAP_TIER_ZOOM_RANGES, mapPointZoomRange } from '../src/map/point-visibility.ts'
 import { projectPath, readJson } from './lib/files.ts'
@@ -43,7 +43,7 @@ const officialLibrary = parsePointLibrary(officialEcho.library, dataset, 'offici
 const echoIds = new Set(dataset.echoes.map(({ id }) => id))
 const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []
-const classifiedTypeIds = Object.values(officialNavigationTypeIds).flat()
+const classifiedTypeIds = [...Object.values(officialNavigationTypeIds).flat(), ...unclassifiedNavigationTypeIds]
 if (new Set(classifiedTypeIds).size !== classifiedTypeIds.length) errors.push('同一官方类型 ID 不能属于多个定位点类型')
 const localIconIds = new Set<string>()
 for (const icon of navigationIconCatalog) {

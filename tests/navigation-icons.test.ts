@@ -9,15 +9,15 @@ const emptyNavigationDataset = { ...referenceDataset, navigationPoints: [], navi
 describe('local navigation icon picker', () => {
   it('resolves configured and custom choices without any official point data', () => {
     expect(navigationTypeIcons(undefined)).toBe(navigationIconCatalog)
-    expect(navigationTypeIcons('service')).toBe(navigationIconCatalog)
+    expect(navigationTypeIcons('service')).toHaveLength(15)
     expect(navigationTypeIcons('small-beacon')).toHaveLength(1)
-    expect(navigationTypeIcons('remnant-settlement')).toHaveLength(2)
+    expect(navigationTypeIcons('echo-settlement')).toHaveLength(3)
     expect(new Set(navigationIconCatalog.map(({ id }) => id)).size).toBe(navigationIconCatalog.length)
     expect(new Set(navigationIconCatalog.map(({ url }) => url)).size).toBe(navigationIconCatalog.length)
   })
 
   it.each([undefined, 'service'] as const)('searches every name of a shared icon for %s without changing its stored label', (pointType) => {
-    const icon = navigationIconCatalog.find(({ name }) => name.split(' / ').length > 1)
+    const icon = navigationTypeIcons(pointType).find(({ name }) => name.split(' / ').length > 1)
     if (!icon) throw new Error('需要多名称图标')
     const original = icon.name
     for (const name of icon.name.split(' / ')) {
@@ -48,7 +48,7 @@ describe('local navigation icon picker', () => {
     const point = {
       gravityType: null, id: 'custom-icon', kind: 'navigation' as const,
       stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
-      name: '自定义名称', pointType: 'service' as const, navigationKind: 'service' as const, mode: 'landmark' as const, note: '', iconUrl: 'https://example.com/custom.png',
+      name: '自定义名称', navigationKind: 'service' as const, mode: 'landmark' as const, note: '', iconUrl: 'https://example.com/custom.png',
     }
     expect(navigationIconById('missing')).toBeUndefined()
     expect(parsePointLibrary({ version: 1, points: [point] }, emptyNavigationDataset).points[0]).toEqual(point)

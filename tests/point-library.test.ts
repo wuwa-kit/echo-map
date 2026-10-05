@@ -70,7 +70,7 @@ describe('authored point library', () => {
     const point = {
       gravityType: null, id: 'custom-icon', kind: 'navigation' as const,
       stateId: 8, levelId: null, coordinate: { x: 15, y: 25, z: 35 },
-      name: '独立名称', pointType: 'service' as const, navigationKind: 'service' as const, mode: 'landmark' as const, note: '', iconId: source.id,
+      name: '独立名称', navigationKind: 'landmark' as const, mode: 'landmark' as const, note: '', iconId: source.id,
     }
     const library = parsePointLibrary({ version: 1, points: [point] }, referenceDataset, 'manual')
     const dataset = { ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }

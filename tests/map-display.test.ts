@@ -373,8 +373,8 @@ describe('map display layer integration', () => {
       { ...navigationPoint('small-beacon'), id: 'other-floor', levelId: 'a2' },
       { ...navigationPoint('service'), id: 'custom-travel', mode: 'fast-travel', gameCoordinate: null },
       { ...navigationPoint('normal-boss'), mode: 'landmark' },
-      navigationPoint('gondola'),
-      navigationPoint('layer-entrance'),
+      { ...navigationPoint('entrance'), id: 'unclassified-transit', pointType: undefined, kind: 'local-transit', mode: 'local-transit' },
+      navigationPoint('entrance'),
       navigationPoint('service'),
     ]
     const label: RegionLabel = {

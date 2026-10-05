@@ -50,17 +50,25 @@ describe('map point zoom visibility', () => {
       expect(isMapPointVisibleAtZoom(nexus, zoom)).toBe(true)
       expect(isMapPointVisibleAtZoom(service, zoom)).toBe(true)
     }
-    const override: MapDisplayPoint = { category: 'navigation', location: { ...service.location, displayTier: 'always', mode: 'landmark' } }
-    expect(isMapPointVisibleAtZoom(override, 0)).toBe(true)
+    const landmark: MapDisplayPoint = { category: 'navigation', location: { ...nexus.location, mode: 'landmark' } }
+    expect(isMapPointVisibleAtZoom(landmark, 0)).toBe(true)
     expect(isMapPointVisibleAtZoom(service, 0)).toBe(false)
+  })
+
+  it('uses near visibility when the type is unset, regardless of navigation kind', () => {
+    const location = navigationPoint('central-beacon')
+    delete location.pointType
+    const point: MapDisplayPoint = { category: 'navigation', location }
+    for (const zoom of [0, 8.99, 9, 15.99, 16, 35]) {
+      expect(isMapPointVisibleAtZoom(point, zoom)).toBe(zoom >= 16)
+    }
   })
 
   it.each([
     ['central-beacon', 0], ['normal-boss', 0], ['weekly-boss', 0], ['hologram', 0],
-    ['tower-of-adversity', 0], ['special-challenge', 0],
     ['small-beacon', 9], ['nightmare-boss', 9], ['material-domain', 9], ['tacet-field', 9], ['challenge', 9],
-    ['remnant-settlement', 16], ['nightmare-settlement', 16], ['regional-challenge', 16],
-    ['gondola', 16], ['dock', 16], ['layer-entrance', 16], ['service', 16],
+    ['echo-settlement', 16],
+    ['entrance', 16], ['service', 16],
   ] as const)('shows %s from step %s onwards', (type, threshold) => {
     const point: MapDisplayPoint = { category: 'navigation', location: navigationPoint(type) }
     for (const zoom of [0, 8.99, 9, 15.99, 16, 23, 35, 50]) {

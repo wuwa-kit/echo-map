@@ -5,7 +5,7 @@ import { iconUrl, STATIC_ROOT } from './normalize.ts'
 import { createHash } from 'node:crypto'
 import { fetchBytes } from '../http.ts'
 import { PNG } from 'pngjs'
-import { officialNavigationPointType } from './navigation-types.ts'
+import { isOfficialNavigationType } from './navigation-types.ts'
 import type { NavigationConfig } from './types.ts'
 
 export async function deduplicateMapAssets(catalog: OfficialMapAssetCatalog): Promise<OfficialMapAssetCatalog> {
@@ -63,7 +63,7 @@ export function normalizeMapAssets(
           const typeId = asString(entry.id)
           const tableName = asString(entry.tableName)
           const isNavigation = category === 'navigation' || navigationConfig.types[typeId]
-            || officialNavigationPointType(typeId) || navigationConfig.includeTableNames[tableName]
+            || isOfficialNavigationType(typeId) || navigationConfig.includeTableNames[tableName]
           const entryCategories = isNavigation && category !== 'navigation' ? [category, 'navigation' as const] : [category]
           const name = asString(entry.name).trim()
           const url = iconUrl(entry.icon)

@@ -29,15 +29,10 @@ export const navigationPointTypes = {
     icons: ['icon-b73ecba5c4c73be0'],
     names: ['无音区'],
   }),
-  'remnant-settlement': defineType({
-    name: '残象聚落', kind: 'challenge', defaultMode: 'fast-travel', teleportLocked: true,
-    icons: ['icon-6a46917ca51473d0', 'icon-4324b10e72143f72'],
+  'echo-settlement': defineType({
+    name: '声骸聚落', kind: 'challenge', defaultMode: 'fast-travel', teleportLocked: true,
+    icons: ['icon-6a46917ca51473d0', 'icon-4324b10e72143f72', 'icon-fbd442ad82816fef'],
     names: [],
-  }),
-  'nightmare-settlement': defineType({
-    name: '梦魇聚落', kind: 'challenge', defaultMode: 'fast-travel', teleportLocked: true,
-    icons: ['icon-fbd442ad82816fef'],
-    names: ['梦魇聚落'],
   }),
   'normal-boss': defineType({
     name: '普通 BOSS', kind: 'boss', defaultMode: 'fast-travel', teleportLocked: false,
@@ -60,98 +55,28 @@ export const navigationPointTypes = {
     icons: ['icon-6c6f88b7fdddf131', 'icon-acc273d641dd2a07', 'icon-d47d4bc656459591', 'icon-4348096f28bb1337'],
     names: [],
   }),
-  'tower-of-adversity': defineType({
-    name: '逆境深塔', kind: 'endgame', defaultMode: 'fast-travel', teleportLocked: true,
-    icons: ['icon-3dbd69e26723a934'],
-    names: ['逆境深塔'],
-  }),
   'challenge': defineType({
     displayTier: 'far',
-    name: '其他副本与挑战', kind: 'challenge', defaultMode: 'fast-travel', teleportLocked: true,
+    name: '常驻挑战', kind: 'challenge', defaultMode: 'fast-travel', teleportLocked: true,
     icons: [],
     names: [],
   }),
-  'special-challenge': defineType({
-    name: '特殊挑战', kind: 'endgame', defaultMode: 'fast-travel', teleportLocked: true,
-    icons: [],
-    names: [],
-  }),
-  'regional-challenge': defineType({
-    name: '区域挑战', kind: 'challenge', defaultMode: 'fast-travel', teleportLocked: false,
-    icons: [],
-    names: [],
-  }),
-  'gondola': defineType({
-    name: '贡多拉站台', kind: 'local-transit', defaultMode: 'local-transit', teleportLocked: false,
-    icons: ['icon-da83bea025612e3d'],
-    names: ['贡多拉站台'],
-  }),
-  'dock': defineType({
-    name: '码头', kind: 'local-transit', defaultMode: 'local-transit', teleportLocked: false,
-    icons: ['icon-339fd70fee267b85'],
-    names: ['码头'],
-  }),
-  'wind-marker': defineType({
-    name: '扶风转标', kind: 'local-transit', defaultMode: 'local-transit', teleportLocked: false,
-    icons: ['icon-9534f864b745f941'],
-    names: ['扶风转标'],
-  }),
-  'leap-device': defineType({
-    name: '天帷机兵·跃送型', kind: 'local-transit', defaultMode: 'local-transit', teleportLocked: false,
-    icons: ['icon-95376a2300e3dfb2'],
-    names: ['天帷机兵·跃送型'],
-  }),
-  'layer-entrance': defineType({
-    name: '分层入口', kind: 'entrance', defaultMode: 'entrance', teleportLocked: false,
+  'entrance': defineType({
+    name: '入口', kind: 'entrance', defaultMode: 'entrance', teleportLocked: false,
     icons: ['icon-f9e566c56ab2c4e4'],
-    names: ['分层入口'],
-  }),
-  'hidden-entrance': defineType({
-    name: '隐秘入口', kind: 'entrance', defaultMode: 'entrance', teleportLocked: false,
-    icons: ['icon-a20604c385ae8e59'],
-    names: ['隐秘入口'],
-  }),
-  'synthesizer': defineType({
-    name: '合成台', kind: 'service', defaultMode: 'landmark', teleportLocked: false,
-    icons: ['icon-ac9e0de71d8ea258'],
-    names: ['合成台'],
-  }),
-  'weapon-service': defineType({
-    name: '印造服务', kind: 'service', defaultMode: 'landmark', teleportLocked: false,
-    icons: ['icon-c4f98f582c9dd99f', 'icon-0fd966a2cfa0aa40'],
-    names: [],
-  }),
-  'shop': defineType({
-    name: '商店', kind: 'service', defaultMode: 'landmark', teleportLocked: false,
-    icons: ['icon-c58c3aea6d69dcbc', 'icon-a760dfcbafaa746d', 'icon-5936ab6519ade43f', 'icon-b0b95e3398fcc02c', 'icon-ed46b9d29dc6d9ea', 'icon-d3e2755656db7bd7', 'icon-07be844f01f9bc26'],
-    names: [],
-  }),
-  'restaurant': defineType({
-    name: '餐饮', kind: 'service', defaultMode: 'landmark', teleportLocked: false,
-    icons: ['icon-d46d97ebff06af5f'],
-    names: [],
-  }),
-  'medical': defineType({
-    name: '医疗', kind: 'service', defaultMode: 'landmark', teleportLocked: false,
-    icons: ['icon-50b338ec14e96d80'],
-    names: [],
-  }),
-  'collection-delivery': defineType({
-    name: '收集物交付', kind: 'service', defaultMode: 'landmark', teleportLocked: false,
-    icons: ['icon-2ee2e41664dd1920', 'icon-049d0d32d01a6a8d', 'icon-13dffc1da5f5c309'],
     names: [],
   }),
   'service': defineType({
-    name: '其他服务与设施', kind: 'service', defaultMode: 'landmark', teleportLocked: false,
-    icons: [],
+    name: '服务设施', kind: 'service', defaultMode: 'landmark', teleportLocked: false,
+    icons: ['icon-ac9e0de71d8ea258', 'icon-c4f98f582c9dd99f', 'icon-0fd966a2cfa0aa40', 'icon-c58c3aea6d69dcbc', 'icon-a760dfcbafaa746d', 'icon-5936ab6519ade43f', 'icon-b0b95e3398fcc02c', 'icon-ed46b9d29dc6d9ea', 'icon-d3e2755656db7bd7', 'icon-07be844f01f9bc26', 'icon-d46d97ebff06af5f', 'icon-50b338ec14e96d80', 'icon-2ee2e41664dd1920', 'icon-049d0d32d01a6a8d', 'icon-13dffc1da5f5c309'],
     names: [],
   }),
 }
 
 export const navigationPointTypeIds = Object.keys(navigationPointTypes) as NavigationPointType[]
 
-export function navigationPointDisplayTier(point: Pick<NavigationPoint, 'kind' | 'pointType' | 'displayTier'>): MapDisplayTier {
-  return point.displayTier ?? (point.pointType ? navigationPointTypes[point.pointType].displayTier : NAVIGATION_KIND_DISPLAY_TIERS[point.kind])
+export function navigationPointDisplayTier(point: Pick<NavigationPoint, 'pointType'>): MapDisplayTier {
+  return point.pointType ? navigationPointTypes[point.pointType].displayTier : 'near'
 }
 
 export function navigationTypeErrors(point: { pointType?: NavigationPointType, kind: NavigationKind, mode: NavigationMode }): string[] {

@@ -178,7 +178,6 @@ export interface AuthoredNavigationPoint extends AuthoredPointBase {
   name: string
   navigationKind: NavigationKind
   pointType?: NavigationPointType
-  displayTier?: MapDisplayTier
   iconId?: string
   iconUrl?: string
   mode: NavigationMode
@@ -247,7 +246,6 @@ export type NavigationKind =
 
 export interface NavigationPoint extends PointLocationBase {
   pointType?: NavigationPointType
-  displayTier?: MapDisplayTier
   groupId: string
   catalogCategoryId: string
   catalogCategoryName: string

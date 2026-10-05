@@ -6,8 +6,7 @@ import { storeToRefs } from 'pinia'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import WuSelect from './base/WuSelect.vue'
 import WuOption from './base/WuOption.vue'
-import { navigationPointDisplayTier, navigationPointTypeIds, navigationPointTypes } from '../domain/navigation-point-types.ts'
-import { MAP_DISPLAY_TIERS } from '../domain/map-display-tier.ts'
+import { navigationPointTypeIds, navigationPointTypes } from '../domain/navigation-point-types.ts'
 import WuInput from './base/WuInput.vue'
 import WuCheckBox from './base/WuCheckBox.vue'
 import WuPopover from './base/WuPopover.vue'
@@ -16,22 +15,12 @@ import WuScrollArea from './base/WuScrollArea.vue'
 import PointCoordinateFields from './PointCoordinateFields.vue'
 
 const store = usePointEditorStore()
-const { draft, busy, inputErrors, recentPointTypes } = storeToRefs(store)
+const { draft, busy, inputErrors } = storeToRefs(store)
 const iconAnchor = useTemplateRef<InstanceType<typeof WuButton>>('iconAnchorRef')
 const iconPopover = useTemplateRef<InstanceType<typeof WuPopover>>('iconPopoverRef')
 const iconSearch = shallowRef('')
 const selectedType = computed(() => draft.value?.kind === 'navigation' ? draft.value.pointType : undefined)
 const rule = computed(() => selectedType.value ? navigationPointTypes[selectedType.value] : undefined)
-const displayTier = computed(() => draft.value?.kind === 'navigation'
-  ? navigationPointDisplayTier({ ...draft.value, kind: draft.value.navigationKind }) : 'near')
-const hiddenTypes = new Set([
-  'tower-of-adversity', 'wind-marker', 'hidden-entrance',
-  'challenge', 'service',
-])
-const typeGroups = computed(() => [
-  { name: '最近使用', types: recentPointTypes.value.filter((id) => !hiddenTypes.has(id)) },
-  { name: '常用点位', types: navigationPointTypeIds },
-])
 const icons = computed(() => navigationTypeIcons(selectedType.value))
 const filteredIcons = computed(() => navigationTypeIcons(selectedType.value, iconSearch.value))
 const iconUrl = computed(() => draft.value?.kind === 'navigation' ? navigationPointIconUrl(draft.value) : '')
@@ -47,18 +36,11 @@ function selectIcon(id: string): void {
     <div class="mb-[6px] text-[13px] font-semibold">类型</div>
     <WuSelect :model-value="draft.pointType ?? null" :muted="!draft.pointType" :invalid="Boolean(inputErrors.pointType)" :disabled="busy" @update:model-value="store.setPointType">
       <WuOption :value="null"><span class="text-[#789788]">未设置</span></WuOption>
-      <div v-for="group in typeGroups" v-show="group.types.length" :key="group.name">
-        <div class="px-[9px] pb-[4px] pt-[10px] text-[10px] text-[#789788]">{{ group.name }}</div>
-        <div class="grid grid-cols-2 gap-[4px]">
-          <WuOption v-for="value in group.types" v-show="!hiddenTypes.has(value)" :key="value" :value="value" class="min-w-0">{{ navigationPointTypes[value].name }}</WuOption>
-        </div>
+      <div class="grid grid-cols-2 gap-[4px]">
+        <WuOption v-for="value in navigationPointTypeIds" :key="value" :value="value" class="min-w-0">{{ navigationPointTypes[value].name }}</WuOption>
       </div>
     </WuSelect>
     <div v-if="inputErrors.pointType" class="mt-[4px] text-[11px] text-[#ffad9f]">{{ inputErrors.pointType }}</div>
-    <div class="mb-[6px] mt-[18px] text-[13px] font-semibold">缩放显示</div>
-    <WuSelect :model-value="displayTier" :disabled="busy" @update:model-value="store.setDisplayTier">
-      <WuOption v-for="(tier, value) in MAP_DISPLAY_TIERS" :key="value" :value="value">{{ tier.name }}</WuOption>
-    </WuSelect>
     <div class="mb-[6px] mt-[18px] text-[13px] font-semibold">名称与图标</div>
     <div class="flex items-start gap-[8px]">
       <WuButton ref="iconAnchorRef" icon-only :tone="inputErrors.icon ? 'danger' : 'neutral'" :tooltip="fixedIcon ? '图标由类型决定' : iconUrl ? '更换图标' : '选择图标'" :disabled="busy || fixedIcon" :popovertarget="iconPopover?.id">
@@ -76,7 +58,7 @@ function selectIcon(id: string): void {
         </button>
         <div v-if="!filteredIcons.length" class="col-span-2 p-[12px] text-center text-[12px] text-[#91ae9e]">没有匹配的图标</div>
       </WuScrollArea>
-      <div v-if="!rule?.icons.length" class="shrink-0 p-[10px] pt-0"><WuInput :model-value="draft.iconUrl ?? ''" :invalid="Boolean(inputErrors.icon)" :disabled="busy" lazy placeholder="输入 HTTPS 图标地址，或从图标库选择" @update:model-value="store.setIconUrl" /></div>
+      <div v-if="!draft.pointType" class="shrink-0 p-[10px] pt-0"><WuInput :model-value="draft.iconUrl ?? ''" :invalid="Boolean(inputErrors.icon)" :disabled="busy" lazy placeholder="输入 HTTPS 图标地址，或从图标库选择" @update:model-value="store.setIconUrl" /></div>
     </WuPopover>
     <WuCheckBox class="mt-[20px] flex min-h-[40px] items-center gap-[8px] text-[13px]" :model-value="draft.mode === 'fast-travel'" :disabled="busy || rule?.teleportLocked" @update:model-value="store.setMode($event ? 'fast-travel' : 'landmark')">可传送<span v-if="rule?.teleportLocked" class="text-[11px] text-[#789788]">· 由类型决定</span></WuCheckBox>
     <template v-if="draft.mode === 'fast-travel'">

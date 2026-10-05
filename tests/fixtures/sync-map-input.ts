@@ -28,7 +28,7 @@ export const navigationConfig = {
   types: {
     CS_02: 'small-beacon',
     '11': 'service',
-    FCRK: 'layer-entrance',
+    FCRK: 'entrance',
     '5034': 'normal-boss',
   },
 }

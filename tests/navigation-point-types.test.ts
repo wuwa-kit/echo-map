@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { navigationPointTypeIds, navigationPointTypes } from '../src/domain/navigation-point-types.ts'
-import { officialNavigationTypeIds, officialNavigationPointType } from '../scripts/lib/map/navigation-types.ts'
+import { officialNavigationTypeIds, officialNavigationPointType, unclassifiedNavigationTypeIds, isOfficialNavigationType } from '../scripts/lib/map/navigation-types.ts'
 import { navigationTypeIcons } from '../src/domain/navigation-icons.ts'
 import { authoredPointSchema, mapDatasetSchema } from '../src/domain/schema.ts'
 import { libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
@@ -8,12 +8,12 @@ import { navigationTestDataset as referenceDataset } from './fixtures/navigation
 
 describe('navigation classification', () => {
   it('maps each known official asset type ID exactly once', () => {
-    const ids = Object.values(officialNavigationTypeIds).flat()
+    const ids = [...Object.values(officialNavigationTypeIds).flat(), ...unclassifiedNavigationTypeIds]
     expect(new Set(ids).size).toBe(ids.length)
     expect(officialNavigationPointType('CS_01')).toBe('central-beacon')
     expect(officialNavigationPointType('CS_02')).toBe('small-beacon')
-    expect(officialNavigationPointType('7010')).toBe('remnant-settlement')
-    expect(officialNavigationPointType('myjl')).toBe('nightmare-settlement')
+    expect(officialNavigationPointType('7010')).toBe('echo-settlement')
+    expect(officialNavigationPointType('myjl')).toBe('echo-settlement')
     expect(officialNavigationPointType('Play_01_1')).toBe('material-domain')
     expect(officialNavigationPointType('353002')).toBe('material-domain')
     expect(officialNavigationPointType('SP_IconMonsterHead_YZ_33014_UI')).toBe('nightmare-boss')
@@ -23,8 +23,26 @@ describe('navigation classification', () => {
     expect(officialNavigationPointType('340000150')).toBe('normal-boss')
   })
 
+  it('merges challenges, entrances and service facilities while leaving other landmarks unclassified', () => {
+    expect(navigationPointTypeIds.map((id) => navigationPointTypes[id].name)).toEqual([
+      '中枢信标', '小型信标', '材料副本', '无音区', '声骸聚落', '普通 BOSS',
+      '梦魇 BOSS', '周本 BOSS', '全息战略', '常驻挑战', '入口', '服务设施',
+    ])
+    for (const id of ['Play_06', 'SP_IconMap_Activity_18_UI', 'Play_04']) expect(officialNavigationPointType(id)).toBe('challenge')
+    for (const id of ['FCRK', 'YMRK']) expect(officialNavigationPointType(id)).toBe('entrance')
+    expect(navigationPointTypes.entrance.icons).toEqual(['icon-f9e566c56ab2c4e4'])
+    for (const id of ['SP_IconMap_Shop_02_UI', 'SP_IconMap_Shop_07_UI', 'SP_IconMap_Shop_08_UI', 'SP_IconMap_Shop_06_UI', 'SP_IconMap_Shop_03_UI', 'SP_IconMap_Play_24_UI']) {
+      expect(officialNavigationPointType(id)).toBe('service')
+    }
+    for (const id of unclassifiedNavigationTypeIds) {
+      expect(officialNavigationPointType(id)).toBeUndefined()
+      expect(isOfficialNavigationType(id)).toBe(true)
+    }
+    expect(isOfficialNavigationType('not-a-navigation-type')).toBe(false)
+  })
+
   it('keeps settlement artwork and gives nightmare bosses an independent icon list', () => {
-    expect(navigationTypeIcons('remnant-settlement')).toHaveLength(2)
+    expect(navigationTypeIcons('echo-settlement')).toHaveLength(3)
     expect(navigationTypeIcons('small-beacon')).toHaveLength(1)
     const ordinary = navigationTypeIcons('normal-boss')
     const nightmares = navigationTypeIcons('nightmare-boss')
@@ -39,6 +57,21 @@ describe('navigation classification', () => {
     expect(allBossIcons).toHaveLength(44)
     expect(new Set(allBossIcons.map(({ id }) => id)).size).toBe(allBossIcons.length)
     expect(navigationPointTypes['nightmare-boss']).toMatchObject({ names: [], teleportLocked: false, defaultMode: 'fast-travel' })
+  })
+
+  it('groups remnant and nightmare settlements under echo settlements with selectable artwork', () => {
+    expect(navigationPointTypes['echo-settlement']).toMatchObject({ name: '声骸聚落', names: [], displayTier: 'near' })
+    expect(navigationTypeIcons('echo-settlement', '残象聚落')).toHaveLength(2)
+    expect(navigationTypeIcons('echo-settlement', '梦魇聚落')).toHaveLength(1)
+    const points = navigationTypeIcons('echo-settlement').map((icon) => ({
+      id: `settlement:${icon.id}`, kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
+      coordinate: { x: 1, y: 2, z: 3 }, name: '自定义聚落名称', pointType: 'echo-settlement', navigationKind: 'challenge', mode: 'fast-travel', iconId: icon.id,
+    }))
+    const library = parsePointLibrary({ version: 1, points }, referenceDataset)
+    expect(library.points).toEqual(points)
+    const rendered = libraryLocations(library, referenceDataset).navigationPoints
+    expect(rendered.map(({ pointType }) => pointType)).toEqual(points.map(({ pointType }) => pointType))
+    expect(mapDatasetSchema.safeParse({ ...referenceDataset, navigationPoints: rendered }).success).toBe(true)
   })
 
   it('uses one material domain type with fixed artwork and custom names for all material and training assets', () => {
@@ -83,7 +116,7 @@ describe('navigation classification', () => {
     }
     expect(authoredPointSchema.safeParse({ ...point, mode: 'landmark' }).success).toBe(false)
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: boss.id }] }, referenceDataset)).toThrow('图标与类型')
-    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: boss.url }] }, referenceDataset)).toThrow('图标不属于')
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: boss.url }] }, referenceDataset)).toThrow('只有未设置类型')
     expect(mapDatasetSchema.safeParse({ ...referenceDataset, navigationPoints: [{ ...beacon, mode: 'landmark' }] }).success).toBe(false)
 
   })
@@ -121,7 +154,7 @@ describe('navigation classification', () => {
     }
   })
 
-  it.each(['central-beacon', 'small-beacon', 'material-domain', 'remnant-settlement', 'nightmare-settlement', 'weekly-boss', 'tower-of-adversity', 'challenge'] as const)('still requires teleport for %s', (pointType) => {
+  it.each(['central-beacon', 'small-beacon', 'material-domain', 'echo-settlement', 'weekly-boss', 'challenge'] as const)('still requires teleport for %s', (pointType) => {
     const rule = navigationPointTypes[pointType]
     const point = {
       id: 'locked-test', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
@@ -145,6 +178,19 @@ describe('navigation classification', () => {
     expect(authoredPointSchema.safeParse({ ...point, name: '' }).success).toBe(false)
   })
 
+  it.each(navigationPointTypeIds)('rejects custom icon URLs for %s even when the URL matches its catalogue', (pointType) => {
+    const rule = navigationPointTypes[pointType]
+    const icon = navigationTypeIcons(pointType)[0]
+    if (!icon) throw new Error('需要图标')
+    const point = {
+      id: 'custom-url', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
+      coordinate: { x: 1, y: 2, z: 3 }, name: rule.names[0] ?? rule.name,
+      pointType, navigationKind: rule.kind, mode: rule.defaultMode, iconUrl: icon.url,
+    }
+    expect(() => parsePointLibrary({ version: 1, points: [point] }, referenceDataset)).toThrow('只有未设置类型')
+    expect(parsePointLibrary({ version: 1, points: [{ ...point, pointType: undefined }] }, referenceDataset).points[0]).toMatchObject({ iconUrl: icon.url })
+  })
+
   it('accepts custom names independently from the allowed icon list', () => {
     const source = navigationTypeIcons('normal-boss')[0]
     if (!source) throw new Error('需要首领数据')
@@ -154,11 +200,11 @@ describe('navigation classification', () => {
     }
     expect(() => parsePointLibrary({ version: 1, points: [point] }, referenceDataset)).not.toThrow()
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, name: '未收录首领' }] }, referenceDataset)).not.toThrow()
-    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: undefined, iconUrl: 'https://example.com/custom.png' }] }, referenceDataset)).toThrow('图标不属于')
-    const custom = { ...point, name: '自定义地标', pointType: 'service', navigationKind: 'service', mode: 'landmark', iconUrl: 'https://example.com/custom.png', iconId: undefined }
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: undefined, iconUrl: 'https://example.com/custom.png' }] }, referenceDataset)).toThrow('只有未设置类型')
+    const custom = { ...point, name: '自定义地标', pointType: undefined, navigationKind: 'service', mode: 'landmark', iconUrl: 'https://example.com/custom.png', iconId: undefined }
     expect(parsePointLibrary({ version: 1, points: [custom] }, referenceDataset).points[0]).toMatchObject({ name: custom.name, iconUrl: custom.iconUrl })
-    expect(navigationTypeIcons('service').length).toBeGreaterThan(navigationTypeIcons('normal-boss').length)
-    expect(navigationPointTypes.restaurant.icons).toHaveLength(1)
-    expect(navigationPointTypes.restaurant.names).toEqual([])
+    expect(navigationTypeIcons('service')).toHaveLength(15)
+    expect(navigationPointTypes.entrance.icons).toHaveLength(1)
+    expect(navigationPointTypes.service.names).toEqual([])
   })
 })
