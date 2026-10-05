@@ -112,7 +112,29 @@ describe('map viewport coordination', () => {
     expect(app.view().getResolution()).toBe(2.3)
   })
 
-  it('accepts only stationary coordinates inside the map area clear of panels', () => {
+  it.each<{ name: string, padding: MapPadding }>([
+    { name: 'collapsed panels', padding: [16, 16, 16, 16] },
+    { name: 'right panel', padding: [16, 352, 16, 16] },
+    { name: 'bottom panel', padding: [16, 16, 320, 16] },
+  ])('requires more than 25% clearance on every available edge with $name', ({ padding }) => {
+    const app = setup()
+    app.setPadding(padding)
+    app.view().setResolution(2)
+    expect(app.viewport.locate([4000, 4000])).toBe(true)
+    const [top, right, bottom, left] = padding
+    const horizontalLimit = (1000 - left - right) * 0.25 * 2
+    const verticalLimit = (800 - top - bottom) * 0.25 * 2
+    for (const direction of [-1, 1]) {
+      expect(app.viewport.containsCoordinate([4000 + direction * (horizontalLimit - 1), 4000])).toBe(true)
+      expect(app.viewport.containsCoordinate([4000 + direction * horizontalLimit, 4000])).toBe(false)
+      expect(app.viewport.containsCoordinate([4000 + direction * (horizontalLimit + 1), 4000])).toBe(false)
+      expect(app.viewport.containsCoordinate([4000, 4000 + direction * (verticalLimit - 1)])).toBe(true)
+      expect(app.viewport.containsCoordinate([4000, 4000 + direction * verticalLimit])).toBe(false)
+      expect(app.viewport.containsCoordinate([4000, 4000 + direction * (verticalLimit + 1)])).toBe(false)
+    }
+  })
+
+  it('accepts only stationary coordinates inside the central map area clear of panels', () => {
     const app = setup()
     app.setPadding([60, 340, 100, 16])
     app.view().setResolution(1.2)

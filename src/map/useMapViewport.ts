@@ -104,8 +104,10 @@ export function useMapViewport(options: MapViewportOptions) {
     const [minX, minY, maxX, maxY] = view.calculateExtent([width, height])
     if (minX === undefined || minY === undefined || maxX === undefined || maxY === undefined) return false
     const [top, right, bottom, left] = fitMapPadding(width, height, options.getPadding())
-    return coordinate[0] >= minX + left * resolution && coordinate[0] <= maxX - right * resolution
-      && coordinate[1] >= minY + bottom * resolution && coordinate[1] <= maxY - top * resolution
+    const horizontalMargin = (width - left - right) * 0.25
+    const verticalMargin = (height - top - bottom) * 0.25
+    return coordinate[0] > minX + (left + horizontalMargin) * resolution && coordinate[0] < maxX - (right + horizontalMargin) * resolution
+      && coordinate[1] > minY + (bottom + verticalMargin) * resolution && coordinate[1] < maxY - (top + verticalMargin) * resolution
   }
 
   function locate(center: [number, number], resolution?: number): boolean {

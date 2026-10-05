@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import WuButton from './base/WuButton.vue'
+import { coordinateInputPreviewXY } from './base/coordinate-input.ts'
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useResizeObserver } from '@vueuse/core'
@@ -196,7 +197,9 @@ function rebuildDraft(): void {
   selectionSource.clear(true)
   const draft = editor.draft
   if (!props.editing || !draft || !dataset.value || draft.stateId !== store.selectedStateId) return
-  const display = authoredPointMapDisplay(draft, dataset.value)
+  const coordinate = coordinateInputPreviewXY(editor.positionInput, draft.coordinate)
+  if (!coordinate) return
+  const display = authoredPointMapDisplay({ ...draft, coordinate: { ...draft.coordinate, x: coordinate[0], y: coordinate[1] } }, dataset.value)
   if (!display) return
   const styles = editorPoints.styleFor(display)
   const feature = new Feature({ geometry: new Point([display.location.coordinate.mapX, display.location.coordinate.mapY]), mapPoint: display })
@@ -333,6 +336,7 @@ watch(floorRequest, async (request, _previous, onCleanup) => {
 })
 watch([mapEchoLocations, mapNavigationPoints, visibleRegionLabels, activeEchoIds, selectedLevelId], rebuildPointLayers)
 watch([() => props.editing, () => editor.editorMode, () => editor.allPoints, () => editor.draft, activeState, selectedGravity], rebuildPointLayers)
+watch(() => editor.positionInput, rebuildDraft)
 watch([() => props.editing, mapRoutes], rebuildRoute, { flush: 'post' })
 watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 

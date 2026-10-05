@@ -1,8 +1,31 @@
 import { describe, expect, it } from 'vitest'
-import { coordinateInputXY, commitCoordinateInput, editCoordinateInput, emptyCoordinateInput, extractCoordinateIntegers, switchCoordinateInput } from '../src/components/base/coordinate-input.ts'
+import { coordinateInputPreviewXY, coordinateInputXY, commitCoordinateInput, editCoordinateInput, emptyCoordinateInput, extractCoordinateIntegers, switchCoordinateInput } from '../src/components/base/coordinate-input.ts'
 
 const value = { x: 1, y: 2, z: 3 }
 describe('coordinate input', () => {
+  it.each(['-497, 449,', '-497, 449 ', '-497，449，-', 'X: -497, Y: 449, Z:', '-497\n449\n18'])('previews XY after Y is delimited in %j without committing coordinates', (text) => {
+    const edited = editCoordinateInput(emptyCoordinateInput(), value, text)
+    expect(coordinateInputPreviewXY(edited.state, edited.value)).toEqual([-497, 449])
+    expect(edited.value).toEqual(value)
+  })
+  it.each(['', '-497,', '-497, 449', '-497, 449.5,', '-497, 449e2,', '-497, 449x,'])('hides the preview for incomplete or invalid XY in %j instead of using saved coordinates', (text) => {
+    const edited = editCoordinateInput(emptyCoordinateInput(), value, text)
+    expect(coordinateInputPreviewXY(edited.state, edited.value)).toBeNull()
+  })
+  it('tracks edits, deletion, committed coordinates and separate axis input in the preview', () => {
+    let edited = editCoordinateInput(emptyCoordinateInput(), value, '10, 20,')
+    expect(coordinateInputPreviewXY(edited.state, edited.value)).toEqual([10, 20])
+    edited = editCoordinateInput(edited.state, edited.value, '30, 40, -')
+    expect(coordinateInputPreviewXY(edited.state, edited.value)).toEqual([30, 40])
+    edited = editCoordinateInput(edited.state, edited.value, '30,')
+    expect(coordinateInputPreviewXY(edited.state, edited.value)).toBeNull()
+    expect(coordinateInputPreviewXY(emptyCoordinateInput(), value)).toEqual([1, 2])
+    const axes = switchCoordinateInput(emptyCoordinateInput(), value, 'axes')
+    const invalid = editCoordinateInput(axes.state, axes.value, '-', 'y')
+    expect(coordinateInputPreviewXY(invalid.state, invalid.value)).toBeNull()
+    const valid = editCoordinateInput(invalid.state, invalid.value, '50', 'y')
+    expect(coordinateInputPreviewXY(valid.state, valid.value)).toEqual([1, 50])
+  })
   it.each(['X: -497, Y: 449, Z: 18', '位置：(-497，449，18) 999', '-497\n449\n18'])('extracts the first three signed integers from %s', (text) => {
     expect(extractCoordinateIntegers(text)).toEqual({ x: -497, y: 449, z: 18 })
   })

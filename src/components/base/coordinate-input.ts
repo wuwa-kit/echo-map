@@ -29,7 +29,7 @@ export function parseCoordinateInteger(text: string): number | null {
 
 // Consume entire numeric-looking tokens so decimals, exponents and malformed signs
 // cannot be split into multiple valid coordinates. Letters around a token are not delimiters.
-function extractIntegers(text: string): number[] {
+function extractIntegers(text: string, requireCompletedXY = false): number[] {
   const numbers: number[] = []
   const tokens = text.matchAll(/[+\-\d.]+(?:[eE][+\-\d.]*)?/gu)
   for (const token of tokens) {
@@ -38,6 +38,7 @@ function extractIntegers(text: string): number[] {
     if (/[\p{L}\p{N}_]/u.test(text[start - 1] ?? '') || /[\p{L}\p{N}_]/u.test(text[end] ?? '')) continue
     const value = parseCoordinateInteger(token[0])
     if (value === null) continue
+    if (requireCompletedXY && numbers.length === 1 && end === text.length) break
     numbers.push(value)
     if (numbers.length === 3) break
   }
@@ -56,6 +57,14 @@ export function coordinateInputXY(state: CoordinateInputState, value: Coordinate
   }
   if (state.axisPending.x || state.axisPending.y || value.x === null || value.y === null) return null
   return [value.x, value.y]
+}
+
+export function coordinateInputPreviewXY(state: CoordinateInputState, value: CoordinateValue): [number, number] | null {
+  if (state.mode === 'combined' && state.textPending) {
+    const [x, y] = extractIntegers(state.text ?? '', true)
+    return x === undefined || y === undefined ? null : [x, y]
+  }
+  return coordinateInputXY(state, value)
 }
 
 export function editCoordinateInput(state: CoordinateInputState, value: CoordinateValue, text: string, axis?: CoordinateAxis, allowEmpty = false): CoordinateInputChange {
