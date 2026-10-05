@@ -222,7 +222,7 @@ const loadError = computed(() => {
           <span v-if="!editingMode" class="text-[16px] font-semibold">筛选与路线</span>
           <WuButton size="lg" variant="ghost" tone="accent" @click="closeSheet">查看地图</WuButton>
         </div>
-        <PointEditorPanel v-if="editingMode" ref="editorPanelRef" :locate-position="coordinate => mapCanvas?.locateDraft(coordinate) ?? false" :is-position-in-view="coordinate => mapCanvas?.isDraftInView(coordinate) ?? false" @returned="leaveEditor" @locate-requested="mapCanvas?.locateDraft($event)" @managed-locate-requested="locateManagedPoint" />
+        <PointEditorPanel v-if="editingMode" ref="editorPanelRef" :position-in-view="mapCanvas?.draftInView ?? false" :locate-position="coordinate => mapCanvas?.locateDraft(coordinate) ?? false" :is-position-in-view="coordinate => mapCanvas?.isDraftInView(coordinate) ?? false" @returned="leaveEditor" @locate-requested="mapCanvas?.locateDraft($event)" @managed-locate-requested="locateManagedPoint" />
         <ControlPanel v-else :compact="compact" @edit-requested="enterEditor" />
       </div>
       <div

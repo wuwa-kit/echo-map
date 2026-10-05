@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import WuButton from './base/WuButton.vue'
-import { coordinateInputPreviewXY } from './base/coordinate-input.ts'
+import { coordinateInputPreviewXY, coordinateInputXY } from './base/coordinate-input.ts'
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useResizeObserver } from '@vueuse/core'
@@ -49,6 +49,11 @@ const store = useExplorerStore()
 const selectionSource = new VectorSource()
 const selectionLayer = new VectorLayer({ source: selectionSource, zIndex: 50 })
 const arrivalStyle = createEditorArrivalStyle()
+const draftInView = shallowRef(false)
+function updateDraftInView(): void {
+  const coordinate = editor.draft && coordinateInputXY(editor.positionInput, editor.draft.coordinate)
+  draftInView.value = Boolean(coordinate && isDraftInView(coordinate))
+}
 function isDraftInView(coordinate: [number, number]): boolean {
   const draft = editor.draft
   return Boolean(draft && dataset.value && draft.stateId === store.selectedStateId
@@ -68,7 +73,7 @@ function locateManagedPoint(point: AuthoredPoint): boolean {
   const display = authoredPointMapDisplay(point, dataset.value)
   return display ? viewport.locate([display.location.coordinate.mapX, display.location.coordinate.mapY], Math.min(map?.getView().getResolution() ?? 1, 1)) : false
 }
-defineExpose({ locateDraft, isDraftInView, locateManagedPoint })
+defineExpose({ locateDraft, isDraftInView, draftInView, locateManagedPoint })
 const {
   activeState,
   dataset,
@@ -304,6 +309,7 @@ onMounted(() => {
   })
   map.on('movestart', closeContextMenu)
   map.on('moveend', onMoveEnd)
+  map.on('postrender', updateDraftInView)
   map.on('pointermove', updatePointerCoordinate)
   map.on('singleclick', selectMapPoint)
   rebuildBaseLayer()
@@ -338,12 +344,14 @@ watch(floorRequest, async (request, _previous, onCleanup) => {
 watch([mapEchoLocations, mapNavigationPoints, visibleRegionLabels, activeEchoIds, selectedLevelId], rebuildPointLayers)
 watch([() => props.editing, () => editor.editorMode, () => editor.allPoints, () => editor.draft, activeState, selectedGravity], rebuildPointLayers)
 watch(() => editor.positionInput, rebuildDraft)
+watch([() => editor.positionInput, () => editor.draft], updateDraftInView)
 watch([() => props.editing, mapRoutes], rebuildRoute, { flush: 'post' })
 watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 
 onBeforeUnmount(() => {
   map?.un('movestart', closeContextMenu)
   map?.un('moveend', onMoveEnd)
+  map?.un('postrender', updateDraftInView)
   map?.un('pointermove', updatePointerCoordinate)
   map?.un('singleclick', selectMapPoint)
   map?.setTarget(undefined)

@@ -25,6 +25,16 @@ const icons = computed(() => navigationTypeIcons(selectedType.value))
 const filteredIcons = computed(() => navigationTypeIcons(selectedType.value, iconSearch.value))
 const iconUrl = computed(() => draft.value?.kind === 'navigation' ? navigationPointIconUrl(draft.value) : '')
 const fixedIcon = computed(() => Boolean(rule.value?.icons.length) && icons.value.length === 1)
+const nameAndIconHint = computed(() => {
+  const point = draft.value
+  if (point?.kind !== 'navigation') return ''
+  const missingName = !point.name.trim()
+  const missingIcon = !point.iconUrl && !point.iconId
+  if (missingName && missingIcon) return '请选择图标和填写名称'
+  if (missingIcon) return '请选择图标'
+  if (missingName) return '请填写名称'
+  return ''
+})
 function selectIcon(id: string): void {
   store.setIcon(id)
   iconPopover.value?.hide()
@@ -48,8 +58,7 @@ function selectIcon(id: string): void {
       </WuButton>
       <WuInput class="min-w-0 flex-1" :model-value="draft.name" :invalid="Boolean(inputErrors.name)" :disabled="busy || rule?.names.length === 1" :tooltip="rule?.names.length === 1 ? '名称由类型决定' : undefined" placeholder="输入定位点名称" @update:model-value="store.setName" />
     </div>
-    <div v-if="inputErrors.name" class="mt-[4px] text-[11px] text-[#ffad9f]">{{ inputErrors.name }}</div>
-    <div v-if="inputErrors.icon" class="mt-[4px] text-[11px] text-[#ffad9f]">{{ inputErrors.icon }}</div>
+    <div class="mt-[4px] h-[18px] text-[12px] leading-[18px]" :class="inputErrors.name || inputErrors.icon ? 'text-[#ffad9f]' : 'text-[#91ae9e]'">{{ nameAndIconHint }}</div>
     <WuPopover ref="iconPopoverRef" :anchor="iconAnchor?.element ?? null" :disabled="busy" :width="360" :max-height="420" class="border border-[var(--line)] rounded-[9px] bg-[#102019] text-[#c7dfd2] shadow-xl">
       <div class="shrink-0 p-[10px]"><WuInput v-model="iconSearch" :placeholder="rule?.icons.length ? '搜索当前类型的图标' : '搜索图标库'" /></div>
       <WuScrollArea class="min-h-0 flex-1" content-class="grid grid-cols-2 gap-[6px] p-[10px] pt-0">
@@ -58,7 +67,10 @@ function selectIcon(id: string): void {
         </button>
         <div v-if="!filteredIcons.length" class="col-span-2 p-[12px] text-center text-[12px] text-[#91ae9e]">没有匹配的图标</div>
       </WuScrollArea>
-      <div v-if="!draft.pointType" class="shrink-0 p-[10px] pt-0"><WuInput :model-value="draft.iconUrl ?? ''" :invalid="Boolean(inputErrors.icon)" :disabled="busy" lazy placeholder="输入 HTTPS 图标地址，或从图标库选择" @update:model-value="store.setIconUrl" /></div>
+      <div v-if="!draft.pointType" class="shrink-0 p-[10px] pt-0">
+        <WuInput :model-value="draft.iconUrl ?? ''" :invalid="Boolean(inputErrors.icon)" :disabled="busy" lazy placeholder="输入 HTTPS 图标地址，或从图标库选择" @update:model-value="store.setIconUrl" />
+        <div v-if="inputErrors.icon && inputErrors.icon !== '请选择图标'" class="mt-[4px] text-[11px] text-[#ffad9f]">{{ inputErrors.icon }}</div>
+      </div>
     </WuPopover>
     <WuCheckBox class="mt-[20px] flex min-h-[40px] items-center gap-[8px] text-[13px]" :model-value="draft.mode === 'fast-travel'" :disabled="busy || rule?.teleportLocked" @update:model-value="store.setMode($event ? 'fast-travel' : 'landmark')">可传送<span v-if="rule?.teleportLocked" class="text-[11px] text-[#789788]">· 由类型决定</span></WuCheckBox>
     <template v-if="draft.mode === 'fast-travel'">

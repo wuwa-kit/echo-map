@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import WuCoordinateInput from './base/WuCoordinateInput.vue'
 
-const props = defineProps<{ teleport?: boolean }>()
+const props = defineProps<{ teleport?: boolean, confirmationHint?: string }>()
 const emit = defineEmits<{ locateRequested: [coordinate: [number, number]] }>()
 const store = usePointEditorStore()
 const coordinateInput = useTemplateRef<InstanceType<typeof WuCoordinateInput>>('coordinateInputRef')
@@ -15,5 +15,5 @@ const invalid = computed(() => ['x', 'y', 'z'].some((axis) => Boolean(inputError
 </script>
 
 <template>
-  <WuCoordinateInput ref="coordinateInputRef" :model-value="coordinate" :state="teleport ? arrivalInput : positionInput" :allow-empty="Boolean(teleport)" :disabled="busy" :invalid="invalid" @changed="store.updateCoordinateInput(Boolean(teleport), $event)" @confirmed="emit('locateRequested', $event)" @confirmation-interrupted="store.resetPositionConfirmation" />
+  <WuCoordinateInput ref="coordinateInputRef" :confirmation-hint="confirmationHint" :model-value="coordinate" :state="teleport ? arrivalInput : positionInput" :allow-empty="Boolean(teleport)" :disabled="busy" :invalid="invalid" @changed="store.updateCoordinateInput(Boolean(teleport), $event)" @confirmed="emit('locateRequested', $event)" @confirmation-interrupted="store.resetPositionConfirmation" />
 </template>

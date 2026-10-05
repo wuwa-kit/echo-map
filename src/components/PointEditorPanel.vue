@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import WuButton from './base/WuButton.vue'
+import { commitCoordinateInput, coordinateAxes, coordinateInputXY } from './base/coordinate-input.ts'
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouteQuery } from '@vueuse/router'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
-import { useEventListener } from '@vueuse/core'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { isOfficialPoint, pointTitle } from '../domain/point-library.ts'
 import type { AuthoredPoint } from '../domain/types.ts'
@@ -28,6 +28,7 @@ import { downloadJson } from '../utils/download-json.ts'
 const props = defineProps<{
   locatePosition: (coordinate: [number, number]) => boolean
   isPositionInView: (coordinate: [number, number]) => boolean
+  positionInView: boolean
 }>()
 const emit = defineEmits<{ returned: [], locateRequested: [coordinate?: [number, number]], managedLocateRequested: [point: AuthoredPoint] }>()
 const explorer = useExplorerStore()
@@ -49,6 +50,14 @@ const importFile = useTemplateRef<HTMLInputElement>('importFileRef')
 const positionFields = useTemplateRef<InstanceType<typeof PointCoordinateFields>>('positionFieldsRef')
 const candidates = shallowRef<string[]>([])
 const pending = shallowRef<(() => void) | null>(null)
+const positionConfirmationHint = computed(() => {
+  const point = draft.value
+  if (!point || busy.value || pending.value || importPreview.value || point.stateId !== explorer.selectedStateId) return ''
+  const committed = commitCoordinateInput(store.positionInput, point.coordinate)
+  if (!committed.valid || !coordinateInputXY(committed.state, committed.value)
+    || !coordinateAxes.every((axis) => Number.isSafeInteger(committed.value[axis]))) return ''
+  return props.positionInView ? '连按两次 Enter 保存' : 'Enter 定位到中心'
+})
 let resolveLeave: ((result: boolean) => void) | null = null
 const existing = computed(() => library.value.points.some(({ id }) => id === draft.value?.id))
 const candidatePoints = computed(() => allPoints.value.filter(({ id }) => candidates.value.includes(id)))
@@ -202,9 +211,6 @@ onBeforeRouteLeave(() => {
     pending.value = () => { resolveLeave = null; resolve(true) }
   })
 })
-useEventListener(window, 'beforeunload', (event) => {
-  if (hasUnsavedChanges.value) { event.preventDefault(); event.returnValue = '' }
-})
 </script>
 
 <template>
@@ -230,7 +236,7 @@ useEventListener(window, 'beforeunload', (event) => {
         </div>
         <WuScrollArea class="min-h-0 flex-1" content-class="px-[18px] pb-[18px]">
           <div class="mb-[8px] flex items-center justify-between"><span class="text-[13px] font-semibold">位置</span><div class="flex gap-[10px]"><WuButton variant="ghost" tone="accent" size="sm" @click="emit('locateRequested')">定位</WuButton></div></div>
-          <PointCoordinateFields :key="draft.id" ref="positionFieldsRef" @locate-requested="confirmPosition" />
+          <PointCoordinateFields :key="draft.id" ref="positionFieldsRef" :confirmation-hint="positionConfirmationHint" @locate-requested="confirmPosition" />
           <WuSelect class="mt-[8px]" :model-value="pointLevelId" :disabled="busy || !availableFloors.length" @update:model-value="store.setLevel">
             <WuOption :value="null">主地图</WuOption>
             <WuOption v-for="floor in floorOptions" :key="floor.id" :value="floor.id">{{ floor.label }}</WuOption>
