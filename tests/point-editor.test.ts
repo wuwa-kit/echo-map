@@ -676,7 +676,7 @@ describe('point editor actions', () => {
     expect(store.notice).toBe('')
   })
 
-  it.each(['central-beacon', 'small-beacon', 'material-domain'] as const)('continues adding %s with only its type defaults and map context', async (pointType) => {
+  it.each(['central-beacon', 'small-beacon', 'material-domain'] as const)('continues adding %s with its name, icon and map context', async (pointType) => {
     const dataset = floorEditorDataset()
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset, officialLibrary: { version: 1, points: [] } })
     const store = usePointEditorStore()
@@ -696,7 +696,7 @@ describe('point editor actions', () => {
       store.setTeleportCoordinateText(`${x + 1}, 2, 3`)
       store.applyTeleportCoordinateText()
       store.setNote('仅当前点位的备注')
-      if (!rule.names.length) store.setName('仅当前材料副本的名称')
+      if (!rule.names.length) store.setName('连续录入的材料副本名称')
       const savedId = store.draft?.id
       expect(await saveWithDuplicateConfirmation(store)).toBe(true)
       expect(disk.points.find(({ id }) => id === savedId)).toMatchObject({
@@ -704,7 +704,7 @@ describe('point editor actions', () => {
       })
       expect(store.draft?.id).not.toBe(savedId)
       expect(store.draft).toMatchObject({
-        kind: 'navigation', pointType, name: rule.names[0] ?? rule.name, iconId: rule.icons[0],
+        kind: 'navigation', pointType, name: rule.names[0] ?? '连续录入的材料副本名称', iconId: rule.icons[0],
         mode: rule.defaultMode, stateId: state.id, levelId: floor.id, note: '', coordinate: { x: null, y: null, z: null },
       })
       expect(store.draft).not.toHaveProperty('teleportCoordinate')
@@ -727,7 +727,11 @@ describe('point editor actions', () => {
     expect(store.continueAdding).toBe(true)
   })
 
-  it.each([...navigationPointTypeIds, null])('restores type defaults without copying point-specific fields when continuing %s', async (pointType) => {
+  it.each([
+    ...navigationPointTypeIds.map((pointType) => ({ pointType, customIcon: false })),
+    { pointType: null, customIcon: false },
+    { pointType: null, customIcon: true },
+  ])('retains name and icon when continuing $pointType (custom icon: $customIcon)', async ({ pointType, customIcon }) => {
     const store = usePointEditorStore()
     await store.load('navigation')
     store.setContinueAdding(true)
@@ -736,8 +740,8 @@ describe('point editor actions', () => {
     expect(defaults?.kind).toBe('navigation')
     if (defaults?.kind !== 'navigation') throw new Error('需要定位点草稿')
     expect(defaults.name).toBe(pointType ? navigationPointTypes[pointType].names[0] ?? navigationPointTypes[pointType].name : '')
-    if (pointType) {
-      const icon = navigationTypeIcons(pointType)[0]
+    if (!customIcon) {
+      const icon = navigationTypeIcons(pointType ?? undefined).at(-1)
       if (!icon) throw new Error('需要候选图标')
       store.setIcon(icon.id)
     } else store.setIconUrl('https://example.com/custom.png')
@@ -745,13 +749,16 @@ describe('point editor actions', () => {
     store.setMode('fast-travel')
     store.setCoordinateText('1, 2, 3')
     store.applyCoordinateText()
+    const saved = store.draft
+    if (saved?.kind !== 'navigation') throw new Error('需要定位点草稿')
     expect(await store.savePoint()).toBe(true)
     expect(store.draft).toMatchObject({
-      name: defaults.name, mode: defaults.mode, coordinate: { x: null, y: null, z: null },
+      name: saved.name, mode: defaults.mode, coordinate: { x: null, y: null, z: null },
     })
-    if (defaults.iconId) expect(store.draft).toHaveProperty('iconId', defaults.iconId)
+    if (saved.iconId) expect(store.draft).toHaveProperty('iconId', saved.iconId)
     else expect(store.draft).not.toHaveProperty('iconId')
-    expect(store.draft).not.toHaveProperty('iconUrl')
+    if (saved.iconUrl) expect(store.draft).toHaveProperty('iconUrl', saved.iconUrl)
+    else expect(store.draft).not.toHaveProperty('iconUrl')
     if (pointType) expect(store.draft).toHaveProperty('pointType', pointType)
     else expect(store.draft).not.toHaveProperty('pointType')
     expect(store.notice).toBe('保存成功')
