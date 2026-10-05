@@ -562,9 +562,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
         newPoint('navigation')
         setPointType(saved.pointType ?? null)
         if (draft.value?.kind === 'navigation') {
-          openDraft(produce(draft.value, (point) => {
-            point.name = saved.pointType ? navigationPointTypes[saved.pointType].names[0] ?? '' : ''
-          }))
+          openDraft(draft.value)
         }
         notice.value = '保存成功'
       }

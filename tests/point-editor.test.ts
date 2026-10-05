@@ -704,7 +704,7 @@ describe('point editor actions', () => {
       })
       expect(store.draft?.id).not.toBe(savedId)
       expect(store.draft).toMatchObject({
-        kind: 'navigation', pointType, name: rule.names[0] ?? '', iconId: rule.icons[0],
+        kind: 'navigation', pointType, name: rule.names[0] ?? rule.name, iconId: rule.icons[0],
         mode: rule.defaultMode, stateId: state.id, levelId: floor.id, note: '', coordinate: { x: null, y: null, z: null },
       })
       expect(store.draft).not.toHaveProperty('teleportCoordinate')
@@ -727,11 +727,15 @@ describe('point editor actions', () => {
     expect(store.continueAdding).toBe(true)
   })
 
-  it.each(['weekly-boss', 'hologram', null] as const)('does not copy custom names, artwork or teleport choices when continuing %s', async (pointType) => {
+  it.each([...navigationPointTypeIds, null])('restores type defaults without copying point-specific fields when continuing %s', async (pointType) => {
     const store = usePointEditorStore()
     await store.load('navigation')
     store.setContinueAdding(true)
     store.setPointType(pointType)
+    const defaults = store.draft
+    expect(defaults?.kind).toBe('navigation')
+    if (defaults?.kind !== 'navigation') throw new Error('需要定位点草稿')
+    expect(defaults.name).toBe(pointType ? navigationPointTypes[pointType].names[0] ?? navigationPointTypes[pointType].name : '')
     if (pointType) {
       const icon = navigationTypeIcons(pointType)[0]
       if (!icon) throw new Error('需要候选图标')
@@ -743,9 +747,10 @@ describe('point editor actions', () => {
     store.applyCoordinateText()
     expect(await store.savePoint()).toBe(true)
     expect(store.draft).toMatchObject({
-      name: '', mode: pointType ? navigationPointTypes[pointType].defaultMode : 'landmark', coordinate: { x: null, y: null, z: null },
+      name: defaults.name, mode: defaults.mode, coordinate: { x: null, y: null, z: null },
     })
-    expect(store.draft).not.toHaveProperty('iconId')
+    if (defaults.iconId) expect(store.draft).toHaveProperty('iconId', defaults.iconId)
+    else expect(store.draft).not.toHaveProperty('iconId')
     expect(store.draft).not.toHaveProperty('iconUrl')
     if (pointType) expect(store.draft).toHaveProperty('pointType', pointType)
     else expect(store.draft).not.toHaveProperty('pointType')
