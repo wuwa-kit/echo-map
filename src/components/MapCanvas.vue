@@ -185,7 +185,8 @@ function rebuildPointLayers(): void {
   for (const layer of editorPoints.layers) layer.setVisible(Boolean(props.editing))
   if (props.editing && dataset.value) {
     const draft = editor.draft
-    const replaced = new Set(draft ? [draft.id, ...(draft.officialIds ?? []), ...(draft.replacesOfficialIds ?? [])] : [])
+    const addingPoint = draft && !editor.allPoints.some(({ id }) => id === draft.id)
+    const replaced = new Set(addingPoint ? [draft.id, ...(draft.officialIds ?? []), ...(draft.replacesOfficialIds ?? [])] : [])
     const locations = editorLibraryLocations(editor.allPoints.filter((point) => !isOfficialPointReplaced(point, replaced)), dataset.value, editor.editorMode)
     const matches = (point: { stateId: number, gravityType?: 1 | 2 | null, levelId: string | null }) => point.stateId === store.selectedStateId && matchesGravity(point.gravityType ?? null, store.supportsGravity ? selectedGravity.value : null)
     const echoes = locations.echoLocations.filter((point) => matches(point)
