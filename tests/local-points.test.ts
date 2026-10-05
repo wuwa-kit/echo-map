@@ -107,7 +107,7 @@ describe('local point synchronization', () => {
     expect(managementRows(resolveWorkspace(reviewed, [point.id], 'local'))[0]).toMatchObject({ operation: 'modified', status: 'pending' })
   })
 
-  it('only suggests nearby duplicates of a compatible type, floor, gravity and height', () => {
+  it('keeps unknown-floor candidates while filtering incompatible gravity and height', () => {
     const point = mixedPoint('local')
     const candidate = mixedPoint('published')
     const otherFloor = { ...mixedPoint('other-floor'), levelId: 'different' }
@@ -115,7 +115,7 @@ describe('local point synchronization', () => {
     const otherHeight = { ...mixedPoint('other-height'), coordinate: { ...point.coordinate, z: 100 } }
     const baseline = workspace(candidate, otherFloor, otherGravity, otherHeight)
     const local = editWorkspace(baseline, library(...baseline.published.points, point))
-    expect(managementRows(local).find(row => row.id === point.id)?.duplicateIds).toEqual(['published'])
+    expect(managementRows(local).find(row => row.id === point.id)?.duplicateIds).toEqual(['published', 'other-floor'])
     expect(workspaceLibrary(local).points).toHaveLength(5)
   })
 

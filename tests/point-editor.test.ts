@@ -56,7 +56,56 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllGlobals())
 
+async function saveWithDuplicateConfirmation(store: ReturnType<typeof usePointEditorStore>): Promise<boolean> {
+  const saving = store.savePoint()
+  if (store.duplicateConfirmation) store.confirmDuplicate(true)
+  return saving
+}
+
 describe('point editor actions', () => {
+  it('previews incomplete XY and requires explicit confirmation before persisting duplicates', async () => {
+    disk = { version: 1, points: [mixedPoint()] }
+    const store = usePointEditorStore()
+    await store.load('echo')
+    store.newPoint('echo')
+    store.addMember(smallEcho.id)
+    store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, { x: null, y: null, z: null }, '-497, 449'))
+    expect(store.duplicateCandidates).toHaveLength(1)
+    expect(store.duplicateCandidates[0]?.heightDifference).toBeNull()
+    store.setCoordinateText('-497, 449, 18')
+    store.applyCoordinateText()
+    const cancelled = store.savePoint()
+    expect(store.duplicateConfirmation).toBe(true)
+    expect(saveEditorLibrary).not.toHaveBeenCalled()
+    expect(await store.savePoint()).toBe(false)
+    store.confirmDuplicate(false)
+    expect(await cancelled).toBe(false)
+    const accepted = store.savePoint()
+    store.confirmDuplicate(true)
+    expect(await accepted).toBe(true)
+    expect(disk.points).toHaveLength(2)
+  })
+
+  it('rechecks changed drafts and protects save-all during navigation', async () => {
+    disk = { version: 1, points: [mixedPoint()] }
+    const store = usePointEditorStore()
+    await store.load('echo')
+    store.newPoint('echo')
+    store.addMember(smallEcho.id)
+    store.setCoordinateText('-497, 449, 18')
+    store.applyCoordinateText()
+    const saving = store.saveAllForms()
+    expect(store.duplicateConfirmation).toBe(true)
+    store.setCoordinate('x', '-496')
+    store.confirmDuplicate(true)
+    await nextTick()
+    expect(store.duplicateConfirmation).toBe(true)
+    expect(saveEditorLibrary).not.toHaveBeenCalled()
+    store.confirmDuplicate(false)
+    expect(await saving).toBe(false)
+    expect(store.dirty).toBe(true)
+  })
+
   it.each([
     ['central-beacon', 0], ['small-beacon', 9], ['entrance', 16],
   ] as const)('derives visibility from %s through saving, reloading and type changes', async (pointType, threshold) => {
@@ -435,7 +484,7 @@ describe('point editor actions', () => {
     store.addMember(smallEcho.id)
     store.addMember(eliteEcho.id)
     const id = store.draft?.id
-    expect(await store.savePoint()).toBe(true)
+    expect(await saveWithDuplicateConfirmation(store)).toBe(true)
     expect(disk.points).toHaveLength(2)
     expect(store.draft?.id).toBe(id)
     expect(store.dirty).toBe(false)
@@ -456,7 +505,7 @@ describe('point editor actions', () => {
       if (kind === 'navigation') store.setPointType('small-beacon')
       else store.addMember(smallEcho.id)
       const id = store.draft?.id
-      expect(await store.savePoint()).toBe(true)
+      expect(await saveWithDuplicateConfirmation(store)).toBe(true)
       expect(store.draft?.id).toBe(id)
       store.newPoint()
       expect(store.draft?.id).not.toBe(id)
@@ -471,7 +520,7 @@ describe('point editor actions', () => {
     if (!first) throw new Error('需要已保存点位')
     store.selectPoint(first.id)
     store.setCoordinate('x', '11')
-    expect(await store.savePoint()).toBe(true)
+    expect(await saveWithDuplicateConfirmation(store)).toBe(true)
     store.newPoint()
     expect(disk.points).toHaveLength(2)
     expect(disk.points.map(({ coordinate }) => coordinate.x)).toEqual([11, 20])
@@ -494,7 +543,7 @@ describe('point editor actions', () => {
       if (!inView) expect(pressEnter(false, 0)).toBe('locate')
       expect(pressEnter(true, 5000)).toBe('wait')
       expect(pressEnter(true, 5300)).toBe('save')
-      expect(await store.savePoint()).toBe(true)
+      expect(await saveWithDuplicateConfirmation(store)).toBe(true)
       expect(store.draft?.coordinate).toEqual({ x: null, y: null, z: null })
       expect(store.confirmPosition(true, 5350)).toBe('wait')
     }
@@ -653,7 +702,7 @@ describe('point editor actions', () => {
       store.setNote('仅当前点位的备注')
       if (!rule.names.length) store.setName('仅当前材料副本的名称')
       const savedId = store.draft?.id
-      expect(await store.savePoint()).toBe(true)
+      expect(await saveWithDuplicateConfirmation(store)).toBe(true)
       expect(disk.points.find(({ id }) => id === savedId)).toMatchObject({
         pointType, coordinate: { x, y: 2, z: 3 }, teleportCoordinate: { x: x + 1, y: 2, z: 3 },
       })

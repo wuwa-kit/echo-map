@@ -27,6 +27,29 @@ export function findNearbyPoints(points: readonly AuthoredPoint[], target: Autho
   }).sort((left, right) => Number(isOfficialPoint(left.point)) - Number(isOfficialPoint(right.point)) || left.distance - right.distance)
 }
 
+export function findPointDuplicates(points: readonly AuthoredPoint[], target: AuthoredPoint) {
+  const { x, y, z } = target.coordinate
+  if (x === null || y === null) return []
+  const excluded = new Set([target.id, ...(target.replacesOfficialIds ?? [])])
+  return points.flatMap((point) => {
+    if (isOfficialPointReplaced(point, excluded) || point.stateId !== target.stateId
+      || (point.gravityType ?? null) !== (target.gravityType ?? null)
+      || (point.levelId && target.levelId && point.levelId !== target.levelId)) return []
+    const coordinate = point.coordinate
+    if (coordinate.x === null || coordinate.y === null) return []
+    const distance = Math.hypot(coordinate.x - x, coordinate.y - y)
+    const heightDifference = isOfficialPoint(point) || isOfficialPoint(target) || z === null || coordinate.z === null
+      ? null : Math.abs(coordinate.z - z)
+    if (distance > 30 || (heightDifference !== null && heightDifference > 8)) return []
+    const similar = point.kind === 'echo' && target.kind === 'echo'
+      ? point.members.some(({ echoId }) => target.members.some((member) => member.echoId === echoId))
+      : point.kind === 'navigation' && target.kind === 'navigation'
+        && (point.pointType && target.pointType ? point.pointType === target.pointType
+          : point.navigationKind === target.navigationKind)
+    return [{ point, distance, heightDifference, suspicious: Boolean(similar), uncertain: heightDifference === null || point.levelId !== target.levelId }]
+  }).sort((a, b) => Number(b.suspicious) - Number(a.suspicious) || a.distance - b.distance)
+}
+
 export function mergeEchoMembers(existing: readonly EchoMember[], incoming: readonly EchoMember[]): EchoMember[] {
   const counts = new Map(existing.map(({ echoId, count }) => [echoId, count]))
   for (const { echoId, count } of incoming) counts.set(echoId, Math.max(counts.get(echoId) ?? 0, count))

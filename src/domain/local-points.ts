@@ -3,6 +3,7 @@ import type { AuthoredPoint, LocalPointChange, LocalPointOperation, LocalPointSt
 import type { MapDataset } from './types.ts'
 import { pointWorkspaceSchema } from './schema.ts'
 import { parsePointLibrary } from './point-library.ts'
+import { findPointDuplicates } from './point-matching.ts'
 
 export function parsePointWorkspace(value: unknown, dataset: MapDataset): PointWorkspace {
   const workspace = pointWorkspaceSchema.parse(value)
@@ -94,12 +95,7 @@ export function resolveWorkspace(workspace: PointWorkspace, ids: readonly string
 }
 
 function pointCell(point: AuthoredPoint, dx = 0, dy = 0): string {
-  return `${point.kind}/${point.stateId}/${point.levelId}/${point.gravityType}/${Math.floor((point.coordinate.x ?? 0) / 30) + dx}/${Math.floor((point.coordinate.y ?? 0) / 30) + dy}`
-}
-
-function similarPoint(a: AuthoredPoint, b: AuthoredPoint): boolean {
-  if (a.kind === 'navigation' && b.kind === 'navigation') return a.pointType && b.pointType ? a.pointType === b.pointType : a.navigationKind === b.navigationKind
-  return a.kind === 'echo' && b.kind === 'echo' && a.members.some(member => b.members.some(other => other.echoId === member.echoId))
+  return `${point.stateId}/${point.gravityType ?? null}/${Math.floor((point.coordinate.x ?? 0) / 30) + dx}/${Math.floor((point.coordinate.y ?? 0) / 30) + dy}`
 }
 
 export function managementRows(workspace: PointWorkspace): PointManagementRow[] {
@@ -120,10 +116,7 @@ export function managementRows(workspace: PointWorkspace): PointManagementRow[] 
     if (change.after && !current) {
       for (const dx of [-1, 0, 1]) for (const dy of [-1, 0, 1]) {
         for (const candidate of cells.get(pointCell(point, dx, dy)) ?? []) {
-          const a = point.coordinate
-          const b = candidate.coordinate
-          if (a.x === null || a.y === null || a.z === null || b.x === null || b.y === null || b.z === null) continue
-          if (candidate.id !== id && similarPoint(point, candidate) && Math.hypot(a.x - b.x, a.y - b.y) <= 30 && Math.abs(a.z - b.z) <= 8) duplicateIds.push(candidate.id)
+          if (findPointDuplicates([candidate], point).some(({ suspicious }) => suspicious)) duplicateIds.push(candidate.id)
         }
       }
     }

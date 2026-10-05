@@ -13,6 +13,7 @@ import EchoEditorFields from './EchoEditorFields.vue'
 import NavigationEditorFields from './NavigationEditorFields.vue'
 import PointCoordinateFields from './PointCoordinateFields.vue'
 import PointEditorDataPanel from './PointEditorDataPanel.vue'
+import PointDuplicateNotice from './PointDuplicateNotice.vue'
 import PointManagementPanel from './PointManagementPanel.vue'
 import { usePointManagementStore } from '../stores/point-management.ts'
 import WuDialog from './base/WuDialog.vue'
@@ -245,6 +246,7 @@ useEventListener(window, 'beforeunload', (event) => {
           <EchoEditorFields v-if="draft.kind === 'echo'" :key="draft.id" />
           <NavigationEditorFields v-else :key="draft.id" />
         </WuScrollArea>
+        <PointDuplicateNotice />
         <div class="flex shrink-0 items-center gap-[10px] border-t border-[var(--line)] p-[14px]">
           <WuButton v-if="existing" variant="ghost" tone="danger" :disabled="busy" :loading="operation === 'delete'" @click="deletePoint">删除</WuButton>
           <WuCheckBox v-if="canContinueAdding" class="flex min-h-[40px] items-center gap-[8px] text-[12px]" :model-value="continueAdding" :disabled="busy" @update:model-value="store.setContinueAdding">保存后继续新增</WuCheckBox>

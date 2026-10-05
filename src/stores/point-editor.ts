@@ -10,7 +10,7 @@ import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointLib
 import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision, PointWorkspace } from '../domain/types.ts'
 import { editWorkspace, managementRows, parsePointWorkspace, pointExportFilename, projectManagementRows, resolveWorkspace, samePoint, workspaceLibrary } from '../domain/local-points.ts'
 import type { NavigationMode } from '../domain/types.ts'
-import { combinePointLibraries } from '../domain/point-matching.ts'
+import { combinePointLibraries, findPointDuplicates } from '../domain/point-matching.ts'
 import { readEditorLibrary, saveEditorLibrary } from '../data/editor-client.ts'
 import { loadMapDataset } from '../data/load.ts'
 import { hasGravityMap } from '../domain/gravity.ts'
@@ -109,6 +109,23 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     && !draft.value.replacesOfficialIds?.length
     && !library.value.points.some(({ id }) => id === draft.value?.id))
   const allPoints = completePoints
+  const duplicateTarget = computed(() => {
+    const point = draft.value
+    if (!point) return null
+    const xy = coordinateInputXY(positionInput.value, point.coordinate)
+    if (!xy) return null
+    const committed = commitCoordinateInput(positionInput.value, point.coordinate)
+    return freeze({ ...point, coordinate: { x: xy[0], y: xy[1], z: committed.valid ? committed.value.z : null } }, true)
+  })
+  const duplicateCandidates = computed(() => freeze(duplicateTarget.value ? findPointDuplicates(allPoints.value, duplicateTarget.value) : [], true))
+  const duplicateConfirmation = shallowRef(false)
+  let resolveDuplicate: ((confirmed: boolean) => void) | null = null
+  function confirmDuplicate(confirmed: boolean): void {
+    duplicateConfirmation.value = false
+    const resolve = resolveDuplicate
+    resolveDuplicate = null
+    resolve?.(confirmed)
+  }
   const hasUnsavedChanges = computed(() => Object.values(forms.value).some(formDirty))
 
   function openDraft(point: AuthoredPoint): void {
@@ -497,7 +514,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   async function savePoint(options: { continueAdding?: boolean } = {}): Promise<boolean> {
-    if (!draft.value || !editing.value || busy.value) return false
+    if (!draft.value || !editing.value || busy.value || duplicateConfirmation.value) return false
     resetPositionConfirmation()
     const addNext = options.continueAdding !== false && continueAdding.value && canContinueAdding.value
     notice.value = ''
@@ -527,6 +544,14 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       return false
     }
     const saved = draft.value
+    if (findPointDuplicates(allPoints.value, saved).some(({ suspicious }) => suspicious)) {
+      const snapshot = JSON.stringify(saved)
+      const pointsSnapshot = allPoints.value
+      duplicateConfirmation.value = true
+      const confirmed = await new Promise<boolean>((resolve) => { resolveDuplicate = resolve })
+      if (!confirmed) return false
+      if (JSON.stringify(draft.value) !== snapshot || pointsSnapshot !== allPoints.value) return savePoint(options)
+    }
     const next = produce(library.value, (library) => {
       const index = library.points.findIndex(({ id }) => id === saved.id)
       if (index >= 0) library.points[index] = saved
@@ -586,6 +611,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
 
   function resetSession(): void {
     if (busy.value) return
+    confirmDuplicate(false)
     resetPositionConfirmation()
     forms.value = { echo: emptyForm(), navigation: emptyForm() }
     editorMode.value = 'navigation'
@@ -863,6 +889,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   return {
     workspace: shallowReadonly(workspace), managedPoints, managePoints, refreshPublishedPoints, createPointExport, importLabel: shallowReadonly(importLabel),
     confirmPosition, resetPositionConfirmation,
+    duplicateTarget, duplicateCandidates, duplicateConfirmation: shallowReadonly(duplicateConfirmation), confirmDuplicate,
     availableFloors, pointLevelId, setLevel,
     continueAdding: shallowReadonly(continueAdding), canContinueAdding,
     setContinueAdding,

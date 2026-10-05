@@ -48,7 +48,6 @@ const editor = usePointEditorStore()
 const store = useExplorerStore()
 const selectionSource = new VectorSource()
 const selectionLayer = new VectorLayer({ source: selectionSource, zIndex: 50 })
-const selectionStyle = createEditorSelectionStyle()
 const arrivalStyle = createEditorArrivalStyle()
 function isDraftInView(coordinate: [number, number]): boolean {
   const draft = editor.draft
@@ -174,6 +173,7 @@ function onMoveEnd(): void {
   viewport.publish()
   updateFloorViewport()
   if (map) floors.updateViewport(map.getView().calculateExtent(map.getSize()))
+  if (props.editing) rebuildDraft()
 }
 
 function rebuildPointLayers(): void {
@@ -197,13 +197,25 @@ function rebuildDraft(): void {
   selectionSource.clear(true)
   const draft = editor.draft
   if (!props.editing || !draft || !dataset.value || draft.stateId !== store.selectedStateId) return
+  const reference = dataset.value
   const coordinate = coordinateInputPreviewXY(editor.positionInput, draft.coordinate)
   if (!coordinate) return
   const display = authoredPointMapDisplay({ ...draft, coordinate: { ...draft.coordinate, x: coordinate[0], y: coordinate[1] } }, dataset.value)
   if (!display) return
-  const styles = editorPoints.styleFor(display)
+  const resolution = map?.getView().getResolution() ?? 1
+  const excluded = new Set(draft.replacesOfficialIds ?? [])
+  const overlapIds = editor.allPoints.filter((point) => {
+    if (point.id === draft.id || point.stateId !== draft.stateId
+      || !matchesGravity(point.gravityType ?? null, store.supportsGravity ? selectedGravity.value : null)
+      || (selectedLevelId.value !== null && point.levelId !== null && point.levelId !== selectedLevelId.value)) return false
+    if (isOfficialPointReplaced(point, excluded) || point.coordinate.x === null || point.coordinate.y === null) return false
+    const [mapX, mapY] = gameToMapCoordinate(point.coordinate.x, point.coordinate.y, reference.source.tileWidth)
+    return Math.hypot(mapX - display.location.coordinate.mapX, mapY - display.location.coordinate.mapY) / resolution <= 36
+  }).map(({ id }) => id)
   const feature = new Feature({ geometry: new Point([display.location.coordinate.mapX, display.location.coordinate.mapY]), mapPoint: display })
-  feature.setStyle([selectionStyle, ...(Array.isArray(styles) ? styles : styles ? [styles] : [])])
+  feature.set('editorOverlapIds', overlapIds)
+  const editingExisting = editor.allPoints.some(({ id }) => id === draft.id)
+  feature.setStyle(createEditorSelectionStyle(overlapIds.length ? `重叠 · ${overlapIds.length}` : editingExisting ? '编辑中' : '新增'))
   selectionSource.addFeature(feature)
   const arrival = draft.kind === 'navigation' ? draft.teleportCoordinate : undefined
   if (arrival && arrival.x !== null && arrival.y !== null) {
@@ -274,7 +286,11 @@ function applyMapNavigation(): void {
 
 function selectMapPoint(event: MapBrowserEvent): void {
   updatePointerCoordinate(event)
-  const found = map ? mapFeaturesPointIds(map.getFeaturesAtPixel(event.pixel, { hitTolerance: 6 })) : []
+  const features = map?.getFeaturesAtPixel(event.pixel, { hitTolerance: 6 }) ?? []
+  const found = [...new Set([...mapFeaturesPointIds(features), ...features.flatMap((feature) => {
+    const ids: unknown = feature.get('editorOverlapIds')
+    return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : []
+  })])]
   if (props.editing) {
     if (found.length) emit('editorPointsSelected', found)
     return
