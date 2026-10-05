@@ -8,6 +8,7 @@ import { useEventListener, useTimeoutFn } from '@vueuse/core'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { isOfficialPoint, pointTitle } from '../domain/point-library.ts'
 import type { AuthoredPoint } from '../domain/types.ts'
+import { floorSelectOptions } from './floor-label.ts'
 import EchoEditorFields from './EchoEditorFields.vue'
 import NavigationEditorFields from './NavigationEditorFields.vue'
 import PointCoordinateFields from './PointCoordinateFields.vue'
@@ -39,6 +40,10 @@ const tabQuery = useRouteQuery<string>('editorTab', 'navigation', { mode: 'repla
 let active = true
 onBeforeUnmount(() => { active = false; store.resetPositionConfirmation() })
 const { dataset, draft, library, importPreview, allPoints, editorMode, hasUnsavedChanges, editing, dirty, busy, operation, error, notice, deleted, continueAdding, canContinueAdding, availableFloors, pointLevelId } = storeToRefs(store)
+const floorOptions = computed(() => floorSelectOptions(
+  dataset.value?.states.find(({ id }) => id === draft.value?.stateId)?.layeredMaps ?? [],
+  availableFloors.value,
+))
 const { start: expireUndo } = useTimeoutFn(store.dismissDeleted, 8000, { immediate: false })
 const importFile = useTemplateRef<HTMLInputElement>('importFileRef')
 const positionFields = useTemplateRef<InstanceType<typeof PointCoordinateFields>>('positionFieldsRef')
@@ -235,7 +240,7 @@ useEventListener(window, 'beforeunload', (event) => {
           <PointCoordinateFields :key="draft.id" ref="positionFieldsRef" @locate-requested="confirmPosition" />
           <WuSelect class="mt-[8px]" :model-value="pointLevelId" :disabled="busy || !availableFloors.length" @update:model-value="store.setLevel">
             <WuOption :value="null">主地图</WuOption>
-            <WuOption v-for="floor in availableFloors" :key="floor.id" :value="floor.id">{{ floor.name }}</WuOption>
+            <WuOption v-for="floor in floorOptions" :key="floor.id" :value="floor.id">{{ floor.label }}</WuOption>
           </WuSelect>
           <EchoEditorFields v-if="draft.kind === 'echo'" :key="draft.id" />
           <NavigationEditorFields v-else :key="draft.id" />

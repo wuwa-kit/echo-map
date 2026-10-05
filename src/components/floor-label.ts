@@ -1,3 +1,5 @@
+import type { LayeredMapDefinition, MapFloorDefinition } from '../domain/types.ts'
+
 export function floorLabel(group: string, name: string): string {
   const parent = group.trim()
   const original = name.trim()
@@ -17,4 +19,12 @@ export function floorTooltipLabel(group: string, name: string): string {
   const parent = group.trim()
   const label = floorLabel(group, name)
   return !parent || label === parent ? label : `${parent} · ${label}`
+}
+
+export function floorSelectOptions(groups: readonly LayeredMapDefinition[], floors: readonly Pick<MapFloorDefinition, 'id' | 'name'>[]) {
+  const parents = new Map(groups.flatMap(group => group.floors.map(floor => [floor.id, group.name] as const)))
+  return floors.map(floor => ({
+    id: floor.id,
+    label: floorTooltipLabel(parents.get(floor.id) ?? '', floor.name),
+  }))
 }
