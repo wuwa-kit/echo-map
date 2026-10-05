@@ -730,8 +730,7 @@ describe('point editor actions', () => {
   it.each([
     ...navigationPointTypeIds.map((pointType) => ({ pointType, customIcon: false })),
     { pointType: null, customIcon: false },
-    { pointType: null, customIcon: true },
-  ])('retains name and icon when continuing $pointType (custom icon: $customIcon)', async ({ pointType, customIcon }) => {
+  ])('retains name and icon when continuing $pointType (custom icon: $customIcon)', async ({ pointType }) => {
     const store = usePointEditorStore()
     await store.load('navigation')
     store.setContinueAdding(true)
@@ -740,11 +739,11 @@ describe('point editor actions', () => {
     expect(defaults?.kind).toBe('navigation')
     if (defaults?.kind !== 'navigation') throw new Error('需要定位点草稿')
     expect(defaults.name).toBe(pointType ? navigationPointTypes[pointType].names[0] ?? navigationPointTypes[pointType].name : '')
-    if (!customIcon) {
+    {
       const icon = navigationTypeIcons(pointType ?? undefined).at(-1)
       if (!icon) throw new Error('需要候选图标')
       store.setIcon(icon.id)
-    } else store.setIconUrl('https://example.com/custom.png')
+    }
     store.setName('当前点位的自定义名称')
     store.setMode('fast-travel')
     store.setCoordinateText('1, 2, 3')
@@ -757,8 +756,6 @@ describe('point editor actions', () => {
     })
     if (saved.iconId) expect(store.draft).toHaveProperty('iconId', saved.iconId)
     else expect(store.draft).not.toHaveProperty('iconId')
-    if (saved.iconUrl) expect(store.draft).toHaveProperty('iconUrl', saved.iconUrl)
-    else expect(store.draft).not.toHaveProperty('iconUrl')
     if (pointType) expect(store.draft).toHaveProperty('pointType', pointType)
     else expect(store.draft).not.toHaveProperty('pointType')
     expect(store.notice).toBe('保存成功')
@@ -1328,7 +1325,7 @@ it('locks weekly boss travel and rejects unrelated icons until the type is clear
   expect(disk.points[0]).not.toHaveProperty('teleportCoordinate')
 })
 
-it.each(['landmark', 'fast-travel'] as const)('saves, reopens, imports and renders an unset type in %s mode with catalogue or custom artwork', async (mode) => {
+it.each(['landmark', 'fast-travel'] as const)('saves, reopens, imports and renders an unset type in %s mode with catalogue artwork', async (mode) => {
   const icon = navigationIconById('icon-3dbd69e26723a934')
   if (!icon) throw new Error('需要深塔图标')
   const store = usePointEditorStore()
@@ -1358,13 +1355,7 @@ it.each(['landmark', 'fast-travel'] as const)('saves, reopens, imports and rende
   const rendered = libraryLocations(reopened.library, referenceDataset)
   expect(mapDatasetSchema.safeParse({ ...referenceDataset, ...rendered }).success).toBe(true)
   expect(rendered.navigationPoints[0]).toMatchObject({ iconUrl: icon.url, mode })
-  reopened.selectPoint(saved.id)
-  reopened.setIconUrl('https://example.com/custom-point.png')
-  expect(await reopened.savePoint()).toBe(true)
-  expect(disk.points[0]).toMatchObject({ iconUrl: 'https://example.com/custom-point.png', mode })
-  expect(disk.points[0]).not.toHaveProperty('iconId')
-  expect(disk.points[0]).not.toHaveProperty('pointType')
-  expect(parsePointLibrary(JSON.parse(JSON.stringify(disk)), referenceDataset)).toEqual(disk)
+
 })
 
 it('resets both editing forms while preserving saved points', async () => {
@@ -1666,37 +1657,6 @@ it('does not derive travel capability from a selected service icon', async () =>
   expect(store.draft).toMatchObject({ pointType: 'service', navigationKind: 'service', mode: 'landmark', iconId: service.id })
 })
 
-it.each(navigationPointTypeIds)('allows custom icon URLs only while unset and clears them when selecting %s', async (pointType) => {
-  const store = usePointEditorStore()
-  await store.load('echo')
-  store.switchEditorTab('navigation')
-  store.setPointType(null)
-  store.setName('自定义服务')
-  store.setCoordinateText('1, 2, 3')
-  store.applyCoordinateText()
-  store.setIconUrl('javascript:alert(1)')
-  expect(store.inputErrors.icon).toContain('HTTPS')
-  expect(await store.savePoint()).toBe(false)
-  store.setIconUrl('https://example.com/custom-icon.png')
-  expect(store.inputErrors.icon).toBeUndefined()
-  expect(await store.savePoint()).toBe(true)
-  expect(disk.points[0]).toMatchObject({ name: '自定义服务', iconUrl: 'https://example.com/custom-icon.png' })
-  store.setPointType(pointType)
-  const fixed = store.draft
-  store.setIconUrl('https://example.com/disallowed.png')
-  expect(store.draft).toBe(fixed)
-  expect(store.draft).not.toHaveProperty('iconUrl')
-  const icon = navigationTypeIcons(pointType)[0]
-  if (!icon) throw new Error('需要图标')
-  store.setIcon(icon.id)
-  expect(await store.savePoint()).toBe(true)
-  expect(disk.points[0]).toMatchObject({ pointType, iconId: icon.id })
-  store.setPointType(null)
-  store.setIconUrl('https://example.com/restored.png')
-  expect(await store.savePoint()).toBe(true)
-  expect(disk.points[0]).toMatchObject({ iconUrl: 'https://example.com/restored.png' })
-  expect(disk.points[0]).not.toHaveProperty('iconId')
-})
 
 it('allows free names with fixed and selectable icons, including settlements absent from the official data', async () => {
   const store = usePointEditorStore()
@@ -1764,4 +1724,20 @@ it('allows retry after the initial editor library load fails', async () => {
   await store.load('echo')
   expect(readEditorLibrary).toHaveBeenCalledTimes(2)
   expect(store.error).toBe('')
+})
+
+it('keeps the last six distinct icon selections across new points and ignores invalid selections', async () => {
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  const icons = navigationTypeIcons(undefined).slice(0, 8)
+  for (const icon of icons) store.setIcon(icon.id)
+  expect(store.recentIconIds).toEqual(icons.slice(2).reverse().map(({ id }) => id))
+  const reused = icons[4]
+  if (!reused) throw new Error('需要图标')
+  store.setIcon(reused.id)
+  const expected = [reused.id, ...icons.slice(2).reverse().filter(({ id }) => id !== reused.id).map(({ id }) => id)]
+  expect(store.recentIconIds).toEqual(expected)
+  store.setIcon('unknown-icon')
+  store.newPoint()
+  expect(store.recentIconIds).toEqual(expected)
 })

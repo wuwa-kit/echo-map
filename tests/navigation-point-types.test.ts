@@ -116,7 +116,7 @@ describe('navigation classification', () => {
     }
     expect(authoredPointSchema.safeParse({ ...point, mode: 'landmark' }).success).toBe(false)
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: boss.id }] }, referenceDataset)).toThrow('图标与类型')
-    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: boss.url }] }, referenceDataset)).toThrow('只有未设置类型')
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: boss.url }] }, referenceDataset)).toThrow()
     expect(mapDatasetSchema.safeParse({ ...referenceDataset, navigationPoints: [{ ...beacon, mode: 'landmark' }] }).success).toBe(false)
 
   })
@@ -187,8 +187,8 @@ describe('navigation classification', () => {
       coordinate: { x: 1, y: 2, z: 3 }, name: rule.names[0] ?? rule.name,
       pointType, navigationKind: rule.kind, mode: rule.defaultMode, iconUrl: icon.url,
     }
-    expect(() => parsePointLibrary({ version: 1, points: [point] }, referenceDataset)).toThrow('只有未设置类型')
-    expect(parsePointLibrary({ version: 1, points: [{ ...point, pointType: undefined }] }, referenceDataset).points[0]).toMatchObject({ iconUrl: icon.url })
+    expect(() => parsePointLibrary({ version: 1, points: [point] }, referenceDataset)).toThrow()
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, pointType: undefined }] }, referenceDataset)).toThrow()
   })
 
   it('accepts custom names independently from the allowed icon list', () => {
@@ -200,9 +200,9 @@ describe('navigation classification', () => {
     }
     expect(() => parsePointLibrary({ version: 1, points: [point] }, referenceDataset)).not.toThrow()
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, name: '未收录首领' }] }, referenceDataset)).not.toThrow()
-    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: undefined, iconUrl: 'https://example.com/custom.png' }] }, referenceDataset)).toThrow('只有未设置类型')
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: undefined, iconUrl: 'https://example.com/custom.png' }] }, referenceDataset)).toThrow()
     const custom = { ...point, name: '自定义地标', pointType: undefined, navigationKind: 'service', mode: 'landmark', iconUrl: 'https://example.com/custom.png', iconId: undefined }
-    expect(parsePointLibrary({ version: 1, points: [custom] }, referenceDataset).points[0]).toMatchObject({ name: custom.name, iconUrl: custom.iconUrl })
+    expect(() => parsePointLibrary({ version: 1, points: [custom] }, referenceDataset)).toThrow()
     expect(navigationTypeIcons('service')).toHaveLength(15)
     expect(navigationPointTypes.entrance.icons).toHaveLength(1)
     expect(navigationPointTypes.service.names).toEqual([])

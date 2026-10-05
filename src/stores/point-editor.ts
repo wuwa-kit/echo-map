@@ -5,7 +5,7 @@ import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
-import { navigationPointTypeSchema, navigationIconUrlSchema, pointTransferSchema } from '../domain/schema.ts'
+import { navigationPointTypeSchema, pointTransferSchema } from '../domain/schema.ts'
 import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
 import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision, PointWorkspace } from '../domain/types.ts'
 import { editWorkspace, managementRows, parsePointWorkspace, pointExportFilename, projectManagementRows, resolveWorkspace, samePoint, workspaceLibrary } from '../domain/local-points.ts'
@@ -62,6 +62,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const storage = shallowRef<'project' | 'browser'>('project')
   const editorMode = shallowRef<EditorKind>('navigation')
   const continueAdding = shallowRef(false)
+  const recentIconIds = shallowRef<readonly string[]>([])
   const positionConfirmation = shallowRef<{ snapshot: string, pressedAt: number } | null>(null)
   const forms = shallowRef<Record<EditorKind, EditorForm>>({ echo: emptyForm(), navigation: emptyForm() })
   function formField<K extends keyof EditorForm>(key: K) {
@@ -529,7 +530,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (draft.value.kind === 'echo' && !draft.value.members.length) errors.members = '请添加至少一种声骸'
     if (draft.value.kind === 'navigation') {
       if (!draft.value.name.trim()) errors.name = '请填写名称'
-      if (!draft.value.iconUrl && !draft.value.iconId) errors.icon = '请选择图标'
+      if (!draft.value.iconId) errors.icon = '请选择图标'
       if (draft.value.teleportCoordinate) {
         for (const axis of ['x', 'y', 'z'] as const) {
           if (draft.value.teleportCoordinate[axis] === null) errors[`teleport:${axis}`] = '请填写完整落点，或移除实际传送位置'
@@ -565,7 +566,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
           openDraft(produce(draft.value, (point) => {
             point.name = saved.name
             if (saved.iconId) point.iconId = saved.iconId
-            if (saved.iconUrl) point.iconUrl = saved.iconUrl
           }))
         }
         notice.value = '保存成功'
@@ -656,7 +656,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       point.navigationKind = rule?.kind ?? 'landmark'
       point.mode = mode
       delete point.iconId
-      if (rule) delete point.iconUrl
       if (icon) point.iconId = icon.id
       if (point.mode !== 'fast-travel') delete point.teleportCoordinate
     })
@@ -666,6 +665,12 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (busy.value || draft.value?.kind !== 'navigation') return
     const icon = navigationTypeIcons(draft.value.pointType).find((icon) => icon.id === id)
     if (!icon) return
+    recentIconIds.value = produce(recentIconIds.value, (ids) => {
+      const index = ids.indexOf(id)
+      if (index !== -1) ids.splice(index, 1)
+      ids.unshift(id)
+      ids.splice(6)
+    })
     const names = icon.name.split(' / ')
     const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
     const name = rule?.names[0] ?? (names.length === 1 ? names[0] : undefined)
@@ -673,26 +678,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (name !== undefined) clearInputError('name')
     edit((point) => {
       if (point.kind !== 'navigation') return
-      delete point.iconUrl
       point.iconId = icon.id
       if (name !== undefined) point.name = name
-    })
-  }
-
-  function setIconUrl(value: string): void {
-    if (busy.value || draft.value?.kind !== 'navigation') return
-    if (draft.value.pointType) return
-    const url = value.trim()
-    if (url && !navigationIconUrlSchema.safeParse(url).success) {
-      invalidInput('icon', '请输入有效的 HTTPS 图标地址')
-      return
-    }
-    clearInputError('icon')
-    edit((point) => {
-      if (point.kind !== 'navigation') return
-      delete point.iconId
-      if (url) point.iconUrl = url
-      else delete point.iconUrl
     })
   }
 
@@ -876,6 +863,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     confirmPosition, resetPositionConfirmation,
     duplicateTarget, duplicateCandidates, duplicateConfirmation: shallowReadonly(duplicateConfirmation), confirmDuplicate,
     availableFloors, pointLevelId, setLevel,
+    recentIconIds: shallowReadonly(recentIconIds),
     continueAdding: shallowReadonly(continueAdding), canContinueAdding,
     setContinueAdding,
     positionInput: shallowReadonly(positionInput), arrivalInput: shallowReadonly(arrivalInput), updateCoordinateInput,
@@ -890,7 +878,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy, operation: shallowReadonly(operation), dirty,
     setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, followMapState, addMember, setMemberCount, adjustMemberCount, removeMember,
-    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, setIconUrl, clearTeleportCoordinate, deletePoint, previewImport, applyImport,
+    resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, clearTeleportCoordinate, deletePoint, previewImport, applyImport,
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },
     setTeleportCoordinateText: (value: string) => { teleportCoordinateText.value = value },

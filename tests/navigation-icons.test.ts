@@ -41,7 +41,7 @@ describe('local navigation icon picker', () => {
     expect(navigationPointIconUrl(point)).toBe(icon.url)
     expect(authoredPointMapDisplay(saved, emptyNavigationDataset)?.location.iconUrl).toBe(icon.url)
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: 'official-point-id' }] }, emptyNavigationDataset)).toThrow('未知图标')
-    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: 'https://example.com/override.png' }] }, emptyNavigationDataset)).toThrow('不能同时设置')
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: 'https://example.com/override.png' }] }, emptyNavigationDataset)).toThrow()
   })
 
   it('keeps custom URL images independent from the catalogue and official points', () => {
@@ -51,8 +51,17 @@ describe('local navigation icon picker', () => {
       name: '自定义名称', navigationKind: 'service' as const, mode: 'landmark' as const, note: '', iconUrl: 'https://example.com/custom.png',
     }
     expect(navigationIconById('missing')).toBeUndefined()
-    expect(parsePointLibrary({ version: 1, points: [point] }, emptyNavigationDataset).points[0]).toEqual(point)
-    expect(authoredPointMapDisplay(point, emptyNavigationDataset)?.location.iconUrl).toBe(point.iconUrl)
+    expect(() => parsePointLibrary({ version: 1, points: [point] }, emptyNavigationDataset)).toThrow()
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconUrl: 'javascript:alert(1)' }] }, emptyNavigationDataset)).toThrow()
   })
+})
+
+it('only moves recent eligible icons to the front and preserves the remaining catalogue order', () => {
+  const icons = navigationTypeIcons('service')
+  const recent = icons.slice(-3).reverse().map(({ id }) => id)
+  const reordered = navigationTypeIcons('service', '', ['unknown-icon', ...recent])
+  expect(reordered.map(({ id }) => id)).toEqual([...recent, ...icons.slice(0, -3).map(({ id }) => id)])
+  const query = icons[0]?.name.split(' / ')[0] ?? ''
+  expect(navigationTypeIcons('service', query, recent)).toEqual(reordered.filter(({ name }) => name.includes(query)))
+  expect(navigationTypeIcons(undefined)).toBe(navigationIconCatalog)
 })

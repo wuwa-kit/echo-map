@@ -1,3 +1,4 @@
+import { navigationIconCatalog } from '../src/domain/navigation-icon-catalog.ts'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
@@ -230,7 +231,7 @@ describe('echo marker appearance', () => {
       gravityType: navigation.gravityType,
       id: navigation.id,
       pointType: navigation.pointType,
-      iconUrl: navigation.iconUrl,
+      iconId: navigationIconCatalog.find(({ url }) => url === navigation.iconUrl)?.id,
       name: navigation.typeName,
       navigationKind: navigation.kind,
       mode: navigation.mode,
@@ -266,7 +267,7 @@ describe('echo marker appearance', () => {
         gravityType: navigation.gravityType,
         id: navigation.id,
         pointType: navigation.pointType,
-        iconUrl: navigation.iconUrl,
+        iconId: navigationIconCatalog.find(({ url }) => url === navigation.iconUrl)?.id,
         name,
         navigationKind: navigation.kind,
         mode: navigation.mode,

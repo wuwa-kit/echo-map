@@ -166,7 +166,7 @@ export interface NavigationTypeDefinition {
   kind: NavigationKind
   defaultMode: NavigationMode
   teleportLocked: boolean
-  // IDs belong to the local icon catalogue; an empty list permits custom icons.
+  // IDs belong to the local icon catalogue; an empty list permits the full catalogue.
   icons: readonly string[]
   // Names are either custom (empty) or fixed (one value), never selectable.
   names: readonly [] | readonly [string]
@@ -179,7 +179,6 @@ export interface AuthoredNavigationPoint extends AuthoredPointBase {
   navigationKind: NavigationKind
   pointType?: NavigationPointType
   iconId?: string
-  iconUrl?: string
   mode: NavigationMode
   teleportCoordinate?: AuthoredCoordinate
 }

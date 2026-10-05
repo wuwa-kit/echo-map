@@ -8,7 +8,7 @@ export function navigationIconById(id: string | undefined): NavigationIconDefini
   return id ? iconsById.get(id) : undefined
 }
 
-export function navigationTypeIcons(pointType: NavigationPointType | undefined, search = ''): readonly NavigationIconDefinition[] {
+export function navigationTypeIcons(pointType: NavigationPointType | undefined, search = '', recentIds: readonly string[] = []): readonly NavigationIconDefinition[] {
   const rule = pointType ? navigationPointTypes[pointType] : undefined
   const icons = rule?.icons.length
     ? rule.icons.flatMap((id) => {
@@ -17,9 +17,14 @@ export function navigationTypeIcons(pointType: NavigationPointType | undefined, 
     })
     : navigationIconCatalog
   const query = search.trim().toLocaleLowerCase()
-  return query ? icons.filter(({ name }) => name.toLocaleLowerCase().includes(query)) : icons
+  const filtered = query ? icons.filter(({ name }) => name.toLocaleLowerCase().includes(query)) : icons
+  const recent = recentIds.flatMap((id) => {
+    const icon = filtered.find((icon) => icon.id === id)
+    return icon ? [icon] : []
+  })
+  return recent.length ? [...recent, ...filtered.filter(({ id }) => !recentIds.includes(id))] : filtered
 }
 
-export function navigationPointIconUrl(point: Pick<AuthoredNavigationPoint, 'iconId' | 'iconUrl'>): string {
-  return navigationIconById(point.iconId)?.url ?? point.iconUrl ?? ''
+export function navigationPointIconUrl(point: Pick<AuthoredNavigationPoint, 'iconId'>): string {
+  return navigationIconById(point.iconId)?.url ?? ''
 }

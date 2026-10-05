@@ -207,6 +207,6 @@ console.log([
   `文字定位点 ${dataset.regionLabels.length}`,
   `图标分组 ${dataset.navigationPointGroups.length}`,
   `已分类定位点 ${pointLibrary.points.filter((point) => point.kind === 'navigation' && point.pointType).length}`,
-  `自选图标点位 ${pointLibrary.points.filter((point) => point.kind === 'navigation' && (point.iconId || point.iconUrl)).length}`,
+  `自选图标点位 ${pointLibrary.points.filter((point) => point.kind === 'navigation' && point.iconId).length}`,
   `路线可用声骸点 ${dataset.report.routeEligibleEchoLocationCount}`,
 ].join(' · '))

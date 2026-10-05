@@ -128,7 +128,7 @@ const comparison = computed(() => {
     '坐标 XYZ': coordinates(point), '重力': point.gravityType === 2 ? '反重力' : point.gravityType === 1 ? '正常重力' : '未标记',
     '传送模式': point.kind === 'navigation' ? MODE_NAMES[point.mode] : '—',
     '传送落点': point.kind === 'navigation' && point.teleportCoordinate ? Object.values(point.teleportCoordinate).join(', ') : '—',
-    '图标': point.kind === 'navigation' ? point.iconId ?? point.iconUrl ?? '—' : '—',
+    '图标': point.kind === 'navigation' ? point.iconId ?? '—' : '—',
     '声骸清单': point.kind === 'echo' ? point.compositionStatus === 'complete' ? '完整' : '部分' : '—',
     '替代官方点': point.replacesOfficialIds?.join(', ') ?? '—',
     '备注': point.note || '—',

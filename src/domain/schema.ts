@@ -86,7 +86,6 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     navigationKind: navigationKindSchema,
     pointType: navigationPointTypeSchema.optional(),
     iconId: z.string().min(1).optional(),
-    iconUrl: navigationIconUrlSchema.optional(),
     mode: navigationModeSchema,
     teleportCoordinate: authoredCoordinateSchema.optional(),
   }).strict(),
@@ -104,8 +103,6 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     const fixedName = rule?.names[0]
     if (fixedName !== undefined && point.name !== fixedName) issue(`名称固定为“${fixedName}”，不允许自定义`)
     if (point.iconId && !navigationIconById(point.iconId)) issue('定位点引用了未知图标')
-    if (point.iconId && point.iconUrl) issue('图标 ID 与自定义图标地址不能同时设置')
-    if (point.pointType && point.iconUrl) issue('只有未设置类型的定位点可以填写自定义图标地址')
     if (point.pointType && rule?.icons.length) {
       const icons = navigationTypeIcons(point.pointType)
       if (point.iconId && !icons.some(({ id }) => id === point.iconId)) issue('图标与类型不符')
@@ -122,7 +119,7 @@ export const savedPointSchema = authoredPointSchema.superRefine((point, context)
   if (point.kind === 'echo' && point.members.length === 0) issue('刷取点至少需要一种怪物')
   if (point.kind === 'navigation') {
     if (!point.name.trim() || point.navigationKind === 'unknown' || point.mode === 'unknown') issue('定位点需要名称和明确的传送能力')
-    if (!point.iconId && !point.iconUrl) issue('定位点需要图标')
+    if (!point.iconId) issue('定位点需要图标')
     if (point.teleportCoordinate && Object.values(point.teleportCoordinate).some((value) => value === null)) issue('传送落点必须填写完整的整数 XYZ')
   }
 })
