@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { navigationIconCatalog } from '../src/domain/navigation-icon-catalog.ts'
 import { navigationIconById, navigationPointIconUrl, navigationTypeIcons } from '../src/domain/navigation-icons.ts'
+import { navigationPointTypes } from '../src/domain/navigation-point-types.ts'
 import { authoredPointMapDisplay, parsePointLibrary } from '../src/domain/point-library.ts'
 import { referenceDataset } from './fixtures/point-library.ts'
 
@@ -8,12 +9,23 @@ const emptyNavigationDataset = { ...referenceDataset, navigationPoints: [], navi
 
 describe('local navigation icon picker', () => {
   it('resolves configured and custom choices without any official point data', () => {
-    expect(navigationTypeIcons(undefined)).toBe(navigationIconCatalog)
+    expect(navigationTypeIcons(undefined).length).toBeGreaterThan(0)
     expect(navigationTypeIcons('service')).toHaveLength(15)
     expect(navigationTypeIcons('small-beacon')).toHaveLength(1)
     expect(navigationTypeIcons('echo-settlement')).toHaveLength(3)
     expect(new Set(navigationIconCatalog.map(({ id }) => id)).size).toBe(navigationIconCatalog.length)
     expect(new Set(navigationIconCatalog.map(({ url }) => url)).size).toBe(navigationIconCatalog.length)
+  })
+
+  it('excludes typed icons from unset choices, searches, and recent icons', () => {
+    const typedIds = new Set(Object.values(navigationPointTypes).flatMap(({ icons }) => icons))
+    const icons = navigationTypeIcons(undefined)
+    expect(icons.every(({ id }) => !typedIds.has(id))).toBe(true)
+    expect(icons.length + typedIds.size).toBe(navigationIconCatalog.length)
+    expect(navigationTypeIcons(undefined, '信标', [...typedIds])).toEqual([])
+    expect(navigationTypeIcons(undefined, '', [...typedIds])).toEqual(icons)
+    expect(navigationTypeIcons(undefined, '贡多拉站台').map(({ name }) => name)).toEqual(['贡多拉站台'])
+    expect(navigationTypeIcons('challenge')).toBe(navigationIconCatalog)
   })
 
   it.each([undefined, 'service'] as const)('searches every name of a shared icon for %s without changing its stored label', (pointType) => {
@@ -63,5 +75,4 @@ it('only moves recent eligible icons to the front and preserves the remaining ca
   expect(reordered.map(({ id }) => id)).toEqual([...recent, ...icons.slice(0, -3).map(({ id }) => id)])
   const query = icons[0]?.name.split(' / ')[0] ?? ''
   expect(navigationTypeIcons('service', query, recent)).toEqual(reordered.filter(({ name }) => name.includes(query)))
-  expect(navigationTypeIcons(undefined)).toBe(navigationIconCatalog)
 })

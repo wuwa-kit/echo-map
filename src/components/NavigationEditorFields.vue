@@ -70,7 +70,7 @@ function selectIcon(id: string): void {
     </div>
     <div class="mt-[4px] h-[18px] text-[12px] leading-[18px]" :class="inputErrors.name || inputErrors.icon ? 'text-[#ffad9f]' : 'text-[#91ae9e]'">{{ nameAndIconHint }}</div>
     <WuPopover ref="iconPopoverRef" :anchor="iconAnchor?.element ?? null" :disabled="busy" :width="360" :max-height="280" class="border border-[var(--line)] rounded-[9px] bg-[#102019] text-[#c7dfd2] shadow-xl">
-      <div class="shrink-0 p-[10px]"><WuInput v-model="iconSearch" :placeholder="rule?.icons.length ? '搜索当前类型的图标' : '搜索图标库'" /></div>
+      <div class="shrink-0 p-[10px]"><WuInput v-model="iconSearch" :placeholder="!selectedType ? '搜索未设置类型的图标' : rule?.icons.length ? '搜索当前类型的图标' : '搜索图标库'" /></div>
       <WuScrollArea class="min-h-0 flex-1" content-class="grid grid-cols-2 gap-[6px] p-[10px] pt-0">
         <button v-for="icon in filteredIcons" :key="icon.id" type="button" class="min-w-0 flex items-center gap-[8px] border border-[var(--line)] rounded-[6px] bg-[#12271f] p-[8px] text-left text-[11px] hover:bg-[#1c3b2d]" :disabled="busy" @click="selectIcon(icon.id)">
           <img :src="icon.url" class="h-[32px] w-[32px] shrink-0 object-contain" loading="lazy" /><WuEllipsis :text="icon.name" class="min-w-0 flex-1" />
