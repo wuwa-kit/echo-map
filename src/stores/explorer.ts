@@ -1,3 +1,4 @@
+import { usePointEditorStore } from './point-editor.ts'
 import { computed, onScopeDispose, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
@@ -181,6 +182,12 @@ export const useExplorerStore = defineStore('explorer', () => {
     candidateIds.value = immutableSnapshot([])
   }
 
+  function changeMapState(id: number): void {
+    if (selectedStateId.value === id) return
+    selectedStateId.value = id
+    usePointEditorStore().resetMapDependentFields()
+  }
+
   function setDataset(value: MapDataset): void {
     clearRoute()
     resetFloorContext()
@@ -191,7 +198,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     baseTileError.value = false
     const preferredState = value.states.find(({ id }) => id === DEFAULT_STATE_ID) ?? value.states[0]
     if (preferredState) {
-      selectedStateId.value = preferredState.id
+      changeMapState(preferredState.id)
     }
   }
 
@@ -203,7 +210,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     resetFloorContext()
 
     const resolved = resolveExplorerState(currentDataset, state, selectedStateId.value)
-    selectedStateId.value = resolved.stateId
+    changeMapState(resolved.stateId)
     selectedCountryId.value = resolved.countryId
     selectedLevelId.value = resolved.levelId
     compactFloors.value = resolved.compactFloors ?? true
@@ -224,7 +231,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     resetFloorContext()
     selectedGravity.value = 1
     baseTileError.value = false
-    selectedStateId.value = id
+    changeMapState(id)
     selectedCountryId.value = null
     selectedLevelId.value = null
     mapViewport.value = null
@@ -333,7 +340,7 @@ export const useExplorerStore = defineStore('explorer', () => {
       selectedPointId.value = null
       candidateIds.value = immutableSnapshot([])
     }
-    selectedStateId.value = destination.stateId
+    changeMapState(destination.stateId)
     // A destination moves the map; it does not restrict which countries' points are visible.
     selectedCountryId.value = null
     selectedLevelId.value = null
@@ -432,7 +439,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     const group = planned ?? routeGroupCandidates.value.find((candidate) => candidate.id === id)
     if (!group) return
     resetFloorContext()
-    selectedStateId.value = group.stateId
+    changeMapState(group.stateId)
     selectedCountryId.value = null
     selectedLevelId.value = group.levelId
     selectedGravity.value = group.gravityType

@@ -43,6 +43,7 @@ beforeEach(() => {
   setActivePinia(createPinia())
   vi.resetAllMocks()
   cache.clear()
+  useExplorerStore().setDataset(referenceDataset)
   vi.stubGlobal('localStorage', { getItem: (key: string) => cache.get(key) ?? null, setItem: (key: string, value: string) => cache.set(key, value), removeItem: (key: string) => cache.delete(key) })
   disk = { version: 1, points: [] }
   revision = 1
@@ -55,6 +56,13 @@ beforeEach(() => {
   })
 })
 afterEach(() => vi.unstubAllGlobals())
+
+function selectMapContext(context: { stateId: number, levelId?: string, gravityType?: 1 | 2 }): void {
+  const explorer = useExplorerStore()
+  explorer.selectState(context.stateId)
+  explorer.selectLevel(context.levelId ?? null)
+  explorer.selectGravity(context.gravityType ?? 1)
+}
 
 async function saveWithDuplicateConfirmation(store: ReturnType<typeof usePointEditorStore>): Promise<boolean> {
   const saving = store.savePoint()
@@ -144,6 +152,7 @@ describe('point editor actions', () => {
 
   it.each(['navigation', 'echo'] as const)('offers floors covering the %s position and preserves the selection through saving and reopening', async (kind) => {
     const dataset = floorEditorDataset()
+    useExplorerStore().setDataset(dataset)
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset, officialLibrary: { version: 1, points: [] } })
     const store = usePointEditorStore()
     await store.load(kind)
@@ -179,6 +188,7 @@ describe('point editor actions', () => {
   })
 
   it('derives floor options from the latest XY buffer without requiring Z or using arrival coordinates', async () => {
+    useExplorerStore().setDataset(floorEditorDataset())
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset: floorEditorDataset(), officialLibrary: { version: 1, points: [] } })
     const store = usePointEditorStore()
     await store.load('navigation')
@@ -208,10 +218,11 @@ describe('point editor actions', () => {
   })
 
   it('returns to the base map when coordinate edits leave the selected floor and rejects unrelated floors', async () => {
+    useExplorerStore().setDataset(floorEditorDataset())
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset: floorEditorDataset(), officialLibrary: { version: 1, points: [] } })
     const store = usePointEditorStore()
     await store.load('navigation')
-    store.initializeMapContext({ stateId: 8, levelId: 'a2' })
+    selectMapContext({ stateId: 8, levelId: 'a2' })
     expect(store.pointLevelId).toBeNull()
     store.setCoordinateText('100, 100, 20')
     store.applyCoordinateText()
@@ -232,7 +243,7 @@ describe('point editor actions', () => {
     store.applyCoordinateText()
     expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2'])
     expect(store.pointLevelId).toBeNull()
-    store.selectState(900)
+    useExplorerStore().selectState(900)
     expect(store.availableFloors).toEqual([])
     expect(store.pointLevelId).toBeNull()
   })
@@ -374,17 +385,17 @@ describe('point editor actions', () => {
     if (!floorState || !floor || !country || !countryState || !gravityState) throw new Error('测试数据缺少可用于录入上下文的地图')
     const store = usePointEditorStore()
     await store.load('echo')
-    store.initializeMapContext({ stateId: countryState.id })
+    selectMapContext({ stateId: countryState.id })
     expect(store.draft).toMatchObject({
       stateId: countryState.id,
       levelId: null,
     })
-    store.initializeMapContext({ stateId: floorState.id, levelId: floor.id })
+    selectMapContext({ stateId: floorState.id, levelId: floor.id })
     expect(store.draft).toMatchObject({
       stateId: floorState.id,
-      levelId: floor.id,
+      levelId: null,
     })
-    store.initializeMapContext({ stateId: gravityState.id, gravityType: 2 })
+    selectMapContext({ stateId: gravityState.id, gravityType: 2 })
     expect(store.draft).toMatchObject({
       stateId: gravityState.id,
       levelId: null,
@@ -392,7 +403,7 @@ describe('point editor actions', () => {
     })
     expect(store.dirty).toBe(false)
 
-    store.initializeMapContext({ stateId: -1, levelId: 'unknown', gravityType: 2 })
+    useExplorerStore().restoreUrlState({ stateId: gravityState.id, levelId: 'unknown', gravityType: 2 })
     expect(store.draft).toMatchObject({ stateId: gravityState.id, levelId: null, gravityType: 2 })
     expect(store.dirty).toBe(false)
   })
@@ -414,7 +425,6 @@ describe('point editor actions', () => {
     if (!destination || !previous) throw new Error('缺少跨地图测试数据')
 
     explorer.navigateToRegion(destination.id)
-    store.followMapState(explorer.selectedStateId)
 
     expect(store.draft).toMatchObject({ ...previous, stateId: destination.stateId, levelId: null, gravityType: null })
     expect(store.dirty).toBe(true)
@@ -426,10 +436,11 @@ describe('point editor actions', () => {
   })
 
   it('preserves pending coordinate buffers while clearing floor and gravity from the previous map', async () => {
+    useExplorerStore().setDataset(floorEditorDataset())
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset: floorEditorDataset(), officialLibrary: { version: 1, points: [] } })
     const store = usePointEditorStore()
     await store.load('navigation')
-    store.initializeMapContext({ stateId: 8, levelId: 'a2' })
+    selectMapContext({ stateId: 8, levelId: 'a2' })
     store.setPointType('small-beacon')
     const empty = { x: null, y: null, z: null }
     store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, empty, '100, 100'))
@@ -437,12 +448,11 @@ describe('point editor actions', () => {
     const position = store.positionInput
     const arrival = store.arrivalInput
     expect(store.pointLevelId).toBe('a2')
-    store.followMapState(8)
     expect(store.pointLevelId).toBe('a2')
-    store.followMapState(903)
+    useExplorerStore().selectState(903)
     expect(store.draft).toMatchObject({ stateId: 903, levelId: null, gravityType: 1 })
-    store.selectGravity(2)
-    store.followMapState(900)
+    useExplorerStore().selectGravity(2)
+    useExplorerStore().selectState(900)
     expect(store.draft).toMatchObject({ stateId: 900, levelId: null, gravityType: null })
     expect(store.positionInput).toBe(position)
     expect(store.arrivalInput).toBe(arrival)
@@ -450,22 +460,141 @@ describe('point editor actions', () => {
     expect(await store.savePoint()).toBe(false)
   })
 
-  it('keeps an empty new point pristine and ignores invalid maps or an existing point', async () => {
+  it('keeps map changes out of form dirty state and restores the map when opening an existing point', async () => {
     disk = { version: 1, points: [mixedPoint()] }
     const store = usePointEditorStore()
     await store.load('echo')
-    store.followMapState(900)
+    useExplorerStore().selectState(900)
     expect(store.draft?.stateId).toBe(900)
     expect(store.dirty).toBe(false)
-    const empty = store.draft
-    store.followMapState(-1)
-    expect(store.draft).toBe(empty)
     store.selectPoint('mixed-point')
-    store.setNote('已有点位的修改')
-    const existing = store.draft
-    store.followMapState(900)
-    expect(store.draft).toBe(existing)
+    expect(useExplorerStore().selectedStateId).toBe(8)
     expect(store.draft?.stateId).toBe(8)
+    store.setNote('已有点位的修改')
+    useExplorerStore().selectState(900)
+    expect(await store.savePoint()).toBe(true)
+    expect(disk.points[0]).toMatchObject({ stateId: 900, note: '已有点位的修改' })
+  })
+
+  it('uses the latest gravity in both tabs, duplicate checks and save-all', async () => {
+    const original = { ...mixedPoint(), stateId: 903, gravityType: 1 as const }
+    disk = { version: 1, points: [original] }
+    const explorer = useExplorerStore()
+    explorer.selectState(903)
+    const store = usePointEditorStore()
+    await store.load('echo')
+    store.addMember(smallEcho.id)
+    store.setCoordinateText('-497, 449, 18')
+    store.applyCoordinateText()
+    expect(store.duplicateCandidates).toHaveLength(1)
+    store.switchEditorTab('navigation')
+    store.setPointType('small-beacon')
+    store.setCoordinateText('100, 200, 30')
+    store.applyCoordinateText()
+    explorer.selectGravity(2)
+    expect(store.draft?.gravityType).toBe(2)
+    store.switchEditorTab('echo')
+    expect(store.draft?.gravityType).toBe(2)
+    expect(store.duplicateCandidates).toHaveLength(0)
+    expect(await store.saveAllForms()).toBe(true)
+    expect(disk.points.filter(({ id }) => id !== original.id).map(({ gravityType }) => gravityType)).toEqual([2, 2])
+  })
+
+  it('rechecks live gravity after duplicate confirmation before saving', async () => {
+    disk = { version: 1, points: [{ ...mixedPoint(), stateId: 903, gravityType: 1 }] }
+    const explorer = useExplorerStore()
+    explorer.selectState(903)
+    const store = usePointEditorStore()
+    await store.load('echo')
+    store.addMember(smallEcho.id)
+    store.setCoordinateText('-497, 449, 18')
+    store.applyCoordinateText()
+    const saving = store.savePoint()
+    expect(store.duplicateConfirmation).toBe(true)
+    explorer.selectGravity(2)
+    store.confirmDuplicate(true)
+    expect(await saving).toBe(true)
+    expect(disk.points[1]?.gravityType).toBe(2)
+  })
+
+  it('follows live floor selection until a floor is explicitly chosen in the form', async () => {
+    const dataset = floorEditorDataset()
+    const explorer = useExplorerStore()
+    explorer.setDataset(dataset)
+    vi.mocked(loadMapDataset).mockResolvedValue({ dataset, officialLibrary: { version: 1, points: [] } })
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    store.setPointType('small-beacon')
+    store.setCoordinateText('100, 100, 20')
+    store.applyCoordinateText()
+    explorer.selectLevel('a1')
+    expect(store.pointLevelId).toBe('a1')
+    explorer.selectLevel('a2')
+    expect(await store.savePoint()).toBe(true)
+    expect(disk.points[0]?.levelId).toBe('a2')
+    explorer.selectLevel('a1')
+    expect(store.pointLevelId).toBe('a1')
+    store.setLevel(null)
+    explorer.selectLevel('a2')
+    expect(store.pointLevelId).toBeNull()
+    expect(await store.savePoint()).toBe(true)
+    expect(disk.points[0]?.levelId).toBeNull()
+    store.setLevel('a1')
+    explorer.selectState(903)
+    expect(store.pointLevelId).toBeNull()
+    expect(await store.savePoint()).toBe(true)
+    expect(disk.points[0]).toMatchObject({ stateId: 903, gravityType: 1, levelId: null })
+  })
+
+  it.each(['selection', 'region', 'url'] as const)('clears both form floors on %s map changes without restoring them on return', async (method) => {
+    const dataset = floorEditorDataset()
+    const explorer = useExplorerStore()
+    explorer.setDataset(dataset)
+    vi.mocked(loadMapDataset).mockResolvedValue({ dataset, officialLibrary: { version: 1, points: [] } })
+    const store = usePointEditorStore()
+    await store.load('echo')
+    store.addMember(smallEcho.id)
+    store.setCoordinateText('100, 100, 20')
+    store.applyCoordinateText()
+    store.setLevel('a1')
+    store.switchEditorTab('navigation')
+    store.setPointType('small-beacon')
+    store.setCoordinateText('110, 110, 30')
+    store.applyCoordinateText()
+    store.setLevel('a2')
+    const destination = dataset.regionLabels.find(({ stateId, id }) => stateId !== 8
+      && dataset.mapNavigation.some(({ regionIds }) => regionIds.includes(id)))
+    if (!destination) throw new Error('缺少跨地图测试数据')
+    if (method === 'selection') explorer.selectState(destination.stateId)
+    else if (method === 'region') explorer.navigateToRegion(destination.id)
+    else explorer.restoreUrlState({ stateId: destination.stateId })
+    explorer.restoreUrlState({ stateId: 8, levelId: 'a2' })
+    expect(store.pointLevelId).toBeNull()
+    expect(store.draft?.coordinate).toEqual({ x: 110, y: 110, z: 30 })
+    store.switchEditorTab('echo')
+    expect(store.pointLevelId).toBeNull()
+    expect(store.draft?.coordinate).toEqual({ x: 100, y: 100, z: 20 })
+    expect(await store.saveAllForms()).toBe(true)
+    expect(disk.points.map(({ levelId }) => levelId)).toEqual([null, null])
+  })
+
+  it('does not restore a cleared floor when an in-flight save completes', async () => {
+    const dataset = floorEditorDataset()
+    const explorer = useExplorerStore()
+    explorer.setDataset(dataset)
+    vi.mocked(loadMapDataset).mockResolvedValue({ dataset, officialLibrary: { version: 1, points: [] } })
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    store.setPointType('small-beacon')
+    store.setCoordinateText('100, 100, 20')
+    store.applyCoordinateText()
+    store.setLevel('a1')
+    const saving = store.savePoint()
+    explorer.selectState(903)
+    explorer.selectState(8)
+    expect(await saving).toBe(true)
+    expect(store.pointLevelId).toBeNull()
+    expect(disk.points[0]?.levelId).toBe('a1')
   })
 
   it('saves nearby points independently and stays on the saved point', async () => {
@@ -678,6 +807,7 @@ describe('point editor actions', () => {
 
   it.each(['central-beacon', 'small-beacon', 'material-domain'] as const)('continues adding %s with its name, icon and map context', async (pointType) => {
     const dataset = floorEditorDataset()
+    useExplorerStore().setDataset(dataset)
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset, officialLibrary: { version: 1, points: [] } })
     const store = usePointEditorStore()
     await store.load('navigation')
@@ -686,7 +816,7 @@ describe('point editor actions', () => {
     const state = dataset.states.find(({ id }) => id === 8)
     const floor = state?.layeredMaps.flatMap(({ floors }) => floors)[0]
     if (!state || !floor) throw new Error('需要分层地图')
-    store.initializeMapContext({ stateId: state.id, levelId: floor.id })
+    selectMapContext({ stateId: state.id, levelId: floor.id })
     store.setContinueAdding(true)
     store.setPointType(pointType)
     const rule = navigationPointTypes[pointType]
@@ -705,7 +835,7 @@ describe('point editor actions', () => {
       expect(store.draft?.id).not.toBe(savedId)
       expect(store.draft).toMatchObject({
         kind: 'navigation', pointType, name: rule.names[0] ?? '连续录入的材料副本名称', iconId: rule.icons[0],
-        mode: rule.defaultMode, stateId: state.id, levelId: floor.id, note: '', coordinate: { x: null, y: null, z: null },
+        mode: rule.defaultMode, stateId: state.id, levelId: null, note: '', coordinate: { x: null, y: null, z: null },
       })
       expect(store.draft).not.toHaveProperty('teleportCoordinate')
       expect(store.coordinateText).toBe('')
@@ -851,7 +981,7 @@ describe('point editor actions', () => {
     expect(store.allPoints).toEqual([official])
     expect(store.officialLibrary.points[0]).toEqual(official)
     store.switchEditorTab('echo')
-    expect(store.draft).toBe(echoDraft)
+    expect(store.draft).toEqual(echoDraft)
   })
 
   it('retains invalid edits and exposes field errors until corrected', async () => {
@@ -977,9 +1107,9 @@ describe('point editor actions', () => {
   it('opens the form immediately and preserves context when creating the next point', async () => {
     const store = usePointEditorStore()
     await store.load('echo')
-    store.selectState(903)
-    store.selectGravity(2)
-    expect(store.dirty).toBe(true)
+    useExplorerStore().selectState(903)
+    useExplorerStore().selectGravity(2)
+    expect(store.dirty).toBe(false)
     store.setCoordinateText('100, 200, 30')
     store.applyCoordinateText()
     store.addMember(smallEcho.id)
@@ -989,7 +1119,7 @@ describe('point editor actions', () => {
     expect(store.editing).toBe(true)
     store.newPoint('navigation')
     expect(store.draft).toMatchObject({ stateId: 903, gravityType: 2, coordinate: { x: null, y: null, z: null } })
-    store.selectState(8)
+    useExplorerStore().selectState(8)
     expect(store.draft?.gravityType).toBeNull()
   })
 
@@ -1019,7 +1149,7 @@ describe('point editor actions', () => {
     expect(store.error).toContain('未知地图')
     expect(disk.points).toEqual([mixedPoint()])
   })
-  it('keeps both form references, coordinates, members and invalid input across repeated tab switches', async () => {
+  it('keeps both form values, coordinates, members and invalid input across repeated tab switches', async () => {
     const store = usePointEditorStore()
     await store.load('echo')
     store.setCoordinateText('100, 200, 30')
@@ -1042,20 +1172,20 @@ describe('point editor actions', () => {
     const navigation = store.draft
     for (let index = 0; index < 3; index += 1) {
       store.switchEditorTab('echo')
-      expect(store.draft).toBe(echo)
+      expect(store.draft).toEqual(echo)
       expect(store.coordinateText).toBe('100, 200, 30')
       expect(store.monsterSearch).toBe('搜索内容')
       expect(store.inputErrors.z).toBeTruthy()
       expect(store.inputValues.z).toBe('invalid')
       store.switchEditorTab('navigation')
-      expect(store.draft).toBe(navigation)
+      expect(store.draft).toEqual(navigation)
       expect(store.teleportCoordinateText).toBe('410, 510, 65')
       expect(store.inputErrors.z).toBeUndefined()
     }
     store.discardChanges()
     expect(store.hasUnsavedChanges).toBe(true)
     store.switchEditorTab('echo')
-    expect(store.draft).toBe(echo)
+    expect(store.draft).toEqual(echo)
     store.setCoordinate('z', '30')
     expect(await store.saveAllForms()).toBe(true)
     expect(disk.points).toHaveLength(1)
@@ -1111,16 +1241,16 @@ describe('point editor actions', () => {
     expect(saveEditorLibrary).not.toHaveBeenCalled()
     expect(store.error).toContain('两个表单')
     store.switchEditorTab('echo')
-    expect(store.draft).toBe(echo)
+    expect(store.draft).toEqual(echo)
     store.discardAllForms()
     const cleanEcho = store.draft
     store.switchEditorTab('navigation')
     const cleanNavigation = store.draft
     await store.applyImport()
     expect(disk.points).toEqual([mixedPoint()])
-    expect(store.draft).toBe(cleanNavigation)
+    expect(store.draft).toEqual(cleanNavigation)
     store.switchEditorTab('echo')
-    expect(store.draft).toBe(cleanEcho)
+    expect(store.draft).toEqual(cleanEcho)
   })
 
 })

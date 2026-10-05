@@ -14,7 +14,7 @@ import { combinePointLibraries, findPointDuplicates } from '../domain/point-matc
 import { readEditorLibrary, saveEditorLibrary } from '../data/editor-client.ts'
 import { loadMapDataset } from '../data/load.ts'
 import { hasGravityMap } from '../domain/gravity.ts'
-import type { GravityType } from '../domain/types.ts'
+import { useExplorerStore } from './explorer.ts'
 import { createFloorCoverage, floorsAtCoordinate } from '../map/floor-coverage.ts'
 import { gameToMapCoordinate } from '../map/projection.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
@@ -25,10 +25,20 @@ const RECENT_ICONS_LIMIT = 10
 const POSITION_CONFIRM_INTERVAL = 600
 
 type EditorKind = AuthoredPoint['kind']
+type EditorDraftOf<T> = T extends AuthoredPoint ? Omit<T, 'stateId' | 'gravityType' | 'levelId'> & { levelId?: string | null } : never
+type EditorDraft = EditorDraftOf<AuthoredPoint>
+
+function formPoint(point: AuthoredPoint | EditorDraft): EditorDraft {
+  if ('stateId' in point) {
+    const { stateId: _state, gravityType: _gravity, ...fields } = point
+    return fields
+  }
+  return point
+}
 interface EditorForm {
   positionInput: CoordinateInputState
   arrivalInput: CoordinateInputState
-  draft: AuthoredPoint | null
+  draft: EditorDraft | null
   baseline: string
   monsterSearch: string
   coordinateText: string
@@ -43,13 +53,8 @@ function formDirty(form: EditorForm): boolean {
   return form.draft !== null && (JSON.stringify(form.draft) !== form.baseline || Object.keys(form.inputErrors).length > 0 || coordinateInputPending(form.positionInput) || coordinateInputPending(form.arrivalInput))
 }
 
-interface PointEditorMapContext {
-  stateId?: number
-  levelId?: string
-  gravityType?: GravityType
-}
-
 export const usePointEditorStore = defineStore('point-editor', () => {
+  const explorer = useExplorerStore()
   const dataset = shallowRef<MapDataset | null>(null)
   const library = shallowRef<PointLibrary>(freeze(emptyPointLibrary(), true))
   const workspace = shallowRef<PointWorkspace | null>(null)
@@ -84,16 +89,26 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     const field = teleport ? arrivalInput : positionInput
     field.value = { ...emptyCoordinateInput(), mode: field.value.mode }
   }
-  const draft = formField('draft')
-  const pointState = computed(() => dataset.value?.states.find(({ id }) => id === draft.value?.stateId) ?? null)
+  const fields = formField('draft')
+  const pointState = computed(() => dataset.value?.states.find(({ id }) => id === explorer.selectedStateId) ?? null)
   const floorCoverage = computed(() => createFloorCoverage(pointState.value, dataset.value?.source.tileWidth ?? 1024))
   const availableFloors = useEqualComputed(() => {
-    const coordinate = draft.value ? coordinateInputXY(positionInput.value, draft.value.coordinate) : null
+    const coordinate = fields.value ? coordinateInputXY(positionInput.value, fields.value.coordinate) : null
     return floorsAtCoordinate(floorCoverage.value, coordinate
       ? gameToMapCoordinate(coordinate[0], coordinate[1], dataset.value?.source.tileWidth) : null)
       .map(({ id, name }) => ({ id, name }))
   })
-  const pointLevelId = computed(() => availableFloors.value.some(({ id }) => id === draft.value?.levelId) ? draft.value?.levelId ?? null : null)
+  const pointLevelId = computed(() => {
+    const requested = fields.value?.levelId === undefined ? explorer.selectedLevelId : fields.value.levelId
+    return availableFloors.value.some(({ id }) => id === requested) ? requested : null
+  })
+  // Resolve map context on demand for preview, duplicate checks and persistence.
+  const draft = computed<AuthoredPoint | null>(() => fields.value ? freeze({
+    ...fields.value,
+    stateId: explorer.selectedStateId,
+    gravityType: hasGravityMap(pointState.value) ? explorer.selectedGravity : null,
+    levelId: pointLevelId.value,
+  }, true) : null)
   const completePoints = computed(() => freeze(combinePointLibraries(library.value, officialLibrary.value), true).points)
   const baseline = formField('baseline')
   const importPreview = shallowRef<PointLibrary | null>(null)
@@ -131,13 +146,13 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
   const hasUnsavedChanges = computed(() => Object.values(forms.value).some(formDirty))
 
-  function openDraft(point: AuthoredPoint): void {
+  function openDraft(point: AuthoredPoint | EditorDraft): void {
     resetPositionConfirmation()
     resetCoordinateInput()
     resetCoordinateInput(true)
-    draft.value = freeze(point, true)
+    fields.value = freeze(formPoint(point), true)
     reconcilePointLevel()
-    baseline.value = JSON.stringify(draft.value)
+    baseline.value = JSON.stringify(fields.value)
     coordinateText.value = ''
     teleportCoordinateText.value = ''
     monsterSearch.value = ''
@@ -157,24 +172,19 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   function switchEditorTab(kind: EditorKind): void {
     if (busy.value || kind === editorMode.value) return
     resetPositionConfirmation()
-    const context = draft.value
     editorMode.value = kind
     error.value = ''
     notice.value = ''
     if (!draft.value) {
       newPoint(kind)
-      if (context) initializeMapContext({ stateId: context.stateId, levelId: context.levelId ?? undefined, gravityType: context.gravityType ?? undefined })
     }
   }
 
   function newPoint(kind: AuthoredPoint['kind'] = editorMode.value): void {
     if (!canSwitch()) return
-    const previous = draft.value
     editorMode.value = kind
     const base = {
-      id: crypto.randomUUID(), stateId: previous?.stateId ?? (dataset.value?.states.some(({ id }) => id === 8) ? 8 : dataset.value?.states[0]?.id ?? 8),
-      levelId: previous?.levelId ?? null,
-      gravityType: previous?.gravityType ?? null,
+      id: crypto.randomUUID(),
       coordinate: { x: null, y: null, z: null }, note: '',
     }
     openDraft(kind === 'echo' ? { ...base, kind, compositionStatus: 'partial', members: [] } : { ...base, kind, name: '', navigationKind: 'landmark', mode: 'landmark' })
@@ -191,29 +201,44 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     }
     switchEditorTab(point.kind)
     if (!canSwitch()) return
+    if (explorer.selectedStateId !== point.stateId) explorer.selectState(point.stateId)
+    explorer.selectGravity(point.gravityType ?? 1)
     openDraft(point)
     error.value = ''
   }
 
-  function edit(recipe: (point: AuthoredPoint) => void): void {
-    if (!draft.value || busy.value) return
-    draft.value = freeze(produce(draft.value, recipe), true)
+  function edit(recipe: (point: EditorDraft) => void): void {
+    if (!fields.value || busy.value) return
+    fields.value = freeze(produce(fields.value, recipe), true)
     reconcilePointLevel()
     error.value = ''
     notice.value = ''
   }
 
   function reconcilePointLevel(): void {
-    const point = draft.value
+    const point = fields.value
     if (!point?.levelId || !coordinateInputXY(positionInput.value, point.coordinate)
       || availableFloors.value.some(({ id }) => id === point.levelId)) return
-    draft.value = freeze(produce(point, (point) => { point.levelId = null }), true)
+    fields.value = freeze(produce(point, (point) => { point.levelId = null }), true)
+  }
+
+  function resetMapDependentFields(): void {
+    resetPositionConfirmation()
+    forms.value = produce(forms.value, (forms) => {
+      for (const kind of ['echo', 'navigation'] as const) {
+        const form = forms[kind]
+        if (!form.draft) continue
+        const pristineNew = !formDirty(form) && !library.value.points.some(({ id }) => id === form.draft?.id)
+        form.draft.levelId = null
+        if (pristineNew) form.baseline = JSON.stringify(form.draft)
+      }
+    })
   }
 
   function setLevel(value: string | number | null): void {
     if (busy.value || !draft.value || typeof value === 'number'
       || value !== null && !availableFloors.value.some(({ id }) => id === value)
-      || value === draft.value.levelId) return
+      || value === fields.value?.levelId) return
     edit((point) => { point.levelId = value })
   }
 
@@ -319,57 +344,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     } catch (failure) { error.value = failure instanceof Error ? failure.message : String(failure) }
   }
 
-  function selectState(stateId: number): void {
-    resetCoordinateInput()
-    resetCoordinateInput(true)
-    for (const axis of ['x', 'y', 'z']) {
-      clearInputError(axis)
-      clearInputError(`teleport:${axis}`)
-      clearInputValue(axis)
-      clearInputValue(`teleport:${axis}`)
-    }
-    edit((point) => {
-      point.stateId = stateId
-      point.levelId = null
-      point.gravityType = null
-      point.coordinate = { x: null, y: null, z: null }
-      if (point.kind === 'navigation') delete point.teleportCoordinate
-    })
-  }
-
-  function initializeMapContext(context: PointEditorMapContext): void {
-    const currentDataset = dataset.value
-    const currentDraft = draft.value
-    if (!currentDataset || !currentDraft || dirty.value || library.value.points.some(({ id }) => id === currentDraft.id)) return
-    const state = currentDataset.states.find(({ id }) => id === context.stateId)
-      ?? currentDataset.states.find(({ id }) => id === currentDraft.stateId)
-      ?? currentDataset.states[0]
-    if (!state) return
-    const floorIds = new Set(state.layeredMaps.flatMap(({ floors }) => floors.map(({ id }) => id)))
-    openDraft(produce(currentDraft, (point) => {
-      point.stateId = state.id
-      point.levelId = context.levelId !== undefined && floorIds.has(context.levelId) ? context.levelId : null
-      point.gravityType = hasGravityMap(state) && (context.gravityType === 1 || context.gravityType === 2)
-        ? context.gravityType
-        : null
-    }))
-  }
-
-  function followMapState(stateId: number): void {
-    const point = draft.value
-    const state = dataset.value?.states.find(({ id }) => id === stateId)
-    if (busy.value || !point || !state || point.stateId === stateId || point.replacesOfficialIds?.length
-      || library.value.points.some(({ id }) => id === point.id)) return
-    const pristine = !dirty.value
-    resetPositionConfirmation()
-    edit((point) => {
-      point.stateId = stateId
-      point.levelId = null
-      point.gravityType = hasGravityMap(state) ? 1 : null
-    })
-    if (pristine) baseline.value = JSON.stringify(draft.value)
-  }
-
   function addMember(echoId: string): void {
     if (!dataset.value?.echoes.some(({ id }) => id === echoId)) return
     clearInputError('members')
@@ -381,14 +355,6 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       if (existing) existing.count = Math.min(999, existing.count + 1)
       else point.members.push({ echoId, count: 1 })
       point.compositionStatus = 'partial'
-    })
-  }
-
-  function selectGravity(value: GravityType | null): void {
-    if (value !== null && value !== 1 && value !== 2) return
-    if (!hasGravityMap(dataset.value?.states.find(({ id }) => id === draft.value?.stateId))) return
-    edit((point) => {
-      point.gravityType = value
     })
   }
 
@@ -573,7 +539,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       else library.points.push(saved)
     })
     if (await commit(next, 'save')) {
-      openDraft(saved)
+      openDraft({ ...formPoint(saved), levelId: fields.value?.levelId })
       if (addNext && saved.kind === 'navigation') {
         newPoint('navigation')
         setPointType(saved.pointType ?? null)
@@ -618,7 +584,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     const saved = library.value.points.find(({ id }) => id === draft.value?.id)
     if (saved) openDraft(saved)
     else {
-      baseline.value = JSON.stringify(draft.value)
+      baseline.value = JSON.stringify(fields.value)
       newPoint(draft.value?.kind)
     }
     error.value = ''
@@ -712,7 +678,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     const point = library.value.points.find(({ id }) => id === draft.value?.id)
     if (!point) return
     if (await commit(produce(library.value, (library) => { library.points = library.points.filter(({ id }) => id !== point.id) }), 'delete')) {
-      baseline.value = JSON.stringify(draft.value)
+      baseline.value = JSON.stringify(fields.value)
       inputErrors.value = {}
       newPoint(point.kind)
     }
@@ -787,8 +753,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
         const point = forms[kind].draft
         if (!point || !savedIds.has(point.id)) continue
         const saved = current.get(point.id)
-        if (saved && samePoint(point, saved)) continue
-        forms[kind] = saved ? { ...emptyForm(), draft: saved, baseline: JSON.stringify(saved) } : emptyForm()
+        if (saved && JSON.stringify(point) === JSON.stringify(formPoint(saved))) continue
+        forms[kind] = saved ? { ...emptyForm(), draft: formPoint(saved), baseline: JSON.stringify(formPoint(saved)) } : emptyForm()
       }
     })
     if (!draft.value) newPoint()
@@ -872,12 +838,12 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     workspace: shallowReadonly(workspace), managedPoints, managePoints, refreshPublishedPoints, createPointExport, importLabel: shallowReadonly(importLabel),
     confirmPosition, resetPositionConfirmation,
     duplicateTarget, duplicateCandidates, duplicateConfirmation: shallowReadonly(duplicateConfirmation), confirmDuplicate,
-    availableFloors, pointLevelId, setLevel,
+    availableFloors, pointLevelId, setLevel, resetMapDependentFields,
     recentIconIds: shallowReadonly(recentIconIds),
     continueAdding: shallowReadonly(continueAdding), canContinueAdding,
     setContinueAdding,
     positionInput: shallowReadonly(positionInput), arrivalInput: shallowReadonly(arrivalInput), updateCoordinateInput,
-    hasUnsavedChanges, editorMode: shallowReadonly(editorMode), completePoints, allPoints, selectGravity, switchEditorTab,
+    hasUnsavedChanges, editorMode: shallowReadonly(editorMode), completePoints, allPoints, switchEditorTab,
     editing: shallowReadonly(editing), inputValues: shallowReadonly(inputValues), inputErrors: shallowReadonly(inputErrors),
     mapTileError: shallowReadonly(mapTileError), mapTileRetry: shallowReadonly(mapTileRetry),
     reportMapTileError: (failed: boolean) => { mapTileError.value = failed },
@@ -887,7 +853,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     importPreview: shallowReadonly(importPreview),
     monsterSearch: shallowReadonly(monsterSearch), coordinateText: shallowReadonly(coordinateText), teleportCoordinateText: shallowReadonly(teleportCoordinateText),
     error: shallowReadonly(error), notice: shallowReadonly(notice), busy, operation: shallowReadonly(operation), dirty,
-    setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, selectState, initializeMapContext, followMapState, addMember, setMemberCount, adjustMemberCount, removeMember,
+    setReferenceData, load, newPoint, selectPoint, setCoordinate, applyCoordinateText, setTeleportCoordinate, applyTeleportCoordinateText, addMember, setMemberCount, adjustMemberCount, removeMember,
     resetSession, savePoint, saveAllForms, discardAllForms, discardChanges, closeEditor, setPointType, setIcon, clearTeleportCoordinate, deletePoint, previewImport, applyImport,
     setMonsterSearch: (value: string) => { monsterSearch.value = value },
     setCoordinateText: (value: string) => { coordinateText.value = value },

@@ -51,7 +51,6 @@ function selectEditorPoints(ids: string[]): void {
 }
 function navigateToRegion(id: string): void {
   store.navigateToRegion(id)
-  if (editingMode.value) editor.followMapState(store.selectedStateId)
 }
 async function locateManagedPoint(point: AuthoredPoint): Promise<void> {
   if (store.selectedStateId !== point.stateId) store.selectState(point.stateId)

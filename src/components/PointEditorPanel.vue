@@ -150,7 +150,6 @@ function selectMapPoints(ids: string[]): void {
 }
 function switchTab(kind: AuthoredPoint['kind']): void {
   store.switchEditorTab(kind)
-  store.followMapState(explorer.selectedStateId)
   tabQuery.value = editorMode.value
 }
 async function save(): Promise<void> {
@@ -180,7 +179,6 @@ function addPoint(kind: AuthoredPoint['kind'] = editorMode.value, coordinate?: [
   switchTab(kind)
   requestAction(() => {
     store.newPoint(kind)
-    store.initializeMapContext({ stateId: explorer.selectedStateId, levelId: explorer.selectedLevelId ?? undefined, gravityType: explorer.supportsGravity ? explorer.selectedGravity : undefined })
     if (coordinate) {
       store.setCoordinate('x', String(coordinate[0]))
       store.setCoordinate('y', String(coordinate[1]))
@@ -195,13 +193,11 @@ async function loadEditor(): Promise<void> {
   await store.load(tabQuery.value === 'echo' ? 'echo' : 'navigation')
   if (!active || store.error) return
   tabQuery.value = editorMode.value
-  store.initializeMapContext({ stateId: explorer.selectedStateId, levelId: explorer.selectedLevelId ?? undefined, gravityType: explorer.supportsGravity ? explorer.selectedGravity : undefined })
 }
 onMounted(loadEditor)
 onBeforeRouteUpdate((to) => {
   if (to.query.editorTab === tabQuery.value || !store.dataset || store.busy) return
   store.switchEditorTab(to.query.editorTab === 'echo' ? 'echo' : 'navigation')
-  store.followMapState(explorer.selectedStateId)
 })
 onBeforeRouteLeave(() => {
   if (busy.value) return false
