@@ -2,6 +2,7 @@
 import { vTooltip } from './base/tooltip.ts'
 import { computed, toRefs } from 'vue'
 import type { LayeredMapDefinition } from '../domain/types.ts'
+import { floorLabel, floorTooltipLabel } from './floor-label.ts'
 import WuEllipsis from './base/WuEllipsis.vue'
 import WuScrollArea from './base/WuScrollArea.vue'
 import WuSvg from './base/WuSvg.vue'
@@ -25,7 +26,7 @@ const { selectedLevelId, floorRequest, floorGroups: nearbyFloorGroups, visible: 
 const layoutLabel = computed(() => compactFloors.value ? '切换为楼层文字列表' : '切换为楼层图标列表')
 
 function floorHint(group: string, name: string, id: string): string {
-  const label = name.startsWith(group) ? name : `${group} · ${name}`
+  const label = floorTooltipLabel(group, name)
   if (floorRequest.value?.levelId !== id) return label
   return `${label} · ${floorRequest.value.status === 'loading' ? '正在加载' : '加载失败，点击重试'}`
 }
@@ -96,7 +97,7 @@ function toggleLayout(): void {
               <WuSvg name="floor" class="relative text-[18px]" :class="compactFloors ? selectedLevelId === floor.id ? '-rotate-45 text-[#34483c]' : '-rotate-45 text-[#c4d2c5]' : ''" />
             </span>
             <WuEllipsis
-              v-if="!compactFloors" :text="floor.name" :tooltip-text="floorHint(group.name, floor.name, floor.id)"
+              v-if="!compactFloors" :text="floorLabel(group.name, floor.name)" :tooltip-text="floorHint(group.name, floor.name, floor.id)"
               placement="right" :delay-enter="0" class="min-w-0 flex-1"
             />
             <span :class="compactFloors ? 'absolute right-[2px] top-[2px]' : 'h-[16px] w-[12px] shrink-0'">

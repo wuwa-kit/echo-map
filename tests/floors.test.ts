@@ -13,6 +13,8 @@ import { createFloorCoverage, floorExtent, floorGroupsInViewport } from '../src/
 import { createFloorLayers } from '../src/map/floor-layers.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import type { AuthoredNavigationPoint, MapStateDefinition } from '../src/domain/types.ts'
+import type { MapViewportState } from '../src/url/explorer-url.ts'
+import { createMapView } from '../src/map/useMapViewport.ts'
 import { mapResolutionForZoom } from '../src/map/point-visibility.ts'
 import { emptyPointLibrary } from '../src/domain/point-library.ts'
 import { mixedPoint, smallEcho } from './fixtures/point-library.ts'
@@ -227,11 +229,17 @@ describe('floor groups in the canvas viewport', () => {
     expect(store.nearbyFloorGroups).toEqual([])
   })
 
-  it('hides the switcher below step 16 without changing the selected floor, viewport or route', () => {
+  it('shows nearby floors from step 0 and keeps the selected floor reachable when zooming out', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
     expect(store.floorSwitcherVisible).toBe(false)
     store.setFloorViewport(viewportAt(768, 768), 8)
+    expect(store.floorSwitcherVisible).toBe(true)
+    expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a'])
+    store.setFloorViewport(viewportAt(768, 768), mapResolutionForZoom(0))
+    expect(store.floorSwitcherVisible).toBe(true)
+    expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a'])
+    store.setFloorViewport(viewportAt(1500, 500), mapResolutionForZoom(0))
     expect(store.floorSwitcherVisible).toBe(false)
     expect(store.nearbyFloorGroups).toEqual([])
     store.selectLevel('a2')
@@ -239,39 +247,64 @@ describe('floor groups in the canvas viewport', () => {
     store.setRoute({ points: [], totalCost: 2, algorithm: 'exact', startPointId: null })
     const route = store.route
     const viewport = store.mapViewport
-    store.setFloorViewport(viewportAt(768, 768), mapResolutionForZoom(16))
+    store.setFloorViewport(viewportAt(1500, 500), 8)
     expect(store.floorSwitcherVisible).toBe(true)
-    store.setFloorViewport(viewportAt(768, 768), mapResolutionForZoom(15.99))
-    expect(store.floorSwitcherVisible).toBe(false)
+    store.setFloorViewport([200, 700, 800, 800], 8)
+    expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a', 'b'])
     expect(store.selectedLevelId).toBe('a2')
     expect(store.route).toBe(route)
     expect(store.mapViewport).toBe(viewport)
-    store.setFloorViewport(viewportAt(768, 768), mapResolutionForZoom(16))
+    store.setFloorViewport(viewportAt(768, 768), 1)
     expect(store.floorSwitcherVisible).toBe(true)
     expect(store.selectedLevelId).toBe('a2')
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toContain('a')
     store.setFloorViewport(viewportAt(768, 768), NaN)
+    expect(store.floorSwitcherVisible).toBe(true)
+    store.requestLevel(null)
     expect(store.floorSwitcherVisible).toBe(false)
     store.selectState(8)
     expect(store.floorSwitcherVisible).toBe(false)
   })
 
-  it('preserves pending requests and retry errors while the switcher is hidden', () => {
+  it('keeps pending requests and retry errors visible outside coverage at distant zoom', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
-    store.selectLevel('a1')
     store.setFloorViewport(viewportAt(768, 768), 2)
     store.requestLevel('a2')
     const request = store.floorRequest
-    store.setFloorViewport(viewportAt(768, 768), 8)
-    expect(store.floorSwitcherVisible).toBe(false)
+    store.setFloorViewport(viewportAt(1500, 500), 8)
+    expect(store.floorSwitcherVisible).toBe(true)
+    expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a'])
     expect(store.floorRequest).toBe(request)
     store.failFloorRequest(request?.token ?? -1)
+    expect(store.floorSwitcherVisible).toBe(true)
+    expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a'])
+    store.requestLevel(null)
     expect(store.floorSwitcherVisible).toBe(false)
+    expect(store.nearbyFloorGroups).toEqual([])
+    store.requestLevel('a2')
+    store.failFloorRequest(store.floorRequest?.token ?? -1)
     store.setFloorViewport(viewportAt(768, 768), 2)
     expect(store.floorSwitcherVisible).toBe(true)
-    expect(store.selectedLevelId).toBe('a1')
+    expect(store.selectedLevelId).toBeNull()
     expect(store.floorRequest?.status).toBe('error')
+  })
+
+  it.each([[1280, 720], [1920, 1080], [390, 844]])('shows space station floors at the reported URL viewport on a %s × %s canvas', (width, height) => {
+    const store = useExplorerStore()
+    store.setDataset(dataset)
+    const saved: MapViewportState = { center: [-611.08, 8515.67], zoom: 4.6087 }
+    store.restoreUrlState({ viewport: saved, controlPanelCollapsed: true })
+    const activeState = store.activeState
+    if (!activeState) throw new Error('缺少主地图')
+    const view = createMapView(activeState, new Projection({ code: 'TEST:MAP', units: 'pixels' }))
+    view.setCenter(saved.center)
+    view.setZoom(saved.zoom)
+    store.setFloorViewport(view.calculateExtent([width, height]), view.getResolution())
+    expect(store.floorSwitcherVisible).toBe(true)
+    expect(store.nearbyFloorGroups.map(({ name }) => name)).toContain('天槎空间站')
+    expect(store.selectedLevelId).toBeNull()
+    expect(store.mapViewport).toEqual(saved)
   })
 
   it('restores the selected floor group from a URL even when the saved viewport is elsewhere', () => {

@@ -86,16 +86,18 @@ export const useExplorerStore = defineStore('explorer', () => {
     activeState.value?.layeredMaps.flatMap(({ floors: mapFloors }) => mapFloors) ?? []
   ))
   const floorCoverage = computed(() => createFloorCoverage(activeState.value, dataset.value?.source.tileWidth ?? 1024))
-  const floorSwitcherVisible = computed(() => floorViewport.value !== null
-    && isPointVisibleAtZoom(MAP_TIER_ZOOM_RANGES.near, mapZoomForResolution(floorViewport.value.resolution)))
-  const nearbyFloorGroupIds = useEqualComputed(() => floorSwitcherVisible.value
-    ? floorGroupsInViewport(floorCoverage.value, floorViewport.value?.extent ?? null) : [])
+  const nearbyFloorGroupIds = useEqualComputed(() => {
+    const viewport = floorViewport.value
+    return viewport && isPointVisibleAtZoom(MAP_TIER_ZOOM_RANGES.always, mapZoomForResolution(viewport.resolution))
+      ? floorGroupsInViewport(floorCoverage.value, viewport.extent) : []
+  })
   const selectedFloor = computed(() => floors.value.find(({ id }) => id === selectedLevelId.value) ?? null)
   const selectedFloorGroup = computed(() => activeState.value?.layeredMaps.find(({ id }) => id === selectedFloor.value?.layeredMapId) ?? null)
   const requestedFloor = computed(() => floors.value.find(({ id }) => id === floorRequest.value?.levelId) ?? null)
   const nearbyFloorGroups = computed(() => activeState.value?.layeredMaps.filter(({ id }) => (
     id === selectedFloorGroup.value?.id || id === requestedFloor.value?.layeredMapId || nearbyFloorGroupIds.value.includes(id)
   )) ?? [])
+  const floorSwitcherVisible = computed(() => nearbyFloorGroups.value.length > 0 || floorRequest.value !== null)
   const displayedFloorGroup = computed(() => {
     const groupId = selectedFloorGroup.value?.id ?? requestedFloor.value?.layeredMapId ?? nearbyFloorGroupIds.value[0]
     return activeState.value?.layeredMaps.find(({ id }) => id === groupId) ?? null
