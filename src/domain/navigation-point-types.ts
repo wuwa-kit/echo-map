@@ -61,6 +61,11 @@ export const navigationPointTypes = {
     icons: [],
     names: [],
   }),
+  'exploration-quest': defineType({
+    name: '危行任务', kind: 'landmark', defaultMode: 'landmark', teleportLocked: false,
+    icons: ['icon-05f43f9613d478b8'],
+    names: [],
+  }),
   'entrance': defineType({
     name: '入口', kind: 'entrance', defaultMode: 'entrance', teleportLocked: false,
     icons: ['icon-f9e566c56ab2c4e4'],

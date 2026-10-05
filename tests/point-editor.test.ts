@@ -1785,6 +1785,32 @@ it('switches nightmare bosses through the type selector and updates the name', a
   expect(store.draft).toMatchObject({ name: '独立名称', mode: 'landmark' })
 })
 
+it('defaults exploration quests to non-teleport with their shared icon and preserves custom names on reload', async () => {
+  const store = usePointEditorStore()
+  await store.load('echo')
+  store.switchEditorTab('navigation')
+  store.setPointType('small-beacon')
+  store.setCoordinateText('1, 2, 3')
+  store.applyCoordinateText()
+  store.setPointType('exploration-quest')
+  expect(store.draft).toMatchObject({
+    pointType: 'exploration-quest', navigationKind: 'landmark', mode: 'landmark',
+    name: '危行任务', iconId: 'icon-05f43f9613d478b8',
+  })
+  expect(navigationTypeIcons('exploration-quest')).toHaveLength(1)
+  for (const name of ['三重冠塔', '残息海岸']) {
+    store.setName(name)
+    expect(await store.savePoint()).toBe(true)
+    const saved = disk.points[0]
+    if (!saved) throw new Error('需要保存的危行任务点')
+    store.newPoint('navigation')
+    store.selectPoint(saved.id)
+    expect(store.draft).toMatchObject({
+      pointType: 'exploration-quest', mode: 'landmark', name, iconId: 'icon-05f43f9613d478b8',
+    })
+  }
+})
+
 it('does not derive travel capability from a selected service icon', async () => {
   const store = usePointEditorStore()
   await store.load('echo')

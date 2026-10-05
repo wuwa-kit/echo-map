@@ -12,6 +12,7 @@ export const officialNavigationTypeIds: Record<NavigationPointType, readonly str
   'weekly-boss': ['5022', '380015', '380016', '380021', '380043', '380044', '380102', '3130001', '3330002', '3530001', '3731001'],
   'hologram': ['Play_10', '4027', '4028', 'qxzl·dlzw'],
   'challenge': ['Play_06', 'Activity_02', 'Activity_02_1', 'Play_04', 'Play_04+1', 'SP_IconActDreamB', 'SP_IconMap_Activity_17_UI', 'SP_IconMap_Activity_21_UI', 'SP_IconMap_Activity_23_UI', 'SP_IconMap_Activity_18_UI'],
+  'exploration-quest': [],
   'entrance': ['FCRK', 'YMRK'],
   'service': ['SP_IconMap_Shop_02_UI', 'SP_IconMap_Shop_02_UI_1', 'SP_IconMap_Shop_02_UI_2', 'SP_IconMap_Shop_07_UI', 'SP_IconMap_Shop_01_UI', '381035', '3510004', 'SP_IconMap_Shop_08_UI', 'SP_IconMap_Shop_08_UI_1', 'SP_IconMap_Shop_08_UI_2', 'SP_IconMap_Shop_16_UI', '381033', '3510002', 'SP_IconMap_Shop_10_UI', 'SP_IconMap_Shop_10_UI_1', 'SP_IconMap_Shop_10_UI_2', 'SP_IconMap_Shop_11_UI', 'SP_IconMap_Shop_12_UI', 'SP_IconMap_Shop_13_UI', 'SP_IconMap_Shop_15_UI', 'SP_IconMap_Play_06_UI', 'SP_IconMap_Shop_06_UI', 'SP_IconMap_Shop_06_UI_1', 'SP_IconMap_Shop_06_UI_2', 'SP_IconMap_Shop_06_UI_3', 'SP_IconMap_Shop_06_UI_4', '381034', '3510001', 'SP_IconMap_Shop_03_UI', 'SP_IconMap_Shop_03_UI_1', 'SP_IconMap_Shop_03_UI_2', '381032', '3510005', 'SP_IconMap_Play_24_UI', 'SP_IconMap_Play_24_UI_1', '381036', '381037'],
 }

@@ -26,7 +26,7 @@ describe('navigation classification', () => {
   it('merges challenges, entrances and service facilities while leaving other landmarks unclassified', () => {
     expect(navigationPointTypeIds.map((id) => navigationPointTypes[id].name)).toEqual([
       '中枢信标', '小型信标', '材料副本', '无音区', '声骸聚落', '普通 BOSS',
-      '梦魇 BOSS', '周本 BOSS', '全息战略', '常驻挑战', '入口', '服务设施',
+      '梦魇 BOSS', '周本 BOSS', '全息战略', '常驻挑战', '危行任务', '入口', '服务设施',
     ])
     for (const id of ['Play_06', 'SP_IconMap_Activity_18_UI', 'Play_04']) expect(officialNavigationPointType(id)).toBe('challenge')
     for (const id of ['FCRK', 'YMRK']) expect(officialNavigationPointType(id)).toBe('entrance')
