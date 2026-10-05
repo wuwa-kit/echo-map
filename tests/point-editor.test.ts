@@ -1271,11 +1271,11 @@ it('selects icons before choosing a type and keeps compatible choices when setti
   store.setIcon('unknown-icon')
   expect(store.draft).toMatchObject({ iconId: boss.id })
   store.setPointType('weekly-boss')
-  expect(store.draft).toMatchObject({ iconId: boss.id, name: boss.name })
+  expect(store.draft).toMatchObject({ iconId: boss.id, name: '周本 BOSS' })
   store.setCoordinateText('1, 2, 3')
   store.applyCoordinateText()
   expect(await store.savePoint()).toBe(true)
-  expect(disk.points[0]).toMatchObject({ pointType: 'weekly-boss', iconId: boss.id, name: boss.name })
+  expect(disk.points[0]).toMatchObject({ pointType: 'weekly-boss', iconId: boss.id, name: '周本 BOSS' })
   store.setPointType(null)
   expect(store.draft).toMatchObject({ iconId: boss.id })
   store.setIcon(beacon.id)
@@ -1394,7 +1394,7 @@ it('applies every type rule and automatically supplies fixed or candidate artwor
     store.setPointType(null)
     store.setName('保留的自定义名称')
     store.setPointType(pointType)
-    expect(store.draft).toMatchObject({ pointType, navigationKind: rule.kind, mode: rule.defaultMode, name: rule.names[0] ?? '保留的自定义名称', coordinate: { x: 1, y: 2, z: 3 } })
+    expect(store.draft).toMatchObject({ pointType, navigationKind: rule.kind, mode: rule.defaultMode, name: rule.names[0] ?? rule.name, coordinate: { x: 1, y: 2, z: 3 } })
     if (rule.icons.length === 1) {
       const iconId = store.draft?.kind === 'navigation' ? store.draft.iconId : undefined
       expect(navigationTypeIcons(pointType).some(({ id }) => id === iconId)).toBe(true)
@@ -1606,7 +1606,7 @@ it('clears arrival coordinates, pending edits and errors when switching to an en
   expect(store.draft).not.toHaveProperty('teleportCoordinate')
 })
 
-it('switches nightmare bosses through the type selector and preserves the custom name', async () => {
+it('switches nightmare bosses through the type selector and updates the name', async () => {
   const store = usePointEditorStore()
   await store.load('echo')
   store.switchEditorTab('navigation')
@@ -1621,7 +1621,7 @@ it('switches nightmare bosses through the type selector and preserves the custom
   expect(store.draft).toMatchObject({ name: ordinary[1].name })
   store.setName('无冠者')
   store.setPointType('nightmare-boss')
-  expect(store.draft).toMatchObject({ pointType: 'nightmare-boss', name: '无冠者', mode: 'fast-travel' })
+  expect(store.draft).toMatchObject({ pointType: 'nightmare-boss', name: '梦魇 BOSS', mode: 'fast-travel' })
   expect(store.draft).not.toHaveProperty('variant')
   expect(store.draft).not.toHaveProperty('iconId')
   store.setMode('landmark')
@@ -1638,7 +1638,7 @@ it('switches nightmare bosses through the type selector and preserves the custom
   store.setPointType('normal-boss')
   store.setIcon(nightmare.id)
   expect(store.draft).not.toHaveProperty('iconId')
-  expect(store.draft).toMatchObject({ name: '梦魇·无冠者' })
+  expect(store.draft).toMatchObject({ name: '普通 BOSS' })
   store.setPointType('service')
   store.setName('独立名称')
   expect(store.draft).not.toHaveProperty('variant')
@@ -1740,4 +1740,18 @@ it('keeps the last six distinct icon selections across new points and ignores in
   store.setIcon('unknown-icon')
   store.newPoint()
   expect(store.recentIconIds).toEqual(expected)
+})
+
+it('updates the name with fixed artwork on type changes but preserves edits when reselecting the same type', async () => {
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  store.setPointType('service')
+  store.setName('旧服务名称')
+  store.setPointType('material-domain')
+  expect(store.draft).toMatchObject({ name: '材料副本', iconId: navigationPointTypes['material-domain'].icons[0] })
+  store.setName('自定义材料本')
+  store.setPointType('material-domain')
+  expect(store.draft).toMatchObject({ name: '自定义材料本' })
+  store.setPointType('entrance')
+  expect(store.draft).toMatchObject({ name: '入口', iconId: navigationPointTypes.entrance.icons[0] })
 })

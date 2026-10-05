@@ -7,7 +7,7 @@ import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
 import { navigationPointTypeSchema, pointTransferSchema } from '../domain/schema.ts'
 import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
-import type { AuthoredNavigationPoint, AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision, PointWorkspace } from '../domain/types.ts'
+import type { AuthoredPoint, MapDataset, PointLibrary, PointLibraryRevision, PointWorkspace } from '../domain/types.ts'
 import { editWorkspace, managementRows, parsePointWorkspace, pointExportFilename, projectManagementRows, resolveWorkspace, samePoint, workspaceLibrary } from '../domain/local-points.ts'
 import type { NavigationMode } from '../domain/types.ts'
 import { combinePointLibraries, findPointDuplicates } from '../domain/point-matching.ts'
@@ -627,18 +627,12 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     newPoint()
   }
 
-  function hasAutomaticNavigationName(point: AuthoredNavigationPoint): boolean {
-    const rule = point.pointType ? navigationPointTypes[point.pointType] : undefined
-    return !point.name.trim() || point.name === rule?.name || rule?.names.length === 1 && point.name === rule.names[0]
-  }
-
   function setPointType(value: string | number | null): void {
     if (busy.value || draft.value?.kind !== 'navigation') return
     const parsed = navigationPointTypeSchema.safeParse(value)
     if (value !== null && !parsed.success) return
     if (draft.value.pointType === (parsed.success ? parsed.data : undefined)) return
     const rule = parsed.success ? navigationPointTypes[parsed.data] : undefined
-    const automaticName = hasAutomaticNavigationName(draft.value)
     const icons = navigationTypeIcons(parsed.success ? parsed.data : undefined)
     const selectedIconId = draft.value.iconId
     const icon = rule?.icons.length && icons.length === 1 ? icons[0] : icons.find(({ id }) => id === selectedIconId)
@@ -649,8 +643,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (mode !== 'fast-travel') clearArrivalInput()
     edit((point) => {
       if (point.kind !== 'navigation') return
-      if (rule?.names.length === 1) point.name = rule.names[0]
-      else if (automaticName && rule) point.name = rule.name
+      if (rule) point.name = rule.names[0] ?? rule.name
       if (parsed.success) point.pointType = parsed.data
       else delete point.pointType
       point.navigationKind = rule?.kind ?? 'landmark'
