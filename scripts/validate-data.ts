@@ -1,3 +1,4 @@
+import { access } from 'node:fs/promises'
 import { readPointLibrary } from './lib/point-files.ts'
 import { isOfficialEchoMapIncluded } from '../src/domain/official-echo-scope.ts'
 import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
@@ -48,6 +49,7 @@ if (new Set(classifiedTypeIds).size !== classifiedTypeIds.length) errors.push('�
 const localIconIds = new Set<string>()
 for (const icon of navigationIconCatalog) {
   navigationIconDefinitionSchema.parse(icon)
+  if (icon.url.startsWith('/')) await access(projectPath('public', icon.url.slice(1)))
   if (localIconIds.has(icon.id)) errors.push(`重复定位点图标 ID：${icon.id}`)
   localIconIds.add(icon.id)
 }

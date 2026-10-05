@@ -1,6 +1,7 @@
 import type { NavigationIconDefinition } from './types.ts'
 
 export const navigationIconCatalog: readonly NavigationIconDefinition[] = [
+  { id: 'icon-not-found', name: '图标未找到', url: '/icons/icon-not-found.png' },
   { id: 'icon-da83bea025612e3d', name: '贡多拉站台', url: 'https://web-static.kurobbs.com/adminConfig/52/props_namephoto/1762500826632.png' },
   { id: 'icon-9534f864b745f941', name: '扶风转标', url: 'https://web-static.kurobbs.com/adminConfig/52/props_namephoto/1762501509813.png' },
   { id: 'icon-9aa63034f2f89720', name: '命途断章之轮', url: 'https://web-static.kurobbs.com/adminConfig/50/props_namephoto/1762501151598.png' },

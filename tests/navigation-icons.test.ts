@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { readFile } from 'node:fs/promises'
+import { PNG } from 'pngjs'
 import { navigationIconCatalog } from '../src/domain/navigation-icon-catalog.ts'
 import { navigationIconById, navigationPointIconUrl, navigationTypeIcons } from '../src/domain/navigation-icons.ts'
 import { navigationPointTypes } from '../src/domain/navigation-point-types.ts'
@@ -8,6 +10,26 @@ import { referenceDataset } from './fixtures/point-library.ts'
 const emptyNavigationDataset = { ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }
 
 describe('local navigation icon picker', () => {
+  it('offers the local missing icon for unset points and preserves it through saving and map display', async () => {
+    const icon = navigationTypeIcons(undefined, '图标未找到')[0]
+    if (!icon) throw new Error('缺少图标未找到选项')
+    expect(navigationTypeIcons(undefined)[0]).toBe(icon)
+    const image = PNG.sync.read(await readFile(new URL(`../public${icon.url}`, import.meta.url)))
+    expect([image.width, image.height]).toEqual([128, 128])
+    const point = {
+      gravityType: null, id: 'missing-artwork', kind: 'navigation' as const,
+      stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
+      name: '待补充图标的地标', navigationKind: 'service' as const,
+      mode: 'landmark' as const, iconId: icon.id,
+    }
+    const library = parsePointLibrary({ version: 1, points: [point] }, emptyNavigationDataset, 'manual')
+    const saved = library.points[0]
+    if (!saved) throw new Error('缺少保存点位')
+    expect(saved).toMatchObject({ iconId: icon.id })
+    expect(authoredPointMapDisplay(saved, emptyNavigationDataset)?.location.iconUrl).toBe(icon.url)
+    expect(navigationTypeIcons('small-beacon')).not.toContain(icon)
+  })
+
   it('resolves configured and custom choices without any official point data', () => {
     expect(navigationTypeIcons(undefined).length).toBeGreaterThan(0)
     expect(navigationTypeIcons('service')).toHaveLength(15)

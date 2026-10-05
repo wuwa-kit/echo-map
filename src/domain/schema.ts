@@ -14,7 +14,7 @@ export const navigationIconUrlSchema = z.url({ protocol: /^https$/u })
 export const navigationIconDefinitionSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
-  url: navigationIconUrlSchema,
+  url: navigationIconUrlSchema.or(z.literal('/icons/icon-not-found.png')),
 }).strict()
 export const officialAssetSchema = z.object({
   id: z.string().min(1),
