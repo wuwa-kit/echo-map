@@ -74,15 +74,15 @@ describe('map display layer integration', () => {
         .filter(({ points }) => points === 4 || points === 6)
     }
     const expectedBadge = (markerWidth: number, markerHeight: number) => {
-      const layoutScale = Math.min(markerWidth, markerHeight) / 260
-      const flatDistance = 50 * layoutScale
-      const badgeScale = flatDistance / (Math.sqrt(3) * 7)
-      const x = markerWidth / 2 - 70 * layoutScale - flatDistance / 2
-      const y = -(markerHeight / 2 - 30 * layoutScale - 7 * badgeScale)
+      const layoutScale = Math.min(markerWidth, markerHeight) / 128
+      const badgeScale = 46 * layoutScale / 14
+      const flatDistance = Math.sqrt(3) * 7 * badgeScale
+      const x = markerWidth / 2 - (19 - 4 * Math.sqrt(3)) * layoutScale - flatDistance / 2
+      const y = -(markerHeight / 2 - 5 * layoutScale - 7 * badgeScale)
       return [
         { points: 6, angle: 0, displacement: [x, y], scale: [badgeScale, badgeScale], fill: 'rgba(0, 0, 0, 0.72)', stroke: '#e8dd93' },
-        { points: 4, angle: 0, displacement: [x, y - 1.25 * badgeScale], scale: [1.08 * badgeScale, 0.65 * badgeScale], fill: '#7c754e', stroke: null },
-        { points: 4, angle: 0, displacement: [x, y + 2.5 * badgeScale], scale: [1.15 * badgeScale, 0.7 * badgeScale], fill: null, stroke: '#fff' },
+        { points: 4, angle: 0, displacement: [x, y - 0.75 * badgeScale], scale: [1.15 * badgeScale, 0.7 * badgeScale], fill: '#7c754e', stroke: '#7c754e' },
+        { points: 4, angle: 0, displacement: [x, y + 1.85 * badgeScale], scale: [1.15 * badgeScale, 0.7 * badgeScale], fill: null, stroke: '#fff' },
       ]
     }
 

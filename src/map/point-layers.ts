@@ -41,15 +41,17 @@ class InteractionCluster extends Cluster {
 
 const FLOOR_BADGE_GEOMETRY = {
   radius: 7,
-  lower: { offsetY: -1.25, radius: 3, scaleX: 1.08, scaleY: 0.65 },
-  upper: { offsetY: 2.5, radius: 3, scaleX: 1.15, scaleY: 0.7 },
+  lowerOffsetY: -0.75,
+  upperOffsetY: 1.85,
+  diamond: { radius: 3, scaleX: 1.15, scaleY: 0.7, strokeWidth: 1.2 },
 }
 
 const FLOOR_BADGE_LAYOUT = {
-  iconSize: 260,
-  flatDistance: 50,
-  bottom: 30,
-  right: 70,
+  iconSize: 128,
+  height: 46,
+  bottom: 5,
+  // Keep the horizontal center fixed as the hexagon grows.
+  right: 19 - 4 * Math.sqrt(3),
 }
 
 const NAVIGATION_MARKER_SIZE = 36
@@ -94,8 +96,8 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     const cached = floorBadgeStyleCache.get(key)
     if (cached) return cached
     const layoutScale = Math.min(...markerSize) / FLOOR_BADGE_LAYOUT.iconSize
-    const flatDistance = FLOOR_BADGE_LAYOUT.flatDistance * layoutScale
-    const badgeScale = flatDistance / (Math.sqrt(3) * badge.radius)
+    const badgeScale = FLOOR_BADGE_LAYOUT.height * layoutScale / (2 * badge.radius)
+    const flatDistance = Math.sqrt(3) * badge.radius * badgeScale
     const scaledBadge = (x: number, y: number): [number, number] => [x * badgeScale, y * badgeScale]
     const x = markerSize[0] / 2
       - FLOOR_BADGE_LAYOUT.right * layoutScale - flatDistance / 2
@@ -117,20 +119,21 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
         zIndex: 2,
         image: new RegularShape({
           points: 4,
-          radius: badge.lower.radius,
-          displacement: [x, y + badge.lower.offsetY * badgeScale],
-          scale: scaledBadge(badge.lower.scaleX, badge.lower.scaleY),
+          radius: badge.diamond.radius,
+          displacement: [x, y + badge.lowerOffsetY * badgeScale],
+          scale: scaledBadge(badge.diamond.scaleX, badge.diamond.scaleY),
           fill: new Fill({ color: '#7c754e' }),
+          stroke: new Stroke({ color: '#7c754e', width: badge.diamond.strokeWidth }),
         }),
       }),
       new Style({
         zIndex: 3,
         image: new RegularShape({
           points: 4,
-          radius: badge.upper.radius,
-          displacement: [x, y + badge.upper.offsetY * badgeScale],
-          scale: scaledBadge(badge.upper.scaleX, badge.upper.scaleY),
-          stroke: new Stroke({ color: '#fff', width: 1.2 }),
+          radius: badge.diamond.radius,
+          displacement: [x, y + badge.upperOffsetY * badgeScale],
+          scale: scaledBadge(badge.diamond.scaleX, badge.diamond.scaleY),
+          stroke: new Stroke({ color: '#fff', width: badge.diamond.strokeWidth }),
         }),
       }),
     ]
