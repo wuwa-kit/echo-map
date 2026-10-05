@@ -183,8 +183,9 @@ function rebuildPointLayers(): void {
     const replaced = new Set(draft ? [draft.id, ...(draft.officialIds ?? []), ...(draft.replacesOfficialIds ?? [])] : [])
     const locations = editorLibraryLocations(editor.allPoints.filter((point) => !isOfficialPointReplaced(point, replaced)), dataset.value, editor.editorMode)
     const matches = (point: { stateId: number, gravityType?: 1 | 2 | null, levelId: string | null }) => point.stateId === store.selectedStateId && matchesGravity(point.gravityType ?? null, store.supportsGravity ? selectedGravity.value : null)
-      && (selectedLevelId.value === null || point.levelId === null || point.levelId === selectedLevelId.value)
-    editorPoints.update(locations.echoLocations.filter(matches), locations.navigationPoints.filter(matches), visibleRegionLabels.value, dataset.value.echoes, undefined, selectedLevelId.value)
+    const echoes = locations.echoLocations.filter((point) => matches(point)
+      && (selectedLevelId.value === null || point.levelId === null || point.levelId === selectedLevelId.value))
+    editorPoints.update(echoes, locations.navigationPoints.filter(matches), visibleRegionLabels.value, dataset.value.echoes, undefined, selectedLevelId.value)
     rebuildDraft()
     return
   }

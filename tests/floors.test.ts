@@ -69,7 +69,7 @@ describe('floor map context', () => {
     expect(store.compactFloors).toBe(true)
   })
 
-  it('retains base points and cross-floor teleports for display without expanding route scope', () => {
+  it('retains navigation points from every floor for display without expanding route scope', () => {
     const store = useExplorerStore()
     const label = { id: 'region', name: '测试地区', stateId: 8, countryId: 1, level: 2,
       coordinate: { rawX: 0, rawY: 0, mapX: 0, mapY: 0 } }
@@ -91,10 +91,12 @@ describe('floor map context', () => {
     expect(store.visibleRegionLabels).toEqual([label])
     expect(store.mapEchoLocations.map(({ id }) => id).sort()).toEqual(['base-echo', 'floor-echo'])
     expect(store.mapNavigationPoints.map(({ id }) => id).sort()).toEqual([
-      'base-ordinary', 'base-travel', 'floor-ordinary', 'floor-travel', 'other-travel',
+      'base-ordinary', 'base-travel', 'floor-ordinary', 'floor-travel', 'other-ordinary', 'other-travel',
     ])
     expect(store.routeEligibleLocations.map(({ id }) => id)).toEqual(['floor-echo'])
     expect(store.routeEligibleNavigationPoints.map(({ id }) => id)).toEqual(['floor-travel'])
+    store.selectPoint('other-ordinary')
+    expect(store.selectedNavigationPoint?.id).toBe('other-ordinary')
     store.selectPoint('base-echo')
     expect(store.selectedEchoLocation?.id).toBe('base-echo')
     store.selectPointCandidates(['base-echo', 'floor-echo'])

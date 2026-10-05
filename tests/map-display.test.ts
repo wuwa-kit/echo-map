@@ -45,7 +45,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('map display layer integration', () => {
-  it('marks floor point icons on the base map with the official-style stacked badge', () => {
+  it('keeps floor point badges visible on the base map and when switching floors', () => {
     const points = createPointLayers()
     const point = referenceDataset.navigationPoints[0]
     const echo = referenceDataset.echoLocations[0]
@@ -73,25 +73,30 @@ describe('map display layer integration', () => {
         })
         .filter(({ points }) => points === 4 || points === 6)
     }
-    const expectedBadge = (markerWidth: number, markerHeight: number) => {
+    const expectedBadge = (markerWidth: number, markerHeight: number, otherFloor = true) => {
       const layoutScale = Math.min(markerWidth, markerHeight) / 128
       const badgeScale = 46 * layoutScale / 14
       const flatDistance = Math.sqrt(3) * 7 * badgeScale
       const x = markerWidth / 2 - (19 - 4 * Math.sqrt(3)) * layoutScale - flatDistance / 2
       const y = -(markerHeight / 2 - 5 * layoutScale - 7 * badgeScale)
       return [
-        { points: 6, angle: 0, displacement: [x, y], scale: [badgeScale, badgeScale], fill: 'rgba(0, 0, 0, 0.72)', stroke: '#e8dd93' },
-        { points: 4, angle: 0, displacement: [x, y - 0.75 * badgeScale], scale: [1.15 * badgeScale, 0.7 * badgeScale], fill: '#7c754e', stroke: '#7c754e' },
-        { points: 4, angle: 0, displacement: [x, y + 1.85 * badgeScale], scale: [1.15 * badgeScale, 0.7 * badgeScale], fill: null, stroke: '#fff' },
+        ...['rgba(0, 0, 0, 0.08)', 'rgba(0, 0, 0, 0.12)', 'rgba(0, 0, 0, 0.22)'].map((color) => ({
+          points: 6, angle: 0, displacement: [x + 0.6 * badgeScale, y - badgeScale],
+          scale: [badgeScale, badgeScale], fill: color, stroke: color,
+        })),
+        { points: 6, angle: 0, displacement: [x, y], scale: [badgeScale, badgeScale], fill: 'rgba(0, 0, 0, 0.72)', stroke: otherFloor ? '#b8bdc4' : '#e8dd93' },
+        { points: 4, angle: 0, displacement: [x, y - 1.5 * badgeScale], scale: [1.15 * badgeScale, 0.85 * badgeScale], fill: otherFloor ? '#9aa1ab' : '#b1a565', stroke: otherFloor ? '#9aa1ab' : '#b1a565' },
+        { points: 4, angle: 0, displacement: [x, y + 1.6 * badgeScale], scale: [1.15 * badgeScale, 0.7 * badgeScale], fill: null, stroke: otherFloor ? '#f4f6f8' : '#fff' },
       ]
     }
 
     const navigationLayer = points.layers[2]
     const navigationFeatures = navigationLayer?.getSource()?.getFeatures() ?? []
-    const navigationRender = navigationLayer?.getStyleFunction()
     const navigationBadges = (id: string) => {
-      const feature = navigationFeatures.find((candidate) => mapFeaturePointIds(candidate)?.[0] === id)
-      return badgeShapes(feature ? navigationRender?.(feature, 2) : undefined)
+      return [points.layers[2], points.layers[4]].flatMap((layer) => {
+        const feature = layer?.getSource()?.getFeatures().find((candidate) => mapFeaturePointIds(candidate)?.[0] === id)
+        return badgeShapes(feature ? layer?.getStyleFunction()?.(feature, 2) : undefined)
+      })
     }
     expect(navigationFeatures.flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual(['base', 'floor'])
     expect(navigationBadges('base')).toEqual([])
@@ -116,9 +121,27 @@ describe('map display layer integration', () => {
     const markerHeight = floorEchoMarker.getHeight()
     if (!markerWidth || !markerHeight) throw new Error('需要声骸图标尺寸')
     expect(badgeShapes(floorEchoStyles)).toEqual(expectedBadge(markerWidth, markerHeight))
+    const diamondStrokes = (Array.isArray(floorEchoStyles) ? floorEchoStyles : []).flatMap((style) => {
+      const image = style.getImage()
+      return image instanceof RegularShape && image.getPoints() === 4
+        ? [{ width: image.getStroke()?.getWidth(), lineJoin: image.getStroke()?.getLineJoin() }] : []
+    })
+    expect(diamondStrokes).toEqual([
+      { width: 1.6, lineJoin: 'miter' },
+      { width: 1.6, lineJoin: 'miter' },
+    ])
 
-    points.update([], navigation, [], [], undefined, 'a1')
-    expect(navigationBadges('floor')).toEqual([])
+    for (const levelId of ['a1', 'a2', 'a1', null]) {
+      points.update([{ ...echo, id: 'floor-echo', levelId: 'a1' }], navigation, [], referenceDataset.echoes, undefined, levelId)
+      expect(navigationBadges('floor')).toEqual(expectedBadge(36, 36, levelId !== 'a1'))
+      expect(navigationBadges('base')).toEqual([])
+      const layer = points.layers[levelId === 'a2' ? 3 : 1]
+      const source = layer?.getSource()
+      if (!(source instanceof Cluster)) throw new Error('需要声骸聚类图层')
+      source.loadFeatures([-10000, -10000, 10000, 10000], 2, new Projection({ code: 'TEST:FLOOR-BADGE', units: 'pixels' }))
+      const feature = source.getFeatures()[0]
+      expect(badgeShapes(feature ? layer?.getStyleFunction()?.(feature, 2) : undefined)).toEqual(expectedBadge(markerWidth, markerHeight, levelId !== 'a1'))
+    }
     const floorPoint = navigation.find(({ id }) => id === 'floor')
     if (!floorPoint) throw new Error('需要分层定位点')
     expect(badgeShapes(points.styleFor({ category: 'navigation', location: floorPoint }))).toEqual(expectedBadge(36, 36))
@@ -162,6 +185,7 @@ describe('map display layer integration', () => {
     const navigation: NavigationPoint[] = [
       { ...point, id: 'base-ordinary', levelId: null, mode: 'landmark', iconUrl: '' },
       { ...point, id: 'floor-ordinary', levelId: 'a1', mode: 'landmark', iconUrl: '' },
+      { ...point, id: 'other-ordinary', levelId: 'a2', mode: 'landmark', iconUrl: '' },
       { ...point, id: 'base-travel', levelId: null, mode: 'fast-travel', iconUrl: '' },
       { ...point, id: 'other-travel', levelId: 'a2', mode: 'fast-travel', iconUrl: '' },
     ]
@@ -175,7 +199,7 @@ describe('map display layer integration', () => {
     expect(foregroundEcho?.getZIndex()).toBeGreaterThan(10)
     expect(foregroundNavigation?.getZIndex()).toBeGreaterThan(10)
     expect(backgroundNavigation?.getSource()?.getFeatures().flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual(['base-ordinary'])
-    expect(foregroundNavigation?.getSource()?.getFeatures().flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual(['floor-ordinary', 'base-travel', 'other-travel'])
+    expect(foregroundNavigation?.getSource()?.getFeatures().flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual(['floor-ordinary', 'other-ordinary', 'base-travel', 'other-travel'])
     points.finishInteraction([-100000, -100000, 100000, 100000], 2, new Projection({ code: 'TEST:FLOORS', units: 'pixels' }))
     for (const [layer, id] of [[foregroundEcho, 'floor-echo'], [backgroundEcho, 'base-echo']] as const) {
       const source = layer?.getSource()

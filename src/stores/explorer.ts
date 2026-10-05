@@ -148,13 +148,9 @@ export const useExplorerStore = defineStore('explorer', () => {
     allNavigationPoints.value.filter((location) => matchesMapScope(location, mapScope.value))
   ))
   const visibleNavigationPoints = computed(() => scopedNavigationPoints.value)
-  // The base map keeps floor navigation markers visible; the renderer badges them as layered points.
+  // Navigation markers remain visible across floors; route scope stays floor-specific.
   const mapNavigationPoints = computed(() => allNavigationPoints.value.filter((location) => (
     matchesMapContext(location, mapScope.value)
-    && (selectedLevelId.value === null
-      || location.levelId === null
-      || location.levelId === selectedLevelId.value
-      || location.mode === 'fast-travel')
   )))
   const visibleRegionLabels = computed(() => selectRegionLabels(dataset.value?.regionLabels ?? [], mapScope.value))
   function hasRouteGravity(point: PointLocationBase): boolean {

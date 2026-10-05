@@ -41,9 +41,10 @@ class InteractionCluster extends Cluster {
 
 const FLOOR_BADGE_GEOMETRY = {
   radius: 7,
-  lowerOffsetY: -0.75,
-  upperOffsetY: 1.85,
-  diamond: { radius: 3, scaleX: 1.15, scaleY: 0.7, strokeWidth: 1.2 },
+  lowerOffsetY: -1.5,
+  upperOffsetY: 1.6,
+  upperScaleY: 0.7,
+  diamond: { radius: 3, scaleX: 1.15, scaleY: 0.85, strokeWidth: 1.6 },
 }
 
 const FLOOR_BADGE_LAYOUT = {
@@ -52,6 +53,11 @@ const FLOOR_BADGE_LAYOUT = {
   bottom: 5,
   // Keep the horizontal center fixed as the hexagon grows.
   right: 19 - 4 * Math.sqrt(3),
+}
+
+const FLOOR_BADGE_COLORS = {
+  active: { border: '#e8dd93', lower: '#b1a565', upper: '#fff' },
+  otherFloor: { border: '#b8bdc4', lower: '#9aa1ab', upper: '#f4f6f8' },
 }
 
 const NAVIGATION_MARKER_SIZE = 36
@@ -89,12 +95,14 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   const backgroundNavigationSource = new VectorSource()
   const labelSource = new VectorSource()
   const badge = FLOOR_BADGE_GEOMETRY
+  let selectedLevelId: string | null = null
   const floorBadgeStyleCache = new globalThis.Map<string, Style[]>()
   // The stem visible above the official badge belongs to its underlying marker, not to the badge itself.
-  function floorBadgeStylesFor(markerSize: [number, number]): Style[] {
-    const key = markerSize.map((size) => size.toFixed(3)).join(':')
+  function floorBadgeStylesFor(markerSize: [number, number], otherFloor: boolean): Style[] {
+    const key = `${otherFloor}:${markerSize.map((size) => size.toFixed(3)).join(':')}`
     const cached = floorBadgeStyleCache.get(key)
     if (cached) return cached
+    const colors = otherFloor ? FLOOR_BADGE_COLORS.otherFloor : FLOOR_BADGE_COLORS.active
     const layoutScale = Math.min(...markerSize) / FLOOR_BADGE_LAYOUT.iconSize
     const badgeScale = FLOOR_BADGE_LAYOUT.height * layoutScale / (2 * badge.radius)
     const flatDistance = Math.sqrt(3) * badge.radius * badgeScale
@@ -104,6 +112,22 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     const y = -(markerSize[1] / 2
       - FLOOR_BADGE_LAYOUT.bottom * layoutScale - badge.radius * badgeScale)
     const styles = [
+      // Layer translucent outlines to soften the shadow without per-point canvases.
+      ...[
+        { width: 4.5, color: 'rgba(0, 0, 0, 0.08)' },
+        { width: 3, color: 'rgba(0, 0, 0, 0.12)' },
+        { width: 1.5, color: 'rgba(0, 0, 0, 0.22)' },
+      ].map(({ width, color }) => new Style({
+        zIndex: 0.5,
+        image: new RegularShape({
+          points: 6,
+          radius: badge.radius,
+          displacement: [x + 0.6 * badgeScale, y - badgeScale],
+          scale: scaledBadge(1, 1),
+          fill: new Fill({ color }),
+          stroke: new Stroke({ color, width, lineJoin: 'round' }),
+        }),
+      })),
       new Style({
         zIndex: 1,
         image: new RegularShape({
@@ -112,7 +136,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
           displacement: [x, y],
           scale: scaledBadge(1, 1),
           fill: new Fill({ color: 'rgba(0, 0, 0, 0.72)' }),
-          stroke: new Stroke({ color: '#e8dd93', width: 1.5 }),
+          stroke: new Stroke({ color: colors.border, width: 1.5 }),
         }),
       }),
       new Style({
@@ -122,8 +146,8 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
           radius: badge.diamond.radius,
           displacement: [x, y + badge.lowerOffsetY * badgeScale],
           scale: scaledBadge(badge.diamond.scaleX, badge.diamond.scaleY),
-          fill: new Fill({ color: '#7c754e' }),
-          stroke: new Stroke({ color: '#7c754e', width: badge.diamond.strokeWidth }),
+          fill: new Fill({ color: colors.lower }),
+          stroke: new Stroke({ color: colors.lower, width: badge.diamond.strokeWidth, lineJoin: 'miter' }),
         }),
       }),
       new Style({
@@ -132,8 +156,8 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
           points: 4,
           radius: badge.diamond.radius,
           displacement: [x, y + badge.upperOffsetY * badgeScale],
-          scale: scaledBadge(badge.diamond.scaleX, badge.diamond.scaleY),
-          stroke: new Stroke({ color: '#fff', width: badge.diamond.strokeWidth }),
+          scale: scaledBadge(badge.diamond.scaleX, badge.upperScaleY),
+          stroke: new Stroke({ color: colors.upper, width: badge.diamond.strokeWidth, lineJoin: 'miter' }),
         }),
       }),
     ]
@@ -154,7 +178,6 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   }
   let clusterStyleCache = new WeakMap<FeatureLike, { members: Feature<Point>[]; locations: EchoMapLocation[]; styles: Style[] }>()
   const labelStyleCache = new globalThis.Map<string, Style>()
-  let selectedLevelId: string | null = null
   let routeTeleportIds = new Set<string>()
 
   const echoLayer = new VectorLayer({
@@ -237,8 +260,9 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     const pointStyles = locations.length === 1 ? markerStyles.echo(locations[0] as EchoMapLocation)
       : markerStyles.echoCluster(locations)
     resizeExportMarkers(pointStyles)
-    const styles = pointStyles && selectedLevelId === null && locations.some(({ levelId }) => levelId !== null)
-      ? [...pointStyles, ...floorBadgeStylesFor(renderedMarkerSize(pointStyles))] : pointStyles
+    const styles = pointStyles && locations.some(({ levelId }) => levelId !== null)
+      ? [...pointStyles, ...floorBadgeStylesFor(renderedMarkerSize(pointStyles),
+        selectedLevelId === null || !locations.some(({ levelId }) => levelId === selectedLevelId))] : pointStyles
     if (styles) clusterStyleCache.set(feature, { members, locations, styles })
     return styles
   }
@@ -255,7 +279,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     const forced = point.category === options.forceVisibleCategory?.()
       || (point.category === 'navigation' && point.location.mode === 'fast-travel' && routeTeleportIds.has(point.location.id))
     if (!options.exportMode && !forced && !isMapPointVisibleAtZoom(point, mapZoomForResolution(resolution))) return undefined
-    return pointMarkerStyle(point, selectedLevelId === null)
+    return pointMarkerStyle(point)
   }
 
   function setVisibleRoutes(routes: readonly RouteResult[]): void {
@@ -266,16 +290,17 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     backgroundNavigationLayer.changed()
   }
 
-  function pointMarkerStyle(point: MapDisplayPoint, includeFloorBadge: boolean): Style | Style[] | undefined {
+  function pointMarkerStyle(point: MapDisplayPoint): Style | Style[] | undefined {
     const style = point.category === 'echo' ? markerStyles.echo(point.location)
       : point.category === 'navigation' ? markerStyles.navigation(point.location) : labelStyle(point.location)
     const artworkWidth = point.category === 'navigation' && point.location.iconUrl && !bossMarkerShape(point.location) ? 36 : undefined
     resizeExportMarkers(style, artworkWidth)
-    const showFloorBadge = point.category !== 'region-name' && includeFloorBadge
+    const showFloorBadge = point.category !== 'region-name'
       && point.location.levelId !== null
       && (point.category !== 'navigation' || point.location.typeName !== '分层入口')
     return showFloorBadge && Array.isArray(style)
-      ? [...style, ...floorBadgeStylesFor(renderedMarkerSize(style))] : style
+      ? [...style, ...floorBadgeStylesFor(renderedMarkerSize(style),
+        selectedLevelId === null || point.location.levelId !== selectedLevelId)] : style
   }
 
   function labelStyle(label: RegionLabel): Style {
@@ -324,7 +349,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     const navigationFeatures: Feature<Point>[] = []
     const backgroundNavigationFeatures: Feature<Point>[] = []
     for (const location of navigationPoints) {
-      const target = levelId === null || location.levelId === levelId || location.mode === 'fast-travel'
+      const target = levelId === null || location.levelId !== null || location.mode === 'fast-travel'
         ? navigationFeatures : backgroundNavigationFeatures
       target.push(pointFeature({ category: 'navigation', location }))
     }
@@ -355,7 +380,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   return {
     layers, update, dispose, setVisibleRoutes,
     ready: markerStyles.ready,
-    styleFor: (point: MapDisplayPoint) => pointMarkerStyle(point, true),
+    styleFor: pointMarkerStyle,
     finishInteraction: (extent: Extent, resolution: number, projection: Projection, separatePoints = false) => {
       clusters?.finishInteraction(extent, resolution, projection, separatePoints)
       backgroundClusters?.finishInteraction(extent, resolution, projection, separatePoints)
