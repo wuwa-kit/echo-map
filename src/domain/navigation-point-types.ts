@@ -67,7 +67,7 @@ export const navigationPointTypes = {
   }),
   'service': defineType({
     name: '服务设施', kind: 'service', defaultMode: 'landmark', teleportLocked: false,
-    icons: ['icon-ac9e0de71d8ea258', 'icon-c4f98f582c9dd99f', 'icon-0fd966a2cfa0aa40', 'icon-c58c3aea6d69dcbc', 'icon-a760dfcbafaa746d', 'icon-5936ab6519ade43f', 'icon-b0b95e3398fcc02c', 'icon-ed46b9d29dc6d9ea', 'icon-d3e2755656db7bd7', 'icon-07be844f01f9bc26', 'icon-d46d97ebff06af5f', 'icon-50b338ec14e96d80', 'icon-2ee2e41664dd1920', 'icon-049d0d32d01a6a8d', 'icon-13dffc1da5f5c309'],
+    icons: ['icon-ac9e0de71d8ea258', 'icon-c4f98f582c9dd99f', 'icon-0fd966a2cfa0aa40', 'icon-c58c3aea6d69dcbc', 'icon-a760dfcbafaa746d', 'icon-5936ab6519ade43f', 'icon-b0b95e3398fcc02c', 'icon-ed46b9d29dc6d9ea', 'icon-d3e2755656db7bd7', 'icon-07be844f01f9bc26', 'icon-d46d97ebff06af5f', 'icon-50b338ec14e96d80', 'icon-2ee2e41664dd1920', 'icon-049d0d32d01a6a8d', 'icon-13dffc1da5f5c309', 'icon-ce690222976140c5', 'icon-047aaa32aada0ca0', 'icon-b1d093e98ab2140d', 'icon-c2e2cff5927e4bfb', 'icon-fb2cbe33e966e314'],
     names: [],
   }),
 }

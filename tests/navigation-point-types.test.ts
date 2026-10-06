@@ -206,7 +206,7 @@ describe('navigation classification', () => {
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: undefined, iconUrl: 'https://example.com/custom.png' }] }, referenceDataset)).toThrow()
     const custom = { ...point, name: '自定义地标', pointType: undefined, navigationKind: 'service', mode: 'landmark', iconUrl: 'https://example.com/custom.png', iconId: undefined }
     expect(() => parsePointLibrary({ version: 1, points: [custom] }, referenceDataset)).toThrow()
-    expect(navigationTypeIcons('service')).toHaveLength(15)
+    expect(navigationTypeIcons('service')).toHaveLength(20)
     expect(navigationPointTypes.entrance.icons).toHaveLength(1)
     expect(navigationPointTypes.service.names).toEqual([])
   })

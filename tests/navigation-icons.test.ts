@@ -6,6 +6,7 @@ import { navigationIconById, navigationPointIconUrl, navigationTypeIcons } from 
 import { navigationPointTypes } from '../src/domain/navigation-point-types.ts'
 import { authoredPointMapDisplay, parsePointLibrary } from '../src/domain/point-library.ts'
 import { referenceDataset } from './fixtures/point-library.ts'
+import { officialNavigationPointType } from '../scripts/lib/map/navigation-types.ts'
 
 const emptyNavigationDataset = { ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }
 
@@ -32,7 +33,7 @@ describe('local navigation icon picker', () => {
 
   it('resolves configured and custom choices without any official point data', () => {
     expect(navigationTypeIcons(undefined).length).toBeGreaterThan(0)
-    expect(navigationTypeIcons('service')).toHaveLength(15)
+    expect(navigationTypeIcons('service')).toHaveLength(20)
     expect(navigationTypeIcons('small-beacon')).toHaveLength(1)
     expect(navigationTypeIcons('echo-settlement')).toHaveLength(3)
     expect(new Set(navigationIconCatalog.map(({ id }) => id)).size).toBe(navigationIconCatalog.length)
@@ -47,6 +48,30 @@ describe('local navigation icon picker', () => {
     expect(navigationTypeIcons(undefined, '信标', [...typedIds])).toEqual([])
     expect(navigationTypeIcons(undefined, '', [...typedIds])).toEqual(icons)
     expect(navigationTypeIcons(undefined, '贡多拉站台').map(({ name }) => name)).toEqual(['贡多拉站台'])
+  })
+
+  it.each([
+    ['先行公约', ['SP_IconMap_Play_07_UI', 'SP_IconMap_Play_07_UI_1']],
+    ['玄方坚盾基金', ['3510007', '3510008']],
+    ['补弦留歌', ['SP_IconMap_Play_13_UI']],
+    ['留声珍藏', ['SP_IconMap_Play_25_UI']],
+    ['载具系泊场', ['381038']],
+    ['深空文献中心', ['381031']],
+  ] as const)('offers %s as a searchable, saveable service icon', (name, officialIds) => {
+    const [icon] = navigationTypeIcons('service', name)
+    if (!icon) throw new Error(`缺少服务设施图标：${name}`)
+    expect(navigationTypeIcons(undefined, name, [icon.id])).toEqual([])
+    for (const id of officialIds) expect(officialNavigationPointType(id)).toBe('service')
+    const point = {
+      gravityType: null, id: 'service-icon', kind: 'navigation' as const,
+      stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
+      name, pointType: 'service' as const, navigationKind: 'service' as const,
+      mode: 'landmark' as const, iconId: icon.id,
+    }
+    const saved = parsePointLibrary({ version: 1, points: [point] }, emptyNavigationDataset, 'manual').points[0]
+    if (!saved) throw new Error('缺少保存点位')
+    expect(saved).toMatchObject({ pointType: 'service', iconId: icon.id, mode: 'landmark' })
+    expect(authoredPointMapDisplay(saved, emptyNavigationDataset)?.location.iconUrl).toBe(icon.url)
   })
 
   it.each([undefined, 'service'] as const)('searches every name of a shared icon for %s without changing its stored label', (pointType) => {
