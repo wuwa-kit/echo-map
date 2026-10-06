@@ -2,6 +2,7 @@
 import { buttonClasses } from './base/button-styles.ts'
 import { vTooltip } from './base/tooltip.ts'
 import WuButton from './base/WuButton.vue'
+import WuSwitch from './base/WuSwitch.vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
 import WuScrollArea from './base/WuScrollArea.vue'
@@ -14,7 +15,7 @@ defineProps<{ compact: boolean }>()
 defineEmits<{ editRequested: [] }>()
 
 const store = useExplorerStore()
-const { dataset } = storeToRefs(store)
+const { dataset, hideNonTeleportPoints } = storeToRefs(store)
 const lastCommitTime = __LAST_COMMIT_TIME__
 </script>
 
@@ -55,6 +56,9 @@ const lastCommitTime = __LAST_COMMIT_TIME__
           <WuButton variant="ghost" tone="accent" :size="compact ? 'lg' : 'xs'" @click="$emit('editRequested')">点位录入</WuButton>
           <RouterLink to="/assets" target="_blank" rel="noopener" :class="buttonClasses({ variant: 'ghost', tone: 'accent', size: compact ? 'lg' : 'xs' })">资产浏览</RouterLink>
         </div>
+      </div>
+      <div class="border-b border-[var(--line)] px-[18px] py-[8px]">
+        <WuSwitch :model-value="hideNonTeleportPoints" @update:model-value="store.setHideNonTeleportPoints">隐藏非传送点</WuSwitch>
       </div>
       <EchoFilter :compact="compact" />
       <RoutePanel />

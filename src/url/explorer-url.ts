@@ -23,6 +23,7 @@ export interface ExplorerUrlState {
   sonataFilterIds?: string[]
   echoCostFilters?: EchoCostFilter[]
   showProvisional?: boolean
+  hideNonTeleportPoints?: boolean
   controlPanelCollapsed?: boolean
   mobileSheet?: MobileSheet
   viewport?: MapViewportState
@@ -38,6 +39,7 @@ export interface ExplorerUrlSnapshot {
   sonataFilterIds: readonly string[]
   echoCostFilters: readonly EchoCostFilter[]
   showProvisional: boolean
+  hideNonTeleportPoints: boolean
   controlPanelCollapsed: boolean
   mobileSheet: MobileSheet
   viewport: MapViewportState | null
@@ -55,6 +57,7 @@ export interface ExplorerQueryValues {
   sonatas?: ExplorerQueryValue
   costs?: ExplorerQueryValue
   provisional?: ExplorerQueryValue
+  hideNonTeleport?: ExplorerQueryValue
   panel?: ExplorerQueryValue
   sheet?: ExplorerQueryValue
   x?: ExplorerQueryValue
@@ -150,6 +153,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
     sonataFilterIds: sonataIdList(values.sonatas),
     echoCostFilters: costList(values.costs),
     showProvisional: booleanFlag(values.provisional),
+    hideNonTeleportPoints: booleanFlag(values.hideNonTeleport) ?? false,
     controlPanelCollapsed: booleanFlag(values.panel),
     mobileSheet: sheet === 'filters' ? sheet : null,
     viewport: x !== undefined && y !== undefined && zoom !== undefined
@@ -169,6 +173,7 @@ export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerS
     sonatas: compactSonataIdList(state.sonataFilterIds),
     costs: state.echoCostFilters.length > 0 ? state.echoCostFilters.join(',') : undefined,
     provisional: state.showProvisional ? undefined : '0',
+    hideNonTeleport: state.hideNonTeleportPoints ? '1' : undefined,
     panel: state.controlPanelCollapsed ? '1' : undefined,
     sheet: state.mobileSheet ?? undefined,
     x: state.viewport ? compactNumber(state.viewport.center[0], 2) : undefined,

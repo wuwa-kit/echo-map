@@ -166,7 +166,7 @@ describe('authored point library', () => {
   it('ignores removed source parameters and does not serialize them', () => {
     const query = { map: '8', sources: 'official' }
     expect(parseExplorerQueryValues(query)).toEqual(parseExplorerQueryValues({ map: '8' }))
-    expect(createExplorerQueryValues({ stateId: 8, countryId: null, levelId: null, echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true, controlPanelCollapsed: false, mobileSheet: null, viewport: null })).not.toHaveProperty('sources')
+    expect(createExplorerQueryValues({ stateId: 8, countryId: null, levelId: null, echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true, hideNonTeleportPoints: false, controlPanelCollapsed: false, mobileSheet: null, viewport: null })).not.toHaveProperty('sources')
   })})
 
 it('accepts an unset navigation type on saved points and validates rules when a type is selected', () => {

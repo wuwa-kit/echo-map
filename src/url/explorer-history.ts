@@ -5,7 +5,7 @@ import type { ExplorerSerializedQueryValues } from './explorer-url.ts'
 const STORAGE_KEY = 'echo-map:last-explorer-query'
 const queryKeys = [
   'map', 'region', 'floor', 'floorStyle', 'gravity', 'echoes',
-  'sonatas', 'costs', 'provisional', 'panel', 'sheet', 'x', 'y', 'zoom',
+  'sonatas', 'costs', 'provisional', 'hideNonTeleport', 'panel', 'sheet', 'x', 'y', 'zoom',
 ] as const satisfies readonly (keyof ExplorerSerializedQueryValues)[]
 const storedQuerySchema = z.record(z.string(), z.string())
 

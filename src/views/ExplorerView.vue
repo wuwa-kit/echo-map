@@ -145,6 +145,7 @@ const urlSnapshot = useEqualComputed<ExplorerUrlSnapshot>(() => ({
   sonataFilterIds: store.sonataFilterIds,
   echoCostFilters: store.echoCostFilters,
   showProvisional: store.showProvisional,
+  hideNonTeleportPoints: store.hideNonTeleportPoints,
   controlPanelCollapsed: store.controlPanelCollapsed,
   mobileSheet: store.mobileSheet,
   viewport: store.mapViewport,

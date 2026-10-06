@@ -65,6 +65,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const echoCostFilters = shallowRef<EchoCostFilter[]>(immutableSnapshot([]))
   const echoSearch = shallowRef('')
   const showProvisional = shallowRef(true)
+  const hideNonTeleportPoints = shallowRef(false)
   const controlPanelCollapsed = shallowRef(false)
   const mobileSheet = shallowRef<MobileSheet>(null)
   const mapViewport = shallowRef<MapViewportState | null>(null)
@@ -148,10 +149,13 @@ export const useExplorerStore = defineStore('explorer', () => {
   const scopedNavigationPoints = computed(() => (
     allNavigationPoints.value.filter((location) => matchesMapScope(location, mapScope.value))
   ))
-  const visibleNavigationPoints = computed(() => scopedNavigationPoints.value)
+  const visibleNavigationPoints = computed(() => scopedNavigationPoints.value.filter((location) => (
+    !hideNonTeleportPoints.value || location.mode === 'fast-travel'
+  )))
   // Navigation markers remain visible across floors; route scope stays floor-specific.
   const mapNavigationPoints = computed(() => allNavigationPoints.value.filter((location) => (
     matchesMapContext(location, mapScope.value)
+    && (!hideNonTeleportPoints.value || location.mode === 'fast-travel')
   )))
   const visibleRegionLabels = computed(() => selectRegionLabels(dataset.value?.regionLabels ?? [], mapScope.value))
   function hasRouteGravity(point: PointLocationBase): boolean {
@@ -220,6 +224,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     sonataFilterIds.value = immutableSnapshot([...resolved.sonataFilterIds])
     echoCostFilters.value = immutableSnapshot([...resolved.echoCostFilters])
     showProvisional.value = resolved.showProvisional
+    hideNonTeleportPoints.value = resolved.hideNonTeleportPoints ?? false
     controlPanelCollapsed.value = resolved.controlPanelCollapsed
     mobileSheet.value = resolved.mobileSheet
     mapViewport.value = immutableSnapshot(resolved.viewport)
@@ -369,6 +374,10 @@ export const useExplorerStore = defineStore('explorer', () => {
   function setProvisionalVisible(value: boolean): void {
     showProvisional.value = value
     clearRoute()
+  }
+
+  function setHideNonTeleportPoints(value: boolean): void {
+    hideNonTeleportPoints.value = value
   }
 
   function toggleControlPanel(): void {
@@ -561,6 +570,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     echoCostFilters: shallowReadonly(echoCostFilters),
     echoSearch: shallowReadonly(echoSearch),
     showProvisional: shallowReadonly(showProvisional),
+    hideNonTeleportPoints: shallowReadonly(hideNonTeleportPoints),
+    setHideNonTeleportPoints,
     controlPanelCollapsed: shallowReadonly(controlPanelCollapsed),
     mobileSheet: shallowReadonly(mobileSheet),
     mapViewport: shallowReadonly(mapViewport),

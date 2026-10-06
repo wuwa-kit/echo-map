@@ -7,7 +7,7 @@ describe('echo list filtering', () => {
   it('keeps search local to a stable list viewport and leaves candidate controls active', async () => {
     const source = await readFile(echoFilterSourceUrl, 'utf8')
 
-    expect(source).toContain('>声骸目标</span>')
+    expect(source).not.toContain('声骸目标')
     expect(source).not.toContain('ECHO TARGETS')
     expect(source).toContain('placeholder="搜索当前声骸列表"')
     expect(source).toContain('{{ currentSelectedCount }} / {{ candidateEchoes.length }}')

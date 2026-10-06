@@ -85,7 +85,7 @@ describe('last explorer query', () => {
       echoIds: [],
       sonataFilterIds: [],
       echoCostFilters: [],
-      showProvisional: true,
+      showProvisional: true, hideNonTeleportPoints: false,
       controlPanelCollapsed: false,
       mobileSheet: null,
       viewport: null,

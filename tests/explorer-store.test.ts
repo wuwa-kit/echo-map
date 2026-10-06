@@ -9,6 +9,41 @@ import { echoMembers } from '../src/domain/point-library.ts'
 describe('explorer point group visibility', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
+  it('hides only non-teleport navigation markers without changing route inputs or the library', async () => {
+    const store = useExplorerStore()
+    store.setDataset(await readMapDataset())
+    store.setPointLibrary({ version: 1, points: [
+      { id: 'boss', kind: 'navigation', name: 'Boss', navigationKind: 'boss', mode: 'fast-travel', stateId: 8, levelId: null, gravityType: 1, coordinate: { x: 1, y: 2, z: 3 } },
+      { id: 'domain', kind: 'navigation', name: 'Domain', navigationKind: 'domain', mode: 'fast-travel', stateId: 8, levelId: null, gravityType: 1, coordinate: { x: 4, y: 5, z: 6 } },
+      { id: 'service', kind: 'navigation', name: 'Service', navigationKind: 'service', mode: 'landmark', stateId: 8, levelId: null, gravityType: 1, coordinate: { x: 7, y: 8, z: 9 } },
+    ] })
+    expect(store.hideNonTeleportPoints).toBe(false)
+    expect(store.mapNavigationPoints).toHaveLength(3)
+    const inputs = store.routePlanEligibleNavigationPoints
+    const echoes = store.mapEchoLocations
+    const labels = store.visibleRegionLabels
+    const route = { points: [], algorithm: 'exact' as const, totalCost: 0, startPointId: null }
+    store.setRoute(route)
+    store.selectPoint('service')
+
+    store.setHideNonTeleportPoints(true)
+    expect(store.mapNavigationPoints.map(({ id }) => id)).toEqual(['boss', 'domain'])
+    expect(store.visibleNavigationPoints.map(({ id }) => id)).toEqual(['boss', 'domain'])
+    expect(store.selectedNavigationPoint).toBeNull()
+    expect(store.allNavigationPoints).toHaveLength(3)
+    expect(store.routePlanEligibleNavigationPoints).toBe(inputs)
+    expect(store.mapEchoLocations).toBe(echoes)
+    expect(store.visibleRegionLabels).toBe(labels)
+    expect(store.route).toEqual(route)
+
+    store.setHideNonTeleportPoints(false)
+    expect(store.mapNavigationPoints).toHaveLength(3)
+    store.restoreUrlState({ hideNonTeleportPoints: true })
+    expect(store.hideNonTeleportPoints).toBe(true)
+    store.restoreUrlState({})
+    expect(store.hideNonTeleportPoints).toBe(false)
+  })
+
   it('shows no echo locations until a final echo target is selected', async () => {
     const dataset = await readMapDataset()
     const location = dataset.echoLocations.find(({ stateId, levelId }) => stateId === 8 && levelId === null)

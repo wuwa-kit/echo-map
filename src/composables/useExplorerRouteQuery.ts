@@ -20,6 +20,7 @@ export function useExplorerRouteQuery(): {
   const sonatasQuery = useRouteQuery('sonatas')
   const costsQuery = useRouteQuery<string | undefined>('costs', undefined, { mode: 'replace' })
   const provisionalQuery = useRouteQuery<string | undefined>('provisional', '1')
+  const hideNonTeleportQuery = useRouteQuery<string | undefined>('hideNonTeleport', '0', { mode: 'replace' })
   const panelQuery = useRouteQuery<string | undefined>('panel', '0')
   const sheetQuery = useRouteQuery<string | undefined>('sheet', undefined, { mode: 'replace' })
   const xQuery = useRouteQuery('x')
@@ -37,6 +38,7 @@ export function useExplorerRouteQuery(): {
       sonatas: sonatasQuery.value,
       costs: costsQuery.value,
       provisional: provisionalQuery.value,
+      hideNonTeleport: hideNonTeleportQuery.value,
       panel: panelQuery.value,
       sheet: sheetQuery.value,
       x: xQuery.value,
@@ -57,6 +59,7 @@ export function useExplorerRouteQuery(): {
     sonatasQuery.value = values.sonatas
     costsQuery.value = values.costs
     provisionalQuery.value = values.provisional
+    hideNonTeleportQuery.value = values.hideNonTeleport
     panelQuery.value = values.panel
     sheetQuery.value = values.sheet
     xQuery.value = values.x

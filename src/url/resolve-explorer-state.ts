@@ -32,6 +32,7 @@ export function resolveExplorerState(
     sonataFilterIds: (state.sonataFilterIds ?? []).filter((id) => sonataIds.has(id)),
     echoCostFilters: ([1, 3] as const).filter((cost) => state.echoCostFilters?.includes(cost)),
     showProvisional: state.showProvisional ?? true,
+    hideNonTeleportPoints: state.hideNonTeleportPoints ?? false,
     controlPanelCollapsed: state.controlPanelCollapsed ?? false,
     mobileSheet: state.mobileSheet === 'filters' ? state.mobileSheet : null,
     viewport: state.viewport ? { center: [...state.viewport.center], zoom: state.viewport.zoom } : null,

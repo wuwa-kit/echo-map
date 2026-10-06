@@ -6,6 +6,21 @@ import {
 } from '../src/url/explorer-url.ts'
 
 describe('explorer query state', () => {
+  it('round-trips the teleport display filter and defaults invalid values to off', () => {
+    const snapshot = {
+      stateId: DEFAULT_STATE_ID, countryId: null, levelId: null,
+      echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true,
+      hideNonTeleportPoints: true, controlPanelCollapsed: false, mobileSheet: null, viewport: null,
+    }
+    const query = createExplorerQueryValues(snapshot)
+    expect(query.hideNonTeleport).toBe('1')
+    expect(parseExplorerQueryValues(query).hideNonTeleportPoints).toBe(true)
+    expect(createExplorerQueryValues({ ...snapshot, hideNonTeleportPoints: false }).hideNonTeleport).toBeUndefined()
+    for (const hideNonTeleport of [undefined, null, '', '0', 'true', 'invalid']) {
+      expect(parseExplorerQueryValues({ hideNonTeleport }).hideNonTeleportPoints).toBe(false)
+    }
+  })
+
   it('omits every field for the default page state', () => {
     const values = createExplorerQueryValues({
       stateId: DEFAULT_STATE_ID,
@@ -15,7 +30,7 @@ describe('explorer query state', () => {
       echoIds: [],
       sonataFilterIds: [],
       echoCostFilters: [],
-      showProvisional: true,
+      showProvisional: true, hideNonTeleportPoints: false,
       controlPanelCollapsed: false,
       mobileSheet: null,
       viewport: null,
@@ -35,7 +50,7 @@ describe('explorer query state', () => {
     })).toMatchObject({
       stateId: DEFAULT_STATE_ID,
       compactFloors: true,
-      showProvisional: true,
+      showProvisional: true, hideNonTeleportPoints: false,
       controlPanelCollapsed: false,
       mobileSheet: null,
       viewport: { center: [3072, -1536], zoom: 1.3785 },
@@ -45,7 +60,7 @@ describe('explorer query state', () => {
   it('defaults to the compact floor layout and round-trips the list layout', () => {
     const snapshot = {
       stateId: DEFAULT_STATE_ID, countryId: null, levelId: '-1/58', compactFloors: false,
-      echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true,
+      echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true, hideNonTeleportPoints: false,
       controlPanelCollapsed: false, mobileSheet: null, viewport: null,
     }
     const query = createExplorerQueryValues(snapshot)
@@ -67,7 +82,7 @@ describe('explorer query state', () => {
       echoIds: [],
       sonataFilterIds: [],
       echoCostFilters: [],
-      showProvisional: true,
+      showProvisional: true, hideNonTeleportPoints: false,
       controlPanelCollapsed: true,
       mobileSheet,
       viewport: null,
@@ -92,7 +107,7 @@ describe('explorer query state', () => {
       echoIds: ['wiki-echo-11105'],
       sonataFilterIds: ['wiki-sonata-11947', 'wiki-sonata-11948'],
       echoCostFilters: [1, 3],
-      showProvisional: true,
+      showProvisional: true, hideNonTeleportPoints: false,
       controlPanelCollapsed: false,
       mobileSheet: null,
       viewport: null,
@@ -119,7 +134,7 @@ describe('explorer query state', () => {
       echoIds: ['unknown-echo'],
       sonataFilterIds: ['unknown-sonata'],
       echoCostFilters: [],
-      showProvisional: true,
+      showProvisional: true, hideNonTeleportPoints: false,
       controlPanelCollapsed: false,
       mobileSheet: null,
       viewport: null,

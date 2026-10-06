@@ -53,11 +53,6 @@ const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCovera
 
 <template>
   <div id="echo-filters" class="border-b border-[var(--line)] p-[18px]">
-    <div class="mb-[13px]">
-      <div>
-        <span class="block text-[12px] min-[1024px]:text-[8px] text-[#608176] font-extrabold tracking-[0.18em]">声骸目标</span>
-      </div>
-    </div>
     <div class="mb-[10px]">
       <div class="min-w-0">
         <WuMultiSelect
