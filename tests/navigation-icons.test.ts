@@ -47,7 +47,6 @@ describe('local navigation icon picker', () => {
     expect(navigationTypeIcons(undefined, '信标', [...typedIds])).toEqual([])
     expect(navigationTypeIcons(undefined, '', [...typedIds])).toEqual(icons)
     expect(navigationTypeIcons(undefined, '贡多拉站台').map(({ name }) => name)).toEqual(['贡多拉站台'])
-    expect(navigationTypeIcons('challenge')).toBe(navigationIconCatalog)
   })
 
   it.each([undefined, 'service'] as const)('searches every name of a shared icon for %s without changing its stored label', (pointType) => {

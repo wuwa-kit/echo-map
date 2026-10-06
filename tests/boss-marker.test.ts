@@ -42,7 +42,7 @@ describe('boss marker classification', () => {
 
   it('leaves service landmarks and ordinary challenges unframed', () => {
     expect(bossMarkerShape({ kind: 'service', pointType: 'service' })).toBeNull()
-    expect(bossMarkerShape({ kind: 'challenge', pointType: 'challenge' })).toBeNull()
+    expect(bossMarkerShape({ kind: 'challenge', pointType: undefined })).toBeNull()
     expect(bossMarkerShape({ kind: 'domain', pointType: 'material-domain' })).toBeNull()
   })
 })

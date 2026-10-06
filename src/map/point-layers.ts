@@ -1,4 +1,5 @@
 import Feature from 'ol/Feature.js'
+import { asArray } from 'ol/color.js'
 import type { FeatureLike } from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import type { Extent } from 'ol/extent.js'
@@ -15,7 +16,7 @@ import Text from 'ol/style/Text.js'
 import { bossMarkerShape } from './boss-marker.ts'
 import type { EchoDefinition, EchoMapLocation, MapDisplayPoint, NavigationPoint, RegionLabel, RouteResult } from '../domain/types.ts'
 import { isMapPointVisibleAtZoom, isPointVisibleAtZoom, MAP_POINT_ZOOM_RANGES, mapZoomForResolution } from './point-visibility.ts'
-import { createPointMarkerStyles } from './point-marker-styles.ts'
+import { createPointMarkerStyles, NON_TELEPORT_BRIGHTNESS, NON_TELEPORT_OPACITY } from './point-marker-styles.ts'
 
 class InteractionCluster extends Cluster {
   private readonly isMoving: () => boolean
@@ -61,6 +62,8 @@ const FLOOR_BADGE_COLORS = {
 }
 
 const NAVIGATION_MARKER_SIZE = 36
+// Reserve a complete range below teleport markers for the icon and its floor badge.
+const NON_TELEPORT_Z_INDEX = -4
 const ECHO_CLUSTER_DISTANCE = 32
 const EXPORT_MARKER_SCALE = 0.6
 
@@ -98,11 +101,18 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   let selectedLevelId: string | null = null
   const floorBadgeStyleCache = new globalThis.Map<string, Style[]>()
   // The stem visible above the official badge belongs to its underlying marker, not to the badge itself.
-  function floorBadgeStylesFor(markerSize: [number, number], otherFloor: boolean): Style[] {
-    const key = `${otherFloor}:${markerSize.map((size) => size.toFixed(3)).join(':')}`
+  function floorBadgeStylesFor(markerSize: [number, number], otherFloor: boolean, nonTeleport = false): Style[] {
+    const key = `${otherFloor}:${nonTeleport}:${markerSize.map((size) => size.toFixed(3)).join(':')}`
     const cached = floorBadgeStyleCache.get(key)
     if (cached) return cached
     const colors = otherFloor ? FLOOR_BADGE_COLORS.otherFloor : FLOOR_BADGE_COLORS.active
+    const zIndex = nonTeleport ? NON_TELEPORT_Z_INDEX : 0
+    const badgeColor = (color: string): string => {
+      if (!nonTeleport) return color
+      const [red = 0, green = 0, blue = 0] = asArray(color)
+      const gray = Math.round((red * 0.2126 + green * 0.7152 + blue * 0.0722) * NON_TELEPORT_BRIGHTNESS)
+      return `rgb(${gray}, ${gray}, ${gray})`
+    }
     const layoutScale = Math.min(...markerSize) / FLOOR_BADGE_LAYOUT.iconSize
     const badgeScale = FLOOR_BADGE_LAYOUT.height * layoutScale / (2 * badge.radius)
     const flatDistance = Math.sqrt(3) * badge.radius * badgeScale
@@ -118,7 +128,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
         { width: 3, color: 'rgba(0, 0, 0, 0.12)' },
         { width: 1.5, color: 'rgba(0, 0, 0, 0.22)' },
       ].map(({ width, color }) => new Style({
-        zIndex: 0.5,
+        zIndex: zIndex + 0.5,
         image: new RegularShape({
           points: 6,
           radius: badge.radius,
@@ -129,38 +139,41 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
         }),
       })),
       new Style({
-        zIndex: 1,
+        zIndex: zIndex + 1,
         image: new RegularShape({
           points: 6,
           radius: badge.radius,
           displacement: [x, y],
           scale: scaledBadge(1, 1),
           fill: new Fill({ color: 'rgba(0, 0, 0, 0.72)' }),
-          stroke: new Stroke({ color: colors.border, width: 1.5 }),
+          stroke: new Stroke({ color: badgeColor(colors.border), width: 1.5 }),
         }),
       }),
       new Style({
-        zIndex: 2,
+        zIndex: zIndex + 2,
         image: new RegularShape({
           points: 4,
           radius: badge.diamond.radius,
           displacement: [x, y + badge.lowerOffsetY * badgeScale],
           scale: scaledBadge(badge.diamond.scaleX, badge.diamond.scaleY),
-          fill: new Fill({ color: colors.lower }),
-          stroke: new Stroke({ color: colors.lower, width: badge.diamond.strokeWidth, lineJoin: 'miter' }),
+          fill: new Fill({ color: badgeColor(colors.lower) }),
+          stroke: new Stroke({ color: badgeColor(colors.lower), width: badge.diamond.strokeWidth, lineJoin: 'miter' }),
         }),
       }),
       new Style({
-        zIndex: 3,
+        zIndex: zIndex + 3,
         image: new RegularShape({
           points: 4,
           radius: badge.diamond.radius,
           displacement: [x, y + badge.upperOffsetY * badgeScale],
           scale: scaledBadge(badge.diamond.scaleX, badge.upperScaleY),
-          stroke: new Stroke({ color: colors.upper, width: badge.diamond.strokeWidth, lineJoin: 'miter' }),
+          stroke: new Stroke({ color: badgeColor(colors.upper), width: badge.diamond.strokeWidth, lineJoin: 'miter' }),
         }),
       }),
     ]
+    if (nonTeleport) {
+      for (const style of styles) style.getImage()?.setOpacity(NON_TELEPORT_OPACITY)
+    }
     floorBadgeStyleCache.set(key, styles)
     return styles
   }
@@ -293,6 +306,10 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   function pointMarkerStyle(point: MapDisplayPoint): Style | Style[] | undefined {
     const style = point.category === 'echo' ? markerStyles.echo(point.location)
       : point.category === 'navigation' ? markerStyles.navigation(point.location) : labelStyle(point.location)
+    const nonTeleport = point.category === 'navigation' && point.location.mode !== 'fast-travel'
+    if (point.category === 'navigation' && Array.isArray(style)) {
+      for (const markerStyle of style) markerStyle.setZIndex(nonTeleport ? NON_TELEPORT_Z_INDEX : 0)
+    }
     const artworkWidth = point.category === 'navigation' && point.location.iconUrl && !bossMarkerShape(point.location) ? 36 : undefined
     resizeExportMarkers(style, artworkWidth)
     const showFloorBadge = point.category !== 'region-name'
@@ -300,7 +317,8 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
       && (point.category !== 'navigation' || point.location.typeName !== '分层入口')
     return showFloorBadge && Array.isArray(style)
       ? [...style, ...floorBadgeStylesFor(renderedMarkerSize(style),
-        selectedLevelId === null || point.location.levelId !== selectedLevelId)] : style
+        selectedLevelId === null || point.location.levelId !== selectedLevelId,
+        nonTeleport)] : style
   }
 
   function labelStyle(label: RegionLabel): Style {

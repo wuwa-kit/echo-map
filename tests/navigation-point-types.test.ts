@@ -23,12 +23,15 @@ describe('navigation classification', () => {
     expect(officialNavigationPointType('340000150')).toBe('normal-boss')
   })
 
-  it('merges challenges, entrances and service facilities while leaving other landmarks unclassified', () => {
+  it('groups entrances and service facilities while leaving challenges and other landmarks unclassified', () => {
     expect(navigationPointTypeIds.map((id) => navigationPointTypes[id].name)).toEqual([
       '中枢信标', '小型信标', '材料副本', '无音区', '声骸聚落', '普通 BOSS',
-      '梦魇 BOSS', '周本 BOSS', '全息战略', '常驻挑战', '危行任务', '入口', '服务设施',
+      '梦魇 BOSS', '周本 BOSS', '全息战略', '危行任务', '入口', '服务设施',
     ])
-    for (const id of ['Play_06', 'SP_IconMap_Activity_18_UI', 'Play_04']) expect(officialNavigationPointType(id)).toBe('challenge')
+    for (const id of ['Play_06', 'Activity_02', 'Activity_02_1', 'Play_04', 'Play_04+1', 'SP_IconActDreamB', 'SP_IconMap_Activity_17_UI', 'SP_IconMap_Activity_21_UI', 'SP_IconMap_Activity_23_UI', 'SP_IconMap_Activity_18_UI']) {
+      expect(officialNavigationPointType(id)).toBeUndefined()
+      expect(isOfficialNavigationType(id)).toBe(true)
+    }
     for (const id of ['FCRK', 'YMRK']) expect(officialNavigationPointType(id)).toBe('entrance')
     expect(navigationPointTypes.entrance.icons).toEqual(['icon-f9e566c56ab2c4e4'])
     for (const id of ['SP_IconMap_Shop_02_UI', 'SP_IconMap_Shop_07_UI', 'SP_IconMap_Shop_08_UI', 'SP_IconMap_Shop_06_UI', 'SP_IconMap_Shop_03_UI', 'SP_IconMap_Play_24_UI']) {
@@ -154,7 +157,7 @@ describe('navigation classification', () => {
     }
   })
 
-  it.each(['central-beacon', 'small-beacon', 'material-domain', 'echo-settlement', 'weekly-boss', 'challenge'] as const)('still requires teleport for %s', (pointType) => {
+  it.each(['central-beacon', 'small-beacon', 'material-domain', 'echo-settlement', 'weekly-boss'] as const)('still requires teleport for %s', (pointType) => {
     const rule = navigationPointTypes[pointType]
     const point = {
       id: 'locked-test', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,

@@ -92,13 +92,15 @@ export function createPortraitMarkerStyles(onChange: () => void, ratio = window.
   const pendingImages = new Set<HTMLImageElement>()
   let failed = false
 
-  function getStyle({ shape, size, iconUrl, opacity }: {
+  function getStyle({ shape, size, iconUrl, opacity, grayscale = false, brightness = 1 }: {
     shape: PortraitMarkerShape
     size: number
     iconUrl: string
     opacity: number
+    grayscale?: boolean
+    brightness?: number
   }): Style[] | null {
-    const key = JSON.stringify([shape, size, iconUrl, opacity])
+    const key = JSON.stringify([shape, size, iconUrl, opacity, grayscale, brightness])
     const cached = styles.get(key)
     if (cached) {
       return cached
@@ -113,6 +115,7 @@ export function createPortraitMarkerStyles(onChange: () => void, ratio = window.
     }
     context.scale(pixelRatio, pixelRatio)
     context.imageSmoothingQuality = 'high'
+    context.filter = `grayscale(${grayscale ? 1 : 0}) brightness(${brightness})`
     drawPortraitMarker(context, shape)
     const result = [new Style({ image: new Icon({ img: canvas, scale: size / MARKER_SIZE / pixelRatio, opacity }) })]
     styles.set(key, result)

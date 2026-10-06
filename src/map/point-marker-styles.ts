@@ -11,12 +11,16 @@ import { echoMembers, NAVIGATION_NAMES } from '../domain/point-library.ts'
 import { bossMarkerShape, createPortraitMarkerStyles, PORTRAIT_MARKER_SIZES } from './boss-marker.ts'
 import { createEchoMarkerStyles } from './echo-marker.ts'
 
+export const NON_TELEPORT_OPACITY = 0.5
+export const NON_TELEPORT_BRIGHTNESS = 0.45
+
 export function createPointMarkerStyles(onChange: () => void, options: {
   exportMode?: boolean
   pixelRatio?: number
 } = {}) {
   const echoCosts = new Map<string, EchoDefinition['cost']>()
   const navigationStyleCache = new Map<string, Style[]>()
+  const pendingGrayscaleIcons = new Map<Icon, () => void>()
   const echoPortraitStyles = createPortraitMarkerStyles(onChange, options.pixelRatio)
   const echoGroupStyles = createEchoMarkerStyles(onChange, options.pixelRatio)
   const bossStyles = createPortraitMarkerStyles(onChange, options.pixelRatio)
@@ -53,13 +57,16 @@ export function createPointMarkerStyles(onChange: () => void, options: {
   }
 
   function navigation(location: NavigationPoint): Style[] {
+    const isFastTravel = location.mode === 'fast-travel'
     const shape = bossMarkerShape(location)
     if (shape && location.iconUrl) {
       const styles = bossStyles.getStyle({
         shape,
         size: PORTRAIT_MARKER_SIZES[4],
         iconUrl: location.iconUrl,
-        opacity: location.mode === 'fast-travel' ? 1 : 0.48,
+        opacity: isFastTravel ? 1 : NON_TELEPORT_OPACITY,
+        grayscale: !isFastTravel,
+        brightness: isFastTravel ? 1 : NON_TELEPORT_BRIGHTNESS,
       })
       if (styles) return styles
     }
@@ -70,18 +77,53 @@ export function createPointMarkerStyles(onChange: () => void, options: {
     if (options.exportMode && location.iconUrl && iconImageCache.get(location.iconUrl, null)?.getImageState() === ImageState.ERROR) {
       iconImageCache.set(location.iconUrl, null, null)
     }
-    const isFastTravel = location.mode === 'fast-travel'
     const styles = [new Style({
-      text: !location.iconUrl ? new Text({ text: NAVIGATION_NAMES[location.kind], offsetY: 18, font: '11px sans-serif', fill: new Fill({ color: '#cde8dc' }), stroke: new Stroke({ color: '#07120e', width: 3 }) }) : undefined,
+      text: !location.iconUrl ? new Text({ text: NAVIGATION_NAMES[location.kind], offsetY: 18, font: '11px sans-serif', fill: new Fill({ color: isFastTravel ? '#cde8dc' : `rgba(74, 74, 74, ${NON_TELEPORT_OPACITY})` }), stroke: new Stroke({ color: '#07120e', width: 3 }) }) : undefined,
       image: location.iconUrl
-        ? new Icon({ src: location.iconUrl, crossOrigin: 'anonymous', scale: 0.28, opacity: isFastTravel ? 1 : 0.48 })
-        : new CircleStyle({ radius: 6, fill: new Fill({ color: isFastTravel ? '#65f1c2' : 'rgba(151, 169, 162, 0.48)' }) }),
+        ? new Icon({ src: location.iconUrl, crossOrigin: 'anonymous', scale: 0.28, opacity: isFastTravel ? 1 : NON_TELEPORT_OPACITY })
+        : new CircleStyle({ radius: 6, fill: new Fill({ color: isFastTravel ? '#65f1c2' : `rgba(74, 74, 74, ${NON_TELEPORT_OPACITY})` }) }),
     })]
     navigationStyleCache.set(key, styles)
+    if (!isFastTravel) {
+      for (const style of styles) applyGrayscale(style)
+    }
     return styles
   }
 
+  function applyGrayscale(style: Style): void {
+    const icon = style.getImage()
+    if (!(icon instanceof Icon)) return
+    const scale = icon.getScale()
+    const update = () => {
+      const state = icon.getImageState()
+      if (state !== ImageState.LOADED && state !== ImageState.ERROR) return
+      icon.unlistenImageChange(update)
+      pendingGrayscaleIcons.delete(icon)
+      if (state === ImageState.ERROR) return
+      const size = icon.getSize()
+      const width = size?.[0]
+      const height = size?.[1]
+      if (!width || !height) return
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const context = canvas.getContext('2d')
+      if (!context) return
+      // Reducing brightness adds a black overlay without filling transparent pixels.
+      context.filter = `grayscale(1) brightness(${NON_TELEPORT_BRIGHTNESS})`
+      context.drawImage(icon.getImage(1), 0, 0)
+      style.setImage(new Icon({ img: canvas, scale, opacity: NON_TELEPORT_OPACITY }))
+      onChange()
+    }
+    pendingGrayscaleIcons.set(icon, update)
+    icon.listenImageChange(update)
+    icon.load()
+    update()
+  }
+
   function dispose(): void {
+    for (const [icon, update] of pendingGrayscaleIcons) icon.unlistenImageChange(update)
+    pendingGrayscaleIcons.clear()
     echoPortraitStyles.dispose()
     echoGroupStyles.dispose()
     bossStyles.dispose()

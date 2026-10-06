@@ -55,12 +55,6 @@ export const navigationPointTypes = {
     icons: ['icon-6c6f88b7fdddf131', 'icon-acc273d641dd2a07', 'icon-d47d4bc656459591', 'icon-4348096f28bb1337'],
     names: [],
   }),
-  'challenge': defineType({
-    displayTier: 'far',
-    name: '常驻挑战', kind: 'challenge', defaultMode: 'fast-travel', teleportLocked: true,
-    icons: [],
-    names: [],
-  }),
   'exploration-quest': defineType({
     name: '危行任务', kind: 'landmark', defaultMode: 'landmark', teleportLocked: false,
     icons: ['icon-05f43f9613d478b8'],

@@ -250,7 +250,7 @@ describe('complete official map categories', () => {
       { id: '9', name: 'NPC及服务点', children: [{ id: 'new-service', name: '新服务', icon: 'service.png', tableName: '大地图-NPC' }] },
     ]
     const catalog = normalizeMapAssets([{ state: { id: 8 }, catalogData }], 'hash', '2026-10-01', {
-      types: {}, includeTableNames: { '大地图-副本挑战': 'challenge', '大地图-NPC': 'service' },
+      types: {}, includeTableNames: { '大地图-副本挑战': 'material-domain', '大地图-NPC': 'service' },
     })
     expect(filterOfficialAssets(catalog.assets, 'navigation', null, '').map(({ name }) => name)).toEqual(['中枢信标', '罗蕾莱', '新挑战', '新服务'])
     expect(catalog.assets.every((asset) => !('coordinate' in asset) && !('location' in asset))).toBe(true)

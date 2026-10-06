@@ -55,8 +55,8 @@ describe('map point zoom visibility', () => {
     expect(isMapPointVisibleAtZoom(service, 0)).toBe(false)
   })
 
-  it('uses near visibility when the type is unset, regardless of navigation kind', () => {
-    const location = navigationPoint('central-beacon')
+  it.each(['nexus', 'challenge'] as const)('uses near visibility when the type is unset for %s', (kind) => {
+    const location = { ...navigationPoint('central-beacon'), kind }
     delete location.pointType
     const point: MapDisplayPoint = { category: 'navigation', location }
     for (const zoom of [0, 8.99, 9, 15.99, 16, 35]) {
@@ -66,7 +66,7 @@ describe('map point zoom visibility', () => {
 
   it.each([
     ['central-beacon', 0], ['normal-boss', 0], ['weekly-boss', 0], ['hologram', 0],
-    ['small-beacon', 9], ['nightmare-boss', 9], ['material-domain', 9], ['tacet-field', 9], ['challenge', 9],
+    ['small-beacon', 9], ['nightmare-boss', 9], ['material-domain', 9], ['tacet-field', 9],
     ['echo-settlement', 16],
     ['entrance', 16], ['service', 16],
   ] as const)('shows %s from step %s onwards', (type, threshold) => {
