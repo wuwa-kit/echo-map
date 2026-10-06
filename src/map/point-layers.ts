@@ -64,6 +64,8 @@ const FLOOR_BADGE_COLORS = {
 const NAVIGATION_MARKER_SIZE = 36
 // Reserve a complete range below teleport markers for the icon and its floor badge.
 const NON_TELEPORT_Z_INDEX = -4
+// Each integer height owns the full range of marker and floor-badge styles.
+const NAVIGATION_HEIGHT_Z_INDEX_STEP = 8
 const ECHO_CLUSTER_DISTANCE = 32
 const EXPORT_MARKER_SCALE = 0.6
 
@@ -100,6 +102,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   const badge = FLOOR_BADGE_GEOMETRY
   let selectedLevelId: string | null = null
   const floorBadgeStyleCache = new globalThis.Map<string, Style[]>()
+  let navigationHeightStyles = new WeakMap<Style, Map<number, Style>>()
   // The stem visible above the official badge belongs to its underlying marker, not to the badge itself.
   function floorBadgeStylesFor(markerSize: [number, number], otherFloor: boolean, nonTeleport = false): Style[] {
     const key = `${otherFloor}:${nonTeleport}:${markerSize.map((size) => size.toFixed(3)).join(':')}`
@@ -315,10 +318,31 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     const showFloorBadge = point.category !== 'region-name'
       && point.location.levelId !== null
       && (point.category !== 'navigation' || point.location.typeName !== '分层入口')
-    return showFloorBadge && Array.isArray(style)
+    const styles = showFloorBadge && Array.isArray(style)
       ? [...style, ...floorBadgeStylesFor(renderedMarkerSize(style),
         selectedLevelId === null || point.location.levelId !== selectedLevelId,
         nonTeleport)] : style
+    if (point.category !== 'navigation' || !Array.isArray(styles)) return styles
+    const height = point.location.gameCoordinate?.z ?? 0
+    return styles.map((base) => {
+      let byHeight = navigationHeightStyles.get(base)
+      if (!byHeight) {
+        byHeight = new Map()
+        navigationHeightStyles.set(base, byHeight)
+      }
+      let elevated = byHeight.get(height)
+      if (!elevated) {
+        elevated = base.clone()
+        byHeight.set(height, elevated)
+      }
+      // Share artwork so asynchronous image loading, grayscale and export sizing stay current.
+      const image = base.getImage()
+      const text = base.getText()
+      if (image) elevated.setImage(image)
+      if (text) elevated.setText(text)
+      elevated.setZIndex(height * NAVIGATION_HEIGHT_Z_INDEX_STEP + (base.getZIndex() ?? 0))
+      return elevated
+    })
   }
 
   function labelStyle(label: RegionLabel): Style {
@@ -347,6 +371,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     markerStyles.updateEchoes(echoes, activeEchoIds)
     selectedLevelId = levelId
     clusterStyleCache = new WeakMap()
+    navigationHeightStyles = new WeakMap()
     echoSource.clear(true)
     navigationSource.clear(true)
     backgroundEchoSource.clear(true)

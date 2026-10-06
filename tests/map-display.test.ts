@@ -45,6 +45,36 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('map display layer integration', () => {
+  it.each([false, true])('orders complete navigation markers by height (export: %s)', (exportMode) => {
+    const points = createPointLayers(() => false, { exportMode })
+    const base = { ...navigationPoint('small-beacon'), iconUrl: '' }
+    const render = (z: number | null, mode: NavigationPoint['mode'], levelId: string | null) => {
+      const styles = points.styleFor({
+        category: 'navigation',
+        location: { ...base, mode, levelId, gameCoordinate: z === null ? null : { x: 0, y: 0, z } },
+      })
+      if (!Array.isArray(styles)) throw new Error('需要定位点样式')
+      return styles
+    }
+    const indices = (styles: Style[]) => styles.map((style) => style.getZIndex() ?? 0)
+    try {
+      for (const height of [-50, 0, 49]) {
+        for (const mode of ['fast-travel', 'landmark'] as const) {
+          const lower = render(height, 'fast-travel', 'a1')
+          const upper = render(height + 1, mode, null)
+          expect(Math.min(...indices(upper))).toBeGreaterThan(Math.max(...indices(lower)))
+          // Rendering a shared icon at another height must not change earlier styles.
+          const savedUpper = indices(upper)
+          render(height - 1, mode, null)
+          expect(indices(upper)).toEqual(savedUpper)
+        }
+      }
+      expect(indices(render(null, 'fast-travel', null))).toEqual(indices(render(0, 'fast-travel', null)))
+      expect(Math.min(...indices(render(50, 'fast-travel', null))))
+        .toBeGreaterThan(Math.max(...indices(render(50, 'landmark', 'a1'))))
+    } finally { points.dispose() }
+  })
+
   it('keeps floor point badges visible on the base map and when switching floors', () => {
     const points = createPointLayers()
     const point = referenceDataset.navigationPoints[0]

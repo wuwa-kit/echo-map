@@ -2,6 +2,87 @@
   "version": 1,
   "points": [
     {
+      "id": "1d3176e3-104e-4aba-bc72-f1eb027ba3e8",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2859,
+        "y": 1294,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "约兰的战术测试",
+      "navigationKind": "landmark",
+      "iconId": "icon-0d152396b24b32ed",
+      "mode": "landmark"
+    },
+    {
+      "id": "20f14d02-aee2-4663-8bb5-903c28d8d265",
+      "stateId": 8,
+      "coordinate": {
+        "x": 3078,
+        "y": 1236,
+        "z": 48
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "库默尼商行",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-b0b95e3398fcc02c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "3e7fe80f-c505-4399-809e-118f84014410",
+      "stateId": 8,
+      "coordinate": {
+        "x": 3137,
+        "y": 753,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "棘刺河豚",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "landmark"
+    },
+    {
+      "id": "43ef12b3-39f8-4f74-bf71-efcfb6dc52f4",
+      "stateId": 8,
+      "coordinate": {
+        "x": 3152,
+        "y": 1457,
+        "z": 16
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "鸣泣之刃",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "landmark"
+    },
+    {
+      "id": "4a0851eb-1a59-4087-aaa8-5a6bef3214e5",
+      "stateId": 8,
+      "coordinate": {
+        "x": 3131,
+        "y": 964,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "约兰的战术测试",
+      "navigationKind": "landmark",
+      "iconId": "icon-0d152396b24b32ed",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 3124,
+        "y": 933,
+        "z": 0
+      }
+    },
+    {
       "id": "4b073085-50cf-4dd5-af8b-c2eefa3e98de",
       "stateId": 8,
       "coordinate": {
@@ -18,6 +99,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "4ce8fd84-bc19-4c47-88fe-3f3426dde284",
+      "stateId": 8,
+      "coordinate": {
+        "x": 3179,
+        "y": 1256,
+        "z": 2
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "约兰的战术测试",
+      "navigationKind": "landmark",
+      "iconId": "icon-0d152396b24b32ed",
+      "mode": "landmark"
+    },
+    {
       "id": "5e8a5d8d-fbd4-4726-8fc9-4c4ad5edf591",
       "stateId": 8,
       "coordinate": {
@@ -31,6 +127,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "8e55ab5b-a927-467e-bb5c-ab3d5a257053",
+      "stateId": 8,
+      "coordinate": {
+        "x": 3051,
+        "y": 1272,
+        "z": 48
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "库卡斯",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-07be844f01f9bc26",
       "mode": "fast-travel"
     },
     {

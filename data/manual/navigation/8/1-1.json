@@ -50,6 +50,26 @@
       "mode": "fast-travel"
     },
     {
+      "id": "02a8be03-539e-476a-a1c0-8a7de04c153b",
+      "stateId": 8,
+      "coordinate": {
+        "x": 448,
+        "y": 839,
+        "z": 11
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "逆境深塔",
+      "navigationKind": "landmark",
+      "iconId": "icon-3dbd69e26723a934",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 433,
+        "y": 831,
+        "z": 5
+      }
+    },
+    {
       "id": "037bc914-0b04-461d-9bfd-41e974f11dfd",
       "stateId": 8,
       "coordinate": {
@@ -162,6 +182,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "130b6c46-34ab-4f92-8b7b-fc2fc7572a7e",
+      "stateId": 8,
+      "coordinate": {
+        "x": 947,
+        "y": 3208,
+        "z": 26
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "全息战略",
+      "navigationKind": "hologram",
+      "pointType": "hologram",
+      "iconId": "icon-6c6f88b7fdddf131",
+      "mode": "landmark"
+    },
+    {
       "id": "13927dd5-7f5e-4189-b740-0b8382acd3d3",
       "stateId": 8,
       "coordinate": {
@@ -175,6 +211,22 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1579ace9-78c9-4dbc-bc45-261b86d27cc2",
+      "stateId": 8,
+      "coordinate": {
+        "x": -390,
+        "y": 984,
+        "z": 25
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "杂货",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-c58c3aea6d69dcbc",
       "mode": "fast-travel"
     },
     {
@@ -194,6 +246,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "17cd69b0-b7fa-48c9-ab5e-36240aecd74d",
+      "stateId": 8,
+      "coordinate": {
+        "x": -410,
+        "y": -589,
+        "z": 294
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无常凶鹭",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-a3c10157f1086370",
+      "mode": "fast-travel"
+    },
+    {
       "id": "19b3ded3-f03d-4ddc-97db-d226a3ccbacd",
       "stateId": 8,
       "coordinate": {
@@ -208,6 +276,23 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "1aa23452-3a67-4d30-b609-834503525564",
+      "stateId": 8,
+      "levelId": "-1/1",
+      "coordinate": {
+        "x": 2177,
+        "y": 3366,
+        "z": -66
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
     },
     {
       "id": "1d53c6c7-80cb-4c10-8117-32262b10f51e",
@@ -258,6 +343,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "20ccf663-67ac-45d7-b882-157653a772ad",
+      "stateId": 8,
+      "coordinate": {
+        "x": -371,
+        "y": 1830,
+        "z": -159
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
       "id": "20debaa5-6bee-43cc-a278-182bd5e9fe55",
       "stateId": 8,
       "coordinate": {
@@ -303,6 +404,23 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "28a1abaa-e23a-4c2d-b316-2ee551419e88",
+      "stateId": 8,
+      "levelId": "-1/7",
+      "coordinate": {
+        "x": -209,
+        "y": 1947,
+        "z": -191
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "辉萤军势",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-6f39ee6efb2f8da5",
       "mode": "fast-travel"
     },
     {
@@ -352,6 +470,22 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "2de66c28-865f-4d72-987b-8553525c8fca",
+      "stateId": 8,
+      "coordinate": {
+        "x": -682,
+        "y": 309,
+        "z": -1
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "朔雷之鳞",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-a5d696eded142fa9",
+      "mode": "landmark"
     },
     {
       "id": "30742c35-9f0d-40ca-8072-c58bd9281fa8",
@@ -517,6 +651,59 @@
       "mode": "fast-travel"
     },
     {
+      "id": "4c249457-b102-45ec-8f5d-d0c367ba254d",
+      "stateId": 8,
+      "coordinate": {
+        "x": -127,
+        "y": 2001,
+        "z": -45
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "4ccf5874-77ec-402b-a66e-fd423806f9d4",
+      "stateId": 8,
+      "coordinate": {
+        "x": 794,
+        "y": 2948,
+        "z": -26
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "聚械机偶",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-b75c9197fb62a46a",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 754,
+        "y": 2992,
+        "z": 17
+      }
+    },
+    {
+      "id": "50aeac46-8a3d-493b-9a5a-7a62f3041ef8",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1465,
+        "y": 2082,
+        "z": 1
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "燎照之骑",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-8480faec330e0d21",
+      "mode": "landmark"
+    },
+    {
       "id": "5126d5f8-1d61-4ee4-af98-e38712f2dccb",
       "stateId": 8,
       "coordinate": {
@@ -530,6 +717,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "59bdaa39-e2c8-4ac7-8e32-c24e77f7d75c",
+      "stateId": 8,
+      "coordinate": {
+        "x": -325,
+        "y": -339,
+        "z": 203
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "云闪之鳞",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-34af81bbfb61ba8b",
       "mode": "fast-travel"
     },
     {
@@ -578,7 +781,7 @@
       "navigationKind": "tacet-field",
       "pointType": "tacet-field",
       "iconId": "icon-b73ecba5c4c73be0",
-      "mode": "landmark"
+      "mode": "fast-travel"
     },
     {
       "id": "67e716e7-ce64-414f-b2e0-696b8df7587c",
@@ -595,6 +798,22 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "6b2fdace-0f06-4633-8d2e-72bf0f8fdfbd",
+      "stateId": 8,
+      "coordinate": {
+        "x": -497,
+        "y": 1829,
+        "z": 13
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "饭馆",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-d46d97ebff06af5f",
+      "mode": "landmark"
     },
     {
       "id": "6f3ba4e1-294e-44f7-8add-c8fb9e59f176",
@@ -645,6 +864,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "72b03376-d5b6-4313-ab89-59a622fab4d4",
+      "stateId": 8,
+      "coordinate": {
+        "x": -344,
+        "y": 945,
+        "z": 20
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "印造台",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-c4f98f582c9dd99f",
+      "mode": "fast-travel"
+    },
+    {
       "id": "74c8e370-16a5-4982-aadf-c14c0b66536d",
       "stateId": 8,
       "coordinate": {
@@ -659,6 +894,43 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "76572f11-fe92-443e-9ea9-f186dc856676",
+      "stateId": 8,
+      "coordinate": {
+        "x": -770,
+        "y": 2437,
+        "z": 69
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "全息战略",
+      "navigationKind": "hologram",
+      "pointType": "hologram",
+      "iconId": "icon-6c6f88b7fdddf131",
+      "mode": "landmark"
+    },
+    {
+      "id": "77d3958a-97df-40de-83ab-b56799570bd4",
+      "stateId": 8,
+      "coordinate": {
+        "x": 669,
+        "y": 3299,
+        "z": -9
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "哀声鸷",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-a861633695aa54c1",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 693,
+        "y": 3267,
+        "z": -9
+      }
     },
     {
       "id": "782dfadd-0f0f-49b6-bb0b-57176a1f6b54",
@@ -677,6 +949,68 @@
       "mode": "fast-travel"
     },
     {
+      "id": "7b3ea8b1-ca66-4be2-97b3-1e9138db6e97",
+      "stateId": 8,
+      "coordinate": {
+        "x": -618,
+        "y": 1085,
+        "z": 5
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "先行公约",
+      "navigationKind": "landmark",
+      "iconId": "icon-ce690222976140c5",
+      "mode": "landmark"
+    },
+    {
+      "id": "7bc1079d-1e4b-409d-8a7c-d420e4e6ee56",
+      "stateId": 8,
+      "coordinate": {
+        "x": -324,
+        "y": 413,
+        "z": 37
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "神秘空间",
+      "navigationKind": "landmark",
+      "iconId": "icon-253e34bbabb46852",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "7d9048c7-6573-444b-a3c5-ebd6c4f2f7de",
+      "stateId": 8,
+      "coordinate": {
+        "x": 899,
+        "y": 2510,
+        "z": 75
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "7e982c49-7ed6-4bad-a677-6c9a5eb3272b",
+      "stateId": 8,
+      "coordinate": {
+        "x": -402,
+        "y": 1155,
+        "z": 15
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-a760dfcbafaa746d",
+      "mode": "fast-travel"
+    },
+    {
       "id": "7edef3ee-3fb9-4cea-9f8c-fccc1fa49207",
       "stateId": 8,
       "coordinate": {
@@ -691,6 +1025,23 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "7f2f5b5d-9651-475f-a6f6-8c2e5573f299",
+      "stateId": 8,
+      "levelId": "-1/3",
+      "coordinate": {
+        "x": 2571,
+        "y": 2841,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
     },
     {
       "id": "7f305b84-e6cb-4860-87e4-be737128b24b",
@@ -822,6 +1173,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "871ba504-2ba1-4fb1-92ed-50ed2befbfc8",
+      "stateId": 8,
+      "coordinate": {
+        "x": -170,
+        "y": 1691,
+        "z": 30
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "隐秘入口",
+      "navigationKind": "landmark",
+      "iconId": "icon-a20604c385ae8e59",
+      "mode": "landmark"
+    },
+    {
       "id": "88493b84-6006-4202-8ddf-526b312996ea",
       "stateId": 8,
       "coordinate": {
@@ -835,6 +1201,38 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "8e7b67b2-dca7-42ef-a930-5229381ba6cd",
+      "stateId": 8,
+      "coordinate": {
+        "x": -614,
+        "y": 435,
+        "z": 74
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "8fd5d0a3-7b75-4f68-8086-3c12302305ca",
+      "stateId": 8,
+      "coordinate": {
+        "x": -635,
+        "y": -93,
+        "z": 221
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
       "mode": "fast-travel"
     },
     {
@@ -852,6 +1250,27 @@
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
       "mode": "fast-travel"
+    },
+    {
+      "id": "90f8b5e1-c47a-4270-a633-5d9aec02c835",
+      "stateId": 8,
+      "coordinate": {
+        "x": -434,
+        "y": 2992,
+        "z": 49
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "飞廉之猩",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-1b18767990f50c6d",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -470,
+        "y": 2950,
+        "z": 48
+      }
     },
     {
       "id": "92c634fc-ba59-48f0-9a0b-52fc331d5924",
@@ -918,6 +1337,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "9a57fbf2-f5cb-4fe5-b2d7-248d7c96cc91",
+      "stateId": 8,
+      "coordinate": {
+        "x": -472,
+        "y": 1869,
+        "z": 2
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "药房",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-50b338ec14e96d80",
+      "mode": "landmark"
+    },
+    {
       "id": "9c80acfb-b2c4-4825-8068-1b980691c034",
       "stateId": 8,
       "coordinate": {
@@ -982,6 +1417,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "a41bbcfa-b1bf-497e-af44-649bd6826f63",
+      "stateId": 8,
+      "coordinate": {
+        "x": -412,
+        "y": 1007,
+        "z": 24
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "饭馆",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-d46d97ebff06af5f",
+      "mode": "fast-travel"
+    },
+    {
       "id": "a707e18d-3e63-4bba-b4fe-8d57e2bd20e7",
       "stateId": 8,
       "coordinate": {
@@ -1030,6 +1481,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "aab046e3-8981-44fb-a969-ee9bbadffc8f",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2684,
+        "y": 3245,
+        "z": 1
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
       "id": "ad2e4fcb-e835-41fc-a14f-9c6d8126ca1a",
       "stateId": 8,
       "coordinate": {
@@ -1059,6 +1526,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b01785d4-40db-439b-81fb-ee5244f8191b",
+      "stateId": 8,
+      "coordinate": {
+        "x": -319,
+        "y": 991,
+        "z": 27
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "合成台",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-ac9e0de71d8ea258",
       "mode": "fast-travel"
     },
     {
@@ -1206,6 +1689,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "b8949328-b2a8-42be-b784-6ba23ee5bf82",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1102,
+        "y": 732,
+        "z": 69
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无冠者",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-5fb2c9afe3c5ef4f",
+      "mode": "fast-travel"
+    },
+    {
       "id": "ba9f85d4-3e46-4a8a-85cb-4250f2adc9de",
       "stateId": 8,
       "coordinate": {
@@ -1270,6 +1769,38 @@
       "mode": "fast-travel"
     },
     {
+      "id": "c06f8a66-36b3-48f6-bf52-c28360d89c4b",
+      "stateId": 8,
+      "coordinate": {
+        "x": 24,
+        "y": 3128,
+        "z": 19
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "全息战略",
+      "navigationKind": "hologram",
+      "pointType": "hologram",
+      "iconId": "icon-6c6f88b7fdddf131",
+      "mode": "landmark"
+    },
+    {
+      "id": "c1c2d474-5ca3-472c-a3a0-502b7c178e87",
+      "stateId": 8,
+      "coordinate": {
+        "x": 173,
+        "y": -323,
+        "z": 102
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
       "id": "c36b56c9-6406-4fe5-8d41-8def010228fc",
       "stateId": 8,
       "coordinate": {
@@ -1318,6 +1849,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "c8c73fa1-5e9f-4426-a386-02ec8f534926",
+      "stateId": 8,
+      "coordinate": {
+        "x": -274,
+        "y": 1260,
+        "z": 118
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "秘境",
+      "navigationKind": "landmark",
+      "iconId": "icon-e7d44efaa6407ff6",
+      "mode": "fast-travel"
+    },
+    {
       "id": "c944d789-f744-4ee8-8a78-9cc3a418a352",
       "stateId": 8,
       "coordinate": {
@@ -1348,6 +1894,22 @@
       "pointType": "material-domain",
       "iconId": "icon-458b1db12b603d42",
       "mode": "fast-travel"
+    },
+    {
+      "id": "cc537cbf-269d-4c8a-87cd-52f7ac46b5fc",
+      "stateId": 8,
+      "coordinate": {
+        "x": -519,
+        "y": 1843,
+        "z": 17
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "虎口矿石",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-5936ab6519ade43f",
+      "mode": "landmark"
     },
     {
       "id": "ccf75598-be3c-455a-84e9-07e5641552fb",
@@ -1428,6 +1990,22 @@
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
       "mode": "fast-travel"
+    },
+    {
+      "id": "da3014ed-8bed-465c-923b-f733caf9576e",
+      "stateId": 8,
+      "coordinate": {
+        "x": 2938,
+        "y": 2796,
+        "z": 1
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "全息战略",
+      "navigationKind": "hologram",
+      "pointType": "hologram",
+      "iconId": "icon-6c6f88b7fdddf131",
+      "mode": "landmark"
     },
     {
       "id": "da30aca6-80fb-41b9-ba97-13c775bfe3de",
@@ -1526,6 +2104,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "de9ccf61-36a5-4f4b-a0e7-29e8fab0ff77",
+      "stateId": 8,
+      "coordinate": {
+        "x": -623,
+        "y": 1087,
+        "z": 5
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "团团团团转",
+      "navigationKind": "landmark",
+      "iconId": "icon-6f035abdc8ea86e4",
+      "mode": "fast-travel"
+    },
+    {
       "id": "e1764f84-a16c-45e8-977a-2f48bd62eb46",
       "stateId": 8,
       "coordinate": {
@@ -1540,6 +2133,22 @@
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
       "mode": "fast-travel"
+    },
+    {
+      "id": "e263061b-69e4-434f-bb4e-362f504dbdd4",
+      "stateId": 8,
+      "coordinate": {
+        "x": -99,
+        "y": 2009,
+        "z": 61
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "全息战略",
+      "navigationKind": "hologram",
+      "pointType": "hologram",
+      "iconId": "icon-6c6f88b7fdddf131",
+      "mode": "landmark"
     },
     {
       "id": "e32b06b2-232f-4bf0-b978-5f047bfc89c8",
@@ -1571,6 +2180,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ea393ab3-d405-4916-91cb-56a7ccc6c140",
+      "stateId": 8,
+      "coordinate": {
+        "x": -420,
+        "y": 1103,
+        "z": 2
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-50b338ec14e96d80",
       "mode": "fast-travel"
     },
     {
@@ -1606,6 +2231,26 @@
       "mode": "fast-travel"
     },
     {
+      "id": "f065c805-4a3d-4d69-a478-97dff56e3f0d",
+      "stateId": 8,
+      "coordinate": {
+        "x": 751,
+        "y": 2598,
+        "z": 23
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "失序梦途",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b59134ed1212370",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 764,
+        "y": 2574,
+        "z": 23
+      }
+    },
+    {
       "id": "f12e6815-c2e7-47dc-9a83-3e2700ab759e",
       "stateId": 8,
       "coordinate": {
@@ -1619,6 +2264,22 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "f2e8d0ff-62ae-47d5-b9fb-4713f8948d6c",
+      "stateId": 8,
+      "coordinate": {
+        "x": -503,
+        "y": 1111,
+        "z": 17
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "寻遗商人",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-07be844f01f9bc26",
       "mode": "fast-travel"
     },
     {
