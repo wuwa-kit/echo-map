@@ -13,6 +13,7 @@ import { navigationIconById, navigationTypeIcons } from '../src/domain/navigatio
 import { editorLibraryLocations, libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
 import { isMapPointVisibleAtZoom } from '../src/map/point-visibility.ts'
+import { parseTileId } from '../src/map/projection.ts'
 
 vi.mock('../src/data/load.ts')
 vi.mock('../src/data/editor-client.ts')
@@ -71,6 +72,61 @@ async function saveWithDuplicateConfirmation(store: ReturnType<typeof usePointEd
 }
 
 describe('point editor actions', () => {
+  it('validates partial combined and axis input without reusing stale coordinates', async () => {
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    store.setPointType('small-beacon')
+    store.setCoordinateText('-497, 449, 18')
+    store.applyCoordinateText()
+    const coordinate = { x: -497, y: 449, z: 18 }
+    store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, coordinate, '100000，'))
+    expect(store.tileErrors.position).toContain('当前 X 未命中')
+    expect(store.tileSaveBlocked).toBe(true)
+    expect(await store.savePoint()).toBe(false)
+    expect(saveEditorLibrary).not.toHaveBeenCalled()
+    store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, coordinate, '-497，'))
+    expect(store.tileErrors.position).toBe('')
+    store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, coordinate, ''))
+    expect(store.tileErrors.position).toBe('')
+    store.setCoordinate('x', '')
+    store.setCoordinate('y', '100000')
+    expect(store.tileErrors.position).toContain('当前 Y 未命中')
+    store.updateCoordinateInput(true, editCoordinateInput(store.arrivalInput, { x: null, y: null, z: null }, '100000, '))
+    expect(store.tileErrors.arrival).toContain('传送落点 X 未命中')
+  })
+
+  it('blocks editing outside tile coverage and preserves the stored point and draft', async () => {
+    disk = { version: 1, points: [mixedPoint()] }
+    const store = usePointEditorStore()
+    await store.load('echo')
+    store.selectPoint('mixed-point')
+    store.setCoordinate('x', '999999')
+    expect(store.tileErrors.position).toContain('未命中')
+    expect(await store.saveAllForms()).toBe(false)
+    expect(saveEditorLibrary).not.toHaveBeenCalled()
+    expect(disk.points[0]?.coordinate.x).toBe(-497)
+    expect(store.draft?.coordinate.x).toBe(999999)
+    store.setCoordinate('x', '-497')
+    expect(store.tileSaveBlocked).toBe(false)
+    expect(await store.savePoint()).toBe(true)
+  })
+
+  it('checks pending arrival input and permits removing the optional arrival', async () => {
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    store.setPointType('small-beacon')
+    store.setCoordinateText('-497, 449, 18')
+    store.applyCoordinateText()
+    store.updateCoordinateInput(true, editCoordinateInput(store.arrivalInput, { x: null, y: null, z: null }, '999999, 449, 18'))
+    expect(store.tileErrors.arrival).toContain('未命中')
+    expect(await store.savePoint()).toBe(false)
+    expect(saveEditorLibrary).not.toHaveBeenCalled()
+    store.setTeleportCoordinateText('')
+    for (const axis of ['x', 'y', 'z'] as const) store.setTeleportCoordinate(axis, '')
+    expect(store.tileSaveBlocked).toBe(false)
+    expect(await store.savePoint()).toBe(true)
+  })
+
   it('previews incomplete XY and requires explicit confirmation before persisting duplicates', async () => {
     disk = { version: 1, points: [mixedPoint()] }
     const store = usePointEditorStore()
@@ -428,11 +484,22 @@ describe('point editor actions', () => {
 
     expect(store.draft).toMatchObject({ ...previous, stateId: destination.stateId, levelId: null, gravityType: null })
     expect(store.dirty).toBe(true)
+    expect(store.tileSaveBlocked).toBe(true)
+    expect(store.confirmPosition(true, 100)).toBe('wait')
+    expect(await store.savePoint()).toBe(false)
+    expect(saveEditorLibrary).not.toHaveBeenCalled()
+    const tileId = referenceDataset.states.find(({ id }) => id === destination.stateId)?.tileIds[0]
+    const tile = tileId ? parseTileId(tileId) : null
+    if (!tile) throw new Error('目标地图缺少瓦片')
+    const coordinate = { x: Math.round((tile.x - 0.5) * 850), y: Math.round((0.5 - tile.y) * 850), z: 30 }
+    store.setCoordinateText(`${coordinate.x}, ${coordinate.y}, ${coordinate.z}`)
+    store.applyCoordinateText()
+    expect(store.tileSaveBlocked).toBe(false)
     expect(store.confirmPosition(false, 100)).toBe('locate')
     expect(store.confirmPosition(true, 200)).toBe('wait')
     expect(store.confirmPosition(true, 300)).toBe('save')
     expect(await store.savePoint()).toBe(true)
-    expect(disk.points[0]).toMatchObject({ id: previous.id, stateId: destination.stateId, coordinate: previous.coordinate, note: previous.note })
+    expect(disk.points[0]).toMatchObject({ id: previous.id, stateId: destination.stateId, coordinate, note: previous.note })
   })
 
   it('preserves pending coordinate buffers while clearing floor and gravity from the previous map', async () => {
@@ -1892,10 +1959,10 @@ it('allows retry after the initial editor library load fails', async () => {
   expect(store.error).toBe('')
 })
 
-it('persists the last ten distinct icon selections across new points and reloads', async () => {
+it('persists the last thirty distinct icon selections across new points and reloads', async () => {
   const store = usePointEditorStore()
   await store.load('navigation')
-  const icons = navigationTypeIcons(undefined).slice(0, 12)
+  const icons = navigationTypeIcons(undefined).slice(0, 32)
   for (const icon of icons) store.setIcon(icon.id)
   expect(store.recentIconIds).toEqual(icons.slice(2).reverse().map(({ id }) => id))
   const reused = icons[4]
@@ -1926,12 +1993,12 @@ it('updates the name with fixed artwork on type changes but preserves edits when
   expect(store.draft).toMatchObject({ name: '入口', iconId: navigationPointTypes.entrance.icons[0] })
 })
 
-it('restores only ten distinct known icon IDs from local preferences', async () => {
-  const ids = navigationTypeIcons(undefined).slice(0, 12).map(({ id }) => id)
+it('restores only thirty distinct known icon IDs from local preferences', async () => {
+  const ids = navigationTypeIcons(undefined).slice(0, 32).map(({ id }) => id)
   cache.set('echo-map:point-editor:recent-icons:v1', JSON.stringify([null, 12, 'unknown', ids[0], ...ids]))
   const store = usePointEditorStore()
   await store.load('navigation')
-  expect(store.recentIconIds).toEqual(ids.slice(0, 10))
+  expect(store.recentIconIds).toEqual(ids.slice(0, 30))
 })
 
 it.each(['invalid-json', '{}', 'null'])('ignores malformed recent icon preferences: %s', async (saved) => {

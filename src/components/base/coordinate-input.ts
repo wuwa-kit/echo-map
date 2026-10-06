@@ -59,6 +59,14 @@ export function coordinateInputXY(state: CoordinateInputState, value: Coordinate
   return [value.x, value.y]
 }
 
+export function coordinateInputPartialXY(state: CoordinateInputState, value: CoordinateValue): [number | null, number | null] {
+  if (state.mode === 'combined' && state.textPending) {
+    const [x, y] = extractIntegers(state.text ?? '')
+    return [x ?? null, y ?? null]
+  }
+  return [state.axisPending.x ? null : value.x, state.axisPending.y ? null : value.y]
+}
+
 export function coordinateInputPreviewXY(state: CoordinateInputState, value: CoordinateValue): [number, number] | null {
   if (state.mode === 'combined' && state.textPending) {
     const [x, y] = extractIntegers(state.text ?? '', true)

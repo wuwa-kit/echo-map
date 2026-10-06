@@ -52,7 +52,7 @@ const candidates = shallowRef<string[]>([])
 const pending = shallowRef<(() => void) | null>(null)
 const positionConfirmationHint = computed(() => {
   const point = draft.value
-  if (!point || busy.value || pending.value || importPreview.value || point.stateId !== explorer.selectedStateId) return ''
+  if (!point || busy.value || store.tileSaveBlocked || pending.value || importPreview.value || point.stateId !== explorer.selectedStateId) return ''
   const committed = commitCoordinateInput(store.positionInput, point.coordinate)
   if (!committed.valid || !coordinateInputXY(committed.state, committed.value)
     || !coordinateAxes.every((axis) => Number.isSafeInteger(committed.value[axis]))) return ''
@@ -244,7 +244,7 @@ onBeforeRouteLeave(() => {
         <div class="flex shrink-0 items-center gap-[10px] border-t border-[var(--line)] p-[14px]">
           <WuButton v-if="existing" variant="ghost" tone="danger" :disabled="busy" :loading="operation === 'delete'" @click="deletePoint">删除</WuButton>
           <WuCheckBox v-if="canContinueAdding" class="flex min-h-[40px] items-center gap-[8px] text-[12px]" :model-value="continueAdding" :disabled="busy" @update:model-value="store.setContinueAdding">保存后复用名称和图标</WuCheckBox>
-          <WuButton class="ml-auto" variant="solid" tone="accent" :disabled="busy" :loading="operation === 'save' && !pending" @click="save">保存</WuButton>
+          <WuButton class="ml-auto" variant="solid" tone="accent" :disabled="busy || store.tileSaveBlocked" :loading="operation === 'save' && !pending" @click="save">保存</WuButton>
         </div>
     </div>
     <div v-else class="flex flex-1 flex-col items-center justify-center gap-[12px] text-[13px] text-[#91ae9e]"><span>{{ busy ? '正在加载…' : '加载失败' }}</span><WuButton v-if="!busy" @click="loadEditor">重试</WuButton></div>

@@ -1,4 +1,4 @@
-import { emptyCoordinateInput, coordinateInputPending, coordinateInputXY, commitCoordinateInput, coordinateAxes } from '../components/base/coordinate-input.ts'
+import { emptyCoordinateInput, coordinateInputPending, coordinateInputXY, coordinateInputPartialXY, commitCoordinateInput, coordinateAxes } from '../components/base/coordinate-input.ts'
 import type { CoordinateInputState, CoordinateInputChange } from '../components/base/coordinate-input.ts'
 import { navigationIconById, navigationTypeIcons } from '../domain/navigation-icons.ts'
 import { navigationPointTypes } from '../domain/navigation-point-types.ts'
@@ -17,11 +17,12 @@ import { hasGravityMap } from '../domain/gravity.ts'
 import { useExplorerStore } from './explorer.ts'
 import { createFloorCoverage, floorsAtCoordinate } from '../map/floor-coverage.ts'
 import { gameToMapCoordinate } from '../map/projection.ts'
+import { hitsMapTile } from '../map/tile-coverage.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
 
 const CONTINUE_ADDING_KEY = 'echo-map:point-editor:continue-adding:v1'
 const RECENT_ICONS_KEY = 'echo-map:point-editor:recent-icons:v1'
-const RECENT_ICONS_LIMIT = 10
+const RECENT_ICONS_LIMIT = 30
 const POSITION_CONFIRM_INTERVAL = 600
 
 type EditorKind = AuthoredPoint['kind']
@@ -110,6 +111,27 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     levelId: pointLevelId.value,
   }, true) : null)
   const completePoints = computed(() => freeze(combinePointLibraries(library.value, officialLibrary.value), true).points)
+  const tileErrors = computed(() => {
+    const point = draft.value
+    if (!point) return { position: '', arrival: '' }
+    const reference = dataset.value
+    const state = pointState.value
+    if (!reference || !state) return { position: '地图数据未就绪，暂时无法保存', arrival: '' }
+    const position = coordinateInputPartialXY(positionInput.value, point.coordinate)
+    const arrival = point.kind === 'navigation' && point.mode === 'fast-travel'
+      ? coordinateInputPartialXY(arrivalInput.value, point.teleportCoordinate ?? { x: null, y: null, z: null }) : null
+    function message(coordinate: readonly [number | null, number | null] | null, prefix: string, levelId: string | null = null): string {
+      if (!coordinate?.some((value) => value !== null) || !state || !reference || !point
+        || hitsMapTile(state, reference.source.tileWidth, coordinate, point.gravityType, levelId)) return ''
+      const axes = coordinate[0] === null ? 'Y' : coordinate[1] === null ? 'X' : 'XY'
+      return `${prefix} ${axes} 未命中所选地图的瓦片，请检查坐标或切换地图`
+    }
+    return {
+      position: message(position, '当前', point.levelId),
+      arrival: message(arrival, '传送落点'),
+    }
+  })
+  const tileSaveBlocked = computed(() => !dataset.value || !pointState.value || Boolean(tileErrors.value.position || tileErrors.value.arrival))
   const baseline = formField('baseline')
   const importPreview = shallowRef<PointLibrary | null>(null)
   const monsterSearch = formField('monsterSearch')
@@ -405,6 +427,11 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   function confirmPosition(inView: boolean, now = Date.now()): 'locate' | 'wait' | 'save' {
     const point = draft.value
     if (busy.value || !point) return 'wait'
+    if (tileSaveBlocked.value) {
+      resetPositionConfirmation()
+      error.value = tileErrors.value.position || tileErrors.value.arrival
+      return 'wait'
+    }
     const xy = coordinateInputXY(positionInput.value, point.coordinate)
     if (!xy || coordinateInputPending(positionInput.value) || positionInput.value.invalid
       || coordinateAxes.some((axis) => !Number.isSafeInteger(point.coordinate[axis]))) {
@@ -522,6 +549,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     const invalid = Object.values(inputErrors.value)[0]
     if (invalid) {
       error.value = '请检查标出的字段'
+      return false
+    }
+    if (tileSaveBlocked.value) {
+      error.value = tileErrors.value.position || tileErrors.value.arrival || '地图数据未就绪，暂时无法保存'
       return false
     }
     const saved = draft.value
@@ -835,6 +866,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   return {
+    tileErrors: shallowReadonly(tileErrors), tileSaveBlocked: shallowReadonly(tileSaveBlocked),
     workspace: shallowReadonly(workspace), managedPoints, managePoints, refreshPublishedPoints, createPointExport, importLabel: shallowReadonly(importLabel),
     confirmPosition, resetPositionConfirmation,
     duplicateTarget, duplicateCandidates, duplicateConfirmation: shallowReadonly(duplicateConfirmation), confirmDuplicate,

@@ -55,8 +55,10 @@ function filterAxisInput(axis: CoordinateAxis, event: Event): void {
       </div>
       <WuButton icon-only :icon="state.mode === 'combined' ? 'coordinate-axes' : 'coordinate-combined'" :tooltip="state.mode === 'combined' ? '切换为分轴输入' : '切换为整组输入'" :disabled="disabled" @click="toggle"></WuButton>
     </div>
-    <div v-if="confirmationHint !== undefined" class="mt-[4px] h-[18px] text-[12px] leading-[18px] text-[#91ae9e]">
-      <span class="invisible group-has-[input:focus]:visible">{{ disabled ? '' : confirmationHint }}</span>
+    <div v-if="confirmationHint !== undefined || $slots.hint" class="mt-[4px] h-[18px] text-[12px] leading-[18px] text-[#91ae9e]">
+      <slot name="hint">
+        <span class="invisible group-has-[input:focus]:visible">{{ disabled ? '' : confirmationHint }}</span>
+      </slot>
     </div>
   </div>
 </template>
