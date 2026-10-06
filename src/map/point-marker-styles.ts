@@ -11,7 +11,7 @@ import { echoMembers, NAVIGATION_NAMES } from '../domain/point-library.ts'
 import { bossMarkerShape, createPortraitMarkerStyles, PORTRAIT_MARKER_SIZES } from './boss-marker.ts'
 import { createEchoMarkerStyles } from './echo-marker.ts'
 
-export const NON_TELEPORT_OPACITY = 0.5
+export const NON_TELEPORT_OPACITY = 0.75
 export const NON_TELEPORT_BRIGHTNESS = 0.45
 
 export function createPointMarkerStyles(onChange: () => void, options: {
