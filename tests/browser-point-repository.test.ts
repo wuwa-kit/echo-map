@@ -3,15 +3,77 @@ import { IDBFactory, IDBObjectStore as FakeObjectStore } from 'fake-indexeddb'
 import { initializeBrowserPointLibrary, readBrowserPointSnapshot, readBrowserPointVersion, readBrowserPointVersions, saveBrowserPointLibrary, synchronizeBrowserPoints } from '../src/data/browser-point-repository.ts'
 import { mixedPoint } from './fixtures/point-library.ts'
 import type { PointLibrary } from '../src/domain/types.ts'
+import { navigationPointTypes } from '../src/domain/navigation-point-types.ts'
 
 function library(note = ''): PointLibrary {
   return { version: 1, points: [{ ...mixedPoint(), note }] }
+}
+
+async function storeOldSnapshot(value: unknown) {
+  await initializeBrowserPointLibrary(library())
+  await new Promise<void>((resolve, reject) => {
+    const request = indexedDB.open('echo-map:point-editor', 1)
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => {
+      const database = request.result
+      const transaction = database.transaction(['library', 'history'], 'readwrite')
+      transaction.objectStore('library').put(value, 'current')
+      transaction.objectStore('history').put(value, 'old')
+      transaction.oncomplete = () => { database.close(); resolve() }
+      transaction.onabort = () => { database.close(); reject(transaction.error) }
+    }
+  })
+}
+
+const oldNavigationPoint = {
+  id: 'old-boss', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
+  coordinate: { x: 1, y: 2, z: 3 }, name: '旧首领', navigationKind: 'boss', mode: 'fast-travel',
+  iconId: navigationPointTypes['normal-boss'].icons[0], note: '保留记录',
 }
 
 beforeEach(() => vi.stubGlobal('indexedDB', new IDBFactory()))
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 describe('IndexedDB point repository', () => {
+  it.each(['nightmare-boss', 'future-type'])('unsets %s in published points, local changes and history without losing edits', async (pointType) => {
+    const before = { ...oldNavigationPoint, pointType }
+    const after = { ...before, note: '本地修改' }
+    await storeOldSnapshot({ revision: 'old', workspace: {
+      version: 1, published: { version: 1, points: [before] },
+      changes: [{ id: before.id, before, after, needsReview: false }],
+    } })
+    const snapshot = await readBrowserPointSnapshot()
+    expect(snapshot?.workspace?.published.points).toEqual([oldNavigationPoint])
+    expect(snapshot?.workspace?.changes).toEqual([{
+      id: before.id, before: oldNavigationPoint, after: { ...oldNavigationPoint, note: '本地修改' }, needsReview: false,
+    }])
+    expect(snapshot?.library.points).toEqual([{ ...oldNavigationPoint, note: '本地修改' }])
+    expect(await readBrowserPointVersion('old')).toEqual(snapshot?.library)
+    expect(await initializeBrowserPointLibrary(library())).toEqual(snapshot)
+    if (!snapshot) throw new Error('Expected old snapshot')
+    const saved = await saveBrowserPointLibrary(snapshot.library, snapshot.revision)
+    expect(await readBrowserPointSnapshot()).toEqual(saved)
+  })
+
+  it.each(['normal-boss', 'retired-type'])('reads legacy snapshots and bare historical libraries with %s', async (pointType) => {
+    const oldLibrary = { version: 1, points: [{ ...oldNavigationPoint, pointType }] }
+    const expected = { version: 1, points: [pointType === 'normal-boss' ? { ...oldNavigationPoint, pointType } : oldNavigationPoint] }
+    await storeOldSnapshot({ revision: 'old', library: oldLibrary })
+    expect((await readBrowserPointSnapshot())?.library).toEqual(expected)
+    expect(await readBrowserPointVersion('old')).toEqual(expected)
+    await storeOldSnapshot(oldLibrary)
+    expect(await readBrowserPointVersion('old')).toEqual(expected)
+  })
+
+  it.each([
+    { ...oldNavigationPoint, pointType: 123 },
+    { ...oldNavigationPoint, pointType: 'retired-type', coordinate: { x: 'invalid', y: 2, z: 3 } },
+  ])('still rejects malformed stored coordinates and non-string types: $pointType', async (point) => {
+    await storeOldSnapshot({ revision: 'old', library: { version: 1, points: [point] } })
+    await expect(readBrowserPointSnapshot()).rejects.toThrow()
+    await expect(readBrowserPointVersion('old')).rejects.toThrow()
+  })
+
   it('persists baseline changes, recognizes published adoption, and rejects a save from before synchronization', async () => {
     const initial = await initializeBrowserPointLibrary(library('original'))
     const edited = await saveBrowserPointLibrary(library('local'), initial.revision)

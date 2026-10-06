@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { pointLibrarySchema, pointWorkspaceSchema } from '../domain/schema.ts'
+import { navigationPointTypeSchema, pointLibrarySchema, pointWorkspaceSchema } from '../domain/schema.ts'
 import { editWorkspace, reviewLegacyLibrary, samePointLibrary, workspaceLibrary } from '../domain/local-points.ts'
 import type { PointLibrary, PointWorkspace } from '../domain/types.ts'
 
@@ -8,7 +8,17 @@ const workspaceSnapshotSchema = z.object({ workspace: pointWorkspaceSchema, revi
 const versionSchema = z.object({ revision: z.string(), savedAt: z.string() })
 type Snapshot = z.infer<typeof editorSnapshotSchema> & { workspace?: PointWorkspace }
 
-function parseSnapshot(value: unknown): Snapshot {
+function clearUnknownPointTypes(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(clearUnknownPointTypes)
+  if (typeof value !== 'object' || value === null) return value
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key, field]) => !(key === 'pointType' && 'kind' in value && value.kind === 'navigation'
+      && typeof field === 'string' && !navigationPointTypeSchema.safeParse(field).success))
+    .map(([key, field]) => [key, clearUnknownPointTypes(field)]))
+}
+
+function parseSnapshot(storedValue: unknown): Snapshot {
+  const value = clearUnknownPointTypes(storedValue)
   const stored = workspaceSnapshotSchema.safeParse(value)
   if (stored.success) return { ...stored.data, library: workspaceLibrary(stored.data.workspace) }
   return editorSnapshotSchema.parse(value)
@@ -128,7 +138,7 @@ export function readBrowserPointVersions() {
 
 export function readBrowserPointVersion(revision: string): Promise<PointLibrary> {
   return transaction(['history'], 'readonly', async (transaction) => {
-    const stored = await requestResult<unknown>(transaction.objectStore('history').get(revision))
+    const stored = clearUnknownPointTypes(await requestResult<unknown>(transaction.objectStore('history').get(revision)))
     if (stored === undefined) throw new Error('找不到这个浏览器历史版本')
     const snapshot = editorSnapshotSchema.safeParse(stored)
     if (snapshot.success) return snapshot.data.library
