@@ -66,7 +66,7 @@ describe('map point zoom visibility', () => {
 
   it.each([
     ['central-beacon', 0], ['normal-boss', 0], ['weekly-boss', 0], ['hologram', 0],
-    ['small-beacon', 9], ['nightmare-boss', 9], ['material-domain', 9], ['tacet-field', 9],
+    ['small-beacon', 9], ['material-domain', 9], ['tacet-field', 9],
     ['echo-settlement', 16],
     ['entrance', 16], ['service', 16],
   ] as const)('shows %s from step %s onwards', (type, threshold) => {

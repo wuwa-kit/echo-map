@@ -36,13 +36,7 @@ export const navigationPointTypes = {
   }),
   'normal-boss': defineType({
     name: '普通 BOSS', kind: 'boss', defaultMode: 'fast-travel', teleportLocked: false,
-    icons: ['icon-5fb2c9afe3c5ef4f', 'icon-34af81bbfb61ba8b', 'icon-8480faec330e0d21', 'icon-1b18767990f50c6d', 'icon-a861633695aa54c1', 'icon-a3c10157f1086370', 'icon-b75c9197fb62a46a', 'icon-a5d696eded142fa9', 'icon-6f39ee6efb2f8da5', 'icon-c5ede23ba73dad81', 'icon-7b81e95a8b39868d', 'icon-a68bf2ea7fbe60b6', 'icon-329b20a475756ef2', 'icon-6f49bc80ea32a0af', 'icon-35a016bf18d6d146', 'icon-9fde2846e861820a', 'icon-02e3f41e4a6ece6a', 'icon-8ae8ca4bb6c58a82', 'icon-77bf05e5fde1ccef', 'icon-c2a9ff1fb45b32f5', 'icon-b581bc8404ff02f2', 'icon-5afd5e6a9a84c32d'],
-    names: [],
-  }),
-  'nightmare-boss': defineType({
-    displayTier: 'far',
-    name: '梦魇 BOSS', kind: 'boss', defaultMode: 'fast-travel', teleportLocked: false,
-    icons: ['icon-468be257f951b306', 'icon-86723158f9b8fb72', 'icon-998ee6d72e5e7ba7', 'icon-5d69abc0dd477e2f', 'icon-9a55aab6fd62592e', 'icon-037620842007a024', 'icon-77fe3b9e30342f61', 'icon-fd5bac1b69ba7763', 'icon-c088f57a65b4ef83', 'icon-297227e62170479c', 'icon-54cb799bcd01abd9'],
+    icons: ['icon-5fb2c9afe3c5ef4f', 'icon-34af81bbfb61ba8b', 'icon-8480faec330e0d21', 'icon-1b18767990f50c6d', 'icon-a861633695aa54c1', 'icon-a3c10157f1086370', 'icon-b75c9197fb62a46a', 'icon-a5d696eded142fa9', 'icon-6f39ee6efb2f8da5', 'icon-c5ede23ba73dad81', 'icon-7b81e95a8b39868d', 'icon-a68bf2ea7fbe60b6', 'icon-329b20a475756ef2', 'icon-6f49bc80ea32a0af', 'icon-35a016bf18d6d146', 'icon-9fde2846e861820a', 'icon-02e3f41e4a6ece6a', 'icon-8ae8ca4bb6c58a82', 'icon-77bf05e5fde1ccef', 'icon-c2a9ff1fb45b32f5', 'icon-b581bc8404ff02f2', 'icon-5afd5e6a9a84c32d', 'icon-468be257f951b306', 'icon-86723158f9b8fb72', 'icon-998ee6d72e5e7ba7', 'icon-5d69abc0dd477e2f', 'icon-9a55aab6fd62592e', 'icon-037620842007a024', 'icon-77fe3b9e30342f61', 'icon-fd5bac1b69ba7763', 'icon-c088f57a65b4ef83', 'icon-297227e62170479c', 'icon-54cb799bcd01abd9'],
     names: [],
   }),
   'weekly-boss': defineType({

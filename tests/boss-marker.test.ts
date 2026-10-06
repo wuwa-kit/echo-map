@@ -35,7 +35,7 @@ describe('boss marker classification', () => {
     expect(bossMarkerShape(point)).toBe('diamond')
   })
 
-  it.each(['nightmare-boss', 'normal-boss', undefined] as const)('does not infer a weekly frame from the name for %s', (pointType) => {
+  it.each(['normal-boss', undefined] as const)('does not infer a weekly frame from the name for %s', (pointType) => {
     const point = { kind: 'boss', pointType, typeName: '昔日咏叹之钟' } as const
     expect(bossMarkerShape(point)).toBe('diamond')
   })

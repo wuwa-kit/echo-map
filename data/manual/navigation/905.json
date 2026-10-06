@@ -165,7 +165,7 @@
       "kind": "navigation",
       "name": "梦魇·赫卡忒",
       "navigationKind": "boss",
-      "pointType": "nightmare-boss",
+      "pointType": "normal-boss",
       "iconId": "icon-297227e62170479c",
       "mode": "fast-travel"
     },

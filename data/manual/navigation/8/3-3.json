@@ -581,7 +581,7 @@
       "kind": "navigation",
       "name": "梦魇·云闪之鳞",
       "navigationKind": "boss",
-      "pointType": "nightmare-boss",
+      "pointType": "normal-boss",
       "iconId": "icon-998ee6d72e5e7ba7",
       "mode": "fast-travel",
       "teleportCoordinate": {

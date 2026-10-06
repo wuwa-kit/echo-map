@@ -16,8 +16,8 @@ describe('navigation classification', () => {
     expect(officialNavigationPointType('myjl')).toBe('echo-settlement')
     expect(officialNavigationPointType('Play_01_1')).toBe('material-domain')
     expect(officialNavigationPointType('353002')).toBe('material-domain')
-    expect(officialNavigationPointType('SP_IconMonsterHead_YZ_33014_UI')).toBe('nightmare-boss')
-    expect(officialNavigationPointType('5043')).toBe('nightmare-boss')
+    expect(officialNavigationPointType('SP_IconMonsterHead_YZ_33014_UI')).toBe('normal-boss')
+    expect(officialNavigationPointType('5043')).toBe('normal-boss')
     expect(officialNavigationPointType('5021')).toBe('normal-boss')
     expect(officialNavigationPointType('5034')).toBe('normal-boss')
     expect(officialNavigationPointType('340000150')).toBe('normal-boss')
@@ -26,7 +26,7 @@ describe('navigation classification', () => {
   it('groups entrances and service facilities while leaving challenges and other landmarks unclassified', () => {
     expect(navigationPointTypeIds.map((id) => navigationPointTypes[id].name)).toEqual([
       '中枢信标', '小型信标', '材料副本', '无音区', '声骸聚落', '普通 BOSS',
-      '梦魇 BOSS', '周本 BOSS', '全息战略', '危行任务', '入口', '服务设施',
+      '周本 BOSS', '全息战略', '危行任务', '入口', '服务设施',
     ])
     for (const id of ['Play_06', 'Activity_02', 'Activity_02_1', 'Play_04', 'Play_04+1', 'SP_IconActDreamB', 'SP_IconMap_Activity_17_UI', 'SP_IconMap_Activity_21_UI', 'SP_IconMap_Activity_23_UI', 'SP_IconMap_Activity_18_UI']) {
       expect(officialNavigationPointType(id)).toBeUndefined()
@@ -44,22 +44,22 @@ describe('navigation classification', () => {
     expect(isOfficialNavigationType('not-a-navigation-type')).toBe(false)
   })
 
-  it('keeps settlement artwork and gives nightmare bosses an independent icon list', () => {
+  it('keeps settlement artwork and combines ordinary and nightmare boss icons', () => {
     expect(navigationTypeIcons('echo-settlement')).toHaveLength(3)
     expect(navigationTypeIcons('small-beacon')).toHaveLength(1)
     const ordinary = navigationTypeIcons('normal-boss')
-    const nightmares = navigationTypeIcons('nightmare-boss')
-    expect(ordinary).toHaveLength(22)
+    const nightmares = ordinary.filter(({ name }) => name.startsWith('梦魇'))
+    expect(ordinary).toHaveLength(33)
     expect(navigationPointTypes['normal-boss'].name).toBe('普通 BOSS')
-    expect(navigationPointTypeIds.filter((type) => navigationPointTypes[type].kind === 'boss')).toEqual(['normal-boss', 'nightmare-boss', 'weekly-boss'])
+    expect(navigationPointTypeIds.filter((type) => navigationPointTypes[type].kind === 'boss')).toEqual(['normal-boss', 'weekly-boss'])
     expect(nightmares.length).toBeGreaterThan(0)
     expect(nightmares.every(({ name }) => name.startsWith('梦魇'))).toBe(true)
     expect(nightmares.some(({ name }) => name === '梦魇亚当·重锤')).toBe(true)
-    const allBossIcons = (['normal-boss', 'weekly-boss', 'nightmare-boss'] as const)
+    const allBossIcons = (['normal-boss', 'weekly-boss'] as const)
       .flatMap((type) => navigationTypeIcons(type))
     expect(allBossIcons).toHaveLength(44)
     expect(new Set(allBossIcons.map(({ id }) => id)).size).toBe(allBossIcons.length)
-    expect(navigationPointTypes['nightmare-boss']).toMatchObject({ names: [], teleportLocked: false, defaultMode: 'fast-travel' })
+    expect(navigationPointTypes['normal-boss']).toMatchObject({ names: [], teleportLocked: false, defaultMode: 'fast-travel' })
   })
 
   it('groups remnant and nightmare settlements under echo settlements with selectable artwork', () => {
@@ -124,22 +124,22 @@ describe('navigation classification', () => {
 
   })
 
-  it('validates nightmare bosses by type and rejects normal icons', () => {
-    const nightmare = navigationTypeIcons('nightmare-boss')[0]
+  it('accepts ordinary and nightmare icons under the same boss type and rejects weekly icons', () => {
+    const nightmare = navigationTypeIcons('normal-boss').find(({ name }) => name.startsWith('梦魇'))
     const normal = navigationTypeIcons('normal-boss')[0]
     if (!nightmare || !normal) throw new Error('需要普通和梦魇图标')
     const point = {
       id: 'nightmare-test', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
-      coordinate: { x: 1, y: 2, z: 3 }, name: '我记录的梦魇首领', pointType: 'nightmare-boss', navigationKind: 'boss', mode: 'fast-travel', note: '', iconId: nightmare.id,
+      coordinate: { x: 1, y: 2, z: 3 }, name: '我记录的梦魇首领', pointType: 'normal-boss', navigationKind: 'boss', mode: 'fast-travel', note: '', iconId: nightmare.id,
     }
     const dataset = { ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }
     expect(parsePointLibrary({ version: 1, points: [point] }, dataset).points[0]).toMatchObject(point)
-    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: normal.id }] }, dataset)).toThrow('图标与类型不符')
-    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, pointType: 'normal-boss' }] }, dataset)).toThrow('图标与类型不符')
+    expect(parsePointLibrary({ version: 1, points: [{ ...point, iconId: normal.id }] }, dataset).points[0]).toMatchObject({ pointType: 'normal-boss', iconId: normal.id })
+    expect(() => parsePointLibrary({ version: 1, points: [{ ...point, pointType: 'weekly-boss' }] }, dataset)).toThrow('图标与类型不符')
     expect(authoredPointSchema.safeParse({ ...point, variant: 'nightmare' }).success).toBe(false)
   })
 
-  it.each(['normal-boss', 'nightmare-boss', 'tacet-field'] as const)('allows %s to save, import and render with teleport enabled or disabled', (pointType) => {
+  it.each(['normal-boss', 'tacet-field'] as const)('allows %s to save, import and render with teleport enabled or disabled', (pointType) => {
     const rule = navigationPointTypes[pointType]
     expect(rule).toMatchObject({ defaultMode: 'fast-travel', teleportLocked: false })
     for (const mode of ['landmark', 'fast-travel'] as const) {
