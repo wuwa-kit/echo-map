@@ -206,7 +206,7 @@ describe('point editor actions', () => {
     }
   })
 
-  it.each(['navigation', 'echo'] as const)('offers floors covering the %s position and preserves the selection through saving and reopening', async (kind) => {
+  it.each(['navigation', 'echo'] as const)('offers floors at a transparent %s position and preserves the selection through saving and reopening', async (kind) => {
     const dataset = floorEditorDataset()
     useExplorerStore().setDataset(dataset)
     vi.mocked(loadMapDataset).mockResolvedValue({ dataset, officialLibrary: { version: 1, points: [] } })
@@ -217,9 +217,9 @@ describe('point editor actions', () => {
     const empty = store.draft
     store.setLevel('a1')
     expect(store.draft).toBe(empty)
-    store.setCoordinateText('100, 100, 20')
+    store.setCoordinateText('100, 600, 20')
     store.applyCoordinateText()
-    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2'])
+    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2', 'b1'])
     store.setLevel('a2')
     expect(store.pointLevelId).toBe('a2')
     if (kind === 'navigation') store.setPointType('small-beacon')
@@ -235,12 +235,37 @@ describe('point editor actions', () => {
     await reopened.load(kind)
     reopened.selectPoint(saved.id)
     expect(reopened.pointLevelId).toBe('a2')
-    expect(reopened.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2'])
+    expect(reopened.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2', 'b1'])
     expect(reopened.dirty).toBe(false)
     reopened.setLevel(null)
     expect(reopened.pointLevelId).toBeNull()
     expect(await reopened.savePoint()).toBe(true)
     expect(disk.points[0]?.levelId).toBeNull()
+  })
+
+  it('uses individual tile rectangles and closed edges without requiring alpha coverage', async () => {
+    const dataset = floorEditorDataset()
+    const state = dataset.states.find(({ id }) => id === 8)
+    const group = state?.layeredMaps[0]
+    const floor = group?.floors[0]
+    if (!state || !group || !floor) throw new Error('需要测试楼层')
+    group.coverage = []
+    floor.tiles = ['/a/1/1_0.png', '/a/1/3_0.png']
+    useExplorerStore().setDataset(dataset)
+    vi.mocked(loadMapDataset).mockResolvedValue({ dataset, officialLibrary: { version: 1, points: [] } })
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    for (const coordinate of ['0, 0, 20', '850, 850, 20', '100, 600, 20']) {
+      store.setCoordinateText(coordinate)
+      store.applyCoordinateText()
+      expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2', 'b1'])
+    }
+    store.setCoordinateText('1000, 100, 20')
+    store.applyCoordinateText()
+    expect(store.availableFloors).toEqual([])
+    store.setCoordinateText('1800, 100, 20')
+    store.applyCoordinateText()
+    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1'])
   })
 
   it('derives floor options from the latest XY buffer without requiring Z or using arrival coordinates', async () => {
@@ -251,15 +276,15 @@ describe('point editor actions', () => {
     store.setPointType('small-beacon')
     const empty = { x: null, y: null, z: null }
     store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, empty, '100, 100'))
-    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2'])
+    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2', 'b1'])
     store.setLevel('a2')
     expect(store.pointLevelId).toBe('a2')
     store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, empty, '100, 600'))
-    expect(store.availableFloors).toEqual([])
-    expect(store.pointLevelId).toBeNull()
-    expect(store.draft?.levelId).toBeNull()
+    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2', 'b1'])
+    expect(store.pointLevelId).toBe('a2')
+    expect(store.draft?.levelId).toBe('a2')
     store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, empty, '600, 600'))
-    expect(store.availableFloors.map(({ id }) => id)).toEqual(['b1'])
+    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2', 'b1'])
     store.setLevel('b1')
     store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, empty, '600,'))
     expect(store.availableFloors).toEqual([])
@@ -269,7 +294,7 @@ describe('point editor actions', () => {
     expect(store.pointLevelId).toBe('b1')
     store.setTeleportCoordinateText('10000, 10000, 50')
     store.applyTeleportCoordinateText()
-    expect(store.availableFloors.map(({ id }) => id)).toEqual(['b1'])
+    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2', 'b1'])
     expect(store.pointLevelId).toBe('b1')
   })
 
@@ -290,14 +315,14 @@ describe('point editor actions', () => {
     expect(store.pointLevelId).toBeNull()
     store.setLevel('a1')
     expect(store.pointLevelId).toBe('a1')
-    store.setCoordinateText('100, 600, 20')
+    store.setCoordinateText('100, 900, 20')
     store.applyCoordinateText()
     expect(store.availableFloors).toEqual([])
     expect(store.pointLevelId).toBeNull()
     expect(store.draft?.levelId).toBeNull()
     store.setCoordinateText('100, 100, 20')
     store.applyCoordinateText()
-    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2'])
+    expect(store.availableFloors.map(({ id }) => id)).toEqual(['a1', 'a2', 'b1'])
     expect(store.pointLevelId).toBeNull()
     useExplorerStore().selectState(900)
     expect(store.availableFloors).toEqual([])

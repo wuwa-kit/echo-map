@@ -15,8 +15,6 @@ import { readEditorLibrary, saveEditorLibrary } from '../data/editor-client.ts'
 import { loadMapDataset } from '../data/load.ts'
 import { hasGravityMap } from '../domain/gravity.ts'
 import { useExplorerStore } from './explorer.ts'
-import { createFloorCoverage, floorsAtCoordinate } from '../map/floor-coverage.ts'
-import { gameToMapCoordinate } from '../map/projection.ts'
 import { hitsMapTile } from '../map/tile-coverage.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
 
@@ -92,11 +90,13 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
   const fields = formField('draft')
   const pointState = computed(() => dataset.value?.states.find(({ id }) => id === explorer.selectedStateId) ?? null)
-  const floorCoverage = computed(() => createFloorCoverage(pointState.value, dataset.value?.source.tileWidth ?? 1024))
   const availableFloors = useEqualComputed(() => {
     const coordinate = fields.value ? coordinateInputXY(positionInput.value, fields.value.coordinate) : null
-    return floorsAtCoordinate(floorCoverage.value, coordinate
-      ? gameToMapCoordinate(coordinate[0], coordinate[1], dataset.value?.source.tileWidth) : null)
+    const state = pointState.value
+    if (!coordinate || !state) return []
+    // Editing uses the same tile bounds as saving, including transparent image regions.
+    return state.layeredMaps.flatMap(({ floors }) => floors)
+      .filter(({ id }) => hitsMapTile(state, dataset.value?.source.tileWidth ?? 1024, coordinate, null, id))
       .map(({ id, name }) => ({ id, name }))
   })
   const pointLevelId = computed(() => {
