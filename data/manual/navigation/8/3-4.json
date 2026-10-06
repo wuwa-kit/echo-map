@@ -18,6 +18,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "1a01e6a6-f663-4920-8782-1700ad2be15b",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11078,
+        "y": 13937,
+        "z": 488
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸挑战·翱翔",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
       "id": "1b34810a-aaf7-468a-b817-455314f23092",
       "stateId": 8,
       "levelId": "-1/21",
@@ -212,6 +227,36 @@
       "mode": "fast-travel"
     },
     {
+      "id": "4d8d614d-de46-4984-a9ff-7dff8e5aa855",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11821,
+        "y": 11257,
+        "z": 289
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸挑战·翱翔",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "61df73f2-24cf-45ba-9c2e-f6f1f084af4a",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11942,
+        "y": 13047,
+        "z": 299
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸挑战·翱翔",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
       "id": "63a5474a-5656-426f-be5b-811b046f5967",
       "stateId": 8,
       "coordinate": {
@@ -324,6 +369,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "8bd72dbb-09fb-4b0f-9d06-229094cc9735",
+      "stateId": 8,
+      "coordinate": {
+        "x": 10821,
+        "y": 10407,
+        "z": 27
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸挑战·翱翔",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
       "id": "91983069-e545-4b90-ac6e-23d2d442721d",
       "stateId": 8,
       "coordinate": {
@@ -388,6 +448,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "c1abac9b-1bdd-4a1b-b88e-c5d660b8bd30",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11125,
+        "y": 11226,
+        "z": 224
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸挑战·翱翔",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
       "id": "c70e23c0-98cc-4d47-9ebb-835ba5cdb042",
       "stateId": 8,
       "coordinate": {
@@ -420,6 +495,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "d6135816-0ded-45a8-8796-c3f564795bcd",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11028,
+        "y": 13381,
+        "z": 178
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸挑战·翱翔",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
       "id": "ead3f423-6fd5-449c-b67f-2bf8bb41870a",
       "stateId": 8,
       "coordinate": {
@@ -449,6 +539,21 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "edd0a592-2345-445e-91be-69861e04f03b",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11970,
+        "y": 13677,
+        "z": 390
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸挑战·翱翔",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
       "mode": "fast-travel"
     },
     {
