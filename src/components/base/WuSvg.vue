@@ -27,19 +27,18 @@ const actualElement = useTemplateRef<SVGSVGElement>('actualElementRef')
 watchEffect(() => {
   const source = sourceElement.value
   const actual = actualElement.value
-  if (!source || !actual) {
+  if (!actual) {
     return
   }
-  actual.replaceChildren(...source.cloneNode(true).childNodes)
+  actual.replaceChildren(...(source?.cloneNode(true).childNodes ?? []))
 })
 </script>
 
 <template>
   <svg
-    v-if="sourceElement"
     v-bind="svgAttributes"
     ref="actualElementRef"
-    class="block h-[var(--wu-svg-h,1em)] w-[var(--wu-svg-w,var(--wu-svg-h,1em))] overflow-hidden fill-current"
+    class="block h-[var(--wu-svg-h,1em)] w-[var(--wu-svg-w,var(--wu-svg-h,1em))] shrink-0 overflow-hidden fill-current"
     :data-icon="name"
   />
 </template>
