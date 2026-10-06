@@ -484,8 +484,8 @@ describe('map display layer integration', () => {
       { ...echo, id: 'floor-echo', levelId: 'a1' },
       { ...echo, id: 'base-echo', levelId: null },
     ], [
-      { ...service, id: 'floor-service', levelId: 'a1', iconUrl: '' },
-      { ...service, id: 'base-service', levelId: null, iconUrl: '' },
+      { ...service, id: 'floor-service', levelId: 'a1', iconUrl: '', mode: 'landmark' },
+      { ...service, id: 'base-service', levelId: null, iconUrl: '', mode: 'landmark' },
     ], labels, referenceDataset.echoes, undefined, 'a1')
     points.finishInteraction([-100000, -100000, 100000, 100000], 64, new Projection({ code: 'TEST:EDITOR-VISIBILITY', units: 'pixels' }))
 

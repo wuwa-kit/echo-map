@@ -1147,6 +1147,8 @@ describe('point editor actions', () => {
     store.setTeleportCoordinate('x', 'bad')
     store.setPointType('service')
     store.setIcon('icon-ac9e0de71d8ea258')
+    expect(store.inputErrors['teleport:x']).toBeTruthy()
+    store.setMode('landmark')
     expect(store.inputErrors['teleport:x']).toBeUndefined()
     expect(await store.savePoint()).toBe(true)
   })
@@ -1874,7 +1876,7 @@ it('switches nightmare bosses through the type selector and updates the name', a
   store.setPointType('service')
   store.setName('独立名称')
   expect(store.draft).not.toHaveProperty('variant')
-  expect(store.draft).toMatchObject({ name: '独立名称', mode: 'landmark' })
+  expect(store.draft).toMatchObject({ name: '独立名称', mode: 'fast-travel' })
 })
 
 it('defaults exploration quests to non-teleport with their shared icon and preserves custom names on reload', async () => {
@@ -1903,7 +1905,7 @@ it('defaults exploration quests to non-teleport with their shared icon and prese
   }
 })
 
-it('does not derive travel capability from a selected service icon', async () => {
+it('defaults services to fast travel and preserves a manual opt-out when selecting an icon', async () => {
   const store = usePointEditorStore()
   await store.load('echo')
   const service = navigationTypeIcons('service')[0]
@@ -1911,8 +1913,12 @@ it('does not derive travel capability from a selected service icon', async () =>
   store.setReferenceData({ ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }, { version: 1, points: [] })
   store.switchEditorTab('navigation')
   store.setPointType('service')
+  expect(store.draft).toMatchObject({ pointType: 'service', mode: 'fast-travel' })
+  store.setMode('landmark')
   store.setIcon(service.id)
   expect(store.draft).toMatchObject({ pointType: 'service', navigationKind: 'service', mode: 'landmark', iconId: service.id })
+  store.setMode('fast-travel')
+  expect(store.draft).toMatchObject({ mode: 'fast-travel' })
 })
 
 
