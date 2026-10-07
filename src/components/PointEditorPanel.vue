@@ -29,6 +29,7 @@ const props = defineProps<{
   locatePosition: (coordinate: [number, number]) => boolean
   isPositionInView: (coordinate: [number, number]) => boolean
   positionInView: boolean
+  arrivalInView: boolean
 }>()
 const emit = defineEmits<{ returned: [], locateRequested: [coordinate?: [number, number]], managedLocateRequested: [point: AuthoredPoint] }>()
 const explorer = useExplorerStore()
@@ -57,6 +58,15 @@ const positionConfirmationHint = computed(() => {
   if (!committed.valid || !coordinateInputXY(committed.state, committed.value)
     || !coordinateAxes.every((axis) => Number.isSafeInteger(committed.value[axis]))) return ''
   return props.positionInView ? '连按两次 Enter 保存' : 'Enter 定位到中心'
+})
+const arrivalConfirmationHint = computed(() => {
+  const point = draft.value
+  if (point?.kind !== 'navigation' || busy.value || store.tileSaveBlocked || pending.value || importPreview.value || point.stateId !== explorer.selectedStateId) return ''
+  const coordinate = point.teleportCoordinate ?? { x: null, y: null, z: null }
+  const committed = commitCoordinateInput(store.arrivalInput, coordinate, true)
+  if (!committed.valid || !coordinateInputXY(committed.state, committed.value)
+    || !coordinateAxes.every((axis) => Number.isSafeInteger(committed.value[axis]))) return ''
+  return props.arrivalInView ? '连按两次 Enter 保存' : 'Enter 定位到中心'
 })
 let resolveLeave: ((result: boolean) => void) | null = null
 const existing = computed(() => library.value.points.some(({ id }) => id === draft.value?.id))
@@ -157,11 +167,11 @@ async function save(): Promise<void> {
     syncLibrary()
   }
 }
-async function confirmPosition(coordinate: [number, number]): Promise<void> {
+async function confirmPosition(coordinate: [number, number], teleport = false): Promise<void> {
   if (busy.value || pending.value || importPreview.value) return
-  const action = store.confirmPosition(props.isPositionInView(coordinate))
+  const action = store.confirmPosition(props.isPositionInView(coordinate), Date.now(), teleport)
   if (action === 'locate') {
-    props.locatePosition(coordinate)
+    if (!props.locatePosition(coordinate)) store.resetPositionConfirmation()
   } else if (action === 'save') {
     await save()
     await nextTick()
@@ -238,7 +248,7 @@ onBeforeRouteLeave(() => {
             <WuOption v-for="floor in floorOptions" :key="floor.id" :value="floor.id">{{ floor.label }}</WuOption>
           </WuSelect>
           <EchoEditorFields v-if="draft.kind === 'echo'" :key="draft.id" />
-          <NavigationEditorFields v-else :key="draft.id" />
+          <NavigationEditorFields v-else :key="draft.id" :arrival-confirmation-hint="arrivalConfirmationHint" @arrival-confirmed="confirmPosition($event, true)" />
         </WuScrollArea>
         <PointDuplicateNotice />
         <div class="flex shrink-0 items-center gap-[10px] border-t border-[var(--line)] p-[14px]">

@@ -15,6 +15,8 @@ import { navigationTypeIcons, navigationPointIconUrl } from '../domain/navigatio
 import WuScrollArea from './base/WuScrollArea.vue'
 import PointCoordinateFields from './PointCoordinateFields.vue'
 
+defineProps<{ arrivalConfirmationHint?: string }>()
+const emit = defineEmits<{ arrivalConfirmed: [coordinate: [number, number]] }>()
 const store = usePointEditorStore()
 const typeOptions = navigationPointTypeIds.map((value) => ({
   value,
@@ -142,7 +144,7 @@ function selectIcon(id: string): void {
     <template v-if="draft.mode === 'fast-travel'">
       <div class="mt-[16px]">
         <div class="mb-[8px] flex items-center justify-between"><span class="text-[13px]">实际传送位置(可不填)</span><WuButton variant="ghost" size="sm" :disabled="busy" @click="store.clearTeleportCoordinate">清除</WuButton></div>
-        <PointCoordinateFields teleport />
+        <PointCoordinateFields teleport :confirmation-hint="arrivalConfirmationHint" @locate-requested="emit('arrivalConfirmed', $event)" />
       </div>
     </template>
   </div>

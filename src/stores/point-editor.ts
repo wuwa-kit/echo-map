@@ -74,7 +74,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   let recentIconsRestored = false
   const recentNames = shallowRef<readonly string[]>([])
   let recentNamesRestored = false
-  const positionConfirmation = shallowRef<{ snapshot: string, pressedAt: number } | null>(null)
+  const positionConfirmation = shallowRef<{ snapshot: string, pressedAt: number, teleport: boolean } | null>(null)
   const forms = shallowRef<Record<EditorKind, EditorForm>>({ echo: emptyForm(), navigation: emptyForm() })
   function formField<K extends keyof EditorForm>(key: K) {
     return computed({
@@ -444,17 +444,20 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     positionConfirmation.value = null
   }
 
-  function confirmPosition(inView: boolean, now = Date.now()): 'locate' | 'wait' | 'save' {
+  function confirmPosition(inView: boolean, now = Date.now(), teleport = false): 'locate' | 'wait' | 'save' {
     const point = draft.value
     if (busy.value || !point) return 'wait'
+    if (teleport && (point.kind !== 'navigation' || point.mode !== 'fast-travel')) return 'wait'
     if (tileSaveBlocked.value) {
       resetPositionConfirmation()
       error.value = tileErrors.value.position || tileErrors.value.arrival
       return 'wait'
     }
-    const xy = coordinateInputXY(positionInput.value, point.coordinate)
-    if (!xy || coordinateInputPending(positionInput.value) || positionInput.value.invalid
-      || coordinateAxes.some((axis) => !Number.isSafeInteger(point.coordinate[axis]))) {
+    const input = teleport ? arrivalInput.value : positionInput.value
+    const coordinate = teleport && point.kind === 'navigation' ? point.teleportCoordinate ?? { x: null, y: null, z: null } : point.coordinate
+    const xy = coordinateInputXY(input, coordinate)
+    if (!xy || coordinateInputPending(input) || input.invalid
+      || coordinateAxes.some((axis) => !Number.isSafeInteger(coordinate[axis]))) {
       resetPositionConfirmation()
       return xy ? 'locate' : 'wait'
     }
@@ -464,8 +467,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     }
     const snapshot = JSON.stringify(point)
     const confirmation = positionConfirmation.value
-    if (confirmation?.snapshot !== snapshot || now < confirmation.pressedAt || now - confirmation.pressedAt > POSITION_CONFIRM_INTERVAL) {
-      positionConfirmation.value = { snapshot, pressedAt: now }
+    if (confirmation?.snapshot !== snapshot || confirmation.teleport !== teleport
+      || now < confirmation.pressedAt || now - confirmation.pressedAt > POSITION_CONFIRM_INTERVAL) {
+      positionConfirmation.value = { snapshot, pressedAt: now, teleport }
       return 'wait'
     }
     resetPositionConfirmation()

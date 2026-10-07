@@ -50,9 +50,14 @@ const selectionSource = new VectorSource()
 const selectionLayer = new VectorLayer({ source: selectionSource, zIndex: 50 })
 const arrivalStyle = createEditorArrivalStyle()
 const draftInView = shallowRef(false)
+const arrivalInView = shallowRef(false)
 function updateDraftInView(): void {
   const coordinate = editor.draft && coordinateInputXY(editor.positionInput, editor.draft.coordinate)
   draftInView.value = Boolean(coordinate && isDraftInView(coordinate))
+  const draft = editor.draft
+  const arrival = draft?.kind === 'navigation' && draft.mode === 'fast-travel'
+    ? coordinateInputXY(editor.arrivalInput, draft.teleportCoordinate ?? { x: null, y: null, z: null }) : null
+  arrivalInView.value = Boolean(arrival && isDraftInView(arrival))
 }
 function isDraftInView(coordinate: [number, number]): boolean {
   const draft = editor.draft
@@ -73,7 +78,7 @@ function locateManagedPoint(point: AuthoredPoint): boolean {
   const display = authoredPointMapDisplay(point, dataset.value)
   return display ? viewport.locate([display.location.coordinate.mapX, display.location.coordinate.mapY], Math.min(map?.getView().getResolution() ?? 1, 1)) : false
 }
-defineExpose({ locateDraft, isDraftInView, draftInView, locateManagedPoint })
+defineExpose({ locateDraft, isDraftInView, draftInView, arrivalInView, locateManagedPoint })
 const {
   activeState,
   dataset,
@@ -209,6 +214,13 @@ function rebuildDraft(): void {
   selectionSource.clear(true)
   const draft = editor.draft
   if (!props.editing || !draft || !dataset.value || draft.stateId !== store.selectedStateId) return
+  const arrival = draft.kind === 'navigation' && draft.mode === 'fast-travel'
+    ? coordinateInputPreviewXY(editor.arrivalInput, draft.teleportCoordinate ?? { x: null, y: null, z: null }) : null
+  if (arrival) {
+    const feature = new Feature({ geometry: new Point(gameToMapCoordinate(...arrival)) })
+    feature.setStyle(arrivalStyle)
+    selectionSource.addFeature(feature)
+  }
   const coordinate = coordinateInputPreviewXY(editor.positionInput, draft.coordinate)
   if (!coordinate) return
   const display = authoredPointMapDisplay({ ...draft, coordinate: { ...draft.coordinate, x: coordinate[0], y: coordinate[1] } }, dataset.value)
@@ -217,12 +229,6 @@ function rebuildDraft(): void {
   const editingExisting = editor.allPoints.some(({ id }) => id === draft.id)
   feature.setStyle(createEditorSelectionStyle(editingExisting ? '编辑中' : '新增'))
   selectionSource.addFeature(feature)
-  const arrival = draft.kind === 'navigation' ? draft.teleportCoordinate : undefined
-  if (arrival && arrival.x !== null && arrival.y !== null) {
-    const feature = new Feature({ geometry: new Point(gameToMapCoordinate(arrival.x, arrival.y)) })
-    feature.setStyle(arrivalStyle)
-    selectionSource.addFeature(feature)
-  }
 }
 
 function rebuildRoute(): void {
@@ -349,8 +355,8 @@ watch(floorRequest, async (request, _previous, onCleanup) => {
 })
 watch([mapEchoLocations, mapNavigationPoints, visibleRegionLabels, activeEchoIds, selectedLevelId], rebuildPointLayers)
 watch([() => props.editing, () => editor.editorMode, () => editor.allPoints, () => editor.draft, activeState, selectedGravity], rebuildPointLayers)
-watch(() => editor.positionInput, rebuildDraft)
-watch([() => editor.positionInput, () => editor.draft], updateDraftInView)
+watch([() => editor.positionInput, () => editor.arrivalInput], rebuildDraft)
+watch([() => editor.positionInput, () => editor.arrivalInput, () => editor.draft], updateDraftInView)
 watch([() => props.editing, mapRoutes], rebuildRoute, { flush: 'post' })
 watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 
