@@ -72,6 +72,45 @@ async function saveWithDuplicateConfirmation(store: ReturnType<typeof usePointEd
 }
 
 describe('point editor actions', () => {
+  it('keeps ten unique completed manual names, supports deletion, and restores them', async () => {
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    store.setPointType('small-beacon')
+    const icon = navigationTypeIcons('small-beacon')[0]
+    if (icon) store.setIcon(icon.id)
+    expect(store.recentNames).toEqual([])
+    store.setPointType(null)
+    store.setName('尚未完成的输入')
+    expect(store.recentNames).toEqual([])
+    for (let index = 0; index < 12; index += 1) store.recordManualName(`名称${index}`)
+    const previous = store.recentNames
+    store.recordManualName('  名称5  ')
+    store.recordManualName('   ')
+    expect(previous[0]).toBe('名称11')
+    expect(store.recentNames).toEqual(['名称5', '名称11', '名称10', '名称9', '名称8', '名称7', '名称6', '名称4', '名称3', '名称2'])
+    store.removeRecentName('名称5')
+    store.removeRecentName('不存在')
+    const expected = store.recentNames
+    setActivePinia(createPinia())
+    const reopened = usePointEditorStore()
+    await reopened.load('navigation')
+    expect(reopened.recentNames).toEqual(expected)
+    expect(reopened.recentNames).not.toContain('名称5')
+  })
+
+  it('sanitizes saved recent names and keeps history usable without storage', async () => {
+    cache.set('echo-map:point-editor:recent-names:v1', JSON.stringify([null, 12, '', '  ', '  名称  ', '名称', '另一名称']))
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    expect(store.recentNames).toEqual(['名称', '另一名称'])
+    vi.stubGlobal('localStorage', {
+      setItem: () => { throw new Error('Storage unavailable') },
+    })
+    store.recordManualName('新名称')
+    store.removeRecentName('名称')
+    expect(store.recentNames).toEqual(['新名称', '另一名称'])
+  })
+
   it('validates partial combined and axis input without reusing stale coordinates', async () => {
     const store = usePointEditorStore()
     await store.load('navigation')

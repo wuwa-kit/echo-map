@@ -21,6 +21,8 @@ import { useEqualComputed } from '../composables/useEqualComputed.ts'
 const CONTINUE_ADDING_KEY = 'echo-map:point-editor:continue-adding:v1'
 const RECENT_ICONS_KEY = 'echo-map:point-editor:recent-icons:v1'
 const RECENT_ICONS_LIMIT = 30
+const RECENT_NAMES_KEY = 'echo-map:point-editor:recent-names:v1'
+const RECENT_NAMES_LIMIT = 10
 const POSITION_CONFIRM_INTERVAL = 600
 
 type EditorKind = AuthoredPoint['kind']
@@ -70,6 +72,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const continueAdding = shallowRef(false)
   const recentIconIds = shallowRef<readonly string[]>([])
   let recentIconsRestored = false
+  const recentNames = shallowRef<readonly string[]>([])
+  let recentNamesRestored = false
   const positionConfirmation = shallowRef<{ snapshot: string, pressedAt: number } | null>(null)
   const forms = shallowRef<Record<EditorKind, EditorForm>>({ echo: emptyForm(), navigation: emptyForm() })
   function formField<K extends keyof EditorForm>(key: K) {
@@ -475,10 +479,48 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     catch { /* The preference remains available for this session. */ }
   }
 
+  function restoreRecentNames(): void {
+    if (recentNamesRestored) return
+    recentNamesRestored = true
+    try {
+      const saved: unknown = JSON.parse(localStorage.getItem(RECENT_NAMES_KEY) ?? '[]')
+      if (!Array.isArray(saved)) return
+      const names = saved.filter((name): name is string => typeof name === 'string').map(name => name.trim()).filter(Boolean)
+      recentNames.value = Object.freeze([...new Set(names)].slice(0, RECENT_NAMES_LIMIT))
+    } catch { /* Ignore invalid or unavailable local preferences. */ }
+  }
+
+  function persistRecentNames(): void {
+    try { localStorage.setItem(RECENT_NAMES_KEY, JSON.stringify(recentNames.value)) }
+    catch { /* Recent names remain available for this session. */ }
+  }
+
+  function recordManualName(value: string): void {
+    restoreRecentNames()
+    const name = value.trim()
+    if (!name) return
+    recentNames.value = produce(recentNames.value, (names) => {
+      const index = names.indexOf(name)
+      if (index !== -1) names.splice(index, 1)
+      names.unshift(name)
+      names.splice(RECENT_NAMES_LIMIT)
+    })
+    persistRecentNames()
+  }
+
+  function removeRecentName(name: string): void {
+    recentNames.value = produce(recentNames.value, (names) => {
+      const index = names.indexOf(name)
+      if (index !== -1) names.splice(index, 1)
+    })
+    persistRecentNames()
+  }
+
   async function load(kind: EditorKind = editorMode.value): Promise<void> {
     if (busy.value) return
     restoreContinueAdding()
     restoreRecentIcons()
+    restoreRecentNames()
     editorMode.value = kind
     if (dataset.value && revision.value) {
       if (!draft.value) newPoint()
@@ -872,6 +914,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     duplicateTarget, duplicateCandidates, duplicateConfirmation: shallowReadonly(duplicateConfirmation), confirmDuplicate,
     availableFloors, pointLevelId, setLevel, resetMapDependentFields,
     recentIconIds: shallowReadonly(recentIconIds),
+    recentNames: shallowReadonly(recentNames), recordManualName, removeRecentName,
     continueAdding: shallowReadonly(continueAdding), canContinueAdding,
     setContinueAdding,
     positionInput: shallowReadonly(positionInput), arrivalInput: shallowReadonly(arrivalInput), updateCoordinateInput,
