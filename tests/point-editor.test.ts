@@ -126,7 +126,7 @@ describe('point editor actions', () => {
 
     store.syncPosition([-496, 448])
 
-    expect(store.draft?.coordinate).toEqual({ x: -496, y: 448, z: null })
+    expect(store.draft?.coordinate).toEqual({ x: -496, y: 448, z: 0 })
     expect(store.draft).not.toHaveProperty('teleportCoordinate')
     expect(store.positionInput).toEqual(emptyCoordinateInput())
     expect(store.arrivalInput).toEqual(emptyCoordinateInput())
@@ -135,10 +135,8 @@ describe('point editor actions', () => {
     expect(store.inputErrors).toEqual({})
     expect(store.inputValues).toEqual({})
     expect(store.tileSaveBlocked).toBe(false)
-    expect(await store.savePoint()).toBe(false)
-    store.setCoordinate('z', '19')
     expect(await store.savePoint()).toBe(true)
-    expect(disk.points[0]?.coordinate).toEqual({ x: -496, y: 448, z: 19 })
+    expect(disk.points[0]?.coordinate).toEqual({ x: -496, y: 448, z: 0 })
     expect(disk.points[0]).not.toHaveProperty('teleportCoordinate')
   })
 

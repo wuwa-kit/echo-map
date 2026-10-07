@@ -309,7 +309,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     }
     clearArrivalInput()
     edit((point) => {
-      point.coordinate = { x: coordinate[0], y: coordinate[1], z: null }
+      point.coordinate = { x: coordinate[0], y: coordinate[1], z: 0 }
       if (point.kind === 'navigation') delete point.teleportCoordinate
     })
   }
