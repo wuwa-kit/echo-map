@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import View from 'ol/View.js'
 import Projection from 'ol/proj/Projection.js'
-import { useMapViewport } from '../src/map/useMapViewport.ts'
+import { createMapView, useMapViewport } from '../src/map/useMapViewport.ts'
 import type { MapStateDefinition } from '../src/domain/types.ts'
 import type { MapViewportState } from '../src/url/explorer-url.ts'
+import { gameScaleForResolution, mapResolutionForScale } from '../src/map/map-scale.ts'
 import type { MapPadding } from '../src/map/viewport-padding.ts'
 
 const projection = new Projection({ code: 'TEST:MAP', units: 'pixels' })
@@ -13,11 +14,11 @@ const state: MapStateDefinition = {
   tileExtent: { minTileX: 0, minTileY: 0, maxTileX: 9, maxTileY: 9, extent: [0, 0, 10000, 10000] },
 }
 
-function setup(savedViewport: MapViewportState | null = null) {
+function setup(savedViewport: MapViewportState | null = null, initialSize = [1000, 800], initialPadding: MapPadding = [16, 16, 16, 16]) {
   let saved = savedViewport
   let view = new View({ projection })
-  let size = [1000, 800]
-  let padding: MapPadding = [16, 16, 16, 16]
+  let size = initialSize
+  let padding: MapPadding = initialPadding
   const onViewportChanged = vi.fn((value: MapViewportState | null) => { saved = value })
   const viewport = useMapViewport({
     getMap: () => ({
@@ -37,12 +38,75 @@ function setup(savedViewport: MapViewportState | null = null) {
   return {
     viewport, onViewportChanged,
     view: () => view,
-    setSize: (value: number[]) => { size = value },
+    setSize: (value: number[]) => {
+      size = value
+      view.setViewportSize(value)
+    },
     setPadding: (value: MapPadding) => { padding = value },
   }
 }
 
 describe('map viewport coordination', () => {
+  it('uses the same zoom and limits across differently sized base maps', () => {
+    for (const edge of [2000, 10000, 60000]) {
+      const view = createMapView({ ...state, tileExtent: { ...state.tileExtent, extent: [0, 0, edge, edge] } }, projection)
+      for (const zoom of [-2, -1.5, 0, 1, 3]) {
+        view.setZoom(zoom)
+        expect(view.getZoom()).toBeCloseTo(zoom)
+        expect(gameScaleForResolution(view.getResolution() ?? NaN)).toBeCloseTo(2 ** -zoom)
+      }
+      expect(view.getMaxZoom()).toBeCloseTo(3)
+      view.setZoom(-2)
+      view.adjustZoom(1)
+      expect(gameScaleForResolution(view.getResolution() ?? NaN)).toBeCloseTo(2)
+    }
+  })
+
+  it.each([
+    { size: [1000, 800], padding: [16, 340, 16, 16] },
+    { size: [390, 844], padding: [16, 16, 320, 16] },
+  ])('fits the first viewport into the available canvas $size', ({ size, padding }) => {
+    const [top = 0, right = 0, bottom = 0, left = 0] = padding
+    const [width = 0, height = 0] = size
+    const app = setup(null, size, [top, right, bottom, left])
+    const resolution = Math.max(10000 / (width - left - right), 10000 / (height - top - bottom))
+    expect(app.view().getResolution()).toBeCloseTo(resolution)
+    const [x = 0, y = 0] = app.view().getCenter() ?? []
+    expect(x).toBeCloseTo(5000 + (right - left) * resolution / 2)
+    expect(y).toBeCloseTo(5000 + (top - bottom) * resolution / 2)
+    app.viewport.publish()
+    expect(app.onViewportChanged).toHaveBeenLastCalledWith(null)
+  })
+
+  it('preserves scale and doubles horizontal coverage when the canvas width doubles', () => {
+    const app = setup({ center: [5000, 5000], zoom: -1.5 })
+    const resolution = app.view().getResolution()
+    const before = app.view().calculateExtent([1000, 800])
+    app.setSize([2000, 800])
+    app.viewport.initializeViewport()
+    const after = app.view().calculateExtent([2000, 800])
+    expect(app.view().getResolution()).toBe(resolution)
+    expect(app.view().getZoom()).toBeCloseTo(-1.5)
+    expect((after[2] ?? 0) - (after[0] ?? 0)).toBeCloseTo(2 * ((before[2] ?? 0) - (before[0] ?? 0)))
+    expect(setup({ center: [5000, 5000], zoom: -1.5 }, [390, 844]).view().getResolution()).toBe(resolution)
+  })
+
+  it('defers fitting a hidden target and preserves a negative URL zoom', () => {
+    const saved: MapViewportState = { center: [4000, 4000], zoom: -2 }
+    const app = setup(saved, [0, 0])
+    app.viewport.publish()
+    expect(app.onViewportChanged).not.toHaveBeenCalled()
+    app.setSize([1000, 800])
+    app.viewport.initializeViewport()
+    expect(app.view().getCenter()).toEqual(saved.center)
+    expect(app.view().getResolution()).toBeCloseTo(mapResolutionForScale(4))
+    app.viewport.publish()
+    expect(app.onViewportChanged).toHaveBeenLastCalledWith(saved)
+    app.setSize([390, 844])
+    app.viewport.initializeViewport()
+    expect(app.view().getZoom()).toBeCloseTo(-2)
+  })
+
   it('omits the default view and restores an explicit URL view without floor refitting', () => {
     const initial = setup()
     initial.viewport.publish()

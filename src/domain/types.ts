@@ -153,7 +153,7 @@ export interface AuthoredEchoPoint extends AuthoredPointBase {
 
 export type NavigationPointType = keyof typeof navigationPointTypes
 
-export type MapDisplayTier = 'always' | 'far' | 'near'
+export type MapDisplayTier = 'always' | 'teleport' | 'nonTeleport'
 
 export interface NavigationIconDefinition {
   id: string
@@ -170,7 +170,6 @@ export interface NavigationTypeDefinition {
   icons: readonly string[]
   // Names are either custom (empty) or fixed (one value), never selectable.
   names: readonly [] | readonly [string]
-  displayTier: MapDisplayTier
 }
 
 export interface AuthoredNavigationPoint extends AuthoredPointBase {
@@ -258,11 +257,11 @@ export type MapDisplayPoint =
   | { category: 'navigation', location: NavigationPoint }
   | { category: 'region-name', location: RegionLabel }
 
-// Inclusive minimum, exclusive maximum; null keeps a point visible when zooming in.
-export interface MapZoomRange {
-  minZoom: number
-  maxZoom: number | null
-}
+// Scale is measured in game coordinate units per CSS pixel.
+export type MapDisplayPolicy =
+  | { kind: 'always' }
+  | { kind: 'detail', maxGameUnitsPerPixel: number }
+  | { kind: 'overview', minGameUnitsPerPixel: number }
 
 export interface NavigationPointGroup {
   id: string

@@ -52,7 +52,7 @@ export const navigationKindSchema = z.enum([
   'endgame', 'challenge', 'service', 'local-transit', 'entrance', 'landmark', 'unknown',
 ])
 export const navigationPointTypeSchema = z.enum(navigationPointTypeIds)
-export const mapDisplayTierSchema = z.enum(['always', 'far', 'near'])
+export const mapDisplayTierSchema = z.enum(['always', 'teleport', 'nonTeleport'])
 export const navigationModeSchema = z.enum(['fast-travel', 'local-transit', 'entrance', 'landmark', 'unknown'])
 
 const authoredCoordinateSchema = z.object({
@@ -207,12 +207,11 @@ export const regionLabelSchema = z.object({
   coordinate: officialCoordinateSchema.strict(),
 }).strict()
 
-export const mapZoomRangeSchema = z.object({
-  minZoom: finiteNumber.nonnegative(),
-  maxZoom: finiteNumber.nullable().default(null),
-}).strict().refine(({ minZoom, maxZoom }) => maxZoom === null || maxZoom > minZoom, {
-  message: '缩放范围上限必须大于下限，或以 null 表示无上限',
-})
+export const mapDisplayPolicySchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('always') }).strict(),
+  z.object({ kind: z.literal('detail'), maxGameUnitsPerPixel: finiteNumber.positive() }).strict(),
+  z.object({ kind: z.literal('overview'), minGameUnitsPerPixel: finiteNumber.positive() }).strict(),
+])
 
 const pointBaseShape = {
   gravityType: gravityTypeSchema.nullable().default(null),

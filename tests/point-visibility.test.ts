@@ -1,143 +1,94 @@
 import { describe, expect, it } from 'vitest'
-import View from 'ol/View.js'
-import { MAP_POINT_ZOOM_RANGES, MAP_TIER_ZOOM_RANGES, isMapPointVisibleAtZoom, isPointVisibleAtZoom, mapPointZoomRange, mapResolutionForZoom, mapZoomForResolution, mapZoomRangeLabel } from '../src/map/point-visibility.ts'
-import { mapZoomRangeSchema, regionLabelSchema } from '../src/domain/schema.ts'
+import { MAP_POINT_DISPLAY_POLICIES, isMapPointVisibleAtScale, isPointVisibleAtScale } from '../src/map/point-visibility.ts'
+import { MAP_DISPLAY_TIERS } from '../src/domain/map-display-tier.ts'
+import { mapDisplayPolicySchema, regionLabelSchema } from '../src/domain/schema.ts'
 import { selectRegionLabels } from '../src/domain/explorer-selectors.ts'
-import type { EchoMapLocation, MapDisplayPoint, RegionLabel } from '../src/domain/types.ts'
+import type { MapDisplayPoint, RegionLabel } from '../src/domain/types.ts'
 import { navigationPoint, navigationTestDataset as referenceDataset } from './fixtures/navigation-points.ts'
 import { smallEcho, eliteEcho } from './fixtures/point-library.ts'
+import { gameScaleForResolution, mapResolutionForScale, mapResolutionForZoom, mapZoomForResolution } from '../src/map/map-scale.ts'
 
 const label: RegionLabel = {
   id: 'test-region', name: '测试地区', stateId: 8, countryId: 1, level: 2,
   coordinate: { rawX: 10, rawY: 20, mapX: 30, mapY: 40 },
 }
 
-describe('map point zoom visibility', () => {
-  it('hands district names to small places at step 9 without overlap and keeps country names for navigation only', () => {
-    const country: MapDisplayPoint = { category: 'region-name', location: { ...label, level: 1 } }
-    const region: MapDisplayPoint = { category: 'region-name', location: label }
-    const place: MapDisplayPoint = { category: 'region-name', location: { ...label, level: 3 } }
-    for (const zoom of [9 - 1e-8, 9, 9 + 1e-8, 16, 35, 50]) {
-      expect(isMapPointVisibleAtZoom(country, zoom)).toBe(false)
-      expect(isMapPointVisibleAtZoom(region, zoom)).toBe(false)
-      expect(isMapPointVisibleAtZoom(place, zoom)).toBe(true)
+describe('map point scale visibility', () => {
+  it('hands district names to places at 2.5 units/px without overlap', () => {
+    for (const scale of [100, 4, 2.50001, 2.5, 2.49999, 2, 0.1]) {
+      for (const level of [1, 2, 3]) {
+        expect(isMapPointVisibleAtScale({ category: 'region-name', location: { ...label, level } }, scale))
+          .toBe(level === (scale > 2.5 ? 2 : 3))
+      }
     }
-    for (const zoom of [0, 3, 8, 8.99]) {
-      expect(isMapPointVisibleAtZoom(country, zoom)).toBe(false)
-      expect(isMapPointVisibleAtZoom(region, zoom)).toBe(true)
-      expect(isMapPointVisibleAtZoom(place, zoom)).toBe(false)
-    }
-    for (const zoom of [0, 8.99, 9, 16, 35]) {
-      const forest = referenceDataset.regionLabels.find(({ name }) => name === '无光之森')
-      const banyan = referenceDataset.regionLabels.find(({ name }) => name === '中央巨榕')
-      if (!forest || !banyan) throw new Error('需要官方地区名回归数据')
-      expect(forest.level).toBe(2)
-      expect(banyan.level).toBe(3)
-      expect(isMapPointVisibleAtZoom({ category: 'region-name', location: forest }, zoom)).toBe(zoom < 9)
-      expect(isMapPointVisibleAtZoom({ category: 'region-name', location: banyan }, zoom)).toBe(zoom >= 9)
+    for (const scale of [2.5 - 1e-12, 2.5, 2.5 + 1e-12]) {
+      expect(isPointVisibleAtScale(MAP_POINT_DISPLAY_POLICIES['region-name'], scale)).toBe(false)
+      expect(isPointVisibleAtScale(MAP_POINT_DISPLAY_POLICIES['place-name'], scale)).toBe(true)
     }
   })
 
-  it('uses navigation type for each point, independently of icon grouping or teleport mode', () => {
-    const point = referenceDataset.navigationPoints[0]
-    if (!point) throw new Error('需要定位点测试数据')
-    const nexus: MapDisplayPoint = { category: 'navigation', location: { ...point, kind: 'nexus', pointType: 'central-beacon' } }
-    const service: MapDisplayPoint = { category: 'navigation', location: { ...point, kind: 'service', pointType: 'service' } }
-    expect(isMapPointVisibleAtZoom(nexus, 0)).toBe(true)
-    expect(isMapPointVisibleAtZoom(service, 15.99)).toBe(false)
-    expect(isMapPointVisibleAtZoom(service, 16)).toBe(true)
-    for (const zoom of [16, 23, 35, 50]) {
-      expect(isMapPointVisibleAtZoom(nexus, zoom)).toBe(true)
-      expect(isMapPointVisibleAtZoom(service, zoom)).toBe(true)
+  it.each(['service', 'normal-boss', 'hologram', 'entrance', 'tacet-field'] as const)('uses actual teleport mode for %s independently of its icon', (type) => {
+    for (const mode of ['fast-travel', 'landmark', 'entrance', 'local-transit', 'unknown'] as const) {
+      const point: MapDisplayPoint = { category: 'navigation', location: { ...navigationPoint(type), mode } }
+      for (const scale of [64, 4.00001, 4, 3, 2.00001, 2, 1, 0.1]) {
+        expect(isMapPointVisibleAtScale(point, scale)).toBe(scale <= (mode === 'fast-travel' ? 4 : 2))
+      }
     }
-    const landmark: MapDisplayPoint = { category: 'navigation', location: { ...nexus.location, mode: 'landmark' } }
-    expect(isMapPointVisibleAtZoom(landmark, 0)).toBe(true)
-    expect(isMapPointVisibleAtZoom(service, 0)).toBe(false)
   })
 
-  it.each(['nexus', 'challenge'] as const)('uses near visibility when the type is unset for %s', (kind) => {
-    const location = { ...navigationPoint('central-beacon'), kind }
+  it('keeps central beacons resident independently of scale and mode', () => {
+    const point: MapDisplayPoint = { category: 'navigation', location: { ...navigationPoint('central-beacon'), mode: 'landmark' } }
+    for (const scale of [10000, 4, 2, 0.001]) expect(isMapPointVisibleAtScale(point, scale)).toBe(true)
+  })
+
+  it.each(['fast-travel', 'landmark', 'unknown'] as const)('uses actual mode %s when the type is unset', (mode) => {
+    const location = { ...navigationPoint('central-beacon'), mode }
     delete location.pointType
-    const point: MapDisplayPoint = { category: 'navigation', location }
-    for (const zoom of [0, 8.99, 9, 15.99, 16, 35]) {
-      expect(isMapPointVisibleAtZoom(point, zoom)).toBe(zoom >= 16)
+    for (const scale of [64, 4.01, 4, 2.01, 2, 0.1]) {
+      expect(isMapPointVisibleAtScale({ category: 'navigation', location }, scale)).toBe(scale <= (mode === 'fast-travel' ? 4 : 2))
     }
   })
 
-  it.each([
-    ['central-beacon', 0], ['normal-boss', 0], ['weekly-boss', 0], ['hologram', 0],
-    ['small-beacon', 9], ['material-domain', 9], ['tacet-field', 9],
-    ['echo-settlement', 16],
-    ['entrance', 16], ['service', 16],
-  ] as const)('shows %s from step %s onwards', (type, threshold) => {
-    const point: MapDisplayPoint = { category: 'navigation', location: navigationPoint(type) }
-    for (const zoom of [0, 8.99, 9, 15.99, 16, 23, 35, 50]) {
-      expect(isMapPointVisibleAtZoom(point, zoom)).toBe(zoom >= threshold)
-    }
-  })
-
-  it('reveals every echo composition and source alongside small beacons', () => {
+  it('shares the teleport scale for every echo composition and coordinate source', () => {
+    expect(MAP_POINT_DISPLAY_POLICIES.echo).toBe(MAP_DISPLAY_TIERS.teleport.policy)
     const point = referenceDataset.echoLocations[0]
-    const beacon = referenceDataset.navigationPoints.find(({ pointType }) => pointType === 'small-beacon')
-    if (!point || !beacon) throw new Error('需要声骸与小型信标测试数据')
-    const locations: EchoMapLocation[] = [point, ...[
-      [{ echoId: smallEcho.id, count: 1 }],
-      [{ echoId: eliteEcho.id, count: 1 }],
-      [{ echoId: smallEcho.id, count: 3 }],
-      [{ echoId: eliteEcho.id, count: 2 }, { echoId: smallEcho.id, count: 3 }],
-    ].map((members) => ({ ...point, members, note: '' }))]
-    const navigation: MapDisplayPoint = { category: 'navigation', location: beacon }
-    for (const location of locations) {
-      for (const gameCoordinate of [null, { x: 1, y: 2, z: 0 }, { x: 1, y: 2, z: 300 }]) {
-        const echo: MapDisplayPoint = { category: 'echo', location: { ...location, gameCoordinate } }
-        expect(isMapPointVisibleAtZoom(echo, 8.99)).toBe(false)
-        for (const zoom of [9 - 1e-8, 9, 9 + 1e-8, 16, 23, 35, 50]) {
-          expect(isMapPointVisibleAtZoom(echo, zoom)).toBe(true)
-          expect(isMapPointVisibleAtZoom(echo, zoom)).toBe(isMapPointVisibleAtZoom(navigation, zoom))
+    if (!point) throw new Error('需要声骸点位')
+    const navigation: MapDisplayPoint = { category: 'navigation', location: navigationPoint() }
+    for (const members of [[{ echoId: smallEcho.id, count: 1 }], [{ echoId: eliteEcho.id, count: 2 }], [{ echoId: smallEcho.id, count: 3 }, { echoId: eliteEcho.id, count: 1 }]]) {
+      for (const gameCoordinate of [null, { x: 1, y: 2, z: 300 }]) {
+        const echo: MapDisplayPoint = { category: 'echo', location: { ...point, members, gameCoordinate } }
+        for (const scale of [100, 4.01, 4, 3, 2, 0.1]) {
+          expect(isMapPointVisibleAtScale(echo, scale)).toBe(scale <= 4)
+          expect(isMapPointVisibleAtScale(echo, scale)).toBe(isMapPointVisibleAtScale(navigation, scale))
         }
       }
     }
   })
 
-  it('uses the same actual scale on small and large base maps, without changing URL zoom', () => {
-    const views = [64, 8].map((maxResolution) => new View({ maxResolution, minResolution: 0.125, resolution: mapResolutionForZoom(12) }))
-    expect(views[0]?.getZoom()).not.toBe(views[1]?.getZoom())
-    for (const view of views) {
-      const zoom = mapZoomForResolution(view.getResolution() ?? Number.NaN)
-      expect(zoom).toBeCloseTo(12)
-      expect(isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES.echo, zoom)).toBe(true)
-      expect(isPointVisibleAtZoom(MAP_TIER_ZOOM_RANGES.near, zoom)).toBe(false)
+  it('validates explicit policies without numeric sentinel values', () => {
+    for (const policy of [...Object.values(MAP_POINT_DISPLAY_POLICIES), ...Object.values(MAP_DISPLAY_TIERS).map(({ policy }) => policy)]) {
+      expect(mapDisplayPolicySchema.safeParse(policy).success).toBe(true)
+      for (const scale of [NaN, Infinity, -Infinity, 0, -1]) expect(isPointVisibleAtScale(policy, scale)).toBe(false)
     }
+    for (const policy of [{ kind: 'detail', maxGameUnitsPerPixel: 0 }, { kind: 'overview', minGameUnitsPerPixel: -1 }, { kind: 'always', minZoom: 0 }, { minZoom: 0, maxZoom: null }]) {
+      expect(mapDisplayPolicySchema.safeParse(policy).success).toBe(false)
+    }
+    expect(isPointVisibleAtScale(null, 1)).toBe(false)
   })
 
-  it('rejects invalid zoom/resolution and validates every configured range', () => {
-    for (const value of [Number.NaN, Infinity, -Infinity]) {
-      expect(isPointVisibleAtZoom(MAP_TIER_ZOOM_RANGES.always, value)).toBe(false)
+  it('uses a fixed scale for negative and fractional zoom with no zero clamp', () => {
+    for (const zoom of [-10, -2, -1.5, -1, 0, 1, 3]) {
+      const resolution = mapResolutionForZoom(zoom)
+      expect(gameScaleForResolution(resolution)).toBeCloseTo(2 ** -zoom)
+      expect(mapZoomForResolution(resolution)).toBeCloseTo(zoom)
+      expect(mapResolutionForScale(2 ** -zoom)).toBeCloseTo(resolution)
     }
-    for (const value of [0, -1, Number.NaN, Infinity]) expect(mapZoomForResolution(value)).toBeNaN()
-    for (const range of [...Object.values(MAP_POINT_ZOOM_RANGES), ...Object.values(MAP_TIER_ZOOM_RANGES)]) expect(mapZoomRangeSchema.safeParse(range).success).toBe(true)
-    for (const range of [{ minZoom: 3, maxZoom: 3 }, { minZoom: 4, maxZoom: 2 }, { minZoom: -1, maxZoom: null }]) {
-      expect(mapZoomRangeSchema.safeParse(range).success).toBe(false)
+    expect(gameScaleForResolution(mapResolutionForZoom(0))).toBe(1)
+    for (const scale of [0, -1, NaN, Infinity]) {
+      expect(mapResolutionForScale(scale)).toBeNaN()
+      expect(gameScaleForResolution(scale)).toBeNaN()
     }
-    expect(mapZoomRangeLabel(mapPointZoomRange({ category: 'region-name', location: label }))).toBe('第 0 至 9 格前显示')
-    expect(mapZoomRangeLabel(MAP_TIER_ZOOM_RANGES.always)).toBe('常驻')
-    expect(mapZoomRangeLabel(MAP_TIER_ZOOM_RANGES.far)).toBe('远景')
-    expect(mapZoomRangeLabel(MAP_TIER_ZOOM_RANGES.near)).toBe('近景')
-  })
-
-  it('calibrates 35 logarithmic steps to the measured spans and extends beyond both ends', () => {
-    expect(mapResolutionForZoom(0)).toBe(4)
-    expect(mapResolutionForZoom(35)).toBeCloseTo(1000 / 850)
-    expect(mapResolutionForZoom(9)).toBeCloseTo(2.92, 2)
-    expect(mapResolutionForZoom(16)).toBeCloseTo(2.286, 2)
-    for (const zoom of [0, 9, 16, 23, 35, 50]) expect(mapZoomForResolution(mapResolutionForZoom(zoom))).toBeCloseTo(zoom)
-    for (const resolution of [4, 8, 64, 128]) {
-      const zoom = mapZoomForResolution(resolution)
-      expect(zoom).toBe(0)
-      expect(isPointVisibleAtZoom(MAP_TIER_ZOOM_RANGES.always, zoom)).toBe(true)
-      expect(isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES['region-name'], zoom)).toBe(true)
-    }
-    for (const invalid of [NaN, Infinity, -1]) expect(mapResolutionForZoom(invalid)).toBeNaN()
+    for (const zoom of [NaN, Infinity, -Infinity, 10000, -10000]) expect(mapResolutionForZoom(zoom)).toBeNaN()
   })
 
   it('keeps text navigation anchors strictly XY and scopes them to the base map', () => {

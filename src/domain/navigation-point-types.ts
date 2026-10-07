@@ -1,11 +1,7 @@
 import type { MapDisplayTier, NavigationKind, NavigationMode, NavigationPoint, NavigationPointType, NavigationTypeDefinition } from './types.ts'
-import { NAVIGATION_KIND_DISPLAY_TIERS } from './map-display-tier.ts'
 
-function defineType(type: Omit<NavigationTypeDefinition, 'displayTier'> & { displayTier?: MapDisplayTier }): NavigationTypeDefinition {
-  return {
-    displayTier: NAVIGATION_KIND_DISPLAY_TIERS[type.kind],
-    ...type,
-  }
+function defineType(type: NavigationTypeDefinition): NavigationTypeDefinition {
+  return type
 }
 
 export const navigationPointTypes = {
@@ -68,8 +64,9 @@ export const navigationPointTypes = {
 
 export const navigationPointTypeIds = Object.keys(navigationPointTypes) as NavigationPointType[]
 
-export function navigationPointDisplayTier(point: Pick<NavigationPoint, 'pointType'>): MapDisplayTier {
-  return point.pointType ? navigationPointTypes[point.pointType].displayTier : 'near'
+export function navigationPointDisplayTier(point: Pick<NavigationPoint, 'pointType' | 'mode'>): MapDisplayTier {
+  if (point.pointType === 'central-beacon') return 'always'
+  return point.mode === 'fast-travel' ? 'teleport' : 'nonTeleport'
 }
 
 export function navigationTypeErrors(point: { pointType?: NavigationPointType, kind: NavigationKind, mode: NavigationMode }): string[] {

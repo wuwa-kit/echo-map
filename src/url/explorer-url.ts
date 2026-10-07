@@ -1,3 +1,4 @@
+import { mapResolutionForZoom } from '../map/map-scale.ts'
 import type { GravityType } from '../domain/types.ts'
 import { compactWikiEchoId, parseWikiEchoId } from './wiki-id.ts'
 
@@ -156,7 +157,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
     hideNonTeleportPoints: booleanFlag(values.hideNonTeleport) ?? false,
     controlPanelCollapsed: booleanFlag(values.panel),
     mobileSheet: sheet === 'filters' ? sheet : null,
-    viewport: x !== undefined && y !== undefined && zoom !== undefined
+    viewport: x !== undefined && y !== undefined && zoom !== undefined && Number.isFinite(mapResolutionForZoom(zoom))
       ? { center: [x, y], zoom }
       : undefined,
   }

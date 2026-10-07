@@ -7,7 +7,7 @@ import Icon from 'ol/style/Icon.js'
 import RegularShape from 'ol/style/RegularShape.js'
 import Style from 'ol/style/Style.js'
 import { createPointLayers, mapFeaturePointIds, mapFeaturesPointIds } from '../src/map/point-layers.ts'
-import { mapResolutionForZoom } from '../src/map/point-visibility.ts'
+import { mapResolutionForScale } from '../src/map/map-scale.ts'
 import type { MapDisplayPoint, NavigationPoint, RegionLabel, RoutePoint, RouteResult } from '../src/domain/types.ts'
 import { navigationPoint, navigationTestDataset as referenceDataset } from './fixtures/navigation-points.ts'
 
@@ -241,8 +241,8 @@ describe('map display layer integration', () => {
       const members: Feature[] = cluster.get('features')
       expect(members).toHaveLength(1)
       expect(members.flatMap((feature) => mapFeaturePointIds(feature) ?? [])).toEqual([id])
-      expect(layer?.getStyleFunction()?.(cluster, mapResolutionForZoom(8.99))).toBeUndefined()
-      expect(layer?.getStyleFunction()?.(cluster, mapResolutionForZoom(9))).toBeDefined()
+      expect(layer?.getStyleFunction()?.(cluster, mapResolutionForScale(4.01))).toBeUndefined()
+      expect(layer?.getStyleFunction()?.(cluster, mapResolutionForScale(2))).toBeDefined()
     }
     points.update([], navigation.slice(0, 1), [], [])
     expect(backgroundNavigation?.getSource()?.getFeatures()).toEqual([])
@@ -357,12 +357,12 @@ describe('map display layer integration', () => {
       if (!(geometry instanceof Point)) throw new Error('文字定位需要 XY 点几何')
       expect(geometry.getCoordinates()).toEqual([30, 40])
       expect(Boolean(render?.(feature, 64))).toBe(level === 2)
-      for (const zoom of [0, 8.99, 9, 16, 35]) {
-        expect(Boolean(render?.(feature, mapResolutionForZoom(zoom)))).toBe(level === (zoom < 9 ? 2 : 3))
+      for (const scale of [64, 4, 2.50001, 2.5, 2, 0.1]) {
+        expect(Boolean(render?.(feature, mapResolutionForScale(scale)))).toBe(level === (scale > 2.5 ? 2 : 3))
       }
       expect(mapFeaturePointIds(feature)).toBeUndefined()
       if (level === 1) continue
-      const style = render?.(feature, mapResolutionForZoom(level === 2 ? 0 : 9))
+      const style = render?.(feature, mapResolutionForScale(level === 2 ? 4 : 2))
       expect(style).toBeInstanceOf(Style)
       if (!(style instanceof Style)) throw new Error('需要文字样式')
       expect(style.getText()?.getFill()?.getColor()).toBe('#ffffff')
@@ -373,7 +373,7 @@ describe('map display layer integration', () => {
     points.dispose()
   })
 
-  it('keeps nexuses visible at every scale and adds beacons from step 9', () => {
+  it('keeps nexuses resident and reveals beacons at 4 units/px', () => {
     const points = createPointLayers()
     const point = referenceDataset.navigationPoints[0]
     if (!point) throw new Error('需要定位点测试数据')
@@ -390,8 +390,8 @@ describe('map display layer integration', () => {
     for (const feature of features) {
       const isNexus = mapFeaturePointIds(feature)?.[0] === 'nexus'
       expect(Boolean(render(feature, 64))).toBe(isNexus)
-      for (const zoom of [0, 8.99, 9, 16, 35, 0]) {
-        expect(Boolean(render(feature, mapResolutionForZoom(zoom)))).toBe(isNexus || zoom >= 9)
+      for (const scale of [64, 4.01, 4, 2, 0.1, 64]) {
+        expect(Boolean(render(feature, mapResolutionForScale(scale)))).toBe(isNexus || scale <= 4)
       }
     }
     expect(layer?.getSource()?.getFeatures()).toEqual(features)
@@ -408,7 +408,7 @@ describe('map display layer integration', () => {
     const feature = layer?.getSource()?.getFeatures()[0]
     if (!feature) throw new Error('定位点必须生成图层 Feature')
     const render = layer?.getStyleFunction()
-    expect(render?.(feature, 4)).toBeUndefined()
+    expect(render?.(feature, 4)).toBeDefined()
     expect(render?.(feature, 2)).toBeDefined()
     expect(mapFeaturePointIds(feature)).toEqual([navigation.id])
     points.update([], [], [], [])
@@ -484,15 +484,15 @@ describe('map display layer integration', () => {
           const point = feature.get('mapPoint') as MapDisplayPoint
           if (point.category !== 'navigation') throw new Error('需要定位点图层')
           for (const resolution of [128, 64, 16]) {
-            expect(Boolean(layer?.getStyleFunction()?.(feature, resolution))).toBe(ids.includes(point.location.id) || point.location.kind === 'boss')
+            expect(Boolean(layer?.getStyleFunction()?.(feature, resolution))).toBe(ids.includes(point.location.id))
           }
-          expect(layer?.getStyleFunction()?.(feature, 2)).toBeDefined()
+          expect(layer?.getStyleFunction()?.(feature, mapResolutionForScale(2))).toBeDefined()
         }
       }
       expect(echoLayer?.getStyleFunction()?.(echoFeature, 64)).toBeUndefined()
-      expect(echoLayer?.getStyleFunction()?.(echoFeature, mapResolutionForZoom(9))).toBeDefined()
+      expect(echoLayer?.getStyleFunction()?.(echoFeature, mapResolutionForScale(2))).toBeDefined()
       expect(labelLayer?.getStyleFunction()?.(labelFeature, 64)).toBeDefined()
-      expect(labelLayer?.getStyleFunction()?.(labelFeature, mapResolutionForZoom(9))).toBeUndefined()
+      expect(labelLayer?.getStyleFunction()?.(labelFeature, mapResolutionForScale(2.5))).toBeUndefined()
     }
     points.setVisibleRoutes([firstRoute])
     points.update([], [], [], [])
@@ -521,14 +521,14 @@ describe('map display layer integration', () => {
 
     for (const mode of [null, 'navigation', 'echo', 'navigation', null] as const) {
       forcedCategory = mode
-      for (const zoom of [0, 8.99, 9, 15.99, 16, 35, 0]) {
-        const resolution = mapResolutionForZoom(zoom)
+      for (const scale of [64, 4.01, 4, 2.50001, 2.5, 2.01, 2, 0.1, 64]) {
+        const resolution = mapResolutionForScale(scale)
         for (const index of [1, 3]) {
           const layer = points.layers[index]
           const feature = layer?.getSource()?.getFeatures()[0]
           if (!feature) throw new Error('需要声骸图层')
           const visible = Boolean(layer?.getStyleFunction()?.(feature, resolution))
-          expect(visible).toBe(mode === 'echo' || zoom >= 9)
+          expect(visible).toBe(mode === 'echo' || scale <= 4)
           if (visible) expect(mapFeaturePointIds(feature)).toEqual([index === 1 ? 'floor-echo' : 'base-echo'])
           else if (echoGrouping === 'clustered') expect(mapFeaturePointIds(feature)).toBeUndefined()
         }
@@ -536,13 +536,13 @@ describe('map display layer integration', () => {
           const layer = points.layers[index]
           const feature = layer?.getSource()?.getFeatures()[0]
           if (!feature) throw new Error('需要定位点图层')
-          expect(Boolean(layer?.getStyleFunction()?.(feature, resolution))).toBe(mode === 'navigation' || zoom >= 16)
+          expect(Boolean(layer?.getStyleFunction()?.(feature, resolution))).toBe(mode === 'navigation' || scale <= 2)
         }
         const labelLayer = points.layers[0]
         for (const feature of labelLayer?.getSource()?.getFeatures() ?? []) {
           const point = feature.get('mapPoint') as MapDisplayPoint
           if (point.category !== 'region-name') throw new Error('需要地名图层')
-          expect(Boolean(labelLayer?.getStyleFunction()?.(feature, resolution))).toBe(point.location.level === (zoom < 9 ? 2 : 3))
+          expect(Boolean(labelLayer?.getStyleFunction()?.(feature, resolution))).toBe(point.location.level === (scale > 2.5 ? 2 : 3))
         }
       }
     }
@@ -562,10 +562,10 @@ describe('map display layer integration', () => {
     const bossFeature = points.layers[2]?.getSource()?.getFeatures()[0]
     if (!echoFeature || !bossFeature) throw new Error('编辑地图需要独立点位 Feature')
 
-    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, mapResolutionForZoom(8.99))).toBeUndefined()
-    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, mapResolutionForZoom(9))).toBeDefined()
-    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, 64)).toBeDefined()
-    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, mapResolutionForZoom(9))).toBeDefined()
+    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, mapResolutionForScale(4.01))).toBeUndefined()
+    expect(points.layers[1]?.getStyleFunction()?.(echoFeature, mapResolutionForScale(2))).toBeDefined()
+    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, 64)).toBeUndefined()
+    expect(points.layers[2]?.getStyleFunction()?.(bossFeature, mapResolutionForScale(2))).toBeDefined()
     expect(mapFeaturesPointIds([bossFeature, bossFeature, echoFeature])).toEqual([boss.id, echo.id])
     points.dispose()
   })

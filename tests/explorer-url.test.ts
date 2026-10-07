@@ -6,6 +6,13 @@ import {
 } from '../src/url/explorer-url.ts'
 
 describe('explorer query state', () => {
+  it('accepts negative fractional zoom and rejects values without a finite positive resolution', () => {
+    expect(parseExplorerQueryValues({ x: '10', y: '20', zoom: '-1.5' }).viewport).toEqual({ center: [10, 20], zoom: -1.5 })
+    for (const zoom of ['10000', '-10000', 'Infinity', 'NaN']) {
+      expect(parseExplorerQueryValues({ x: '10', y: '20', zoom }).viewport).toBeUndefined()
+    }
+  })
+
   it('round-trips the teleport display filter and defaults invalid values to off', () => {
     const snapshot = {
       stateId: DEFAULT_STATE_ID, countryId: null, levelId: null,

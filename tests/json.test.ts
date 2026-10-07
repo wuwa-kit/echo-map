@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { serializeJson } from '../src/utils/json.ts'
 import { libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
-import { mapDatasetSchema, mapZoomRangeSchema } from '../src/domain/schema.ts'
+import { mapDatasetSchema, mapDisplayPolicySchema } from '../src/domain/schema.ts'
 import { mixedPoint, referenceDataset } from './fixtures/point-library.ts'
 
 describe('JSON serialization without null object fields', () => {
@@ -30,9 +30,9 @@ describe('JSON serialization without null object fields', () => {
     expect(() => parsePointLibrary({ version: 1, points: [input] }, referenceDataset, 'manual')).toThrow('完整的整数 XYZ')
   })
 
-  it('restores nullable map fields and unlimited zoom after serialization', () => {
+  it('restores nullable map fields and resident policy after serialization', () => {
     expect(mapDatasetSchema.parse(JSON.parse(serializeJson(referenceDataset)))).toEqual(referenceDataset)
-    expect(mapZoomRangeSchema.parse(JSON.parse(serializeJson({ minZoom: 0, maxZoom: null })))).toEqual({ minZoom: 0, maxZoom: null })
+    expect(mapDisplayPolicySchema.parse(JSON.parse(serializeJson({ kind: 'always' })))).toEqual({ kind: 'always' })
   })
 
   it('keeps omitted notes absent in saved data while preserving authored notes and runtime defaults', () => {

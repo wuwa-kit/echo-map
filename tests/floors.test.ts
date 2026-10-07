@@ -15,7 +15,7 @@ import { useExplorerStore } from '../src/stores/explorer.ts'
 import type { AuthoredNavigationPoint, MapStateDefinition } from '../src/domain/types.ts'
 import type { MapViewportState } from '../src/url/explorer-url.ts'
 import { createMapView } from '../src/map/useMapViewport.ts'
-import { mapResolutionForZoom } from '../src/map/point-visibility.ts'
+import { mapResolutionForZoom } from '../src/map/map-scale.ts'
 import { emptyPointLibrary } from '../src/domain/point-library.ts'
 import { mixedPoint, smallEcho } from './fixtures/point-library.ts'
 
@@ -295,7 +295,7 @@ describe('floor groups in the canvas viewport', () => {
   it.each([[1280, 720], [1920, 1080], [390, 844]])('shows space station floors at the reported URL viewport on a %s × %s canvas', (width, height) => {
     const store = useExplorerStore()
     store.setDataset(dataset)
-    const saved: MapViewportState = { center: [-611.08, 8515.67], zoom: 4.6087 }
+    const saved: MapViewportState = { center: [-611.08, 8515.67], zoom: -1 }
     store.restoreUrlState({ viewport: saved, controlPanelCollapsed: true })
     const activeState = store.activeState
     if (!activeState) throw new Error('缺少主地图')

@@ -15,7 +15,8 @@ import Style from 'ol/style/Style.js'
 import Text from 'ol/style/Text.js'
 import { bossMarkerShape } from './boss-marker.ts'
 import type { EchoDefinition, EchoMapLocation, MapDisplayPoint, NavigationPoint, RegionLabel, RouteResult } from '../domain/types.ts'
-import { isMapPointVisibleAtZoom, isPointVisibleAtZoom, MAP_POINT_ZOOM_RANGES, mapZoomForResolution } from './point-visibility.ts'
+import { isMapPointVisibleAtScale, isPointVisibleAtScale, MAP_POINT_DISPLAY_POLICIES } from './point-visibility.ts'
+import { gameScaleForResolution } from './map-scale.ts'
 import { createPointMarkerStyles, NON_TELEPORT_BRIGHTNESS, NON_TELEPORT_OPACITY } from './point-marker-styles.ts'
 
 class InteractionCluster extends Cluster {
@@ -255,9 +256,9 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   }
 
   function clusterStyle(feature: FeatureLike, resolution: number): Style[] | undefined {
-    const zoom = mapZoomForResolution(resolution)
+    const scale = gameScaleForResolution(resolution)
     const forced = options.exportMode || options.forceVisibleCategory?.() === 'echo'
-    if (!forced && !isPointVisibleAtZoom(MAP_POINT_ZOOM_RANGES.echo, zoom)) {
+    if (!forced && !isPointVisibleAtScale(MAP_POINT_DISPLAY_POLICIES.echo, scale)) {
       if (feature instanceof Feature && feature.get('locations')?.length) feature.set('locations', [], true)
       return undefined
     }
@@ -269,7 +270,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     }
     const locations = members.flatMap((member) => {
       const point = member.get('mapPoint') as MapDisplayPoint
-      return point.category === 'echo' && (forced || isMapPointVisibleAtZoom(point, zoom)) ? [point.location] : []
+      return point.category === 'echo' && (forced || isMapPointVisibleAtScale(point, scale)) ? [point.location] : []
     })
     if (feature instanceof Feature) feature.set('locations', locations, true)
     if (locations.length === 0) return undefined
@@ -294,7 +295,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     const point = feature.get('mapPoint') as MapDisplayPoint
     const forced = point.category === options.forceVisibleCategory?.()
       || (point.category === 'navigation' && point.location.mode === 'fast-travel' && routeTeleportIds.has(point.location.id))
-    if (!options.exportMode && !forced && !isMapPointVisibleAtZoom(point, mapZoomForResolution(resolution))) return undefined
+    if (!options.exportMode && !forced && !isMapPointVisibleAtScale(point, gameScaleForResolution(resolution))) return undefined
     return pointMarkerStyle(point)
   }
 

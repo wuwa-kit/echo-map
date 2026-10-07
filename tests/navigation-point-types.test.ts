@@ -63,7 +63,7 @@ describe('navigation classification', () => {
   })
 
   it('groups remnant and nightmare settlements under echo settlements with selectable artwork', () => {
-    expect(navigationPointTypes['echo-settlement']).toMatchObject({ name: '声骸聚落', names: [], displayTier: 'near' })
+    expect(navigationPointTypes['echo-settlement']).toMatchObject({ name: '声骸聚落', names: [] })
     expect(navigationTypeIcons('echo-settlement', '残象聚落')).toHaveLength(2)
     expect(navigationTypeIcons('echo-settlement', '梦魇聚落')).toHaveLength(1)
     const points = navigationTypeIcons('echo-settlement').map((icon) => ({

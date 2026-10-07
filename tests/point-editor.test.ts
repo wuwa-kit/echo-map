@@ -12,7 +12,7 @@ import { navigationPointTypeIds, navigationPointTypes } from '../src/domain/navi
 import { navigationIconById, navigationTypeIcons } from '../src/domain/navigation-icons.ts'
 import { editorLibraryLocations, libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
-import { isMapPointVisibleAtZoom } from '../src/map/point-visibility.ts'
+import { isMapPointVisibleAtScale } from '../src/map/point-visibility.ts'
 import { parseTileId } from '../src/map/projection.ts'
 
 vi.mock('../src/data/load.ts')
@@ -239,7 +239,7 @@ describe('point editor actions', () => {
   })
 
   it.each([
-    ['central-beacon', 0], ['small-beacon', 9], ['entrance', 16],
+    ['central-beacon', Infinity], ['small-beacon', 4], ['entrance', 2],
   ] as const)('derives visibility from %s through saving, reloading and type changes', async (pointType, threshold) => {
     const store = usePointEditorStore()
     await store.load('navigation')
@@ -254,8 +254,8 @@ describe('point editor actions', () => {
     expect(parsed.points[0]).toEqual(saved)
     const location = libraryLocations(parsed, referenceDataset).navigationPoints[0]
     if (!location) throw new Error('需要地图定位点')
-    for (const zoom of [0, 9, 15.99, 16, 35]) {
-      expect(isMapPointVisibleAtZoom({ category: 'navigation', location }, zoom)).toBe(zoom >= threshold)
+    for (const scale of [64, 4.01, 4, 3, 2.01, 2, 0.1]) {
+      expect(isMapPointVisibleAtScale({ category: 'navigation', location }, scale)).toBe(scale <= threshold)
     }
     setActivePinia(createPinia())
     const reopened = usePointEditorStore()
@@ -267,9 +267,9 @@ describe('point editor actions', () => {
       reopened.setPointType(nextType)
       const changed = editorLibraryLocations(reopened.draft ? [reopened.draft] : [], referenceDataset, 'navigation').navigationPoints[0]
       if (!changed) throw new Error('需要编辑中的定位点')
-      const nextThreshold = nextType === 'central-beacon' ? 0 : nextType === 'small-beacon' ? 9 : 16
-      for (const zoom of [0, 9, 15.99, 16, 35]) {
-        expect(isMapPointVisibleAtZoom({ category: 'navigation', location: changed }, zoom)).toBe(zoom >= nextThreshold)
+      const nextThreshold = nextType === 'central-beacon' ? Infinity : changed.mode === 'fast-travel' ? 4 : 2
+      for (const scale of [64, 4.01, 4, 3, 2.01, 2, 0.1]) {
+        expect(isMapPointVisibleAtScale({ category: 'navigation', location: changed }, scale)).toBe(scale <= nextThreshold)
       }
     }
   })

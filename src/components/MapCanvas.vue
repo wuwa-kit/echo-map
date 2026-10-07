@@ -23,7 +23,7 @@ import { useExplorerStore } from '../stores/explorer.ts'
 import { gameToMapCoordinate, mapToGameCoordinate } from '../map/projection.ts'
 import { createOfficialBaseLayers } from '../map/official-base-layers.ts'
 import { createPointLayers, mapFeaturesPointIds } from '../map/point-layers.ts'
-import { mapResolutionForZoom } from '../map/point-visibility.ts'
+import { mapResolutionForScale } from '../map/map-scale.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
 import type { RouteLegDetails } from '../map/route-layer.ts'
@@ -157,6 +157,7 @@ const viewport = useMapViewport({
 
 useResizeObserver(mapTarget, () => {
   map?.updateSize()
+  viewport.initializeViewport()
   const [width = 0, height = 0] = map?.getSize() ?? []
   mapSize.value = [width, height]
   updateFloorViewport()
@@ -279,7 +280,7 @@ function applyMapNavigation(): void {
   const request = mapNavigationRequest.value
   if (!request || !map) return
   const region = dataset.value?.regionLabels.find(({ id }) => id === request.regionId)
-  if (region) viewport.locate([region.coordinate.mapX, region.coordinate.mapY], mapResolutionForZoom(region.level === 3 ? 12 : 6))
+  if (region) viewport.locate([region.coordinate.mapX, region.coordinate.mapY], mapResolutionForScale(region.level === 3 ? 2 : 4))
   store.completeMapNavigation()
 }
 

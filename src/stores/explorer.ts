@@ -25,7 +25,6 @@ import { createRoutePlanInput } from '../route/plan-input.ts'
 import type { GravityType, PointLocationBase } from '../domain/types.ts'
 import { hasGravityMap } from '../domain/gravity.ts'
 import { createFloorCoverage, floorGroupsInViewport } from '../map/floor-coverage.ts'
-import { MAP_TIER_ZOOM_RANGES, isPointVisibleAtZoom, mapZoomForResolution } from '../map/point-visibility.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
 import { createRouteGroupCandidates, mapStateName, routeGroupId } from '../route/route-groups.ts'
 
@@ -90,7 +89,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const floorCoverage = computed(() => createFloorCoverage(activeState.value, dataset.value?.source.tileWidth ?? 1024))
   const nearbyFloorGroupIds = useEqualComputed(() => {
     const viewport = floorViewport.value
-    return viewport && isPointVisibleAtZoom(MAP_TIER_ZOOM_RANGES.always, mapZoomForResolution(viewport.resolution))
+    return viewport && Number.isFinite(viewport.resolution) && viewport.resolution > 0
       ? floorGroupsInViewport(floorCoverage.value, viewport.extent) : []
   })
   const selectedFloor = computed(() => floors.value.find(({ id }) => id === selectedLevelId.value) ?? null)
