@@ -1020,7 +1020,7 @@ describe('point editor actions', () => {
   it.each([
     ...navigationPointTypeIds.map((pointType) => ({ pointType, customIcon: false })),
     { pointType: null, customIcon: false },
-  ])('retains name and icon when continuing $pointType (custom icon: $customIcon)', async ({ pointType }) => {
+  ])('retains name, icon and teleport mode when continuing $pointType (custom icon: $customIcon)', async ({ pointType }) => {
     const store = usePointEditorStore()
     await store.load('navigation')
     store.setContinueAdding(true)
@@ -1042,7 +1042,7 @@ describe('point editor actions', () => {
     if (saved?.kind !== 'navigation') throw new Error('需要定位点草稿')
     expect(await store.savePoint()).toBe(true)
     expect(store.draft).toMatchObject({
-      name: saved.name, mode: defaults.mode, coordinate: { x: null, y: null, z: null },
+      name: saved.name, mode: saved.mode, coordinate: { x: null, y: null, z: null },
     })
     if (saved.iconId) expect(store.draft).toHaveProperty('iconId', saved.iconId)
     else expect(store.draft).not.toHaveProperty('iconId')

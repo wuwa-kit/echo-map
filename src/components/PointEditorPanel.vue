@@ -243,7 +243,7 @@ onBeforeRouteLeave(() => {
         <PointDuplicateNotice />
         <div class="flex shrink-0 items-center gap-[10px] border-t border-[var(--line)] p-[14px]">
           <WuButton v-if="existing" variant="ghost" tone="danger" :disabled="busy" :loading="operation === 'delete'" @click="deletePoint">删除</WuButton>
-          <WuCheckBox v-if="canContinueAdding" class="flex min-h-[40px] items-center gap-[8px] text-[12px]" :model-value="continueAdding" :disabled="busy" @update:model-value="store.setContinueAdding">保存后复用名称和图标</WuCheckBox>
+          <WuCheckBox v-if="canContinueAdding" v-tooltip="'保存后继续新增点位，复用当前类型、名称、图标和「可传送」状态'" class="flex min-h-[40px] items-center gap-[8px] text-[12px]" :model-value="continueAdding" :disabled="busy" @update:model-value="store.setContinueAdding">保存后复用设置</WuCheckBox>
           <WuButton class="ml-auto" variant="solid" tone="accent" :disabled="busy || store.tileSaveBlocked" :loading="operation === 'save' && !pending" @click="save">保存</WuButton>
         </div>
     </div>

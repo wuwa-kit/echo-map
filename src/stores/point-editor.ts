@@ -635,6 +635,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
         if (draft.value?.kind === 'navigation') {
           openDraft(produce(draft.value, (point) => {
             point.name = saved.name
+            point.mode = saved.mode
             if (saved.iconId) point.iconId = saved.iconId
           }))
         }
