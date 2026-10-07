@@ -2,6 +2,37 @@
   "version": 1,
   "points": [
     {
+      "id": "007f387a-a472-420e-b7e5-8d5419c118b6",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11556,
+        "y": 13085,
+        "z": 316
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "03be24be-d036-4c78-9f86-66288cb2ba9a",
+      "stateId": 8,
+      "coordinate": {
+        "x": 13689,
+        "y": 10891,
+        "z": 13
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
       "id": "07f4a650-c960-4cf0-84dd-8f4c148f4d9d",
       "stateId": 8,
       "coordinate": {
@@ -16,6 +47,52 @@
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
       "mode": "fast-travel"
+    },
+    {
+      "id": "0bc828cd-fa6b-4c22-a9a4-56662422e6ef",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11668,
+        "y": 14054,
+        "z": 130
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "0ea8f1b3-21e1-46e9-8da2-b905b24accae",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11715,
+        "y": 12931,
+        "z": 281
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "留声珍藏",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-c2e2cff5927e4bfb",
+      "mode": "landmark"
+    },
+    {
+      "id": "16afa9e9-bb7b-446a-b73b-b05019b7d42f",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12476,
+        "y": 11480,
+        "z": 322
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
     },
     {
       "id": "1a01e6a6-f663-4920-8782-1700ad2be15b",
@@ -50,6 +127,23 @@
       "mode": "fast-travel"
     },
     {
+      "id": "1c3eda66-e1e0-4037-bbcb-118585c1196b",
+      "stateId": 8,
+      "levelId": "-1/23",
+      "coordinate": {
+        "x": 11602,
+        "y": 13118,
+        "z": 350
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
       "id": "1e26f943-e890-4c9e-acd3-ef9789c209af",
       "stateId": 8,
       "coordinate": {
@@ -63,6 +157,36 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1e64631c-3176-406f-9fba-b3608537a6a7",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11991,
+        "y": 11528,
+        "z": 260
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "1f048ac4-cb80-43ff-ac3f-51bd3bff4fd7",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11699,
+        "y": 10674,
+        "z": 1
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "染秽之梦",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
       "mode": "fast-travel"
     },
     {
@@ -80,6 +204,26 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "23279c67-b6dc-4db0-bcbf-931b3cbdd6ab",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12908,
+        "y": 11279,
+        "z": 1
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "染秽之梦",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 12880,
+        "y": 11266,
+        "z": 2
+      }
     },
     {
       "id": "251e4af9-a81b-4389-94e4-08f83d55f179",
@@ -130,6 +274,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "2b5af989-0d2c-4910-8bb3-15c5b974dfe5",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12823,
+        "y": 11185,
+        "z": 387
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "岩间中枢",
+      "navigationKind": "landmark",
+      "iconId": "icon-66d81b741f4b9062",
+      "mode": "fast-travel"
+    },
+    {
       "id": "2c91379f-a32f-4a40-a8ba-96621185541f",
       "stateId": 8,
       "levelId": "-1/21",
@@ -144,6 +303,37 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "2ea1a468-ebd2-481c-9347-354f2ecca5f6",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11548,
+        "y": 13996,
+        "z": 96
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "烬潮之梦",
+      "navigationKind": "landmark",
+      "iconId": "icon-2fb86e64d00eb31c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "31888c08-e138-407f-be30-96fc3972a797",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12372,
+        "y": 11803,
+        "z": 520
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-a760dfcbafaa746d",
       "mode": "fast-travel"
     },
     {
@@ -163,6 +353,70 @@
       "mode": "fast-travel"
     },
     {
+      "id": "37ee576d-03d3-413c-92ad-ef1a54d8a6ef",
+      "stateId": 8,
+      "levelId": "-1/20",
+      "coordinate": {
+        "x": 11325,
+        "y": 11660,
+        "z": 142
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "3954f287-994c-4091-b61b-8b892cb93d72",
+      "stateId": 8,
+      "coordinate": {
+        "x": 10994,
+        "y": 11219,
+        "z": 92
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "3c4357ca-2595-42af-b026-b05d8abb6271",
+      "stateId": 8,
+      "levelId": "-1/25",
+      "coordinate": {
+        "x": 11832,
+        "y": 13656,
+        "z": 360
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "3e758339-0c2f-42a8-a230-2c5344d25a35",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12060,
+        "y": 12089,
+        "z": 290
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
       "id": "40ae2486-1ec2-4c65-b69a-4a94ea1bb801",
       "stateId": 8,
       "coordinate": {
@@ -177,6 +431,36 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "414a0d4b-b14c-4da6-ad32-052a1a10e88d",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11327,
+        "y": 10429,
+        "z": 12
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "44598aaa-fccc-432d-9769-14880034d3cd",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11998,
+        "y": 13425,
+        "z": 110
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
     },
     {
       "id": "457d05e4-20c9-49b2-ae8c-871346dd160f",
@@ -211,6 +495,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "4af34d8a-ffc0-405e-a9d1-14c0b5a75692",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11864,
+        "y": 13872,
+        "z": 355
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
       "id": "4c2c605d-6a92-45e2-afcf-5f7538292b7b",
       "stateId": 8,
       "coordinate": {
@@ -239,6 +538,81 @@
       "name": "声骸挑战·翱翔",
       "navigationKind": "landmark",
       "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "50f7aaf1-56fe-4f52-b6cb-6e07d1fd7e5f",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11406,
+        "y": 12925,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "5aab58df-8b1f-4eaa-9145-a0558ada15bc",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12015,
+        "y": 12841,
+        "z": 18
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "5b947390-df43-4bf0-a3c0-143ef0f3451c",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11578,
+        "y": 10988,
+        "z": 99
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "5bf85691-2613-4a39-9741-50e3ec726ee9",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11914,
+        "y": 13052,
+        "z": 257
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "5ca1913d-4b19-4c44-b067-81dbc79bfad4",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11121,
+        "y": 13848,
+        "z": 336
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "暗流潮涌之处",
+      "navigationKind": "landmark",
+      "iconId": "icon-253e34bbabb46852",
       "mode": "fast-travel"
     },
     {
@@ -273,6 +647,67 @@
       "mode": "fast-travel"
     },
     {
+      "id": "63b96e19-719e-40cd-a681-ad9006e1b6bf",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11392,
+        "y": 10614,
+        "z": 45
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "6855a46b-a10f-4f64-be9a-aa7c8708f41a",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11140,
+        "y": 14021,
+        "z": 343
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦魇聚落",
+      "navigationKind": "challenge",
+      "pointType": "echo-settlement",
+      "iconId": "icon-fbd442ad82816fef",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "6fdcea9c-9ed7-4432-b32a-54e0b29207f7",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11671,
+        "y": 13754,
+        "z": 368
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "711123f1-b83c-4c71-aab4-47087f9a3783",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12592,
+        "y": 10918,
+        "z": 44
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
       "id": "712f7c84-1ebf-4428-8357-74f2d7cd95eb",
       "stateId": 8,
       "coordinate": {
@@ -305,6 +740,43 @@
       "mode": "fast-travel"
     },
     {
+      "id": "722a0d90-b528-4f7c-91fa-1315f94f5294",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11462,
+        "y": 11711,
+        "z": 159
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-2ee2e41664dd1920",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "72d5b7a7-30c5-4061-811c-269524e6a9e9",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12189,
+        "y": 10890,
+        "z": 14
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦魇·凯尔匹",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-c088f57a65b4ef83",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 12144,
+        "y": 10910,
+        "z": 14
+      }
+    },
+    {
       "id": "79bfc588-36a9-4fa8-9a22-103ed4238f7e",
       "stateId": 8,
       "coordinate": {
@@ -321,6 +793,113 @@
       "mode": "fast-travel"
     },
     {
+      "id": "7adaef7e-ee99-4ab4-bf5a-6f2fcc105d65",
+      "stateId": 8,
+      "levelId": "-1/24",
+      "coordinate": {
+        "x": 11888,
+        "y": 13135,
+        "z": 199
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "7cef8321-4273-4b86-b049-adbe19af8b05",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11156,
+        "y": 11138,
+        "z": 171
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "7de89604-d8c2-4c2f-9fab-a45ea5b9f364",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11634,
+        "y": 11782,
+        "z": 193
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "7e747e60-97bb-4bbb-ac35-800ff52289e7",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12509,
+        "y": 11927,
+        "z": 521
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "列奥尼达酒店",
+      "navigationKind": "landmark",
+      "iconId": "icon-efe24b3452b324c5",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "7ec0452a-0335-4fb3-9f9f-387ee4953965",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11924,
+        "y": 13849,
+        "z": 151
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "烬潮之梦",
+      "navigationKind": "landmark",
+      "iconId": "icon-2fb86e64d00eb31c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "7f771a80-63d9-438d-9e7b-05286f87fc93",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11685,
+        "y": 13175,
+        "z": 390
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "极限挑战·风之涌动",
+      "navigationKind": "landmark",
+      "iconId": "icon-2f17d04c94579aa9",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "817abdd7-d4bc-42cb-8118-08b3e796f2ce",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11748,
+        "y": 12727,
+        "z": 291
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
       "id": "82aeedad-f0a6-47f2-8065-80b417365bcd",
       "stateId": 8,
       "coordinate": {
@@ -335,6 +914,27 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "8680438f-32b7-4c05-a8ec-83e2631c74c8",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12397,
+        "y": 13516,
+        "z": 70
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "伪作的神王",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-6f49bc80ea32a0af",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 12369,
+        "y": 13516,
+        "z": 70
+      }
     },
     {
       "id": "8b2acb7d-cfb0-453d-bf30-b45e78cef393",
@@ -416,6 +1016,113 @@
       "mode": "fast-travel"
     },
     {
+      "id": "963ce2e4-09e3-435c-bc6e-d4a25bf04546",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11282,
+        "y": 13393,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦魇聚落",
+      "navigationKind": "challenge",
+      "pointType": "echo-settlement",
+      "iconId": "icon-fbd442ad82816fef",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "9aac6661-e36e-4450-a281-d79762bdff86",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11741,
+        "y": 13036,
+        "z": 288
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "9edfc5ea-5d10-4585-9170-4b304da82ea8",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12054,
+        "y": 13195,
+        "z": 333
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "a2d58edc-9eeb-44e9-bc13-03244a8b42c3",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12670,
+        "y": 11625,
+        "z": 520
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "b06b178b-f6f4-46d2-ae02-366c6daf18a6",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11987,
+        "y": 11009,
+        "z": 26
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "b585a45e-a2a8-4308-a50a-2f8c20e6f5a4",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11641,
+        "y": 13458,
+        "z": 87
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦魇聚落",
+      "navigationKind": "challenge",
+      "pointType": "echo-settlement",
+      "iconId": "icon-fbd442ad82816fef",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b6db5611-bf59-4d16-a609-5c46932f4f25",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11815,
+        "y": 13775,
+        "z": 221
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "烬潮之梦",
+      "navigationKind": "landmark",
+      "iconId": "icon-2fb86e64d00eb31c",
+      "mode": "fast-travel"
+    },
+    {
       "id": "bb3a2fac-3809-4ed3-a361-2adea9becd58",
       "stateId": 8,
       "coordinate": {
@@ -463,6 +1170,37 @@
       "mode": "fast-travel"
     },
     {
+      "id": "c3bbd228-cf97-4358-9a45-7ce6feb7ff84",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12492,
+        "y": 11094,
+        "z": 190
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "c596ecf8-b56c-44f2-8fdb-4f3aebd42877",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12452,
+        "y": 11877,
+        "z": 513
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-c58c3aea6d69dcbc",
+      "mode": "fast-travel"
+    },
+    {
       "id": "c70e23c0-98cc-4d47-9ebb-835ba5cdb042",
       "stateId": 8,
       "coordinate": {
@@ -476,6 +1214,52 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c95de9c6-6497-4378-ae8a-7a90393bbef3",
+      "stateId": 8,
+      "levelId": "-1/21",
+      "coordinate": {
+        "x": 12052,
+        "y": 11616,
+        "z": 14
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "幽域实验场",
+      "navigationKind": "landmark",
+      "iconId": "icon-de4fdf4b49d12643",
+      "mode": "landmark"
+    },
+    {
+      "id": "ccf6fb50-4407-4067-b7bf-128e1f81321f",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11656,
+        "y": 11694,
+        "z": 236
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "染秽之梦",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "cd304ecb-d9f8-41bd-81df-5b1f8e19892e",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11487,
+        "y": 11869,
+        "z": 153
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "染秽之梦",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
       "mode": "fast-travel"
     },
     {
@@ -495,6 +1279,52 @@
       "mode": "fast-travel"
     },
     {
+      "id": "d4c95e83-5110-4bd5-843a-ed9f8476723b",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11367,
+        "y": 10906,
+        "z": 123
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "d56f98e2-9cb2-47a5-abbc-5dd47c5be3ab",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12292,
+        "y": 12065,
+        "z": 327
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "d587919d-f0ed-432f-8352-fdc564bacad0",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12521,
+        "y": 11772,
+        "z": 452
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "海之女",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-35a016bf18d6d146",
+      "mode": "fast-travel"
+    },
+    {
       "id": "d6135816-0ded-45a8-8796-c3f564795bcd",
       "stateId": 8,
       "coordinate": {
@@ -508,6 +1338,106 @@
       "navigationKind": "landmark",
       "iconId": "icon-not-found",
       "mode": "fast-travel"
+    },
+    {
+      "id": "d714d8b4-e245-47e7-9d9e-6a5c006d1d99",
+      "stateId": 8,
+      "coordinate": {
+        "x": 12410,
+        "y": 11781,
+        "z": 513
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-d46d97ebff06af5f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "da9daaf0-2ff7-4a81-9d00-c26eab61344d",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11500,
+        "y": 10883,
+        "z": 183
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "荣耀狮像",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-329b20a475756ef2",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 11482,
+        "y": 10903,
+        "z": 183
+      }
+    },
+    {
+      "id": "df6354fb-a9da-4098-a052-fd8042f927bd",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11937,
+        "y": 11140,
+        "z": 64
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "e1431042-fed1-4cda-b249-850aceb5ecac",
+      "stateId": 8,
+      "levelId": "-1/21",
+      "coordinate": {
+        "x": 12019,
+        "y": 11714,
+        "z": 58
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "地底飞行挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "landmark"
+    },
+    {
+      "id": "e97fa20c-e529-4703-a088-11a55bedb496",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11176,
+        "y": 13336,
+        "z": 7
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "e9a35e44-8845-4656-8189-0dc9b9f6f58f",
+      "stateId": 8,
+      "levelId": "-1/21",
+      "coordinate": {
+        "x": 12290,
+        "y": 11542,
+        "z": 136
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
     },
     {
       "id": "ead3f423-6fd5-449c-b67f-2bf8bb41870a",
@@ -542,6 +1472,23 @@
       "mode": "fast-travel"
     },
     {
+      "id": "ebbe3943-032f-4f15-a808-f4c88286547e",
+      "stateId": 8,
+      "levelId": "-1/27",
+      "coordinate": {
+        "x": 11385,
+        "y": 14046,
+        "z": 269
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
       "id": "edd0a592-2345-445e-91be-69861e04f03b",
       "stateId": 8,
       "coordinate": {
@@ -555,6 +1502,23 @@
       "navigationKind": "landmark",
       "iconId": "icon-not-found",
       "mode": "fast-travel"
+    },
+    {
+      "id": "ee1f5c05-f1fb-4a15-add8-c70cd7560612",
+      "stateId": 8,
+      "levelId": "-1/26",
+      "coordinate": {
+        "x": 11744,
+        "y": 13813,
+        "z": 341
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
     },
     {
       "id": "f146d909-ce85-4322-9885-78b854f1a5a8",
@@ -618,6 +1582,21 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "fd38fae9-78c6-4f94-a4b7-c2c8ba9836ae",
+      "stateId": 8,
+      "coordinate": {
+        "x": 11882,
+        "y": 13958,
+        "z": 184
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "烬潮之梦",
+      "navigationKind": "landmark",
+      "iconId": "icon-2fb86e64d00eb31c",
       "mode": "fast-travel"
     }
   ]

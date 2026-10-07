@@ -2,6 +2,180 @@
   "version": 1,
   "points": [
     {
+      "id": "0128ff29-2b29-40ad-b4db-4ba97868c0d9",
+      "stateId": 906,
+      "levelId": "-1/40",
+      "coordinate": {
+        "x": -3711,
+        "y": -6661,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "0269a4ae-ed05-4dea-a94a-d1f99ae3ec30",
+      "stateId": 906,
+      "coordinate": {
+        "x": -522,
+        "y": -5549,
+        "z": 432
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "全息战略·同步",
+      "navigationKind": "hologram",
+      "pointType": "hologram",
+      "iconId": "icon-acc273d641dd2a07",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "03b36976-c0c8-47b0-ac33-a4ee27137f8c",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1026,
+        "y": -6083,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "03ef0764-8a54-4f01-ac79-d8b3578de861",
+      "stateId": 906,
+      "coordinate": {
+        "x": -492,
+        "y": -5445,
+        "z": 358
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "05009700-071f-4268-b5be-6b9d8c3fa723",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2081,
+        "y": -4506,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "051d294e-fe6f-4ceb-bf82-b9da69058c52",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1300,
+        "y": -6820,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "057f6514-98d8-433f-a57f-9fcf102f7fd0",
+      "stateId": 906,
+      "coordinate": {
+        "x": -215,
+        "y": -7988,
+        "z": 649
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "067815aa-c0ce-4330-80f2-91d7f9b86c1f",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1615,
+        "y": -5891,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "067a7fc3-426a-4e7b-a87d-01a8e5b0fb93",
+      "stateId": 906,
+      "coordinate": {
+        "x": 82,
+        "y": -3863,
+        "z": 271
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "虚诞潜迹",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 114,
+        "y": -4287,
+        "z": 271
+      }
+    },
+    {
+      "id": "076f786e-b917-4102-b79e-cc240de8c1d6",
+      "stateId": 906,
+      "coordinate": {
+        "x": -463,
+        "y": -5388,
+        "z": 353
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "08c09782-5cc0-4151-9c91-21e72cbadd63",
+      "stateId": 906,
+      "levelId": "-1/39",
+      "coordinate": {
+        "x": -4151,
+        "y": -6558,
+        "z": 516
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
       "id": "08fa29b5-fd3a-46ae-a04d-2485ca98a035",
       "stateId": 906,
       "coordinate": {
@@ -15,6 +189,51 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "09581902-2b26-4b63-826d-404caa24b18b",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1164,
+        "y": -6221,
+        "z": 399
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "0986931a-a416-43ed-bd14-d2f422941b81",
+      "stateId": 906,
+      "coordinate": {
+        "x": -555,
+        "y": -4630,
+        "z": 379
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "0a2dd2e3-721c-408a-870a-d8b3c7b954b9",
+      "stateId": 906,
+      "coordinate": {
+        "x": 62,
+        "y": -8256,
+        "z": 398
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
       "mode": "fast-travel"
     },
     {
@@ -52,6 +271,81 @@
       "mode": "fast-travel"
     },
     {
+      "id": "0ee3e17a-6c44-4330-9e46-ec917b9fe73c",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1018,
+        "y": -5479,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "10cabcf9-9834-481a-adb8-cf5815bc3061",
+      "stateId": 906,
+      "coordinate": {
+        "x": 713,
+        "y": -5655,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "10f3a83b-3bf2-4d77-bbd4-230cb77082e9",
+      "stateId": 906,
+      "coordinate": {
+        "x": -367,
+        "y": -6140,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "124c1d81-9f48-477a-ace8-a714d91cc02a",
+      "stateId": 906,
+      "coordinate": {
+        "x": 497,
+        "y": -8419,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "125ab686-d842-4b5c-9ef4-d9e449840419",
+      "stateId": 906,
+      "coordinate": {
+        "x": 469,
+        "y": -4473,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
       "id": "126c93d6-1d24-4bcf-97e7-87e59a3f44d4",
       "stateId": 906,
       "levelId": "-1/30",
@@ -69,6 +363,97 @@
       "mode": "fast-travel"
     },
     {
+      "id": "14d0849f-727c-4374-b58c-5dee2b1a399e",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1609,
+        "y": -4356,
+        "z": 404
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1689731b-d203-458e-91ec-415e86504f46",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1226,
+        "y": -6209,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "1693ebd2-ee09-46f2-ae21-6b3f36923fe4",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1690,
+        "y": -7239,
+        "z": 96
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "172ae79c-5afb-453c-93a2-a72847c07cd3",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2306,
+        "y": -6690,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "18021e10-5f0d-423b-94fa-4bb21adc8eb0",
+      "stateId": 906,
+      "coordinate": {
+        "x": -502,
+        "y": -5357,
+        "z": 354
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-0fd966a2cfa0aa40",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1816e375-0df4-4b37-bf11-77531a832ac6",
+      "stateId": 906,
+      "coordinate": {
+        "x": -245,
+        "y": -6770,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
       "id": "19454042-ac49-4d7a-9be7-bf034f111ed2",
       "stateId": 906,
       "coordinate": {
@@ -82,6 +467,66 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "19b298ea-27d5-485e-be3b-ca1dc6d2e425",
+      "stateId": 906,
+      "coordinate": {
+        "x": 890,
+        "y": -5644,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "1bb7a256-6d22-4eb8-96da-03c39ed85fb2",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2152,
+        "y": -4989,
+        "z": 354
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1ce899d0-1f65-4d1f-a25f-86542c792386",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2500,
+        "y": -4377,
+        "z": 618
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1dd2f5da-5339-4a01-b2c6-38e1b653ba0e",
+      "stateId": 906,
+      "coordinate": {
+        "x": -451,
+        "y": -5960,
+        "z": 369
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
       "mode": "fast-travel"
     },
     {
@@ -101,6 +546,52 @@
       "mode": "fast-travel"
     },
     {
+      "id": "24072dce-5744-4d15-80bb-04083cefdad0",
+      "stateId": 906,
+      "coordinate": {
+        "x": 474,
+        "y": -4709,
+        "z": 367
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "2409c777-45ed-4649-bf00-c22b57a4d474",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2015,
+        "y": -7168,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "2495d8a0-773a-404f-91e7-d0e9d1a8645c",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1429,
+        "y": -4144,
+        "z": 204
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
       "id": "25743ae8-6bf5-436c-9ae1-79cebf95c39b",
       "stateId": 906,
       "coordinate": {
@@ -117,6 +608,128 @@
       "mode": "fast-travel"
     },
     {
+      "id": "27e7dfd3-ff2a-4713-8827-96655a825b31",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1142,
+        "y": -8676,
+        "z": 541
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "282df1ec-aaed-436a-b22d-afb13b3cf746",
+      "stateId": 906,
+      "coordinate": {
+        "x": 916,
+        "y": -5585,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "温泉观星",
+      "navigationKind": "landmark",
+      "iconId": "icon-f87e629ac9b9dc6a",
+      "mode": "landmark"
+    },
+    {
+      "id": "288ad4ec-1d2a-4b80-8999-9dfe9c6ccf81",
+      "stateId": 906,
+      "coordinate": {
+        "x": -892,
+        "y": -4882,
+        "z": 382
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "29cafa80-16a1-4c24-9cf5-1f382ce661d3",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1085,
+        "y": -5862,
+        "z": 357
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "竞速挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-fe16c33c82cba63b",
+      "mode": "landmark"
+    },
+    {
+      "id": "2c223c0f-45fc-4242-95be-c289673ffd01",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1450,
+        "y": -4149,
+        "z": 482
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "2ca92030-7ab6-46cf-9f4f-da34827401c4",
+      "stateId": 906,
+      "levelId": "-1/37",
+      "coordinate": {
+        "x": -716,
+        "y": -7745,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "2d8e352d-0a98-4dde-b13a-bfde1a4efd7e",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3913,
+        "y": -6211,
+        "z": 362
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "2e526a32-c2eb-4b16-a98b-6d6bb6a89eee",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1740,
+        "y": -7003,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
       "id": "2f5f3d16-e57b-41f7-b5de-0dbbe2845b16",
       "stateId": 906,
       "coordinate": {
@@ -130,6 +743,52 @@
       "navigationKind": "domain",
       "pointType": "material-domain",
       "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "2f7466a9-f5fa-4fb4-a46f-14fffd019b34",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1402,
+        "y": -7032,
+        "z": 500
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "31590bf6-2889-4450-86f0-bcd734f12de7",
+      "stateId": 906,
+      "coordinate": {
+        "x": -4340,
+        "y": -6675,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "entrance"
+    },
+    {
+      "id": "31aad9f8-b853-444a-993e-bfc71c1a0ff3",
+      "stateId": 906,
+      "coordinate": {
+        "x": -377,
+        "y": -6170,
+        "z": 337
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "拉海洛终声残卷回收",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-049d0d32d01a6a8d",
       "mode": "fast-travel"
     },
     {
@@ -149,6 +808,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "33bb0a24-eebd-41ba-8786-f8a24c5639b4",
+      "stateId": 906,
+      "coordinate": {
+        "x": 293,
+        "y": -7992,
+        "z": 176
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
       "id": "34b18760-266e-4699-a2ab-605aa59a622b",
       "stateId": 906,
       "coordinate": {
@@ -162,6 +836,21 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "34fd9b42-eb5a-47e6-8ade-c728abd59937",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3039,
+        "y": -8310,
+        "z": 3
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
       "mode": "fast-travel"
     },
     {
@@ -181,6 +870,36 @@
       "mode": "fast-travel"
     },
     {
+      "id": "38f2f210-5589-4f1e-beb9-fc97fb4e8b96",
+      "stateId": 906,
+      "coordinate": {
+        "x": -61,
+        "y": -5806,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "39505463-346a-4f44-a9ba-65b84e1e6811",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2753,
+        "y": -5074,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
       "id": "3b6025c9-795b-4111-9ff9-49da7e9646ce",
       "stateId": 906,
       "coordinate": {
@@ -195,6 +914,41 @@
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
       "mode": "fast-travel"
+    },
+    {
+      "id": "3be0a84a-59af-48b3-a767-34cf4ff2a9b2",
+      "stateId": 906,
+      "coordinate": {
+        "x": -829,
+        "y": -8400,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "3bf3fc73-95ec-48be-b42a-1b56545e9f0d",
+      "stateId": 906,
+      "coordinate": {
+        "x": -133,
+        "y": -8279,
+        "z": 395
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "虚质磁暴区",
+      "navigationKind": "landmark",
+      "iconId": "icon-b54ccad24f9ef4ca",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -190,
+        "y": -8284,
+        "z": 397
+      }
     },
     {
       "id": "3c746102-4f79-4ff6-9fa7-b2e9ac06c699",
@@ -213,6 +967,162 @@
       "mode": "fast-travel"
     },
     {
+      "id": "3caa1252-f783-44e9-8ff5-2569df320434",
+      "stateId": 906,
+      "coordinate": {
+        "x": -653,
+        "y": -5741,
+        "z": 366
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "3d54b621-9611-46f2-9cbc-91801c8fb19d",
+      "stateId": 906,
+      "coordinate": {
+        "x": -433,
+        "y": -4573,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "3e10af38-6c09-420c-809a-ed76d9c67704",
+      "stateId": 906,
+      "coordinate": {
+        "x": -723,
+        "y": -5549,
+        "z": 364
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "终焉矩阵",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "3e3b6b0b-f3a1-42f4-9386-ff0bef293c10",
+      "stateId": 906,
+      "levelId": "-1/35",
+      "coordinate": {
+        "x": -1561,
+        "y": -6070,
+        "z": 267
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "3e494738-c460-4d29-9b89-c9f507f6125d",
+      "stateId": 906,
+      "levelId": "-1/43",
+      "coordinate": {
+        "x": -5021,
+        "y": -6533,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "40bb89de-cc64-4f8e-9710-689a72ea7b11",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1981,
+        "y": -4882,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "41fa07a3-fd38-43e7-b35b-8b35b62001f6",
+      "stateId": 906,
+      "coordinate": {
+        "x": -715,
+        "y": -6040,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "434866a0-73ba-45b2-82a6-c8a2dc1dbfe0",
+      "stateId": 906,
+      "coordinate": {
+        "x": -903,
+        "y": -5344,
+        "z": 376
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-c58c3aea6d69dcbc",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "451e46ca-8832-481f-be19-ddcac82e5b16",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1982,
+        "y": -5560,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "45c72da0-dc09-462e-a33b-851dfdf95435",
+      "stateId": 906,
+      "levelId": "-1/36",
+      "coordinate": {
+        "x": -506,
+        "y": -8641,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
       "id": "471f62e9-9081-414a-894f-9e7f59cddbbf",
       "stateId": 906,
       "coordinate": {
@@ -226,6 +1136,128 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "472e48c7-c7a1-470e-a756-db9f46f8d8c7",
+      "stateId": 906,
+      "coordinate": {
+        "x": 194,
+        "y": -6108,
+        "z": 297
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "47ad1da3-1569-4240-8670-449623119f77",
+      "stateId": 906,
+      "coordinate": {
+        "x": -881,
+        "y": -7952,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "482d33aa-ea9b-4c87-8310-9ca92c81b7e2",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2025,
+        "y": -4635,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "4838e99a-8f6d-44e8-aea5-2dda6989740f",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3706,
+        "y": -6488,
+        "z": 40
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "496b8d93-fece-4308-9ffc-f7b2cd2e51e6",
+      "stateId": 906,
+      "coordinate": {
+        "x": -18,
+        "y": -4320,
+        "z": 277
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "49bf5d42-7e02-4162-801a-48070fdef99c",
+      "stateId": 906,
+      "coordinate": {
+        "x": -377,
+        "y": -5576,
+        "z": 368
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-d46d97ebff06af5f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "49cd7843-207c-4f31-b8d2-8c2823dfe522",
+      "stateId": 906,
+      "coordinate": {
+        "x": -639,
+        "y": -5528,
+        "z": 363
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-50b338ec14e96d80",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "4ae8f46d-b23c-40ed-a83a-442b3d1bea7b",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1310,
+        "y": -5456,
+        "z": 470
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
       "mode": "fast-travel"
     },
     {
@@ -245,6 +1277,36 @@
       "mode": "fast-travel"
     },
     {
+      "id": "4b6edc56-84df-497c-9ce3-e6efd6363ff6",
+      "stateId": 906,
+      "coordinate": {
+        "x": 519,
+        "y": -7687,
+        "z": 415
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "4cb77976-cfa9-40d2-a68b-f0469aee9248",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1880,
+        "y": -7049,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
       "id": "4ce3d80f-54ec-4fd1-907d-e7dbe2ff1358",
       "stateId": 906,
       "levelId": "-1/30",
@@ -260,6 +1322,66 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "4e1d4c8f-f348-450b-8ba5-b83020deca9b",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1566,
+        "y": -4161,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "511dd9db-6185-4624-8b02-4ae7b3679f21",
+      "stateId": 906,
+      "coordinate": {
+        "x": -210,
+        "y": -7931,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "512c66f6-3913-4381-809e-bc254f7d902f",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1240,
+        "y": -5091,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "51af4036-68f9-4e19-b004-d5c584c7bf3e",
+      "stateId": 906,
+      "coordinate": {
+        "x": 480,
+        "y": -5482,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
     },
     {
       "id": "53d9c833-ac41-4798-a1b5-5132bd431177",
@@ -279,6 +1401,36 @@
       "mode": "fast-travel"
     },
     {
+      "id": "5448feb7-df22-488f-a15e-02e8ad3317cd",
+      "stateId": 906,
+      "coordinate": {
+        "x": -927,
+        "y": -5349,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "55cecc20-68be-4d23-bbde-85e1c549f2e7",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1375,
+        "y": -5735,
+        "z": 370
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "竞速挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-fe16c33c82cba63b",
+      "mode": "landmark"
+    },
+    {
       "id": "55dc7ea1-acec-46fc-a57d-34fa181da528",
       "stateId": 906,
       "coordinate": {
@@ -293,6 +1445,97 @@
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
       "mode": "fast-travel"
+    },
+    {
+      "id": "5affce83-9ae4-4441-964f-bab09166d7e1",
+      "stateId": 906,
+      "coordinate": {
+        "x": -24,
+        "y": -4479,
+        "z": 333
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "5ce744da-d17b-43e3-8b5d-ce59d0c1d6b3",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1669,
+        "y": -5666,
+        "z": 474
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "残象聚落",
+      "navigationKind": "challenge",
+      "pointType": "echo-settlement",
+      "iconId": "icon-4324b10e72143f72",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "5da70ad5-08c2-45cd-999d-06eb935813c1",
+      "stateId": 906,
+      "coordinate": {
+        "x": 147,
+        "y": -5874,
+        "z": 341
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "5dac16e5-4624-47a9-81dd-00d7ee61d0d2",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1369,
+        "y": -5033,
+        "z": 383
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "5f546a68-4d69-4989-82c7-ea90e9c65990",
+      "stateId": 906,
+      "coordinate": {
+        "x": -632,
+        "y": -6456,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "61d3ae70-441f-4a9f-a089-54d492d6af72",
+      "stateId": 906,
+      "coordinate": {
+        "x": -449,
+        "y": -6980,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
     },
     {
       "id": "62d2fc5a-b129-49eb-8382-435230bba7e7",
@@ -328,6 +1571,41 @@
       "mode": "fast-travel"
     },
     {
+      "id": "65e7dc60-a594-4661-a44c-c58d696b2262",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1926,
+        "y": -4311,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "66237351-a539-497c-a921-071d788577fe",
+      "stateId": 906,
+      "coordinate": {
+        "x": -900,
+        "y": -4422,
+        "z": 350
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "虚质磁暴区",
+      "navigationKind": "landmark",
+      "iconId": "icon-b54ccad24f9ef4ca",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -833,
+        "y": -4431,
+        "z": 350
+      }
+    },
+    {
       "id": "66c5ce4b-e8f5-4e48-b4c9-92ebf3c90e52",
       "stateId": 906,
       "coordinate": {
@@ -341,6 +1619,53 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "6885ff49-0dd4-4d52-bf5c-9b11bd787d1b",
+      "stateId": 906,
+      "levelId": "-1/41",
+      "coordinate": {
+        "x": -3900,
+        "y": -6240,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "68d66090-0c3f-46d4-acc6-131b16762922",
+      "stateId": 906,
+      "coordinate": {
+        "x": 611,
+        "y": -4093,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "6a540a72-0e03-4900-941d-c11e83ebbd8f",
+      "stateId": 906,
+      "coordinate": {
+        "x": -867,
+        "y": -4208,
+        "z": 438
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
       "mode": "fast-travel"
     },
     {
@@ -360,6 +1685,284 @@
       "mode": "fast-travel"
     },
     {
+      "id": "6daf678d-8175-4aa9-ba07-f4f9110a7d6b",
+      "stateId": 906,
+      "coordinate": {
+        "x": 417,
+        "y": -5719,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "6e0a9063-4ac5-4264-8027-6861c39021d2",
+      "stateId": 906,
+      "coordinate": {
+        "x": -638,
+        "y": -5382,
+        "z": 363
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-a760dfcbafaa746d",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "6f38b32d-9f16-40d2-988f-24e6b419ac96",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3865,
+        "y": -7012,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "72874b5d-3e9e-4d15-8f95-151a2254e521",
+      "stateId": 906,
+      "coordinate": {
+        "x": -859,
+        "y": -6663,
+        "z": 324
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "虚质磁暴区",
+      "navigationKind": "landmark",
+      "iconId": "icon-b54ccad24f9ef4ca",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -814,
+        "y": -6616,
+        "z": 323
+      }
+    },
+    {
+      "id": "7292abaf-ed58-4332-8d2b-d0b61288757f",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1221,
+        "y": -6762,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "73cf97da-3be2-45e2-9d80-d5be3ede3ead",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2909,
+        "y": -5992,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "74840fc1-32ae-4776-af88-881cd7e5db43",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2503,
+        "y": -4959,
+        "z": 397
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "769751af-f3bc-43a1-8d61-545f96610fbe",
+      "stateId": 906,
+      "coordinate": {
+        "x": -792,
+        "y": -8120,
+        "z": 182
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "773d19bd-1cc8-4e37-a1a8-742c8a80c17b",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1297,
+        "y": -4124,
+        "z": 202
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "78283145-cf79-4849-a377-15eb72e4cbce",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3226,
+        "y": -7937,
+        "z": 5
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "陆·赫斯的「秘密小屋」",
+      "navigationKind": "landmark",
+      "iconId": "icon-e7d44efaa6407ff6",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "7c1c5e35-e585-4ebd-a558-110a67e50b41",
+      "stateId": 906,
+      "coordinate": {
+        "x": -724,
+        "y": -5565,
+        "z": 368
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "7c688245-6ddd-4111-a325-81652a013ef6",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1921,
+        "y": -4452,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "7c95e555-2358-4202-9ad7-7acf1669ef35",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1588,
+        "y": -4914,
+        "z": 222
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "7cb23c8b-dfdd-4754-bbe4-5cd2d04f7d39",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2902,
+        "y": -4944,
+        "z": 421
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "7f62085f-52db-4677-92d2-da4dac23cedd",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1236,
+        "y": -7243,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "80211c39-5f04-4939-b77f-419a8a78245f",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3774,
+        "y": -6357,
+        "z": 55
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "80966f14-013c-48c5-b8cb-f932d2ca2a8e",
+      "stateId": 906,
+      "coordinate": {
+        "x": -340,
+        "y": -5445,
+        "z": 363
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "853d2017-fca2-4ba5-8b9a-b041b261ba63",
+      "stateId": 906,
+      "levelId": "-1/30",
+      "coordinate": {
+        "x": -714,
+        "y": -5738,
+        "z": 364
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "心之集域·夜之城",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "landmark"
+    },
+    {
       "id": "85b486bf-36af-4445-8bfd-1d4b87501d4a",
       "stateId": 906,
       "coordinate": {
@@ -373,6 +1976,82 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "87f2e21f-e62c-4449-b00d-58986053d5f7",
+      "stateId": 906,
+      "coordinate": {
+        "x": -416,
+        "y": -5628,
+        "z": 368
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "89e88d97-2246-4960-9ff6-c81d5feadad6",
+      "stateId": 906,
+      "coordinate": {
+        "x": 495,
+        "y": -5754,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "8b3c46a9-7e8e-4ae4-9aa3-ed1d5c7ac78d",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2889,
+        "y": -5782,
+        "z": 246
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "8c15ab89-d53f-405c-9783-e72b40045516",
+      "stateId": 906,
+      "coordinate": {
+        "x": -594,
+        "y": -8650,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "entrance"
+    },
+    {
+      "id": "8d33367a-4000-454b-a91b-9ce495a53411",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1178,
+        "y": -8208,
+        "z": 62
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
       "mode": "fast-travel"
     },
     {
@@ -441,6 +2120,186 @@
       "mode": "fast-travel"
     },
     {
+      "id": "90e6ae83-adbd-4e64-9a52-72e24cc146c1",
+      "stateId": 906,
+      "coordinate": {
+        "x": 797,
+        "y": -8294,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "92172225-7935-4260-adc7-136ac1ae3868",
+      "stateId": 906,
+      "coordinate": {
+        "x": 335,
+        "y": -5706,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "9236b0ca-c3f0-408a-afd5-68e0c08944bf",
+      "stateId": 906,
+      "coordinate": {
+        "x": -372,
+        "y": -6930,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "92aafe16-4766-423f-b337-6c3f7616faa0",
+      "stateId": 906,
+      "coordinate": {
+        "x": 778,
+        "y": -6295,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "935bbac9-a015-46b6-9ea6-7cc7efb4abab",
+      "stateId": 906,
+      "coordinate": {
+        "x": -917,
+        "y": -5379,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "93782e17-74d0-48e5-9495-78957a0eb744",
+      "stateId": 906,
+      "coordinate": {
+        "x": -339,
+        "y": -8294,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "944fefa8-164f-4691-9e67-a9a87240d99b",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1151,
+        "y": -4029,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "95e8f2dc-b5dc-472e-bc70-af6eb6a69f71",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2844,
+        "y": -5512,
+        "z": 365
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "97f02082-ce1a-4d0c-a31f-cadb18fc6505",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1358,
+        "y": -6500,
+        "z": 355
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "竞速挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-fe16c33c82cba63b",
+      "mode": "landmark"
+    },
+    {
+      "id": "980820e5-edf5-43f5-9b39-c8b08aceed34",
+      "stateId": 906,
+      "coordinate": {
+        "x": 48,
+        "y": -5168,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "998d5f28-3a7c-4050-8409-ec6026cb02f5",
+      "stateId": 906,
+      "coordinate": {
+        "x": -832,
+        "y": -6222,
+        "z": 401
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "9cecbd90-3dc1-49c7-bdbe-ab9a37ff0616",
+      "stateId": 906,
+      "coordinate": {
+        "x": -66,
+        "y": -8750,
+        "z": 644
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
       "id": "9e08def3-98ca-4d0b-97b5-07ba29e4e176",
       "stateId": 906,
       "levelId": "-2/30",
@@ -456,6 +2315,23 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "9e4f07e3-fef5-4ea5-a750-eb1b9102783c",
+      "stateId": 906,
+      "levelId": "-1/42",
+      "coordinate": {
+        "x": -4079,
+        "y": -6158,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
     },
     {
       "id": "9f11f97c-790f-477c-af02-6701aeece39d",
@@ -491,6 +2367,53 @@
       "mode": "fast-travel"
     },
     {
+      "id": "a099c28b-5257-4917-b361-01f592cccf02",
+      "stateId": 906,
+      "levelId": "-1/31",
+      "coordinate": {
+        "x": -3063,
+        "y": -8069,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "a1cc5cab-d481-4870-be7d-fa18fd741ccd",
+      "stateId": 906,
+      "coordinate": {
+        "x": 185,
+        "y": -6030,
+        "z": 297
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "a322014f-9283-4384-b1b5-fa05c2ea8557",
+      "stateId": 906,
+      "coordinate": {
+        "x": -687,
+        "y": -6873,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
       "id": "a5062a39-7b05-42e1-b566-b293ffc691ae",
       "stateId": 906,
       "coordinate": {
@@ -505,6 +2428,58 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "a74c77b5-e99a-4bf2-8173-f3862d05338f",
+      "stateId": 906,
+      "coordinate": {
+        "x": -555,
+        "y": -7628,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "a806e530-6604-4d9f-81e5-8f0dc9535888",
+      "stateId": 906,
+      "coordinate": {
+        "x": -132,
+        "y": -6685,
+        "z": 430
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦魇亚当·重锤",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-54cb799bcd01abd9",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "aa671157-80f9-4f4e-b46e-77d622e40173",
+      "stateId": 906,
+      "coordinate": {
+        "x": 492,
+        "y": -8072,
+        "z": 115
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "炉芯机骸",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-02e3f41e4a6ece6a",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 442,
+        "y": -8090,
+        "z": 115
+      }
     },
     {
       "id": "ab28c1ef-22ff-4819-9ad5-e185dab8fe1a",
@@ -523,6 +2498,119 @@
       "mode": "fast-travel"
     },
     {
+      "id": "abf61047-2468-431d-a38b-63e663af8d5d",
+      "stateId": 906,
+      "coordinate": {
+        "x": -365,
+        "y": -8321,
+        "z": 252
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "材料副本",
+      "navigationKind": "domain",
+      "pointType": "material-domain",
+      "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ac495106-f07a-45ca-abf8-718f92431244",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2120,
+        "y": -4608,
+        "z": 389
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ac5c940f-b751-4a71-a363-caad2c07566e",
+      "stateId": 906,
+      "coordinate": {
+        "x": 994,
+        "y": -5934,
+        "z": 398
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "虚质磁暴区",
+      "navigationKind": "landmark",
+      "iconId": "icon-b54ccad24f9ef4ca",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 966,
+        "y": -5978,
+        "z": 398
+      }
+    },
+    {
+      "id": "ada37274-c412-48dc-a0cc-11f8f004fb7d",
+      "stateId": 906,
+      "coordinate": {
+        "x": -4156,
+        "y": -6256,
+        "z": 546
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "add38c4c-f818-48a1-b09e-3209758628ce",
+      "stateId": 906,
+      "coordinate": {
+        "x": 645,
+        "y": -4893,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "ae325307-df7b-49a9-a346-5b9d9de2e434",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1175,
+        "y": -8809,
+        "z": 558
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "af0aacd9-dcd7-444a-856f-5672be2ad939",
+      "stateId": 906,
+      "levelId": "-1/35",
+      "coordinate": {
+        "x": -885,
+        "y": -6358,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
       "id": "af3c5fa5-dda4-449f-b4d3-a48868b3dfc2",
       "stateId": 906,
       "coordinate": {
@@ -539,6 +2627,37 @@
       "mode": "fast-travel"
     },
     {
+      "id": "afd65193-e6ee-4929-be5a-5d05c8eb84b4",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2040,
+        "y": -5923,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "b0c2e176-2e1a-41cd-a378-c27f60630bae",
+      "stateId": 906,
+      "coordinate": {
+        "x": -776,
+        "y": -5553,
+        "z": 447
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "载具系泊场",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-fb2cbe33e966e314",
+      "mode": "landmark"
+    },
+    {
       "id": "b29fd47a-4093-4cab-b9be-581e36568055",
       "stateId": 906,
       "coordinate": {
@@ -553,6 +2672,66 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "b3829d48-d9a4-49e0-9394-85e21b3ba930",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1036,
+        "y": -7644,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "b672f83c-630a-492e-b8a0-45e2aa69d2d6",
+      "stateId": 906,
+      "coordinate": {
+        "x": -975,
+        "y": -7957,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "b6ae2581-e4c2-4464-b841-01edbee37878",
+      "stateId": 906,
+      "coordinate": {
+        "x": -436,
+        "y": -8599,
+        "z": 312
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b85a78cd-e128-43eb-9b66-1c3a54cb0a4f",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2027,
+        "y": -4904,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
     },
     {
       "id": "b9dedd5a-b21a-40bb-8ab6-d943ce5077da",
@@ -587,6 +2766,741 @@
       "mode": "fast-travel"
     },
     {
+      "id": "bc980d84-7c14-4dce-b369-a1c7d33a7e46",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1140,
+        "y": -8710,
+        "z": 541
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "深空联合研究院",
+      "navigationKind": "landmark",
+      "iconId": "icon-e7d44efaa6407ff6",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "bd14992d-2df0-4453-9979-29fe4d8e66fd",
+      "stateId": 906,
+      "coordinate": {
+        "x": -667,
+        "y": -6796,
+        "z": 371
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "be58a7ad-3987-4001-b719-2229a45e29dc",
+      "stateId": 906,
+      "coordinate": {
+        "x": -675,
+        "y": -5506,
+        "z": 363
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "深潜游戏室",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c00baed7-4fb8-4d1c-aedd-8643b27932f0",
+      "stateId": 906,
+      "coordinate": {
+        "x": -976,
+        "y": -7666,
+        "z": 191
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c03bf864-a01d-4b05-8e59-7113280105e7",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1795,
+        "y": -6269,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "温泉观星",
+      "navigationKind": "landmark",
+      "iconId": "icon-f87e629ac9b9dc6a",
+      "mode": "landmark"
+    },
+    {
+      "id": "c26138b7-2d67-473f-9022-715360ffc0ec",
+      "stateId": 906,
+      "coordinate": {
+        "x": 974,
+        "y": -6035,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "c2c41bd2-4608-425e-b7f4-d7105de363be",
+      "stateId": 906,
+      "coordinate": {
+        "x": -931,
+        "y": -7691,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "c41c75a6-5d8c-4304-a3e0-5f1b8cd8acdf",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1605,
+        "y": -5900,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "c4399d78-34b0-4e1d-b529-4e5a22d1faa7",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1425,
+        "y": -4315,
+        "z": 406
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c43e13f4-6658-4159-beb3-2d67455465db",
+      "stateId": 906,
+      "coordinate": {
+        "x": 622,
+        "y": -3965,
+        "z": 287
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c4ec683b-419e-417a-a9a5-742c6856f489",
+      "stateId": 906,
+      "coordinate": {
+        "x": 205,
+        "y": -5119,
+        "z": 433
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c5ca0628-c61c-44ca-9247-c4c2748c0d2a",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1569,
+        "y": -5164,
+        "z": 357
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ca8eea1d-a8c5-41e7-8c37-1908e04695dc",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1511,
+        "y": -5354,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "cb07c729-6638-4e1f-895e-17b43e524e6f",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1243,
+        "y": -4409,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危行任务",
+      "navigationKind": "landmark",
+      "pointType": "exploration-quest",
+      "iconId": "icon-05f43f9613d478b8",
+      "mode": "landmark"
+    },
+    {
+      "id": "ce11bef5-c25e-435f-b135-92e160d7a76c",
+      "stateId": 906,
+      "coordinate": {
+        "x": -746,
+        "y": -5533,
+        "z": 368
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "学生公寓",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ce682d63-a6da-4c67-8df7-37a2865d9e86",
+      "stateId": 906,
+      "coordinate": {
+        "x": -319,
+        "y": -4813,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "d1440ce9-5185-4f16-b682-be5289bc0777",
+      "stateId": 906,
+      "coordinate": {
+        "x": -649,
+        "y": -4990,
+        "z": 379
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "陷足流川残象聚落",
+      "navigationKind": "challenge",
+      "pointType": "echo-settlement",
+      "iconId": "icon-6a46917ca51473d0",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "d55a6617-de26-4b29-8b5c-095ae704e922",
+      "stateId": 906,
+      "coordinate": {
+        "x": -4188,
+        "y": -6508,
+        "z": 92
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "引日殿",
+      "navigationKind": "landmark",
+      "iconId": "icon-e7d44efaa6407ff6",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "d72cb57d-a18d-47f5-9a6c-6aeb8d6dd57c",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2026,
+        "y": -4499,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "da099e54-65b3-461e-ae8d-5643b12af225",
+      "stateId": 906,
+      "coordinate": {
+        "x": -873,
+        "y": -5374,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "db28e591-4a7b-4771-8ac8-bb5b004c92fc",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2521,
+        "y": -5272,
+        "z": 241
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "dd4f0fab-c287-482d-a51e-6cb70584338c",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3053,
+        "y": -6608,
+        "z": 50
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "dd755eac-2a22-4356-bd91-849d8febbc3a",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3056,
+        "y": -8479,
+        "z": 1
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "de280eb5-c144-4903-b481-e8002d4500b2",
+      "stateId": 906,
+      "coordinate": {
+        "x": -996,
+        "y": -8213,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "ded0f8d8-cad7-4b53-8e1b-686f0c582c79",
+      "stateId": 906,
+      "coordinate": {
+        "x": 726,
+        "y": -6544,
+        "z": 398
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "e10f942e-42df-4ca2-9990-aac070b68690",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2408,
+        "y": -4425,
+        "z": 548
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "e1d6e7bb-33ae-4e4c-9a2c-23e05e7e8082",
+      "stateId": 906,
+      "coordinate": {
+        "x": 867,
+        "y": -4991,
+        "z": 630
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "深空测界台",
+      "navigationKind": "landmark",
+      "iconId": "icon-2b94ea028b3750fd",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 856,
+        "y": -5002,
+        "z": 630
+      }
+    },
+    {
+      "id": "e236c06b-ee79-4029-9d08-b2516574bb53",
+      "stateId": 906,
+      "coordinate": {
+        "x": 789,
+        "y": -5753,
+        "z": 315
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "e47312c5-9b2a-4190-84de-32bac3d9f880",
+      "stateId": 906,
+      "coordinate": {
+        "x": -806,
+        "y": -6421,
+        "z": 326
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "e592a678-af5e-49ef-9ecd-4b9ab2ea22ea",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3085,
+        "y": -6549,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "e6bb7899-3548-4adf-acd5-70a3969ca9e5",
+      "stateId": 906,
+      "coordinate": {
+        "x": -208,
+        "y": -8256,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "e6e48885-eeaf-455e-b906-c6425f59f703",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1524,
+        "y": -6790,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "e88d7933-75e1-44c0-aff1-41bc2c20e71b",
+      "stateId": 906,
+      "coordinate": {
+        "x": -242,
+        "y": -7894,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "温泉观星",
+      "navigationKind": "landmark",
+      "iconId": "icon-f87e629ac9b9dc6a",
+      "mode": "landmark"
+    },
+    {
+      "id": "e9215000-a0bd-45f5-b565-6111638fb747",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1069,
+        "y": -4494,
+        "z": 669
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ebaf8935-ab4d-4656-9441-e14afddaaeca",
+      "stateId": 906,
+      "coordinate": {
+        "x": 122,
+        "y": -5487,
+        "z": 346
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "虚质磁暴区",
+      "navigationKind": "landmark",
+      "iconId": "icon-b54ccad24f9ef4ca",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": 181,
+        "y": -5475,
+        "z": 343
+      }
+    },
+    {
+      "id": "ec42c600-28eb-41d3-aed8-576c15ad1295",
+      "stateId": 906,
+      "coordinate": {
+        "x": -703,
+        "y": -8226,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "ec581a89-1877-476b-8480-80e36a49f70a",
+      "stateId": 906,
+      "coordinate": {
+        "x": -427,
+        "y": -5446,
+        "z": 352
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "悲鸣行动：无音危机",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ec9f68cf-9909-4120-aa20-dbc8cfd24fef",
+      "stateId": 906,
+      "coordinate": {
+        "x": -3667,
+        "y": -6546,
+        "z": 49
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "青实归还之碑",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-13dffc1da5f5c309",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ed43b82f-c1a3-4d66-a319-729f2be62e27",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1517,
+        "y": -6269,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "ed8bad0f-e960-40cc-b4da-8e1e83a3ad40",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1759,
+        "y": -6334,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "ef324067-3518-4d24-bdea-228517705090",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1679,
+        "y": -5369,
+        "z": 402
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "虚质磁暴区",
+      "navigationKind": "landmark",
+      "iconId": "icon-b54ccad24f9ef4ca",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -1642,
+        "y": -5319,
+        "z": 400
+      }
+    },
+    {
+      "id": "efc34418-a381-482c-b103-4845a39c10fb",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1409,
+        "y": -8026,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "虚质磁暴区",
+      "navigationKind": "landmark",
+      "iconId": "icon-b54ccad24f9ef4ca",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -1364,
+        "y": -8073,
+        "z": 2
+      }
+    },
+    {
+      "id": "efe2ba41-1deb-43e1-bd62-72fee8a56a95",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2175,
+        "y": -4704,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "f0c6107c-207e-4831-a715-3eca0c24518a",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1481,
+        "y": -5305,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "温泉观星",
+      "navigationKind": "landmark",
+      "iconId": "icon-f87e629ac9b9dc6a",
+      "mode": "landmark"
+    },
+    {
+      "id": "f1cc67cc-02c6-4839-a92c-1e437beabbda",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2727,
+        "y": -8228,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "海维夏",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-9fde2846e861820a",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -2677,
+        "y": -8240,
+        "z": 1
+      }
+    },
+    {
+      "id": "f20abad6-38bf-45ff-b5ce-21c1727ce4a2",
+      "stateId": 906,
+      "coordinate": {
+        "x": -189,
+        "y": -4675,
+        "z": 362
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "f314708a-db68-41bd-8a4d-d9fe5d74808a",
+      "stateId": 906,
+      "coordinate": {
+        "x": -2529,
+        "y": -5327,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
       "id": "f36b9bb1-4e41-4860-af7b-8818a47d1941",
       "stateId": 906,
       "coordinate": {
@@ -601,6 +3515,51 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "f4c9c993-69e5-4a45-b752-480c3b66e4ac",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1326,
+        "y": -7614,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "f541fae3-d7a9-4df1-8577-76ff6182b3a7",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1544,
+        "y": -4183,
+        "z": 213
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天帷机兵·跃送型",
+      "navigationKind": "landmark",
+      "iconId": "icon-95376a2300e3dfb2",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "f55df01e-f610-4b77-a50a-a9a2e94f0bed",
+      "stateId": 906,
+      "coordinate": {
+        "x": 284,
+        "y": -7929,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
     },
     {
       "id": "f580bc9e-a3a3-4681-9119-948679f736f6",
@@ -619,6 +3578,36 @@
       "mode": "fast-travel"
     },
     {
+      "id": "f6c0df74-19c3-4aca-ac04-7c08f6370f3f",
+      "stateId": 906,
+      "coordinate": {
+        "x": 263,
+        "y": -7906,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "f8c25a38-914e-4343-85c2-ca9c414e8ceb",
+      "stateId": 906,
+      "coordinate": {
+        "x": -245,
+        "y": -4706,
+        "z": 353
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "造路悬仪挑战赛道",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
       "id": "f8f73f12-e490-4246-9767-6f810aa2a6ac",
       "stateId": 906,
       "coordinate": {
@@ -633,6 +3622,113 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "fa659f44-e2c3-4247-8b9a-af3b01a31b58",
+      "stateId": 906,
+      "coordinate": {
+        "x": -656,
+        "y": -5982,
+        "z": 361
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "决斗家",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "fb089b60-f5f9-4b65-9aa6-df38a3784d7c",
+      "stateId": 906,
+      "coordinate": {
+        "x": -328,
+        "y": -6525,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "fc1ade45-2469-47df-8d53-635101a0d790",
+      "stateId": 906,
+      "coordinate": {
+        "x": -692,
+        "y": -4787,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "fd5bde34-209c-4cb4-8996-d82886151339",
+      "stateId": 906,
+      "coordinate": {
+        "x": 1246,
+        "y": -5875,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "重启智造立方",
+      "navigationKind": "landmark",
+      "iconId": "icon-1b740fccd37455f2",
+      "mode": "landmark"
+    },
+    {
+      "id": "fda806c3-7486-4901-a1d6-9f85cfd3b370",
+      "stateId": 906,
+      "coordinate": {
+        "x": -1835,
+        "y": -7081,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "藏宝地",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6c56bcc941cffb5",
+      "mode": "landmark"
+    },
+    {
+      "id": "fdbabe97-2bc2-4a7e-9ad7-d6d18a6e84d5",
+      "stateId": 906,
+      "coordinate": {
+        "x": 744,
+        "y": -5472,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "日灵",
+      "navigationKind": "landmark",
+      "iconId": "icon-b7e86be8786232fa",
+      "mode": "landmark"
+    },
+    {
+      "id": "fedc788e-b084-43f1-b9da-3976f96f5bd1",
+      "stateId": 906,
+      "levelId": "-1/38",
+      "coordinate": {
+        "x": -871,
+        "y": -7617,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
     },
     {
       "id": "ff3d4ff8-3547-4b70-8d47-60269a25fa1b",
