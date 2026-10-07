@@ -22,7 +22,7 @@ describe('map corner controls layout', () => {
     expect(gravitySource).toContain('<WuButton v-if="supportsGravity"')
     expect(gravitySource).not.toContain('WuTooltip')
     expect(gravitySource).not.toContain('当前普通重力')
-    expect(gravitySource).toContain('    重力\n')
+    expect(gravitySource).toContain('    切换重力\n')
     expect(gravitySource).toContain(':size="compact ? \'lg\' : \'md\'"')
     expect(gravitySource).toContain('icon-position="end"')
     expect(gravitySource).toContain('name="gravity-direction"')

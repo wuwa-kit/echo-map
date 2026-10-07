@@ -20,8 +20,8 @@ function toggleGravity(): void {
 <template>
   <WuButton v-if="supportsGravity" variant="solid" :size="compact ? 'lg' : 'md'" icon-position="end" class="shadow-lg" @click="toggleGravity">
     <template #icon>
-      <WuSvg name="gravity-direction" class="text-[var(--accent)] transition-transform duration-200 motion-reduce:transition-none" :class="props.selectedGravity === 2 ? 'rotate-180' : ''" />
+      <WuSvg name="gravity-direction" :class="props.selectedGravity === 2 ? 'rotate-180' : ''" />
     </template>
-    重力
+    切换重力
   </WuButton>
 </template>
