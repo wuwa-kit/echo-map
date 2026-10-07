@@ -63,6 +63,7 @@ function finishManualName(): void {
 function selectName(name: string): void {
   finishManualName()
   store.setName(name)
+  store.recordManualName(name)
   namePopover.value?.hide()
 }
 
