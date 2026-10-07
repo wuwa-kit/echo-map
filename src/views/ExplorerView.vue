@@ -56,7 +56,7 @@ async function locateManagedPoint(point: AuthoredPoint): Promise<void> {
   if (store.selectedStateId !== point.stateId) store.selectState(point.stateId)
   const reference = store.dataset
   if (reference) {
-    const region = pointRegionResolver(reference)(point.stateId, gameToMapCoordinate(point.coordinate.x ?? 0, point.coordinate.y ?? 0, reference.source.tileWidth))
+    const region = pointRegionResolver(reference)(point.stateId, gameToMapCoordinate(point.coordinate.x ?? 0, point.coordinate.y ?? 0))
     store.selectCountry(region?.countryId ?? null)
   }
   if (point.gravityType) store.selectGravity(point.gravityType)

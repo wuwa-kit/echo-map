@@ -89,8 +89,8 @@
         "extent": [
           0,
           0,
-          1024,
-          1024
+          850,
+          850
         ]
       },
       "layeredMaps": [
@@ -133,10 +133,10 @@
         "maxTileX": 0,
         "maxTileY": 1,
         "extent": [
-          -1024,
-          -1024,
-          1024,
-          1024
+          -850,
+          -850,
+          850,
+          850
         ]
       },
       "layeredMaps": []
@@ -170,8 +170,8 @@
       "coordinate": {
         "rawX": 100,
         "rawY": 200,
-        "mapX": 1025.204705882353,
-        "mapY": -2.409411764705882
+        "mapX": 851,
+        "mapY": -2
       }
     },
     {
@@ -183,8 +183,8 @@
       "coordinate": {
         "rawX": 300,
         "rawY": 400,
-        "mapX": 1027.6141176470587,
-        "mapY": -4.818823529411764
+        "mapX": 853,
+        "mapY": -4
       }
     }
   ],
@@ -202,8 +202,8 @@
       "coordinate": {
         "rawX": 100,
         "rawY": 200,
-        "mapX": 1025.204705882353,
-        "mapY": -2.409411764705882
+        "mapX": 851,
+        "mapY": -2
       },
       "gameCoordinate": {
         "x": 11,
@@ -226,8 +226,8 @@
       "coordinate": {
         "rawX": 100,
         "rawY": 200,
-        "mapX": 1025.204705882353,
-        "mapY": -2.409411764705882
+        "mapX": 851,
+        "mapY": -2
       },
       "gameCoordinate": null,
       "quality": "official-provisional",
@@ -246,8 +246,8 @@
       "coordinate": {
         "rawX": 1100,
         "rawY": 2200,
-        "mapX": 1037.2517647058824,
-        "mapY": -26.503529411764703
+        "mapX": 861,
+        "mapY": -22
       },
       "gameCoordinate": {
         "x": 11,
@@ -270,8 +270,8 @@
       "coordinate": {
         "rawX": 1100,
         "rawY": 2200,
-        "mapX": 1037.2517647058824,
-        "mapY": -26.503529411764703
+        "mapX": 861,
+        "mapY": -22
       },
       "gameCoordinate": {
         "x": 11,

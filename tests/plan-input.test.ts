@@ -92,13 +92,13 @@ describe('route input conversion', () => {
   ] as const)('classifies a teleport by its %s marker even when its arrival is in %s', (name, arrivalName, expectedZ) => {
     const marker = navigationAt(name)
     const arrival = navigationAt(arrivalName)
-    const [x, y] = mapToGameCoordinate(arrival.coordinate.mapX, arrival.coordinate.mapY, referenceDataset.source.tileWidth)
+    const [x, y] = mapToGameCoordinate(arrival.coordinate.mapX, arrival.coordinate.mapY)
     const teleportCoordinate = Object.freeze({ x, y, z: 400 })
     const source = { ...marker, teleportCoordinate }
     const input = createRoutePlanInput(referenceDataset, [], [source], source.stateId)
     expect(input.startPoints[0]).toMatchObject({
       coordinate: { x, y, z: expectedZ },
-      mapCoordinate: gameToMapCoordinate(x, y, referenceDataset.source.tileWidth),
+      mapCoordinate: gameToMapCoordinate(x, y),
       isTeleportArrival: true,
     })
     expect(source.teleportCoordinate).toEqual({ x, y, z: 400 })

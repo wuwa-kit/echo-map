@@ -1,3 +1,4 @@
+import { MAP_TILE_SIZE } from './projection.ts'
 import TileLayer from 'ol/layer/Tile.js'
 import TileImage from 'ol/source/TileImage.js'
 import TileGrid from 'ol/tilegrid/TileGrid.js'
@@ -11,7 +12,7 @@ export function createOfficialTileLayer(state: MapStateDefinition, sourceManifes
   const tileGrid = new TileGrid({
     extent: tileExtent.extent,
     origin: [tileExtent.extent[0], tileExtent.extent[3]],
-    resolutions: [1],
+    resolutions: [MAP_TILE_SIZE / sourceManifest.tileWidth],
     tileSize: sourceManifest.tileWidth,
   })
   const source = new TileImage({
@@ -51,6 +52,6 @@ export function createOfficialTileLayer(state: MapStateDefinition, sourceManifes
   })
 }
 
-export function layeredTileUrl(resourceHash: string, stateId: number, tilePath: string): string {
-  return tilePreviewUrl(officialFloorTileUrl(resourceHash, stateId, tilePath), 1024)
+export function layeredTileUrl(resourceHash: string, stateId: number, tilePath: string, imageWidth: number): string {
+  return tilePreviewUrl(officialFloorTileUrl(resourceHash, stateId, tilePath), imageWidth)
 }

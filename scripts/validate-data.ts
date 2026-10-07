@@ -1,4 +1,5 @@
 import { access } from 'node:fs/promises'
+import { calculateTileExtent, officialToMapCoordinate } from '../src/map/projection.ts'
 import { readPointLibrary } from './lib/point-files.ts'
 import { isOfficialEchoMapIncluded } from '../src/domain/official-echo-scope.ts'
 import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
@@ -64,9 +65,18 @@ for (const type of navigationPointTypeIds) {
 }
 
 for (const state of dataset.states) {
+  const expectedExtent = calculateTileExtent(state.tileIds).extent
+  if (state.tileExtent.extent.some((value, index) => value !== expectedExtent[index])) errors.push(`地图 ${state.id} 的瓦片范围未使用 850 游戏单位`)
   for (const group of state.layeredMaps) {
     const tiles = new Set(group.floors.flatMap(({ tiles }) => tiles.map((tile) => tile.split('/').at(-1))))
     if (group.coverage.length !== tiles.size) errors.push(`楼层组 ${state.id}/${group.id} 缺少覆盖数据，请重新生成楼层覆盖范围`)
+  }
+}
+
+for (const point of [...dataset.regionLabels, ...dataset.echoLocations]) {
+  const expected = officialToMapCoordinate(point.coordinate.rawX, point.coordinate.rawY)
+  if (Math.abs(point.coordinate.mapX - expected.mapX) > 1e-8 || Math.abs(point.coordinate.mapY - expected.mapY) > 1e-8) {
+    errors.push(`点位 ${point.id} 的地图坐标需要从官方原始坐标重新生成`)
   }
 }
 

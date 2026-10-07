@@ -57,13 +57,13 @@ function updateDraftInView(): void {
 function isDraftInView(coordinate: [number, number]): boolean {
   const draft = editor.draft
   return Boolean(draft && dataset.value && draft.stateId === store.selectedStateId
-    && viewport.containsCoordinate(gameToMapCoordinate(coordinate[0], coordinate[1], dataset.value.source.tileWidth)))
+    && viewport.containsCoordinate(gameToMapCoordinate(coordinate[0], coordinate[1])))
 }
 function locateDraft(coordinate?: [number, number]): boolean {
   const draft = editor.draft
   if (!draft || !dataset.value || draft.stateId !== store.selectedStateId) return false
   if (coordinate) {
-    return viewport.locate(gameToMapCoordinate(coordinate[0], coordinate[1], dataset.value.source.tileWidth))
+    return viewport.locate(gameToMapCoordinate(coordinate[0], coordinate[1]))
   }
   const display = authoredPointMapDisplay(draft, dataset.value)
   return display ? viewport.locate([display.location.coordinate.mapX, display.location.coordinate.mapY]) : false
@@ -219,7 +219,7 @@ function rebuildDraft(): void {
   selectionSource.addFeature(feature)
   const arrival = draft.kind === 'navigation' ? draft.teleportCoordinate : undefined
   if (arrival && arrival.x !== null && arrival.y !== null) {
-    const feature = new Feature({ geometry: new Point(gameToMapCoordinate(arrival.x, arrival.y, dataset.value.source.tileWidth)) })
+    const feature = new Feature({ geometry: new Point(gameToMapCoordinate(arrival.x, arrival.y)) })
     feature.setStyle(arrivalStyle)
     selectionSource.addFeature(feature)
   }
@@ -252,7 +252,7 @@ function rebuildBaseLayer(): void {
   baseLayers.update(map, state, manifest, selectedGravity.value)
   viewport.configureBaseView(state, projection)
   const selected = state.layeredMaps.flatMap(({ floors }) => floors).find(({ id }) => id === selectedLevelId.value)
-  if (selected) viewport.restoreFloorViewport(floorExtent(selected, manifest.tileWidth))
+  if (selected) viewport.restoreFloorViewport(floorExtent(selected))
   updateLastCoordinate(map.getView().getCenter())
   rebuildFloorLayers()
   viewport.publish()
@@ -266,9 +266,8 @@ function switchGravity(): void {
 function updateLastCoordinate(coordinate: number[] | undefined): void {
   const mapX = coordinate?.[0]
   const mapY = coordinate?.[1]
-  const tileWidth = dataset.value?.source.tileWidth
-  if (mapX === undefined || mapY === undefined || tileWidth === undefined) return
-  const [x, y] = mapToGameCoordinate(mapX, mapY, tileWidth)
+  if (mapX === undefined || mapY === undefined) return
+  const [x, y] = mapToGameCoordinate(mapX, mapY)
   lastGameCoordinate.value = [Math.round(x), Math.round(y)]
 }
 

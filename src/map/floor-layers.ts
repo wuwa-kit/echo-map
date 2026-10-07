@@ -43,7 +43,6 @@ interface FloorSelection {
 type FloorMap = Pick<Map, 'addLayer' | 'removeLayer'>
 const MAX_CACHED_BYTES = 64 * 1024 * 1024
 const MAX_CACHED_GROUPS = 8
-const TILE_BYTES = 1024 * 1024 * 4
 
 export function createFloorLayers(projection: Projection, options: {
   dimBase?: boolean
@@ -84,7 +83,7 @@ export function createFloorLayers(projection: Projection, options: {
     const cost = (entry: FloorGroupEntry) => entry.tiles.reduce((bytes, tile) => {
       const source = tile.layer.getSource()
       const state = source && imageState(source)
-      return bytes + (state === ImageState.LOADED || state === ImageState.LOADING ? TILE_BYTES : 0)
+      return bytes + (state === ImageState.LOADED || state === ImageState.LOADING ? entry.manifest.tileWidth ** 2 * 4 : 0)
     }, 0)
     let bytes = [...entries.values()].reduce((sum, entry) => sum + cost(entry), 0)
     for (const entry of entries.values()) {
@@ -129,12 +128,12 @@ export function createFloorLayers(projection: Projection, options: {
   }
 
   function resetSource(entry: FloorGroupEntry, tile: FloorTile): void {
-    const imageExtent = layeredTileExtent(tile.path, entry.manifest.tileWidth)
+    const imageExtent = layeredTileExtent(tile.path)
     if (!imageExtent) throw new Error('楼层瓦片坐标无效')
     if (tile.event) unByKey(tile.event)
     const previous = tile.layer.getSource()
     const source = new ImageStatic({
-      url: layeredTileUrl(entry.manifest.mapResourceHash, entry.state.id, tile.path),
+      url: layeredTileUrl(entry.manifest.mapResourceHash, entry.state.id, tile.path, entry.manifest.tileWidth),
       imageExtent, projection, crossOrigin: 'anonymous',
     })
     tile.event = source.on('imageloaderror', () => {
@@ -156,7 +155,7 @@ export function createFloorLayers(projection: Projection, options: {
       for (const floor of group.floors) {
         if (!options.dimBase && floor.id !== levelId) continue
         for (const path of floor.tiles) {
-          if (!layeredTileExtent(path, manifest.tileWidth)) continue
+          if (!layeredTileExtent(path)) continue
           const tile: FloorTile = { path, levelId: floor.id, layer: new ImageLayer({ opacity: 1, zIndex: 2 }), event: null, retry: false }
           resetSource(entry, tile)
           entry.tiles.push(tile)
@@ -305,7 +304,7 @@ export function createFloorLayers(projection: Projection, options: {
 
   function getExtent(): Extent | null {
     const floor = active?.entry.state.layeredMaps.flatMap(({ floors }) => floors).find(({ id }) => id === active?.levelId)
-    return floorExtent(floor, active?.entry.manifest.tileWidth ?? 1024)
+    return floorExtent(floor)
   }
 
   return { update, prepare, updateViewport, cancelPreparation, clear, getExtent, dispose }

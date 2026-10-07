@@ -104,7 +104,7 @@ describe('route planning actions', () => {
     const contexts = ['今州城', '玄方城', '梦枢天罗'].map((name, index) => {
       const label = dataset.regionLabels.find((region) => region.name === name)
       if (!label) throw new Error(`缺少测试地区：${name}`)
-      const [x, y] = mapToGameCoordinate(label.coordinate.mapX, label.coordinate.mapY, dataset.source.tileWidth)
+      const [x, y] = mapToGameCoordinate(label.coordinate.mapX, label.coordinate.mapY)
       const echo: AuthoredEchoPoint = {
         id: `echo-${index}`, kind: 'echo', stateId: label.stateId, levelId: null, gravityType: 1,
         coordinate: { x: Math.round(x), y: Math.round(y), z: index === 0 ? 0 : 40 },

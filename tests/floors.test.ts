@@ -34,7 +34,7 @@ const state: MapStateDefinition = {
   ],
 }
 const viewportAt = (x: number, y: number, radius = 1): [number, number, number, number] => (
-  [x - radius, y - radius, x + radius, y + radius]
+  [(x - radius) * 850 / 1024, (y - radius) * 850 / 1024, (x + radius) * 850 / 1024, (y + radius) * 850 / 1024]
 )
 
 beforeEach(() => setActivePinia(createPinia()))
@@ -153,22 +153,22 @@ describe('floor groups in the canvas viewport', () => {
     expect(store.route).toBeNull()
   })
 
-  const coverage = createFloorCoverage(state, 1024)
+  const coverage = createFloorCoverage(state)
   it('uses alpha coverage, preserves source order, and handles boundaries and negative coordinates', () => {
     expect(floorGroupsInViewport(coverage, viewportAt(256, 768))).toEqual(['b'])
     expect(floorGroupsInViewport(coverage, viewportAt(768, 768))).toEqual(['a'])
     expect(floorGroupsInViewport(coverage, viewportAt(1500, 500))).toEqual([])
     expect(floorGroupsInViewport(coverage, viewportAt(2500, 500))).toEqual(['a'])
     expect(floorGroupsInViewport(coverage, viewportAt(-500, -1500))).toEqual(['a'])
-    expect(floorGroupsInViewport(coverage, [0, 1023, 1, 1024])).toEqual(['b'])
-    expect(floorGroupsInViewport(coverage, [0, 1024, 1, 1025])).toEqual([])
-    expect(floorGroupsInViewport(coverage, [1024, 1023, 1025, 1024])).toEqual([])
-    expect(floorGroupsInViewport(coverage, [0, 0, 1, 1])).toEqual(['a'])
-    expect(floorGroupsInViewport(coverage, [NaN, 0, 1, 1])).toEqual([])
-    expect(floorGroupsInViewport(coverage, [0, 0, 0, 1])).toEqual([])
+    expect(floorGroupsInViewport(coverage, [0, 1023, 1, 1024].map((value) => value * 850 / 1024))).toEqual(['b'])
+    expect(floorGroupsInViewport(coverage, [0, 1024, 1, 1025].map((value) => value * 850 / 1024))).toEqual([])
+    expect(floorGroupsInViewport(coverage, [1024, 1023, 1025, 1024].map((value) => value * 850 / 1024))).toEqual([])
+    expect(floorGroupsInViewport(coverage, [0, 0, 1, 1].map((value) => value * 850 / 1024))).toEqual(['a'])
+    expect(floorGroupsInViewport(coverage, [NaN, 0, 1, 1].map((value) => value * 850 / 1024))).toEqual([])
+    expect(floorGroupsInViewport(coverage, [0, 0, 0, 1].map((value) => value * 850 / 1024))).toEqual([])
     expect(floorGroupsInViewport(coverage, null)).toEqual([])
-    expect(createFloorCoverage(null, 1024)).toEqual([])
-    expect(floorExtent(undefined, 1024)).toBeNull()
+    expect(createFloorCoverage(null)).toEqual([])
+    expect(floorExtent(undefined)).toBeNull()
     const overlap = coverage[1]
     if (!overlap) throw new Error('缺少重叠范围')
     expect(floorGroupsInViewport([overlap, { ...overlap, id: 'tie' }], viewportAt(256, 768))).toEqual(['b', 'tie'])
@@ -215,23 +215,23 @@ describe('floor groups in the canvas viewport', () => {
   it('detects the full canvas extent and keeps the selected group available outside it', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
-    store.setFloorViewport([1100, 700, 1300, 800], 1)
+    store.setFloorViewport([1100, 700, 1300, 800].map((value) => value * 850 / 1024), 1)
     expect(store.nearbyFloorGroups).toEqual([])
-    store.setFloorViewport([900, 700, 1300, 800], 1)
+    store.setFloorViewport([900, 700, 1300, 800].map((value) => value * 850 / 1024), 1)
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a'])
     expect(store.nearbyFloorGroups[0]?.floors.map(({ id }) => id)).toEqual(['a1', 'a2'])
-    store.setFloorViewport([200, 700, 800, 800], 1)
+    store.setFloorViewport([200, 700, 800, 800].map((value) => value * 850 / 1024), 1)
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a', 'b'])
     store.selectLevel('b1')
-    store.setFloorViewport([900, 700, 1300, 800], 1)
+    store.setFloorViewport([900, 700, 1300, 800].map((value) => value * 850 / 1024), 1)
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a', 'b'])
-    store.setFloorViewport([NaN, 700, 1300, 800], 1)
+    store.setFloorViewport([NaN, 700, 1300, 800].map((value) => value * 850 / 1024), 1)
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['b'])
     store.selectState(8)
     expect(store.nearbyFloorGroups).toEqual([])
   })
 
-  it('shows nearby floors from step 0 and keeps the selected floor reachable when zooming out', () => {
+  it('shows nearby floors at every scale and keeps the selected floor reachable when zooming out', () => {
     const store = useExplorerStore()
     store.setDataset({ ...dataset, states: [state] })
     expect(store.floorSwitcherVisible).toBe(false)
@@ -251,7 +251,7 @@ describe('floor groups in the canvas viewport', () => {
     const viewport = store.mapViewport
     store.setFloorViewport(viewportAt(1500, 500), 8)
     expect(store.floorSwitcherVisible).toBe(true)
-    store.setFloorViewport([200, 700, 800, 800], 8)
+    store.setFloorViewport([200, 700, 800, 800].map((value) => value * 850 / 1024), 8)
     expect(store.nearbyFloorGroups.map(({ id }) => id)).toEqual(['a', 'b'])
     expect(store.selectedLevelId).toBe('a2')
     expect(store.route).toBe(route)
@@ -295,7 +295,7 @@ describe('floor groups in the canvas viewport', () => {
   it.each([[1280, 720], [1920, 1080], [390, 844]])('shows space station floors at the reported URL viewport on a %s × %s canvas', (width, height) => {
     const store = useExplorerStore()
     store.setDataset(dataset)
-    const saved: MapViewportState = { center: [-611.08, 8515.67], zoom: -1 }
+    const saved: MapViewportState = { center: [-611.08 * 850 / 1024, 8515.67 * 850 / 1024], zoom: -1 }
     store.restoreUrlState({ viewport: saved, controlPanelCollapsed: true })
     const activeState = store.activeState
     if (!activeState) throw new Error('缺少主地图')

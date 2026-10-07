@@ -364,7 +364,7 @@ const mapDatasetObjectSchema = z.object({
     wikiFetchedAt: z.string(),
     mapFetchedAt: z.string(),
     mapResourceHash: z.string().min(1),
-    tileWidth: z.number().positive(),
+    tileWidth: z.number().int().positive(),
     coordinateRate: z.number().positive(),
     coordinateScaleBase: z.number().positive(),
     sourceUrls: z.object({

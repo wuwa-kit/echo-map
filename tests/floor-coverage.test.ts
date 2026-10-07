@@ -24,8 +24,8 @@ describe('generated floor coverage', () => {
         { id: 'b1', name: '乙层', layeredMapId: 'b', tiles: ['/b/1/0_1.png'] },
       ] },
     ] }
-    const coverage = createFloorCoverage(state, 4)
-    const idsAt = (coordinate: [number, number] | null) => floorsAtCoordinate(coverage, coordinate).map(({ id }) => id)
+    const coverage = createFloorCoverage(state)
+    const idsAt = (coordinate: [number, number] | null) => floorsAtCoordinate(coverage, coordinate ? [coordinate[0] * 850 / 4, coordinate[1] * 850 / 4] : null).map(({ id }) => id)
     expect(idsAt([1.5, 2.5])).toEqual(['a1', 'a2', 'b1'])
     expect(idsAt([2.5, 2.5])).toEqual(['b1'])
     expect(idsAt([0.5, 2.5])).toEqual([])
@@ -45,11 +45,11 @@ describe('generated floor coverage', () => {
       { id: 'large', name: '大区域', floors: [], coverage: [{ tile: '0_1.png', size: 4, runs: [[0, 16]] }] },
       { id: 'small', name: '小区域', floors: [], coverage: [{ tile: '0_1.png', size: 4, runs: [[5, 6]] }] },
     ] }
-    const coverage = createFloorCoverage(state, 4)
-    expect(floorGroupsInViewport(coverage, [1.25, 2.25, 1.75, 2.75])).toEqual(['large', 'small'])
-    expect(floorGroupsInViewport(coverage, [3.9, 1, 5, 2])).toEqual(['large'])
-    expect(floorGroupsInViewport(coverage, [4, 1, 5, 2])).toEqual([])
-    expect(floorGroupsInViewport(coverage, [0, 3, 1, 4])).toEqual(['large'])
+    const coverage = createFloorCoverage(state)
+    expect(floorGroupsInViewport(coverage, [1.25, 2.25, 1.75, 2.75].map((value) => value * 850 / 4))).toEqual(['large', 'small'])
+    expect(floorGroupsInViewport(coverage, [3.9, 1, 5, 2].map((value) => value * 850 / 4))).toEqual(['large'])
+    expect(floorGroupsInViewport(coverage, [4, 1, 5, 2].map((value) => value * 850 / 4))).toEqual([])
+    expect(floorGroupsInViewport(coverage, [0, 3, 1, 4].map((value) => value * 850 / 4))).toEqual(['large'])
   })
 
   it('unions sibling alpha masks, excludes transparent pixels and keeps interval gaps', () => {
@@ -85,15 +85,15 @@ describe('generated floor coverage', () => {
 
   it('distinguishes the three real groups sharing tile -7_1 and leaves transparent space unassigned', () => {
     const state = dataset.states.find(({ id }) => id === 8) ?? null
-    const coverage = createFloorCoverage(state, dataset.source.tileWidth)
-    const viewportAt = (x: number, y: number): [number, number, number, number] => [x - 0.1, y - 0.1, x + 0.1, y + 0.1]
+    const coverage = createFloorCoverage(state)
+    const viewportAt = (x: number, y: number): [number, number, number, number] => [(x - 0.1) * 850 / 1024, (y - 0.1) * 850 / 1024, (x + 0.1) * 850 / 1024, (y + 0.1) * 850 / 1024]
     expect(floorGroupsInViewport(coverage, viewportAt(-6502.5, 450.5))).toEqual(['56'])
     expect(floorGroupsInViewport(coverage, viewportAt(-6525.5, 455.5))).toEqual(['57'])
     expect(floorGroupsInViewport(coverage, viewportAt(-6744.5, -0.5))).toEqual(['58'])
     expect(floorGroupsInViewport(coverage, viewportAt(-7160, 1010))).toEqual([])
-    expect([...new Set(floorsAtCoordinate(coverage, [-6502.5, 450.5]).map(({ layeredMapId }) => layeredMapId))]).toEqual(['56'])
-    expect([...new Set(floorsAtCoordinate(coverage, [-6525.5, 455.5]).map(({ layeredMapId }) => layeredMapId))]).toEqual(['57'])
-    expect(floorsAtCoordinate(coverage, [-7160, 1010])).toEqual([])
+    expect([...new Set(floorsAtCoordinate(coverage, [-6502.5 * 850 / 1024, 450.5 * 850 / 1024]).map(({ layeredMapId }) => layeredMapId))]).toEqual(['56'])
+    expect([...new Set(floorsAtCoordinate(coverage, [-6525.5 * 850 / 1024, 455.5 * 850 / 1024]).map(({ layeredMapId }) => layeredMapId))]).toEqual(['57'])
+    expect(floorsAtCoordinate(coverage, [-7160 * 850 / 1024, 1010 * 850 / 1024])).toEqual([])
     for (const state of dataset.states) {
       for (const group of state.layeredMaps) {
         const tiles = new Set(group.floors.flatMap(({ tiles }) => tiles.map((tile) => tile.split('/').at(-1))))

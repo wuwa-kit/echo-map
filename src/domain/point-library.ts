@@ -51,7 +51,7 @@ function validatePointReferences(points: readonly AuthoredPoint[], dataset: Poin
     if (!state) throw new Error(`点位 ${point.id} 引用了未知地图`)
     if (source === 'official') {
       const { x, y } = point.coordinate
-      if (x === null || y === null || !isOfficialEchoMapIncluded(dataset, point.stateId, gameToMapCoordinate(x, y, dataset.source.tileWidth))) {
+      if (x === null || y === null || !isOfficialEchoMapIncluded(dataset, point.stateId, gameToMapCoordinate(x, y))) {
         throw new Error(`官方声骸点 ${point.id} 不在收录地图范围内`)
       }
     }
@@ -100,7 +100,7 @@ export function authoredPointMapDisplay(
   const { x, y } = point.coordinate
   if (x === null || y === null) return null
   const quality: PointQuality = isOfficialPoint(point) ? 'official-provisional' : 'manual'
-  const coordinate = officialToMapCoordinate(x * 100, y * 100, dataset.source.tileWidth)
+  const coordinate = officialToMapCoordinate(x * 100, y * 100)
   const base = {
     id: point.id,
     typeId: `manual:${point.kind}`,

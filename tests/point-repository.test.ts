@@ -30,7 +30,7 @@ const empty = library()
 function atRegion(id: string, name: string) {
   const label = referenceDataset.regionLabels.find((label) => label.name === name)
   if (!label) throw new Error(`缺少地区 ${name}`)
-  const [x, y] = mapToGameCoordinate(label.coordinate.mapX, label.coordinate.mapY, referenceDataset.source.tileWidth)
+  const [x, y] = mapToGameCoordinate(label.coordinate.mapX, label.coordinate.mapY)
   return { ...mixedPoint(id), stateId: label.stateId, coordinate: { x: Math.round(x), y: Math.round(y), z: 18 } }
 }
 

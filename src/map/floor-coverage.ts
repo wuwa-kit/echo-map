@@ -3,21 +3,21 @@ import type { Extent } from 'ol/extent.js'
 import type { MapFloorDefinition, MapStateDefinition } from '../domain/types.ts'
 import { layeredTileExtent } from './projection.ts'
 
-export function floorExtent(floor: MapFloorDefinition | undefined, tileWidth: number): Extent | null {
+export function floorExtent(floor: MapFloorDefinition | undefined): Extent | null {
   const extent = createEmpty()
   for (const path of floor?.tiles ?? []) {
-    const tile = layeredTileExtent(path, tileWidth)
+    const tile = layeredTileExtent(path)
     if (tile) extend(extent, tile)
   }
   return isEmpty(extent) ? null : extent
 }
 
-export function createFloorCoverage(state: MapStateDefinition | null, tileWidth: number) {
+export function createFloorCoverage(state: MapStateDefinition | null) {
   return (state?.layeredMaps ?? []).map((group) => ({
     id: group.id,
     floors: group.floors,
     tiles: group.coverage.flatMap((tile) => {
-      const extent = layeredTileExtent(tile.tile, tileWidth)
+      const extent = layeredTileExtent(tile.tile)
       return extent ? [{ ...tile, extent }] : []
     }),
   }))

@@ -48,7 +48,7 @@ const regions = computed(() => {
   const reference = dataset.value
   if (!reference) return new Map<string, PointRegion | null>()
   const resolve = pointRegionResolver(reference)
-  return new Map(managedPoints.value.map(({ point }) => [point.id, resolve(point.stateId, gameToMapCoordinate(point.coordinate.x ?? 0, point.coordinate.y ?? 0, reference.source.tileWidth))]))
+  return new Map(managedPoints.value.map(({ point }) => [point.id, resolve(point.stateId, gameToMapCoordinate(point.coordinate.x ?? 0, point.coordinate.y ?? 0))]))
 })
 const operations: Record<LocalPointOperation, string> = { added: '新增点位', modified: '修改官方点位', deleted: '删除官方点位' }
 const statuses: Record<LocalPointStatus, string> = { pending: '待收录', adopted: '已收录', conflict: '存在冲突', review: '待确认' }

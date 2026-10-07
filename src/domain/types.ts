@@ -291,6 +291,7 @@ export interface SourceManifest {
   wikiFetchedAt: string
   mapFetchedAt: string
   mapResourceHash: string
+  // Requested image width in pixels; geographic tile size is always 850 game units.
   tileWidth: number
   coordinateRate: number
   coordinateScaleBase: number

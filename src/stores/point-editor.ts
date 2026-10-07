@@ -100,7 +100,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (!coordinate || !state) return []
     // Editing uses the same tile bounds as saving, including transparent image regions.
     return state.layeredMaps.flatMap(({ floors }) => floors)
-      .filter(({ id }) => hitsMapTile(state, dataset.value?.source.tileWidth ?? 1024, coordinate, null, id))
+      .filter(({ id }) => hitsMapTile(state, coordinate, null, id))
       .map(({ id, name }) => ({ id, name }))
   })
   const pointLevelId = computed(() => {
@@ -126,7 +126,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       ? coordinateInputPartialXY(arrivalInput.value, point.teleportCoordinate ?? { x: null, y: null, z: null }) : null
     function message(coordinate: readonly [number | null, number | null] | null, prefix: string, levelId: string | null = null): string {
       if (!coordinate?.some((value) => value !== null) || !state || !reference || !point
-        || hitsMapTile(state, reference.source.tileWidth, coordinate, point.gravityType, levelId)) return ''
+        || hitsMapTile(state, coordinate, point.gravityType, levelId)) return ''
       const axes = coordinate[0] === null ? 'Y' : coordinate[1] === null ? 'X' : 'XY'
       return `${prefix} ${axes} 未命中所选地图的瓦片，请检查坐标或切换地图`
     }

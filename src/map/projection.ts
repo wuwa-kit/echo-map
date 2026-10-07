@@ -1,32 +1,28 @@
 import type { OfficialCoordinate, TileExtent } from '../domain/types.ts'
 
-export const TILE_WIDTH = 1024
+export const MAP_TILE_SIZE = 850
 export const GAME_COORDINATE_RATE = 100
-export const OFFICIAL_SCALE_BASE = 850
 
 export function officialToMapCoordinate(
   rawX: number,
   rawY: number,
-  tileWidth = TILE_WIDTH,
 ): OfficialCoordinate {
-  const scale = tileWidth / OFFICIAL_SCALE_BASE
-
   return {
     rawX,
     rawY,
-    mapX: (rawX / GAME_COORDINATE_RATE) * scale + tileWidth,
-    mapY: -(rawY / GAME_COORDINATE_RATE) * scale,
+    mapX: rawX / GAME_COORDINATE_RATE + MAP_TILE_SIZE,
+    mapY: -(rawY / GAME_COORDINATE_RATE),
   }
 }
 
-export function gameToMapCoordinate(x: number, y: number, tileWidth = TILE_WIDTH): [number, number] {
-  const converted = officialToMapCoordinate(x * GAME_COORDINATE_RATE, y * GAME_COORDINATE_RATE, tileWidth)
+export function gameToMapCoordinate(x: number, y: number): [number, number] {
+  const converted = officialToMapCoordinate(x * GAME_COORDINATE_RATE, y * GAME_COORDINATE_RATE)
   return [converted.mapX, converted.mapY]
 }
 
-export function mapToGameCoordinate(mapX: number, mapY: number, tileWidth = TILE_WIDTH): [number, number] {
-  const gameX = ((mapX - tileWidth) / tileWidth) * OFFICIAL_SCALE_BASE
-  const gameY = (-mapY / tileWidth) * OFFICIAL_SCALE_BASE
+export function mapToGameCoordinate(mapX: number, mapY: number): [number, number] {
+  const gameX = mapX - MAP_TILE_SIZE
+  const gameY = -mapY
   return [gameX === 0 ? 0 : gameX, gameY === 0 ? 0 : gameY]
 }
 
@@ -39,7 +35,7 @@ export function parseTileId(tileId: string): { x: number; y: number } | null {
   return { x: Number(match[1]), y: Number(match[2]) }
 }
 
-export function calculateTileExtent(tileIds: string[], tileWidth = TILE_WIDTH): TileExtent {
+export function calculateTileExtent(tileIds: string[]): TileExtent {
   const coordinates = tileIds.map(parseTileId).filter((value) => value !== null)
   if (coordinates.length === 0) {
     return {
@@ -47,7 +43,7 @@ export function calculateTileExtent(tileIds: string[], tileWidth = TILE_WIDTH): 
       minTileY: 0,
       maxTileX: 0,
       maxTileY: 1,
-      extent: [-tileWidth, -tileWidth, tileWidth, tileWidth],
+      extent: [-MAP_TILE_SIZE, -MAP_TILE_SIZE, MAP_TILE_SIZE, MAP_TILE_SIZE],
     }
   }
 
@@ -64,15 +60,15 @@ export function calculateTileExtent(tileIds: string[], tileWidth = TILE_WIDTH): 
     maxTileX,
     maxTileY,
     extent: [
-      minTileX * tileWidth,
-      (minTileY - 1) * tileWidth,
-      (maxTileX + 1) * tileWidth,
-      maxTileY * tileWidth,
+      minTileX * MAP_TILE_SIZE,
+      (minTileY - 1) * MAP_TILE_SIZE,
+      (maxTileX + 1) * MAP_TILE_SIZE,
+      maxTileY * MAP_TILE_SIZE,
     ],
   }
 }
 
-export function layeredTileExtent(tilePath: string, tileWidth = TILE_WIDTH): [number, number, number, number] | null {
+export function layeredTileExtent(tilePath: string): [number, number, number, number] | null {
   const match = tilePath.match(/(-?\d+)_(-?\d+)\.png$/)
   if (!match?.[1] || !match[2]) {
     return null
@@ -80,5 +76,5 @@ export function layeredTileExtent(tilePath: string, tileWidth = TILE_WIDTH): [nu
 
   const x = Number(match[1])
   const y = Number(match[2])
-  return [x * tileWidth, (y - 1) * tileWidth, (x + 1) * tileWidth, y * tileWidth]
+  return [x * MAP_TILE_SIZE, (y - 1) * MAP_TILE_SIZE, (x + 1) * MAP_TILE_SIZE, y * MAP_TILE_SIZE]
 }

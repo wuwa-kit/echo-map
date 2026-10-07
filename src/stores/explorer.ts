@@ -86,7 +86,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const floors = computed<MapFloorDefinition[]>(() => (
     activeState.value?.layeredMaps.flatMap(({ floors: mapFloors }) => mapFloors) ?? []
   ))
-  const floorCoverage = computed(() => createFloorCoverage(activeState.value, dataset.value?.source.tileWidth ?? 1024))
+  const floorCoverage = computed(() => createFloorCoverage(activeState.value))
   const nearbyFloorGroupIds = useEqualComputed(() => {
     const viewport = floorViewport.value
     return viewport && Number.isFinite(viewport.resolution) && viewport.resolution > 0

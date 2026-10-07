@@ -1,7 +1,5 @@
-import { OFFICIAL_SCALE_BASE, TILE_WIDTH } from './projection.ts'
-
 // One game coordinate unit per CSS pixel at zoom 0, independent of the base map.
-export const MAP_RESOLUTION_AT_ZOOM_ZERO = TILE_WIDTH / OFFICIAL_SCALE_BASE
+export const MAP_RESOLUTION_AT_ZOOM_ZERO = 1
 
 export function gameScaleForResolution(resolution: number): number {
   return Number.isFinite(resolution) && resolution > 0

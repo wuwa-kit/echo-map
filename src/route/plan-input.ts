@@ -42,7 +42,7 @@ export function createRoutePlanInput(
       levelId: location.levelId,
       coordinate,
       mapCoordinate: isTeleportArrival
-        ? gameToMapCoordinate(coordinate.x, coordinate.y, dataset?.source.tileWidth)
+        ? gameToMapCoordinate(coordinate.x, coordinate.y)
         : [location.coordinate.mapX, location.coordinate.mapY],
       ...(isTeleportArrival ? { isTeleportArrival: true as const } : {}),
     }

@@ -26,7 +26,7 @@ export function pointFileRevision(text: string): string {
 export function pointFilePath(point: AuthoredPoint, dataset: MapDataset, source: PointSource): string {
   const { x, y } = point.coordinate
   if (x === null || y === null) throw new Error(`点位 ${point.id} 缺少 XY`)
-  const region = pointRegionResolver(dataset)(point.stateId, gameToMapCoordinate(x, y, dataset.source.tileWidth))
+  const region = pointRegionResolver(dataset)(point.stateId, gameToMapCoordinate(x, y))
   if (!region) throw new Error(`无法判断点位 ${point.id} 所属地区`)
   const path = point.stateId === MAIN_MAP_STATE_ID ? `${point.stateId}/${region.id}.json` : `${point.stateId}.json`
   if (!/^\d+(?:\/\d+(?:-\d+)?)?\.json$/u.test(path)) throw new Error(`无效地图分片：${path}`)
