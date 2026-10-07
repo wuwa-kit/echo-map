@@ -2,6 +2,21 @@
   "version": 1,
   "points": [
     {
+      "id": "037e5c75-aa53-43e7-94a9-950335379c0e",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6534,
+        "y": -300,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
       "id": "038b1e6f-8615-4438-98d7-cce4e3841dc4",
       "stateId": 8,
       "coordinate": {
@@ -16,6 +31,37 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "069a4330-096d-42cc-86d0-4085ce66f35a",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6733,
+        "y": 272,
+        "z": -301
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危行任务",
+      "navigationKind": "landmark",
+      "pointType": "exploration-quest",
+      "iconId": "icon-05f43f9613d478b8",
+      "mode": "landmark"
+    },
+    {
+      "id": "0aaebb2d-ec9b-4dc3-8b70-5bfff3629325",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7781,
+        "y": -454,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
     },
     {
       "id": "0be65515-cb08-45bf-b175-738c31101a85",
@@ -50,6 +96,149 @@
       "mode": "fast-travel"
     },
     {
+      "id": "13b89e6b-bd1e-4369-8075-9abd514419b9",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8208,
+        "y": 107,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "20b4fcad-e187-4866-919f-10ddd61e5a56",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6715,
+        "y": 232,
+        "z": -299
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "四鸣井",
+      "navigationKind": "landmark",
+      "iconId": "icon-b0fbd154ee3a940f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "236e6e8c-23a7-4690-af9d-74cc514c9b4c",
+      "stateId": 8,
+      "coordinate": {
+        "x": -5832,
+        "y": -59,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "咎锁遗患",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "2dc6f20f-59b3-4c88-a5e7-7cf80e9ce16f",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6842,
+        "y": -971,
+        "z": -222
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梁鸢回收",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "2dc99fda-7aee-4bb6-8832-76f68fc80bae",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7009,
+        "y": -750,
+        "z": -231
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-50b338ec14e96d80",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "31c2283a-cb4a-453c-9976-17f498fc1843",
+      "stateId": 8,
+      "coordinate": {
+        "x": -5952,
+        "y": -652,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "咎锁遗患",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "327f80e0-2b0b-4c4a-bdbb-0cf4a212f7d4",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6685,
+        "y": -101,
+        "z": -429
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸聚落",
+      "navigationKind": "challenge",
+      "pointType": "echo-settlement",
+      "iconId": "icon-4324b10e72143f72",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -6686,
+        "y": -61,
+        "z": -426
+      }
+    },
+    {
+      "id": "3494e910-1f8b-41af-b6c5-6d89bb641c13",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6123,
+        "y": 15,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "3d5b7d51-7de6-4af4-a74f-94d9b8de53f0",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7762,
+        "y": -178,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危行任务",
+      "navigationKind": "landmark",
+      "pointType": "exploration-quest",
+      "iconId": "icon-05f43f9613d478b8",
+      "mode": "landmark"
+    },
+    {
       "id": "41f668df-2df0-4084-926c-ac6225ea6d17",
       "stateId": 8,
       "coordinate": {
@@ -64,6 +253,53 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "44687f75-b4b6-4dc9-a3df-1f7e949b07ae",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6403,
+        "y": -460,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "44bb0969-b50b-402a-a5cd-f72fbacb8d86",
+      "stateId": 8,
+      "levelId": "-4/56",
+      "coordinate": {
+        "x": -6061,
+        "y": -272,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "咎锁遗患",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "4595de25-5fe0-419e-9110-90756caed874",
+      "stateId": 8,
+      "levelId": "-1/59",
+      "coordinate": {
+        "x": -7491,
+        "y": -801,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
     },
     {
       "id": "47d477e0-83b6-40f2-9a41-97c7cd1628da",
@@ -82,6 +318,38 @@
       "mode": "fast-travel"
     },
     {
+      "id": "4841354b-8e27-4431-b7ca-f335952d959d",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6220,
+        "y": -287,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危行任务",
+      "navigationKind": "landmark",
+      "pointType": "exploration-quest",
+      "iconId": "icon-05f43f9613d478b8",
+      "mode": "landmark"
+    },
+    {
+      "id": "4e0de077-9787-4256-a8f6-50db41c17125",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6479,
+        "y": -71,
+        "z": -398
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
       "id": "4e38fb58-cac8-41cc-91f0-df12829b4e6a",
       "stateId": 8,
       "coordinate": {
@@ -96,6 +364,21 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "4ef30c42-868e-44ed-9de3-599f7b18cec4",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6000,
+        "y": -1157,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
     },
     {
       "id": "57f42c13-665f-4456-8e58-312dd3c1dace",
@@ -130,6 +413,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "59cd820d-4a90-4317-b738-35b16c79b08a",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7196,
+        "y": 175,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
       "id": "5c8fef68-5972-459d-8993-8782e1e849ba",
       "stateId": 8,
       "coordinate": {
@@ -143,6 +441,53 @@
       "navigationKind": "domain",
       "pointType": "material-domain",
       "iconId": "icon-458b1db12b603d42",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "5fb6ae7b-ffee-4cec-b6a4-af4e4d76f7d6",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6765,
+        "y": -767,
+        "z": -231
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-d46d97ebff06af5f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "6450a73c-659d-4c74-adb9-2bc5adf98288",
+      "stateId": 8,
+      "coordinate": {
+        "x": -5924,
+        "y": -777,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "6498c432-15f4-471b-a9d6-59ad933eea5e",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8877,
+        "y": 179,
+        "z": -184
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
       "mode": "fast-travel"
     },
     {
@@ -162,6 +507,51 @@
       "mode": "fast-travel"
     },
     {
+      "id": "6f768a51-3307-4452-8fbf-05f2f7def986",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6819,
+        "y": -65,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "735e149f-8867-49ce-b293-9f6caf480875",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7354,
+        "y": 114,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "78243e3b-9775-4a8c-bceb-04e9bc057b1f",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7042,
+        "y": -1031,
+        "z": -223
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "甲大王",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
       "id": "7fb4a623-af45-4c9a-9add-9cb076c633f2",
       "stateId": 8,
       "coordinate": {
@@ -176,6 +566,179 @@
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
       "mode": "fast-travel"
+    },
+    {
+      "id": "8c11a858-0a0e-4718-9c54-93b0e49bed97",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8178,
+        "y": -314,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "8d0336df-2d99-4420-8c2a-e66fa538c3f7",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7230,
+        "y": 377,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "8e162c87-a1bf-4a31-8792-2727ccacd2e3",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6491,
+        "y": -687,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "909638d0-96e1-4781-919a-ebecd173cdb7",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6084,
+        "y": -1045,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "星火艺术",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "landmark"
+    },
+    {
+      "id": "91256c6f-c419-4760-b7d0-7a19a40015b4",
+      "stateId": 8,
+      "levelId": "-1/55",
+      "coordinate": {
+        "x": -8094,
+        "y": -184,
+        "z": -278
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "万囮牢·朽躯",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-77bf05e5fde1ccef",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -8056,
+        "y": -184,
+        "z": -278
+      }
+    },
+    {
+      "id": "940637ad-a95b-412e-98d7-c11f50bdbec9",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8823,
+        "y": -268,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "咎锁遗患",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "95ce48c0-fb90-44b8-887f-fae03146067e",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8659,
+        "y": 217,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "咎锁遗患",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "a09f6ad6-5513-4bdf-acde-1c1a418e5286",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7452,
+        "y": -246,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "星火艺术",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "landmark"
+    },
+    {
+      "id": "aa5f8d4f-25bb-478e-a0a6-96c82a28e675",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8239,
+        "y": -369,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "星火艺术",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "landmark"
+    },
+    {
+      "id": "ac4fce2e-4600-43d7-b5f7-f75395298c0b",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7738,
+        "y": 10,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "acaa75d2-a2b2-4962-9959-7b16d3c74960",
+      "stateId": 8,
+      "levelId": "-1/54",
+      "coordinate": {
+        "x": -8831,
+        "y": -140,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "星火艺术",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "landmark"
     },
     {
       "id": "adfa0ea3-0caa-43ad-ae9c-4b13c4a6df93",
@@ -194,6 +757,37 @@
       "mode": "fast-travel"
     },
     {
+      "id": "b0a67459-bb3d-4b82-b5fb-79ab34505c87",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7068,
+        "y": 219,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "咎锁遗患",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "b29e3194-dccd-4153-abca-d81ec6280c43",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7050,
+        "y": -963,
+        "z": -225
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "天傀劫煞",
+      "navigationKind": "boss",
+      "pointType": "normal-boss",
+      "iconId": "icon-c2a9ff1fb45b32f5",
+      "mode": "fast-travel"
+    },
+    {
       "id": "c1b53ee6-110a-40f7-b272-03e6d0ff4cc8",
       "stateId": 8,
       "coordinate": {
@@ -207,6 +801,100 @@
       "navigationKind": "beacon",
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c8ddf05c-2fb8-4e54-8427-bba900a5223e",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6837,
+        "y": -743,
+        "z": -231
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-c58c3aea6d69dcbc",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c98ad473-7855-448a-8ed5-116c6ee9dee2",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7476,
+        "y": -199,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "星火艺术",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "landmark"
+    },
+    {
+      "id": "caeda284-7fca-4351-a6d2-2c6ea3f501a4",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6446,
+        "y": -563,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "星火艺术",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "landmark"
+    },
+    {
+      "id": "cd2ed449-e06d-4c78-9ac5-5b80c1706c08",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7266,
+        "y": -1094,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "entrance"
+    },
+    {
+      "id": "cf70032b-e0d1-4cdd-b922-b71de24ce5aa",
+      "stateId": 8,
+      "levelId": "-1/54",
+      "coordinate": {
+        "x": -8547,
+        "y": -187,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "d02c8a6e-4aee-4548-9e87-f35e7461085d",
+      "stateId": 8,
+      "coordinate": {
+        "x": -5941,
+        "y": -312,
+        "z": -281
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "全息战略·演武",
+      "navigationKind": "hologram",
+      "pointType": "hologram",
+      "iconId": "icon-d47d4bc656459591",
       "mode": "fast-travel"
     },
     {
@@ -242,6 +930,22 @@
       "mode": "fast-travel"
     },
     {
+      "id": "d9e59e1a-058d-4280-8a1a-85674f6d8239",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6931,
+        "y": -1072,
+        "z": -219
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "服务设施",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "icon-0fd966a2cfa0aa40",
+      "mode": "fast-travel"
+    },
+    {
       "id": "daad234b-9d0a-4eb0-86bc-d19636106459",
       "stateId": 8,
       "coordinate": {
@@ -256,6 +960,38 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "dc60f9b8-2442-4c81-915d-fb5a58ee8f0d",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6876,
+        "y": -907,
+        "z": -180
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "玄元境",
+      "navigationKind": "landmark",
+      "iconId": "icon-e7d44efaa6407ff6",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "e032631f-13e5-4ee4-9f11-bf4307cd16f9",
+      "stateId": 8,
+      "levelId": "-1/54",
+      "coordinate": {
+        "x": -8820,
+        "y": -107,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
     },
     {
       "id": "e1acbf08-07cb-4a8c-bac0-599be1a38565",
@@ -323,6 +1059,36 @@
       "mode": "fast-travel"
     },
     {
+      "id": "ee27d9f7-8424-4e7a-b4c9-f4989decbb6f",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6547,
+        "y": -458,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "咎锁遗患",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "f445f369-e9ee-4a9a-a3fd-6f908ab5f59b",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8547,
+        "y": -173,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "星火艺术",
+      "navigationKind": "landmark",
+      "iconId": "icon-d69b56e2c72c3088",
+      "mode": "landmark"
+    },
+    {
       "id": "f680a8df-d48e-4abc-9bda-5b6db51c22d6",
       "stateId": 8,
       "coordinate": {
@@ -353,6 +1119,26 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "fc2b5e64-2c05-44dc-a9be-7f83e0a023f3",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6625,
+        "y": 605,
+        "z": -282
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "隐秘入口",
+      "navigationKind": "landmark",
+      "iconId": "icon-a20604c385ae8e59",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -6636,
+        "y": 597,
+        "z": -282
+      }
     }
   ]
 }

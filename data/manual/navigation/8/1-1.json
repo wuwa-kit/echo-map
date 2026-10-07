@@ -1385,6 +1385,26 @@
       "mode": "fast-travel"
     },
     {
+      "id": "9fc25c84-b645-4ae7-af24-e855a5c7ef99",
+      "stateId": 8,
+      "coordinate": {
+        "x": -1583,
+        "y": 271,
+        "z": 159
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "隐秘入口",
+      "navigationKind": "landmark",
+      "iconId": "icon-a20604c385ae8e59",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -1564,
+        "y": 298,
+        "z": 159
+      }
+    },
+    {
       "id": "a11cb469-9099-4793-a8e6-dabbd5062cc3",
       "stateId": 8,
       "coordinate": {
