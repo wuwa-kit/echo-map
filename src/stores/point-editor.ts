@@ -298,6 +298,22 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     error.value = ''
   }
 
+  function syncPosition(coordinate: readonly [number, number]): void {
+    if (!fields.value || busy.value || !coordinate.every(Number.isSafeInteger)) return
+    resetPositionConfirmation()
+    resetCoordinateInput()
+    coordinateText.value = ''
+    for (const axis of coordinateAxes) {
+      clearInputError(axis)
+      clearInputValue(axis)
+    }
+    clearArrivalInput()
+    edit((point) => {
+      point.coordinate = { x: coordinate[0], y: coordinate[1], z: null }
+      if (point.kind === 'navigation') delete point.teleportCoordinate
+    })
+  }
+
   function setCoordinate(axis: 'x' | 'y' | 'z', value: string): void {
     resetCoordinateInput()
     inputValues.value = produce(inputValues.value, (values) => { values[axis] = value })
@@ -910,7 +926,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   return {
     tileErrors: shallowReadonly(tileErrors), tileSaveBlocked: shallowReadonly(tileSaveBlocked),
     workspace: shallowReadonly(workspace), managedPoints, managePoints, refreshPublishedPoints, createPointExport, importLabel: shallowReadonly(importLabel),
-    confirmPosition, resetPositionConfirmation,
+    confirmPosition, resetPositionConfirmation, syncPosition,
     duplicateTarget, duplicateCandidates, duplicateConfirmation: shallowReadonly(duplicateConfirmation), confirmDuplicate,
     availableFloors, pointLevelId, setLevel, resetMapDependentFields,
     recentIconIds: shallowReadonly(recentIconIds),

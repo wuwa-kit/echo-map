@@ -115,6 +115,11 @@ function requestPoint(kind: AuthoredPoint['kind']): void {
   emit('pointAddRequested', { kind, coordinate: contextCoordinate.value })
 }
 function closeContextMenu(): void { contextMenu.value?.hide() }
+function syncPosition(): void {
+  if (!props.editing || editor.busy) return
+  editor.syncPosition(contextCoordinate.value)
+  closeContextMenu()
+}
 const mapSize = shallowRef<[number, number]>([0, 0])
 const shortFloorDock = computed(() => mapSize.value[1] - props.dockBottom < 320)
 const floorDockHeight = computed(() => Math.max(86, mapSize.value[1] - props.dockBottom - (shortFloorDock.value ? 16 : 112)))
@@ -370,7 +375,8 @@ onBeforeUnmount(() => {
 <template>
   <div class="relative h-full w-full min-h-0 min-w-0">
     <span ref="contextAnchorRef" class="pointer-events-none fixed h-0 w-0" :style="{ left: `${contextPosition.x}px`, top: `${contextPosition.y}px` }" />
-    <WuPopover ref="contextMenuRef" :anchor="contextAnchor" :disabled="!editing || editor.busy" :width="144" :gap="0" class="rounded-[8px] border border-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
+    <WuPopover ref="contextMenuRef" :anchor="contextAnchor" :disabled="!editing || editor.busy" width="content" :gap="0" class="rounded-[8px] border border-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
+      <WuButton variant="ghost" :disabled="!editor.draft" @click="syncPosition">同步位置</WuButton>
       <WuButton variant="ghost" @click="requestPoint('navigation')">添加定位</WuButton>
       <WuButton variant="ghost" @click="requestPoint('echo')">添加声骸</WuButton>
     </WuPopover>

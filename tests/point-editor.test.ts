@@ -111,6 +111,37 @@ describe('point editor actions', () => {
     expect(store.recentNames).toEqual(['新名称', '另一名称'])
   })
 
+  it('syncs the map position and clears stale position and arrival input before saving', async () => {
+    const store = usePointEditorStore()
+    await store.load('navigation')
+    store.setPointType('small-beacon')
+    store.setCoordinateText('-497, 449, 18')
+    store.applyCoordinateText()
+    store.setTeleportCoordinateText('-498, 450, 20')
+    store.applyTeleportCoordinateText()
+    store.setCoordinate('x', 'invalid')
+    store.setTeleportCoordinate('z', 'invalid')
+    store.updateCoordinateInput(false, editCoordinateInput(store.positionInput, { x: -497, y: 449, z: 18 }, '999999,'))
+    store.updateCoordinateInput(true, editCoordinateInput(store.arrivalInput, { x: -498, y: 450, z: 20 }, '999999,'))
+
+    store.syncPosition([-496, 448])
+
+    expect(store.draft?.coordinate).toEqual({ x: -496, y: 448, z: null })
+    expect(store.draft).not.toHaveProperty('teleportCoordinate')
+    expect(store.positionInput).toEqual(emptyCoordinateInput())
+    expect(store.arrivalInput).toEqual(emptyCoordinateInput())
+    expect(store.coordinateText).toBe('')
+    expect(store.teleportCoordinateText).toBe('')
+    expect(store.inputErrors).toEqual({})
+    expect(store.inputValues).toEqual({})
+    expect(store.tileSaveBlocked).toBe(false)
+    expect(await store.savePoint()).toBe(false)
+    store.setCoordinate('z', '19')
+    expect(await store.savePoint()).toBe(true)
+    expect(disk.points[0]?.coordinate).toEqual({ x: -496, y: 448, z: 19 })
+    expect(disk.points[0]).not.toHaveProperty('teleportCoordinate')
+  })
+
   it('validates partial combined and axis input without reusing stale coordinates', async () => {
     const store = usePointEditorStore()
     await store.load('navigation')
