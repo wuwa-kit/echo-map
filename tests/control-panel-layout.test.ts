@@ -46,7 +46,7 @@ describe('control panel layout', () => {
     expect(routePanelSource).toContain(": '取消生成'")
     expect(routePanelSource).not.toContain('请选择声骸')
     expect(routePanelSource).toContain("return '暂无可规划点位'")
-    expect(routePanelSource).toContain('>导出路线</WuButton>')
+    expect(routePanelSource).toContain('>导出路线图片</WuButton>')
     expect(routePanelSource).toContain(':loading="exportStore.status === \'running\'"')
     expect(routePanelSource).not.toContain(':loading="planning"')
     expect(routePanelSource).toContain('class="grid grid-cols-2 gap-[8px]"')
