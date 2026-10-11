@@ -80,6 +80,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "0cf5e945-5251-4bd4-8be4-6244bbac3fab",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6673,
+        "y": 175,
+        "z": -289
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "引歧帘",
+      "navigationKind": "landmark",
+      "iconId": "icon-d759d9018b8464e8",
+      "mode": "fast-travel"
+    },
+    {
       "id": "10a2f8cf-f822-4480-8772-c41cce2bdc27",
       "stateId": 8,
       "coordinate": {
@@ -109,6 +124,96 @@
       "navigationKind": "landmark",
       "iconId": "icon-91190f4a8db6640e",
       "mode": "entrance"
+    },
+    {
+      "id": "15628215-2f74-4010-ac24-0ea90fd15509",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7453,
+        "y": -286,
+        "z": -361
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1826b771-f907-4d71-944b-661277cd9465",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6128,
+        "y": -295,
+        "z": -280
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "雾隐阁",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1a3d6812-c39f-44a6-aae9-3417efc07d8f",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7450,
+        "y": -574,
+        "z": -279
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1cdd95d1-dbcb-45ea-b9d7-c492bb62d14d",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7858,
+        "y": 67,
+        "z": -326
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1eedcdb0-b85d-4411-b2af-a1b80268772c",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6258,
+        "y": 53,
+        "z": -273
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "205ea8db-f864-44d5-bd87-cc4c29b3baa2",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6099,
+        "y": -52,
+        "z": -279
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "引歧帘",
+      "navigationKind": "landmark",
+      "iconId": "icon-d759d9018b8464e8",
+      "mode": "fast-travel"
     },
     {
       "id": "20b4fcad-e187-4866-919f-10ddd61e5a56",
@@ -141,6 +246,82 @@
       "mode": "entrance"
     },
     {
+      "id": "24900aab-7b9a-44e2-a1c1-cd490aac4029",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6499,
+        "y": 8,
+        "z": -329
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "258696fe-7ce5-456c-8e17-a21681a3aca9",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6542,
+        "y": 151,
+        "z": -280
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "超级云帛机骑挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "29c94cc0-7ed1-4f22-8188-b62ef22278cf",
+      "stateId": 8,
+      "levelId": "-3/56",
+      "coordinate": {
+        "x": -6219,
+        "y": -216,
+        "z": -3995
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "机巧伶",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "2a391b47-ad4a-44bb-be59-bd772b6ac833",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7166,
+        "y": 255,
+        "z": -279
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "2c4939ea-4522-4968-bc03-87cb1e61b0fe",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7471,
+        "y": -881,
+        "z": -224
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
       "id": "2dc6f20f-59b3-4c88-a5e7-7cf80e9ce16f",
       "stateId": 8,
       "coordinate": {
@@ -169,6 +350,22 @@
       "navigationKind": "service",
       "pointType": "service",
       "iconId": "icon-50b338ec14e96d80",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "2de14fe2-2ca3-42e9-8dea-51e16e351e0d",
+      "stateId": 8,
+      "levelId": "-2/56",
+      "coordinate": {
+        "x": -6169,
+        "y": -325,
+        "z": -3985
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "机巧伶",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
       "mode": "fast-travel"
     },
     {
@@ -208,6 +405,21 @@
       }
     },
     {
+      "id": "32fdf8f8-d706-4dc9-b914-d0d43db88b25",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7585,
+        "y": -605,
+        "z": -258
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "引歧帘",
+      "navigationKind": "landmark",
+      "iconId": "icon-d759d9018b8464e8",
+      "mode": "fast-travel"
+    },
+    {
       "id": "3494e910-1f8b-41af-b6c5-6d89bb641c13",
       "stateId": 8,
       "coordinate": {
@@ -221,6 +433,67 @@
       "navigationKind": "landmark",
       "iconId": "icon-91190f4a8db6640e",
       "mode": "entrance"
+    },
+    {
+      "id": "3756532a-2f98-4028-b3f6-1f4de45425fc",
+      "stateId": 8,
+      "levelId": "-2/58",
+      "coordinate": {
+        "x": -6443,
+        "y": -216,
+        "z": -3785
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "机巧伶",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "375b8ddd-d6a6-4004-89d3-0ba9b7d76f90",
+      "stateId": 8,
+      "coordinate": {
+        "x": -5981,
+        "y": -1146,
+        "z": -242
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "38c98554-33b3-4842-a84a-1069f71efc75",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7059,
+        "y": -381,
+        "z": -315
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "3bfd3cbc-ceb6-46cb-80f0-4a1025c10997",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6321,
+        "y": 25,
+        "z": -3
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
     },
     {
       "id": "3d5b7d51-7de6-4af4-a74f-94d9b8de53f0",
@@ -237,6 +510,37 @@
       "pointType": "exploration-quest",
       "iconId": "icon-05f43f9613d478b8",
       "mode": "landmark"
+    },
+    {
+      "id": "3ee04c62-7625-4cc7-9e91-5c91ae767830",
+      "stateId": 8,
+      "levelId": "-1/59",
+      "coordinate": {
+        "x": -7384,
+        "y": -797,
+        "z": -303
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "40bc6fd3-0a03-4dff-9328-9bf872770029",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6454,
+        "y": -924,
+        "z": -228
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "超级云帛机骑挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
     },
     {
       "id": "41f668df-2df0-4084-926c-ac6225ea6d17",
@@ -302,6 +606,21 @@
       "mode": "entrance"
     },
     {
+      "id": "469cb6a9-2700-43b9-a7ef-cad2435b5064",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6584,
+        "y": -436,
+        "z": 302
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
+    },
+    {
       "id": "47d477e0-83b6-40f2-9a41-97c7cd1628da",
       "stateId": 8,
       "coordinate": {
@@ -332,6 +651,21 @@
       "pointType": "exploration-quest",
       "iconId": "icon-05f43f9613d478b8",
       "mode": "landmark"
+    },
+    {
+      "id": "485ae670-a741-4673-a406-3e8635cc8d0d",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7149,
+        "y": 238,
+        "z": -281
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
     },
     {
       "id": "4e0de077-9787-4256-a8f6-50db41c17125",
@@ -381,6 +715,37 @@
       "mode": "entrance"
     },
     {
+      "id": "5462a969-ede1-4ed8-9dc5-efb6d739fee5",
+      "stateId": 8,
+      "levelId": "-4/56",
+      "coordinate": {
+        "x": -6148,
+        "y": -270,
+        "z": -4063
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "机巧伶",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "551797ff-c886-4416-ab6b-92f812d86bde",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8185,
+        "y": -365,
+        "z": -252
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
       "id": "57f42c13-665f-4456-8e58-312dd3c1dace",
       "stateId": 8,
       "coordinate": {
@@ -428,6 +793,21 @@
       "mode": "entrance"
     },
     {
+      "id": "5c2358b7-d390-45c8-85a0-29da4f82d7c9",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6331,
+        "y": 224,
+        "z": -272
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
       "id": "5c8fef68-5972-459d-8993-8782e1e849ba",
       "stateId": 8,
       "coordinate": {
@@ -457,6 +837,22 @@
       "navigationKind": "service",
       "pointType": "service",
       "iconId": "icon-d46d97ebff06af5f",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "60b5d4ba-0c4e-42dd-beaa-42e0a64e365c",
+      "stateId": 8,
+      "levelId": "-3/56",
+      "coordinate": {
+        "x": -6371,
+        "y": -216,
+        "z": -4005
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "锁天工",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
       "mode": "fast-travel"
     },
     {
@@ -537,6 +933,21 @@
       "mode": "entrance"
     },
     {
+      "id": "77276c15-4403-4d08-86aa-fcd26966771e",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7903,
+        "y": 154,
+        "z": -296
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "超级云帛机骑挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
       "id": "78243e3b-9775-4a8c-bceb-04e9bc057b1f",
       "stateId": 8,
       "coordinate": {
@@ -547,6 +958,21 @@
       "note": "",
       "kind": "navigation",
       "name": "甲大王",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "7b148d05-29a4-424e-8fed-4ed9fe434049",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6569,
+        "y": -494,
+        "z": -298
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
       "navigationKind": "landmark",
       "iconId": "icon-not-found",
       "mode": "fast-travel"
@@ -568,6 +994,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "886bca73-6e31-44d6-9b18-276464342926",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8005,
+        "y": -114,
+        "z": -71
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
+    },
+    {
       "id": "8c11a858-0a0e-4718-9c54-93b0e49bed97",
       "stateId": 8,
       "coordinate": {
@@ -581,6 +1022,21 @@
       "navigationKind": "landmark",
       "iconId": "icon-91190f4a8db6640e",
       "mode": "entrance"
+    },
+    {
+      "id": "8ccdd857-9249-426e-9793-357bb2ac71fb",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7994,
+        "y": -603,
+        "z": -268
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
+      "mode": "fast-travel"
     },
     {
       "id": "8d0336df-2d99-4420-8c2a-e66fa538c3f7",
@@ -628,6 +1084,21 @@
       "mode": "landmark"
     },
     {
+      "id": "90e910c8-3283-4b55-af59-51be087a7dd4",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6362,
+        "y": -478,
+        "z": -277
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "引歧帘",
+      "navigationKind": "landmark",
+      "iconId": "icon-d759d9018b8464e8",
+      "mode": "fast-travel"
+    },
+    {
       "id": "91256c6f-c419-4760-b7d0-7a19a40015b4",
       "stateId": 8,
       "levelId": "-1/55",
@@ -650,6 +1121,21 @@
       }
     },
     {
+      "id": "93c6e184-9286-4a8f-bf6c-57b2877923a3",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7288,
+        "y": -461,
+        "z": -296
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
       "id": "940637ad-a95b-412e-98d7-c11f50bdbec9",
       "stateId": 8,
       "coordinate": {
@@ -663,6 +1149,21 @@
       "navigationKind": "landmark",
       "iconId": "icon-a41b4153ffd53379",
       "mode": "entrance"
+    },
+    {
+      "id": "94cde56d-30a8-410c-bbf9-f44ed7d8d1c6",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6359,
+        "y": -549,
+        "z": -304
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
     },
     {
       "id": "95ce48c0-fb90-44b8-887f-fae03146067e",
@@ -693,6 +1194,56 @@
       "navigationKind": "landmark",
       "iconId": "icon-d69b56e2c72c3088",
       "mode": "landmark"
+    },
+    {
+      "id": "a1c0aab8-4be2-4ceb-9808-c508227a904a",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6764,
+        "y": -454,
+        "z": -400
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -6697,
+        "y": -454,
+        "z": -400
+      }
+    },
+    {
+      "id": "a2c06489-9404-4c1e-b672-9b87d23e5523",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7408,
+        "y": -862,
+        "z": -228
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "超级云帛机骑挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "a3291610-008f-4ad3-8468-1b33b9ffc669",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6384,
+        "y": -567,
+        "z": -304
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
     },
     {
       "id": "aa5f8d4f-25bb-478e-a0a6-96c82a28e675",
@@ -772,6 +1323,51 @@
       "mode": "entrance"
     },
     {
+      "id": "b0aada0c-3dea-4da0-aa73-1148d2d7345f",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7426,
+        "y": -11,
+        "z": -355
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b193a893-ce94-41f5-83a5-9e85c6b065dd",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7202,
+        "y": 111,
+        "z": -328
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b1a2ec36-c8b8-4451-b45c-c5ca251c58a2",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6315,
+        "y": 8,
+        "z": 4
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "清宵的道馆",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
       "id": "b29e3194-dccd-4153-abca-d81ec6280c43",
       "stateId": 8,
       "coordinate": {
@@ -785,6 +1381,66 @@
       "navigationKind": "boss",
       "pointType": "normal-boss",
       "iconId": "icon-c2a9ff1fb45b32f5",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b5306376-3710-4e08-b073-d975ffa94c74",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8530,
+        "y": -328,
+        "z": -258
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b872ca2e-3ab5-4523-aed5-522cb6b4d907",
+      "stateId": 8,
+      "coordinate": {
+        "x": -5948,
+        "y": -1210,
+        "z": -235
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "b954e82c-56d0-48e3-9c49-5d307672cac3",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6367,
+        "y": -840,
+        "z": -235
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "be810449-9f17-48d5-8fb4-84115c38367c",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8792,
+        "y": -85,
+        "z": -232
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
       "mode": "fast-travel"
     },
     {
@@ -804,6 +1460,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "c24cd7d4-09a9-4506-a751-b2ad2371e3b2",
+      "stateId": 8,
+      "coordinate": {
+        "x": -5933,
+        "y": -504,
+        "z": -280
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
+    },
+    {
       "id": "c8ddf05c-2fb8-4e54-8427-bba900a5223e",
       "stateId": 8,
       "coordinate": {
@@ -820,6 +1491,37 @@
       "mode": "fast-travel"
     },
     {
+      "id": "c90bbbd9-3c71-4ee2-9996-07f0a689df0c",
+      "stateId": 8,
+      "levelId": "-4/56",
+      "coordinate": {
+        "x": -6204,
+        "y": -157,
+        "z": -4073
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "机巧伶",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "c984b89e-4ecd-4f87-9825-02fd3d4350d8",
+      "stateId": 8,
+      "coordinate": {
+        "x": -8018,
+        "y": -89,
+        "z": -73
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
       "id": "c98ad473-7855-448a-8ed5-116c6ee9dee2",
       "stateId": 8,
       "coordinate": {
@@ -833,6 +1535,21 @@
       "navigationKind": "landmark",
       "iconId": "icon-d69b56e2c72c3088",
       "mode": "landmark"
+    },
+    {
+      "id": "cadf009b-b644-42fd-b0c9-89df06d41161",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7289,
+        "y": 264,
+        "z": -370
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
+      "mode": "fast-travel"
     },
     {
       "id": "caeda284-7fca-4351-a6d2-2c6ea3f501a4",
@@ -863,6 +1580,21 @@
       "navigationKind": "landmark",
       "iconId": "icon-91190f4a8db6640e",
       "mode": "entrance"
+    },
+    {
+      "id": "cedc26e1-5eff-4e28-87fe-a47617895dad",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6820,
+        "y": 153,
+        "z": -296
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
+      "mode": "fast-travel"
     },
     {
       "id": "cf70032b-e0d1-4cdd-b922-b71de24ce5aa",
@@ -977,6 +1709,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "de677222-c6fb-46ad-a5c9-4d4937fb56a7",
+      "stateId": 8,
+      "coordinate": {
+        "x": -7460,
+        "y": 58,
+        "z": -344
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "引歧帘",
+      "navigationKind": "landmark",
+      "iconId": "icon-d759d9018b8464e8",
+      "mode": "fast-travel"
+    },
+    {
       "id": "e032631f-13e5-4ee4-9f11-bf4307cd16f9",
       "stateId": 8,
       "levelId": "-1/54",
@@ -1011,6 +1758,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "e336d20b-c969-40d5-a970-eda8d750b49b",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6108,
+        "y": -851,
+        "z": -281
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "超级云帛机骑挑战",
+      "navigationKind": "landmark",
+      "iconId": "icon-76f235a4403589a1",
+      "mode": "fast-travel"
+    },
+    {
       "id": "e5227a4f-9d06-4a89-9f3f-068efe3aba09",
       "stateId": 8,
       "coordinate": {
@@ -1024,6 +1786,21 @@
       "navigationKind": "nexus",
       "pointType": "central-beacon",
       "iconId": "icon-5d4afaadc4b4274c",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "ecce7df4-9771-423b-a894-d3d503a3ca6c",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6566,
+        "y": -59,
+        "z": -324
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "取偶匣",
+      "navigationKind": "landmark",
+      "iconId": "icon-ef50dbcaf8e90434",
       "mode": "fast-travel"
     },
     {
@@ -1074,6 +1851,21 @@
       "mode": "entrance"
     },
     {
+      "id": "ee2aa809-161e-4bc4-975e-8658883f8bce",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6000,
+        "y": -987,
+        "z": -270
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "方庭演武",
+      "navigationKind": "landmark",
+      "iconId": "icon-81332ca11c69049f",
+      "mode": "fast-travel"
+    },
+    {
       "id": "f445f369-e9ee-4a9a-a3fd-6f908ab5f59b",
       "stateId": 8,
       "coordinate": {
@@ -1103,6 +1895,27 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "f7f2a96a-df5a-4d2d-be1f-d116a32d5382",
+      "stateId": 8,
+      "levelId": "-3/56",
+      "coordinate": {
+        "x": -6265,
+        "y": -110,
+        "z": -4000
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "机巧伶",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel",
+      "teleportCoordinate": {
+        "x": -6271,
+        "y": -121,
+        "z": -4000
+      }
     },
     {
       "id": "f9796bcb-3e1e-4b21-9e7a-a5bdc66096a4",
@@ -1139,6 +1952,37 @@
         "y": 597,
         "z": -282
       }
+    },
+    {
+      "id": "fe4c822e-d760-4c43-b619-ed6b945b9a61",
+      "stateId": 8,
+      "levelId": "-3/56",
+      "coordinate": {
+        "x": -6254,
+        "y": -254,
+        "z": -4000
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "机巧伶",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "fefaa772-b45d-4198-ae45-b9313f673968",
+      "stateId": 8,
+      "coordinate": {
+        "x": -6391,
+        "y": -564,
+        "z": -304
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
     }
   ]
 }

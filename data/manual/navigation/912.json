@@ -2,6 +2,250 @@
   "version": 1,
   "points": [
     {
+      "id": "00d28729-eca8-4a91-9f74-8bad23275aed",
+      "stateId": 912,
+      "coordinate": {
+        "x": -70,
+        "y": -610,
+        "z": -16
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "091f28ee-bfa5-4dc6-a090-6a6a20eef820",
+      "stateId": 912,
+      "coordinate": {
+        "x": -129,
+        "y": -540,
+        "z": 17
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1029ce89-673e-4f19-a6dd-9f2fc6d81cc1",
+      "stateId": 912,
+      "coordinate": {
+        "x": -210,
+        "y": -456,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构狐像",
+      "navigationKind": "landmark",
+      "iconId": "icon-28ec6001afa627d0",
+      "mode": "entrance"
+    },
+    {
+      "id": "12cfbeaa-5ef7-484b-bc77-ab153e4f301b",
+      "stateId": 912,
+      "coordinate": {
+        "x": 265,
+        "y": 230,
+        "z": -19
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "188b4daf-227f-4d57-8cfb-50ddb1ce2ff3",
+      "stateId": 912,
+      "coordinate": {
+        "x": -561,
+        "y": 547,
+        "z": 337
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "1a04c7d4-d4cc-447b-9890-df7a2ae5ac4e",
+      "stateId": 912,
+      "coordinate": {
+        "x": -606,
+        "y": 272,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "2009f247-c736-4480-8632-3035a7c48124",
+      "stateId": 912,
+      "coordinate": {
+        "x": 398,
+        "y": 353,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "2425f5c7-49ca-4d41-8f7c-13b2d10478d1",
+      "stateId": 912,
+      "coordinate": {
+        "x": -27,
+        "y": -411,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "244cd8fc-ec4e-4458-a635-9442d1389418",
+      "stateId": 912,
+      "coordinate": {
+        "x": -144,
+        "y": -453,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构狐像",
+      "navigationKind": "landmark",
+      "iconId": "icon-28ec6001afa627d0",
+      "mode": "entrance"
+    },
+    {
+      "id": "254e577e-bd90-4681-a8c1-8c2fb450019c",
+      "stateId": 912,
+      "coordinate": {
+        "x": -453,
+        "y": 24,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "复合异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6e9ddd63f6d94b1",
+      "mode": "entrance"
+    },
+    {
+      "id": "2729a9f7-5bf7-48a7-aa79-ea5900a2a39b",
+      "stateId": 912,
+      "coordinate": {
+        "x": -157,
+        "y": -338,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "2be6a02c-5663-4bf9-9695-4af7e6acc0c6",
+      "stateId": 912,
+      "coordinate": {
+        "x": -512,
+        "y": 306,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构玉桩",
+      "navigationKind": "landmark",
+      "iconId": "icon-c474d6b38ed95681",
+      "mode": "entrance"
+    },
+    {
+      "id": "2e2c9cf3-e6ed-4212-9688-2b27c18c3435",
+      "stateId": 912,
+      "coordinate": {
+        "x": 377,
+        "y": 51,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构心傀",
+      "navigationKind": "landmark",
+      "iconId": "icon-7b90d35fb7adfe21",
+      "mode": "entrance"
+    },
+    {
+      "id": "3237350b-f56e-49fe-a585-7cc9a6da0950",
+      "stateId": 912,
+      "levelId": "-1/65",
+      "coordinate": {
+        "x": -140,
+        "y": -513,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "34f42e31-35e2-4afa-9898-25798f4e41a1",
+      "stateId": 912,
+      "coordinate": {
+        "x": -303,
+        "y": -372,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "3a9af667-4c50-419a-9fc0-9d8d7150fc1a",
+      "stateId": 912,
+      "coordinate": {
+        "x": -84,
+        "y": 440,
+        "z": 43
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "无音区",
+      "navigationKind": "tacet-field",
+      "pointType": "tacet-field",
+      "iconId": "icon-b73ecba5c4c73be0",
+      "mode": "fast-travel"
+    },
+    {
       "id": "3dd56f0b-fbfa-47b8-8705-56cda67a5e4f",
       "stateId": 912,
       "coordinate": {
@@ -32,6 +276,112 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "410a85f5-a35c-4e93-86ec-ede004b89f50",
+      "stateId": 912,
+      "coordinate": {
+        "x": 18,
+        "y": -521,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构狐像",
+      "navigationKind": "landmark",
+      "iconId": "icon-28ec6001afa627d0",
+      "mode": "entrance"
+    },
+    {
+      "id": "410fc367-423e-4844-aeef-b6e0f8910a29",
+      "stateId": 912,
+      "coordinate": {
+        "x": 439,
+        "y": -15,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危行任务",
+      "navigationKind": "landmark",
+      "pointType": "exploration-quest",
+      "iconId": "icon-05f43f9613d478b8",
+      "mode": "landmark"
+    },
+    {
+      "id": "423d2c0f-6915-491a-a027-9890233a2507",
+      "stateId": 912,
+      "coordinate": {
+        "x": 543,
+        "y": -20,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "447c8b17-3b10-4c57-8b33-56653b54c6b8",
+      "stateId": 912,
+      "coordinate": {
+        "x": -559,
+        "y": 70,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "49b546c2-9760-4189-afa7-00de891c934d",
+      "stateId": 912,
+      "coordinate": {
+        "x": 461,
+        "y": -35,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构心傀",
+      "navigationKind": "landmark",
+      "iconId": "icon-7b90d35fb7adfe21",
+      "mode": "entrance"
+    },
+    {
+      "id": "4bfab4b9-223b-4e06-b97f-9d082942d0e4",
+      "stateId": 912,
+      "coordinate": {
+        "x": 509,
+        "y": 77,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "5044126c-ad28-4e7d-b6fd-2bbddeff7bc0",
+      "stateId": 912,
+      "coordinate": {
+        "x": -69,
+        "y": -374,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
     },
     {
       "id": "52886837-4e9a-4c24-b05f-6358f28eabe4",
@@ -66,6 +416,130 @@
       "mode": "fast-travel"
     },
     {
+      "id": "55b7973a-40c6-43f8-a971-7a4c3b4dec41",
+      "stateId": 912,
+      "coordinate": {
+        "x": 406,
+        "y": -131,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "58eab7d0-c2e8-42a8-b581-bde931d33fc1",
+      "stateId": 912,
+      "levelId": "-1/61",
+      "coordinate": {
+        "x": -356,
+        "y": 190,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "5f0abf3f-dc3a-4975-b817-ab8300b4dbd6",
+      "stateId": 912,
+      "coordinate": {
+        "x": 135,
+        "y": -184,
+        "z": -50
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "5f932b07-1cf3-47a5-84cd-8ffe14155d62",
+      "stateId": 912,
+      "coordinate": {
+        "x": 148,
+        "y": -188,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危行任务",
+      "navigationKind": "landmark",
+      "pointType": "exploration-quest",
+      "iconId": "icon-05f43f9613d478b8",
+      "mode": "landmark"
+    },
+    {
+      "id": "627d0c1d-0381-4ed0-888f-6ebad9f4b691",
+      "stateId": 912,
+      "coordinate": {
+        "x": -423,
+        "y": 155,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构玉桩",
+      "navigationKind": "landmark",
+      "iconId": "icon-c474d6b38ed95681",
+      "mode": "entrance"
+    },
+    {
+      "id": "6b947fe0-94d1-40a4-a46b-f71a67a6b739",
+      "stateId": 912,
+      "coordinate": {
+        "x": -431,
+        "y": -154,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "6d39637e-a6c6-4531-b5df-bb382c536337",
+      "stateId": 912,
+      "levelId": "-2/64",
+      "coordinate": {
+        "x": 428,
+        "y": -37,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "遗患清剿",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "6e1b3948-2f69-4594-8a58-288374b9fd15",
+      "stateId": 912,
+      "coordinate": {
+        "x": -335,
+        "y": 458,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "复合异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6e9ddd63f6d94b1",
+      "mode": "entrance"
+    },
+    {
       "id": "6e1dc2f4-92b3-4e7a-8846-f567f5d1546c",
       "stateId": 912,
       "coordinate": {
@@ -82,6 +556,222 @@
       "mode": "fast-travel"
     },
     {
+      "id": "7a264f6b-b570-4e71-8ccf-c2cd8543b298",
+      "stateId": 912,
+      "coordinate": {
+        "x": 160,
+        "y": 370,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构心傀",
+      "navigationKind": "landmark",
+      "iconId": "icon-7b90d35fb7adfe21",
+      "mode": "entrance"
+    },
+    {
+      "id": "7b9ea00a-05ea-45c1-b7ab-392d40ef5a27",
+      "stateId": 912,
+      "coordinate": {
+        "x": -302,
+        "y": -535,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危行任务",
+      "navigationKind": "landmark",
+      "pointType": "exploration-quest",
+      "iconId": "icon-05f43f9613d478b8",
+      "mode": "landmark"
+    },
+    {
+      "id": "81049cb2-9505-419b-b1d2-f2583fd5be66",
+      "stateId": 912,
+      "coordinate": {
+        "x": 199,
+        "y": -50,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "823ae69b-9965-4fc4-8341-057a30e5112b",
+      "stateId": 912,
+      "coordinate": {
+        "x": -324,
+        "y": 241,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "82fc3a53-282e-455e-ace4-c750cc59c05f",
+      "stateId": 912,
+      "coordinate": {
+        "x": -531,
+        "y": -271,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "90cb2532-ba49-427e-bdd5-c1efbb3bd9c6",
+      "stateId": 912,
+      "coordinate": {
+        "x": -126,
+        "y": -347,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构狐像",
+      "navigationKind": "landmark",
+      "iconId": "icon-28ec6001afa627d0",
+      "mode": "entrance"
+    },
+    {
+      "id": "93264cad-3d99-454c-a8b9-a16aa48dcc6b",
+      "stateId": 912,
+      "coordinate": {
+        "x": 268,
+        "y": -5,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "99bfc56e-f915-41af-bc05-b64dc022c969",
+      "stateId": 912,
+      "coordinate": {
+        "x": 261,
+        "y": -75,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构心傀",
+      "navigationKind": "landmark",
+      "iconId": "icon-7b90d35fb7adfe21",
+      "mode": "entrance"
+    },
+    {
+      "id": "9c9512c4-1e46-4242-b247-1260b020b250",
+      "stateId": 912,
+      "coordinate": {
+        "x": -337,
+        "y": 179,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "遗患清剿",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "9f57c93b-4969-4f01-acb2-5a66eac9784c",
+      "stateId": 912,
+      "levelId": "-1/62",
+      "coordinate": {
+        "x": -325,
+        "y": 463,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "a6974db7-8378-440b-964c-e5ee2fbc0447",
+      "stateId": 912,
+      "coordinate": {
+        "x": 491,
+        "y": 491,
+        "z": 25
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "相心域",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "a9e83d7f-0f19-4050-8f9b-5017f21cf148",
+      "stateId": 912,
+      "coordinate": {
+        "x": 108,
+        "y": -169,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "复合异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6e9ddd63f6d94b1",
+      "mode": "entrance"
+    },
+    {
+      "id": "aa99201a-807c-4e29-9604-5e0a99cf3d6a",
+      "stateId": 912,
+      "levelId": "-1/60",
+      "coordinate": {
+        "x": -621,
+        "y": 345,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "b227ec1b-cf68-4652-8ca5-225c8e8911f1",
+      "stateId": 912,
+      "levelId": "-1/60",
+      "coordinate": {
+        "x": -598,
+        "y": 317,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "遗患清剿",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
       "id": "b56e1396-3445-4de1-b7fd-c8a64e78de1f",
       "stateId": 912,
       "coordinate": {
@@ -96,6 +786,67 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "b8de61fc-5999-4686-b968-6c5a205c7cc1",
+      "stateId": 912,
+      "coordinate": {
+        "x": 5,
+        "y": -442,
+        "z": -57
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "声骸聚落",
+      "navigationKind": "challenge",
+      "pointType": "echo-settlement",
+      "iconId": "icon-4324b10e72143f72",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "bdea36db-88a9-4577-ab07-fac8f70f3b4a",
+      "stateId": 912,
+      "coordinate": {
+        "x": -289,
+        "y": -603,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "c309514b-1ac0-49ff-8fd6-d105bc62b0ab",
+      "stateId": 912,
+      "coordinate": {
+        "x": -386,
+        "y": 240,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "危锁奇藏",
+      "navigationKind": "landmark",
+      "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "c4fcebcb-5fe7-4afa-b3c6-99877f667bd7",
+      "stateId": 912,
+      "coordinate": {
+        "x": 489,
+        "y": 39,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
     },
     {
       "id": "cd2eb392-8790-41b6-8f4f-04b8f52463e0",
@@ -130,6 +881,146 @@
       "mode": "fast-travel"
     },
     {
+      "id": "d0388f99-3ae7-4d79-8ba7-fc1cb05e9e9d",
+      "stateId": 912,
+      "levelId": "-1/63",
+      "coordinate": {
+        "x": -167,
+        "y": 475,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "d1607ca0-f7c7-48bf-9da4-e29195b8e893",
+      "stateId": 912,
+      "levelId": "-1/65",
+      "coordinate": {
+        "x": -140,
+        "y": -563,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "遗患清剿",
+      "navigationKind": "landmark",
+      "iconId": "icon-a41b4153ffd53379",
+      "mode": "entrance"
+    },
+    {
+      "id": "d4ea38bf-9aa3-438f-8db2-923024baf6b4",
+      "stateId": 912,
+      "coordinate": {
+        "x": 283,
+        "y": 259,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "d5c62aa1-16bb-45bb-819e-207710b48bfc",
+      "stateId": 912,
+      "coordinate": {
+        "x": 405,
+        "y": -89,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "d7b0ae6d-4d0e-4912-8eea-81db3e242c14",
+      "stateId": 912,
+      "coordinate": {
+        "x": 242,
+        "y": 218,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "梦构心傀",
+      "navigationKind": "landmark",
+      "iconId": "icon-7b90d35fb7adfe21",
+      "mode": "entrance"
+    },
+    {
+      "id": "e1b86965-e217-4296-b0f2-24498eb6765c",
+      "stateId": 912,
+      "coordinate": {
+        "x": -483,
+        "y": -86,
+        "z": 20
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "静心座",
+      "navigationKind": "landmark",
+      "iconId": "icon-cee74ba74013f762",
+      "mode": "fast-travel"
+    },
+    {
+      "id": "e4d2c363-943e-4cb7-ae4b-b55c957f262f",
+      "stateId": 912,
+      "levelId": "-1/64",
+      "coordinate": {
+        "x": 355,
+        "y": 20,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "入口",
+      "navigationKind": "entrance",
+      "pointType": "entrance",
+      "iconId": "icon-f9e566c56ab2c4e4",
+      "mode": "entrance"
+    },
+    {
+      "id": "e81a0345-ea4a-48dd-9166-0e98c0f2c4e9",
+      "stateId": 912,
+      "coordinate": {
+        "x": -562,
+        "y": 126,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
+      "id": "ec2771a6-d4eb-45c8-b1ac-db2a034cf89e",
+      "stateId": 912,
+      "coordinate": {
+        "x": -642,
+        "y": 246,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "受控异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-074b98c743b15b00",
+      "mode": "entrance"
+    },
+    {
       "id": "ecba9b66-9c16-4cd3-bec2-17669f174a3a",
       "stateId": 912,
       "coordinate": {
@@ -144,6 +1035,21 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "ef01e79c-0030-4470-a954-f53ee19cdc37",
+      "stateId": 912,
+      "coordinate": {
+        "x": -315,
+        "y": -438,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "复合异象区",
+      "navigationKind": "landmark",
+      "iconId": "icon-a6e9ddd63f6d94b1",
+      "mode": "entrance"
     },
     {
       "id": "ef551ca9-b96b-44c0-b5bc-adba772a7b5c",
