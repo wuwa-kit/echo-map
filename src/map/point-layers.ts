@@ -206,7 +206,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   })
   const backgroundEchoLayer = new VectorLayer({
     source: backgroundClusters ?? backgroundEchoSource,
-    zIndex: 4,
+    zIndex: 4.5,
     updateWhileAnimating: true,
     updateWhileInteracting: true,
     style: backgroundClusters ? clusterStyle : pointStyle,
@@ -216,7 +216,14 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     zIndex: 50,
     updateWhileAnimating: true,
     updateWhileInteracting: true,
-    style: pointStyle,
+    style: (feature, resolution) => navigationStyle(feature, resolution, true),
+  })
+  const nonTeleportLayer = new VectorLayer({
+    source: navigationSource,
+    zIndex: 39,
+    updateWhileAnimating: true,
+    updateWhileInteracting: true,
+    style: (feature, resolution) => navigationStyle(feature, resolution, false),
   })
   const backgroundNavigationLayer = new VectorLayer({
     source: backgroundNavigationSource,
@@ -229,7 +236,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     source: labelSource, declutter: true, zIndex: 3, style: pointStyle,
     updateWhileAnimating: true, updateWhileInteracting: true,
   })
-  const layers = [labelLayer, echoLayer, navigationLayer, backgroundEchoLayer, backgroundNavigationLayer]
+  const layers = [labelLayer, echoLayer, navigationLayer, backgroundEchoLayer, backgroundNavigationLayer, nonTeleportLayer]
   const markerStyles = createPointMarkerStyles(redrawPointLayers, options)
   const resizedMarkers = new WeakSet()
 
@@ -251,6 +258,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     echoLayer.changed()
     backgroundEchoLayer.changed()
     navigationLayer.changed()
+    nonTeleportLayer.changed()
     backgroundNavigationLayer.changed()
     options.onStyleChange?.()
   }
@@ -297,6 +305,12 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
       || (point.category === 'navigation' && point.location.mode === 'fast-travel' && routeTeleportIds.has(point.location.id))
     if (!options.exportMode && !forced && !isMapPointVisibleAtScale(point, gameScaleForResolution(resolution))) return undefined
     return pointMarkerStyle(point)
+  }
+
+  function navigationStyle(feature: FeatureLike, resolution: number, teleport: boolean): Style | Style[] | undefined {
+    const point = feature.get('mapPoint') as MapDisplayPoint
+    if (point.category !== 'navigation' || (point.location.mode === 'fast-travel') !== teleport) return undefined
+    return pointStyle(feature, resolution)
   }
 
   function setVisibleRoutes(routes: readonly RouteResult[]): void {

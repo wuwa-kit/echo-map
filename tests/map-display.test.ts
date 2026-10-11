@@ -60,7 +60,7 @@ describe('map display layer integration', () => {
     try {
       for (const height of [-50, 0, 49]) {
         for (const mode of ['fast-travel', 'landmark'] as const) {
-          const lower = render(height, 'fast-travel', 'a1')
+          const lower = render(height, mode, 'a1')
           const upper = render(height + 1, mode, null)
           expect(Math.min(...indices(upper))).toBeGreaterThan(Math.max(...indices(lower)))
           // Rendering a shared icon at another height must not change earlier styles.
@@ -72,6 +72,32 @@ describe('map display layer integration', () => {
       expect(indices(render(null, 'fast-travel', null))).toEqual(indices(render(0, 'fast-travel', null)))
       expect(Math.min(...indices(render(50, 'fast-travel', null))))
         .toBeGreaterThan(Math.max(...indices(render(50, 'landmark', 'a1'))))
+    } finally { points.dispose() }
+  })
+
+  it.each([false, true])('renders all non-teleports below teleports regardless of height (export: %s)', (exportMode) => {
+    const points = createPointLayers(() => false, { exportMode })
+    const base = { ...navigationPoint('small-beacon'), iconUrl: '' }
+    try {
+      for (const selectedLevel of [null, 'a1']) {
+        for (const levelId of [null, 'a1', 'a2']) {
+          const navigation: NavigationPoint[] = (['fast-travel', 'landmark', 'entrance', 'local-transit'] as const).map((mode, index) => ({
+            ...base, id: `point-${mode}`, mode, levelId,
+            gameCoordinate: { x: 0, y: 0, z: index === 0 ? -10000 : 10000 },
+          }))
+          points.update([], navigation, [], [], undefined, selectedLevel)
+          const rendered = points.layers.flatMap((layer) => (layer.getSource()?.getFeatures() ?? []).flatMap((feature) => {
+            if (!layer.getStyleFunction()?.(feature, mapResolutionForScale(1))) return []
+            return [{ id: mapFeaturePointIds(feature)?.[0], zIndex: layer.getZIndex() ?? 0 }]
+          }))
+          expect(rendered).toHaveLength(navigation.length)
+          const teleport = rendered.find(({ id }) => id === 'point-fast-travel')
+          if (!teleport) throw new Error('需要可传送点位')
+          for (const marker of rendered.filter(({ id }) => id !== teleport.id)) {
+            expect(marker.zIndex).toBeLessThan(teleport.zIndex)
+          }
+        }
+      }
     } finally { points.dispose() }
   })
 
@@ -532,7 +558,7 @@ describe('map display layer integration', () => {
           if (visible) expect(mapFeaturePointIds(feature)).toEqual([index === 1 ? 'floor-echo' : 'base-echo'])
           else if (echoGrouping === 'clustered') expect(mapFeaturePointIds(feature)).toBeUndefined()
         }
-        for (const index of [2, 4]) {
+        for (const index of [5, 4]) {
           const layer = points.layers[index]
           const feature = layer?.getSource()?.getFeatures()[0]
           if (!feature) throw new Error('需要定位点图层')
