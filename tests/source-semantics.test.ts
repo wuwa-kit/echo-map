@@ -17,7 +17,7 @@ const forbiddenPatterns = [
 const keyboardEntryFocus = new Map([
   [new URL('../src/components/base/WuCoordinateInput.vue', import.meta.url).href, "defineExpose({ focus: () => container.value?.querySelector('input')?.focus() })"],
   [new URL('../src/components/PointCoordinateFields.vue', import.meta.url).href, 'defineExpose({ focus: () => coordinateInput.value?.focus() })'],
-  [new URL('../src/components/PointEditorPanel.vue', import.meta.url).href, 'if (active) positionFields.value?.focus()'],
+  [new URL('../src/components/PointEditorPanel.vue', import.meta.url).href, 'if (active) (input instanceof HTMLInputElement && input.isConnected ? input : positionFields.value)?.focus()'],
 ])
 
 async function collectSourceFiles(directory: URL): Promise<URL[]> {

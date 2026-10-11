@@ -14,6 +14,13 @@ const summary = computed(() => !store.duplicateTarget ? '待输入坐标'
   : count.value ? `疑似重复 · ${count.value}`
     : store.duplicateCandidates.length ? `附近点位 · ${store.duplicateCandidates.length}`
       : '')
+function confirmWithEnter(event: KeyboardEvent): void {
+  if (event.key !== 'Enter') return
+  event.preventDefault()
+  event.stopPropagation()
+  if (event.repeat || event.isComposing || event.keyCode === 229 || !store.duplicateConfirmation) return
+  store.confirmDuplicate(true)
+}
 onBeforeUnmount(() => store.confirmDuplicate(false))
 </script>
 
@@ -24,7 +31,7 @@ onBeforeUnmount(() => store.confirmDuplicate(false))
   <WuPopover ref="popoverRef" :anchor="anchor" placement="top-start" width="trigger" :max-height="280" :disabled="!store.duplicateCandidates.length || store.duplicateConfirmation" class="rounded-[8px] border border-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
     <PointDuplicateList />
   </WuPopover>
-  <WuDialog :open="store.duplicateConfirmation" @dismiss-requested="store.confirmDuplicate(false)">
+  <WuDialog :open="store.duplicateConfirmation" @keydown.capture="confirmWithEnter" @dismiss-requested="store.confirmDuplicate(false)">
     <div class="flex min-h-0 flex-col p-[16px]">
       <div class="mb-[8px] text-[16px] font-semibold">疑似重复，仍要保存？</div>
       <PointDuplicateList />

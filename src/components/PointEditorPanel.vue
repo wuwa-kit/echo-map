@@ -173,9 +173,10 @@ async function confirmPosition(coordinate: [number, number], teleport = false): 
   if (action === 'locate') {
     if (!props.locatePosition(coordinate)) store.resetPositionConfirmation()
   } else if (action === 'save') {
+    const input = document.activeElement
     await save()
     await nextTick()
-    if (active) positionFields.value?.focus()
+    if (active) (input instanceof HTMLInputElement && input.isConnected ? input : positionFields.value)?.focus()
   }
 }
 async function deletePoint(): Promise<void> {
