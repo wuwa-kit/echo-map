@@ -30,7 +30,7 @@ function copyDebug(): void {
 </script>
 
 <template>
-  <div class="absolute left-[12px] top-[64px] z-70 max-h-[min(520px,calc(100%_-_80px))] w-[min(340px,calc(100%_-_24px))] overflow-y-auto rounded-[12px] border border-[var(--line)] bg-[#0b1b16f5] p-[14px] text-[13px] shadow-xl">
+  <div class="absolute left-[12px] top-[64px] z-70 max-h-[min(520px,calc(100%_-_80px))] w-[min(340px,calc(100%_-_24px))] overflow-y-auto rounded-[12px] outline -outline-offset-1 outline-[var(--line)] bg-[#0b1b16f5] p-[14px] text-[13px] shadow-xl">
     <div class="flex items-start gap-[8px]">
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-[6px]">

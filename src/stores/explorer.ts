@@ -1,3 +1,4 @@
+import { searchEchoes } from '../domain/echo-search.ts'
 import { usePointEditorStore } from './point-editor.ts'
 import { computed, onScopeDispose, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
@@ -112,8 +113,8 @@ export const useExplorerStore = defineStore('explorer', () => {
   const candidateEchoes = computed(() => selectEchoDefinitions(
     dataset.value?.echoes ?? [], sonataFilterIds.value, echoCostFilters.value, '',
   ))
-  const filteredEchoes = computed(() => selectEchoDefinitions(
-    candidateEchoes.value, [], [], echoSearch.value,
+  const filteredEchoes = computed(() => searchEchoes(
+    candidateEchoes.value, echoSearch.value,
   ))
   const activeEchoIds = computed<ReadonlySet<string>>(() => selectActiveEchoIds(selectedEchoIds.value))
   const authoredLocations = computed(() => dataset.value

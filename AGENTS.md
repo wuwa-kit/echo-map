@@ -52,6 +52,10 @@
 
 ## 样式
 
+- UI 完整边框统一使用 `outline`，默认以负 `outline-offset` 向内绘制，不使用会占据布局尺寸的 `border`。1px 描边使用 `outline -outline-offset-1`，2px 描边使用 `outline-2 -outline-offset-2`，交互状态同步修改 outline 颜色。
+- 单边分隔线使用绝对定位元素或伪元素的 `h-px` / `w-px` 加背景色实现，不使用 border 或阴影模拟，也不占据父子容器布局尺寸。
+- 父子容器和弹层的位置、宽高计算不得添加 border 尺寸补偿；原生或第三方控件的默认 border 仅允许清零。`border-radius`、`box-sizing: border-box` 和 Canvas/SVG 图形描边不属于占尺寸的 UI border，不受此限制。
+
 - 使用 Tailwind CSS；组件布局、间距、尺寸、颜色、排版、状态和响应式样式优先使用原子类表达。
 - 仅当原子类无法表达时才新增 `style` 或全局 CSS，例如第三方库内部选择器、浏览器级根样式或必须复用的复杂伪元素规则。
 - 不为可由原子类表达的样式新增语义类选择器、组件级 `<style>` 或 `@apply`。

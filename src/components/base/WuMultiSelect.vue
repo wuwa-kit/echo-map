@@ -21,9 +21,11 @@ const props = withDefaults(defineProps<{
   label: string
   allLabel?: string
   searchPlaceholder?: string
+  controlHeightClass?: string
   disabled?: boolean
 }>(), {
   allLabel: '全部',
+  controlHeightClass: 'h-[40px]',
   disabled: false,
 })
 const model = defineModel<readonly string[]>({ required: true })
@@ -88,7 +90,7 @@ function onClosed(): void {
       type="button"
       :disabled="disabled"
       :popovertarget="popoverId"
-      class="h-[40px] w-full min-w-0 flex cursor-pointer items-center justify-between gap-[7px] rounded-[7px] border border-[var(--line)] bg-[#152b24] px-[10px] text-left text-[12px] text-[#dce9e3] [font-family:inherit] outline-none hover:border-[rgba(101,241,194,0.36)] disabled:cursor-not-allowed disabled:opacity-50"
+      :class="controlHeightClass" class="relative w-full min-w-0 flex cursor-pointer items-center justify-between gap-[7px] rounded-[7px] outline -outline-offset-1 outline-[var(--line)] bg-[#152b24] pl-[11px] pr-[34px] text-left text-[12px] text-[#dce9e3] [font-family:inherit] hover:outline-[rgba(101,241,194,0.36)] disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span v-if="selectedOptions.length === 0" class="min-w-0 truncate">{{ allLabel }}</span>
       <span v-else-if="selectedOptions.length === 1" class="min-w-0 flex items-center gap-[7px]">
@@ -109,7 +111,7 @@ function onClosed(): void {
           <span v-if="hiddenCount > 0" class="text-[#91ab9d]">+{{ hiddenCount }}</span>
         </template>
       </WuOverflowRow>
-      <WuSvg name="chevron-down" class="shrink-0 text-[#78998d] [--wu-svg-h:14px]" :class="isOpen ? 'rotate-180 text-[var(--accent)]' : ''" />
+      <WuSvg name="chevron-down" class="pointer-events-none absolute right-[10px] top-1/2 -translate-y-1/2 text-[#78998d] [--wu-svg-h:15px]" :class="isOpen ? 'rotate-180 text-[var(--accent)]' : ''" />
     </button>
     <WuPopover
       :id="popoverId"
@@ -119,17 +121,17 @@ function onClosed(): void {
       width="trigger"
       :max-height="320"
       :gap="6"
-      class="border border-[rgba(169,207,192,0.18)] rounded-[9px] bg-[rgba(8,20,17,0.98)] p-[4px] text-[#dce9e3] shadow-[0_18px_48px_rgba(0,0,0,0.42)] [&:popover-open]:overflow-visible"
+      class="!translate-none !opacity-100 !transition-none outline -outline-offset-1 outline-[rgba(169,207,192,0.18)] rounded-[9px] bg-[rgba(8,20,17,0.98)] p-[4px] text-[#dce9e3] shadow-[0_18px_48px_rgba(0,0,0,0.42)] [&:popover-open]:overflow-visible"
       @opened="onOpened"
       @closed="onClosed"
     >
-      <div v-if="searchPlaceholder" class="absolute bottom-[calc(100%+6px)] left-0 h-[40px] w-full min-w-0 flex box-border items-center gap-[7px] rounded-[7px] border border-[rgba(101,241,194,0.55)] bg-[#152b24] px-[10px] text-[12px] text-[#dce9e3] shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
+      <div v-if="searchPlaceholder" :class="controlHeightClass" class="absolute bottom-[calc(100%+6px)] left-0 w-full min-w-0 flex box-border items-center gap-[7px] rounded-[7px] outline -outline-offset-1 outline-[var(--line)] bg-[#152b24] pl-[11px] pr-[34px] text-[12px] text-[#dce9e3]">
         <WuSvg name="search" class="shrink-0 text-[#6f887f] [--wu-svg-h:14px]" />
         <WuInput v-model="searchQuery" class="flex-1" variant="plain" size="sm" type="text" :placeholder="searchPlaceholder" />
         <WuButton v-if="searchQuery" variant="ghost" size="xs" icon="close" icon-only tooltip="清除搜索" @click="clearSearch"></WuButton>
-        <WuButton variant="ghost" tone="accent" size="xs" icon-only tooltip="收起选项" @click="popover?.hide()"><template #icon><WuSvg name="chevron-down" class="rotate-180" /></template></WuButton>
+        <WuButton class="absolute right-[5.5px] top-1/2 -translate-y-1/2" variant="ghost" tone="accent" size="xs" icon-only tooltip="收起选项" @click="popover?.hide()"><template #icon><WuSvg name="chevron-down" class="rotate-180 [--wu-svg-h:15px]" /></template></WuButton>
       </div>
-      <div class="min-h-[40px] flex items-center justify-between gap-[8px] border-b border-[var(--line)] px-[8px] py-[5px]">
+      <div class="min-h-[40px] flex items-center justify-between gap-[8px] relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[8px] py-[5px]">
         <WuCheckBox
           class="flex shrink-0 items-center gap-[6px] text-[11px] text-[#8fa69d]"
           :model-value="allCurrentSelected"
@@ -160,7 +162,7 @@ function onClosed(): void {
             v-for="option in filteredOptions"
             :key="option.value"
             type="button"
-            class="min-h-[40px] w-full min-w-0 flex cursor-pointer items-center justify-between gap-[8px] border-0 rounded-[6px] bg-transparent px-[8px] text-left text-[12px] [font-family:inherit] transition-[color,background-color] duration-120 hover:bg-[#1c372b]"
+            class="min-h-[40px] w-full min-w-0 flex cursor-pointer items-center justify-between gap-[8px] rounded-[6px] bg-transparent px-[8px] text-left text-[12px] [font-family:inherit] transition-[color,background-color] duration-120 hover:bg-[#1c372b]"
             :class="selectedSet.has(option.value) ? 'text-[#eafff2] font-semibold' : 'text-[#dce9e3]'"
             @click="toggle(option.value)"
           >

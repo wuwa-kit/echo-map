@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { vTooltip } from './base/tooltip.ts'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { isOfficialPoint, pointTitle } from '../domain/point-library.ts'
 import { navigationPointIconUrl } from '../domain/navigation-icons.ts'

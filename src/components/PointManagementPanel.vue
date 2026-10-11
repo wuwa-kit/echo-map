@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { vTooltip } from './base/tooltip.ts'
 import { computed, nextTick, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useEventListener, useMediaQuery, useResizeObserver } from '@vueuse/core'
@@ -164,7 +163,7 @@ function exportChanges(): void {
 
 <template>
   <div class="flex h-[min(820px,calc(100dvh-48px))] flex-col max-sm:h-dvh">
-    <div class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-[20px] py-[14px]">
+    <div class="flex shrink-0 items-center justify-between relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[20px] py-[14px]">
       <div><div class="text-[18px] font-semibold">{{ storage === 'browser' ? '本地点位管理' : '项目点位管理' }}</div><div class="mt-[4px] text-[12px] text-[#91ae9e]">{{ storage === 'browser' ? '仅显示本地新增、修改和删除记录' : '管理当前项目已保存的人工点位' }}</div></div>
       <WuButton variant="ghost" :disabled="busy" @click="emit('closeRequested')">关闭</WuButton>
     </div>
@@ -178,7 +177,7 @@ function exportChanges(): void {
           @select="filter('map', $event)"
         >
           <template #header="{ close }">
-            <div class="flex shrink-0 items-center justify-between gap-[12px] border-b border-[var(--line)] px-[10px] py-[6px]">
+            <div class="flex shrink-0 items-center justify-between gap-[12px] relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[10px] py-[6px]">
               <span class="text-[12px] text-[#91ae9e]">地图 / 地区</span>
               <WuButton size="sm" variant="ghost" tone="accent" @click="filter('map', ''); close()">全部</WuButton>
             </div>
@@ -199,7 +198,7 @@ function exportChanges(): void {
         <div ref="rowsRef" class="relative shrink-0" :style="{ height: `${listWindow.height}px` }">
           <div class="absolute inset-x-0 top-0" :style="{ transform: `translateY(${listWindow.before}px)` }">
             <div v-for="row in visible" :key="row.id" :style="{ height: `${rowHeight}px` }" class="pb-[8px]">
-              <div class="h-full overflow-hidden rounded-[8px] border border-[var(--line)] p-[12px]">
+              <div class="h-full overflow-hidden rounded-[8px] outline -outline-offset-1 outline-[var(--line)] p-[12px]">
                 <div class="flex items-center gap-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /><span class="min-w-0 flex-1 truncate text-[14px]" v-tooltip="title(row.point)">{{ title(row.point) }}</span><span class="shrink-0 text-[12px] text-[#dec594]">{{ statusLabel(row) }}</span></div>
                 <div v-if="row.operation" class="mt-[8px] text-[12px] text-[#d7eadf]">{{ operations[row.operation] }}</div>
                 <div class="mt-[8px] text-[12px] leading-6 text-[#91ae9e]"><div class="truncate" v-tooltip="`${regionName(row.point)} · ${floor(row.point)}`">{{ regionName(row.point) }} · {{ floor(row.point) }}</div><div class="flex gap-[10px]"><span class="min-w-0 truncate" v-tooltip="coordinates(row.point)">{{ coordinates(row.point) }}</span><span v-if="row.duplicateIds.length" class="shrink-0 text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</span></div></div>
@@ -212,10 +211,10 @@ function exportChanges(): void {
       <div v-else class="shrink-0 overflow-x-auto">
         <table class="w-full min-w-[860px] table-fixed border-collapse text-left text-[13px] leading-[18px]">
           <colgroup><col class="w-[36px]" /><col /><col class="w-[240px]" /><col v-if="storage === 'browser'" class="w-[112px]" /><col class="w-[120px]" /><col class="w-[174px]" /></colgroup>
-          <thead class="text-[#91ae9e]"><tr class="border-b border-[var(--line)]"><th class="p-[10px]"><WuCheckBox v-tooltip="'全选当前筛选结果'" :model-value="allChecked" :indeterminate="partlyChecked" @update:model-value="manager.selectMany(filtered.map(row => row.id), $event)" /></th><th class="p-[10px]">点位 / 坐标</th><th class="p-[10px]">地图 / 楼层</th><th v-if="storage === 'browser'" class="p-[10px]">操作类型</th><th class="p-[10px]">{{ storage === 'browser' ? '同步状态' : '状态' }}</th><th class="p-[10px]">管理</th></tr></thead>
+          <thead class="text-[#91ae9e]"><tr class="relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)]"><th class="p-[10px]"><WuCheckBox v-tooltip="'全选当前筛选结果'" :model-value="allChecked" :indeterminate="partlyChecked" @update:model-value="manager.selectMany(filtered.map(row => row.id), $event)" /></th><th class="p-[10px]">点位 / 坐标</th><th class="p-[10px]">地图 / 楼层</th><th v-if="storage === 'browser'" class="p-[10px]">操作类型</th><th class="p-[10px]">{{ storage === 'browser' ? '同步状态' : '状态' }}</th><th class="p-[10px]">管理</th></tr></thead>
           <tbody ref="rowsRef">
-            <tr v-if="listWindow.before"><td :colspan="storage === 'browser' ? 6 : 5" class="border-0 p-0" :style="{ height: `${listWindow.before}px` }" /></tr>
-            <tr v-for="row in visible" :key="row.id" class="border-b border-[var(--line)]" :style="{ height: `${rowHeight}px` }" :class="detailId === row.id ? 'bg-[#1b392d]' : 'hover:bg-[#173025]'">
+            <tr v-if="listWindow.before"><td :colspan="storage === 'browser' ? 6 : 5" class="p-0" :style="{ height: `${listWindow.before}px` }" /></tr>
+            <tr v-for="row in visible" :key="row.id" class="relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)]" :style="{ height: `${rowHeight}px` }" :class="detailId === row.id ? 'bg-[#1b392d]' : 'hover:bg-[#173025]'">
             <td class="p-[10px]"><WuCheckBox :model-value="selectedIds.has(row.id)" @update:model-value="manager.toggle(row.id, $event)" /></td>
             <td class="p-[10px]"><div class="truncate" v-tooltip="title(row.point)">{{ title(row.point) }}</div><div class="mt-[4px] truncate text-[12px] text-[#91ae9e]" v-tooltip="coordinates(row.point)">{{ coordinates(row.point) }}</div></td>
             <td class="p-[10px]"><div class="truncate" v-tooltip="regionName(row.point)">{{ regionName(row.point) }}</div><div class="mt-[4px] truncate text-[12px] text-[#91ae9e]" v-tooltip="floor(row.point)">{{ floor(row.point) }}</div></td>
@@ -223,16 +222,16 @@ function exportChanges(): void {
             <td class="p-[10px]"><span :class="row.status === 'conflict' || row.status === 'review' ? 'text-[#dec594]' : 'text-[#91ae9e]'">{{ statusLabel(row) }}</span><div v-if="row.duplicateIds.length" class="mt-[4px] text-[12px] text-[#dec594]">疑似重复 {{ row.duplicateIds.length }}</div></td>
             <td class="p-[10px]"><div class="flex gap-[8px]"><WuButton size="sm" variant="ghost" @click="emit('locateRequested', row.point)">定位</WuButton><WuButton size="sm" variant="ghost" :disabled="!row.local || busy" @click="emit('editRequested', row.id)">编辑</WuButton><WuButton size="sm" variant="ghost" tone="accent" @click="showDetail(row.id)">详情</WuButton></div></td>
             </tr>
-            <tr v-if="listWindow.after"><td :colspan="storage === 'browser' ? 6 : 5" class="border-0 p-0" :style="{ height: `${listWindow.after}px` }" /></tr>
+            <tr v-if="listWindow.after"><td :colspan="storage === 'browser' ? 6 : 5" class="p-0" :style="{ height: `${listWindow.after}px` }" /></tr>
           </tbody>
         </table>
       </div>
       <div v-if="!filtered.length" class="py-[60px] text-center text-[14px] text-[#91ae9e]">{{ emptyMessage }}</div>
-      <div v-if="detail" ref="detailsRef" class="order-first mb-[18px] rounded-[8px] border border-[var(--line)] bg-[#0b1e17] p-[14px]">
+      <div v-if="detail" ref="detailsRef" class="order-first mb-[18px] rounded-[8px] outline -outline-offset-1 outline-[var(--line)] bg-[#0b1e17] p-[14px]">
         <div class="flex items-center justify-between gap-[8px]"><span class="font-semibold">{{ title(detail.point) }} · 版本对比</span><WuButton variant="ghost" size="sm" @click="manager.showDetail(null)">收起</WuButton></div>
         <div class="mt-[6px] break-all text-[11px] text-[#91ae9e]">{{ detail.id }}</div>
         <div v-if="detail.status === 'review'" class="mt-[10px] text-[12px] text-[#dec594]">旧快照缺少修改前的版本，请核对网站内容后选择保留哪一版。</div>
-        <div class="mt-[12px] overflow-x-auto"><table class="w-full min-w-[650px] table-fixed text-left text-[12px]"><thead><tr><th class="w-[90px] p-[8px]">字段</th><th class="p-[8px]">{{ detail.status === 'review' ? '首次对比参考' : '修改前' }}</th><th class="p-[8px]">本地版本</th><th class="p-[8px]">网站版本</th></tr></thead><tbody><tr v-for="field in comparison" :key="field.label" class="border-t border-[var(--line)]"><td class="p-[8px] text-[#91ae9e]">{{ field.label }}</td><td v-for="(value, index) in field.values" :key="index" class="break-all p-[8px]" :class="field.values[1] !== field.values[2] && index > 0 ? 'text-[#dec594]' : ''">{{ value }}</td></tr></tbody></table></div>
+        <div class="mt-[12px] overflow-x-auto"><table class="w-full min-w-[650px] table-fixed text-left text-[12px]"><thead><tr><th class="w-[90px] p-[8px]">字段</th><th class="p-[8px]">{{ detail.status === 'review' ? '首次对比参考' : '修改前' }}</th><th class="p-[8px]">本地版本</th><th class="p-[8px]">网站版本</th></tr></thead><tbody><tr v-for="field in comparison" :key="field.label" class="relative after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-[var(--line)]"><td class="p-[8px] text-[#91ae9e]">{{ field.label }}</td><td v-for="(value, index) in field.values" :key="index" class="break-all p-[8px]" :class="field.values[1] !== field.values[2] && index > 0 ? 'text-[#dec594]' : ''">{{ value }}</td></tr></tbody></table></div>
         <div v-if="duplicatePoints.length" class="mt-[12px] text-[12px] text-[#dec594]">
           <div>附近的已发布点位，仅供核对：</div>
           <div v-for="point in duplicatePoints" :key="point.id" class="mt-[8px] flex flex-wrap items-center gap-[8px]"><span>{{ title(point) }} · {{ floor(point) }} · {{ coordinates(point) }}</span><WuButton size="sm" @click="emit('locateRequested', point)">定位</WuButton></div>
@@ -245,8 +244,8 @@ function exportChanges(): void {
         </div>
       </div>
     </WuScrollArea>
-    <div class="shrink-0 border-t border-[var(--line)] p-[14px]">
-      <div v-if="pending" class="mb-[12px] rounded-[8px] border border-[#745f38] bg-[#261f14] p-[12px]"><div class="text-[13px]">{{ actionLabels[pending.action] }} · {{ pending.ids.length }} 条</div><div class="mt-[6px] text-[12px] text-[#dec594]">{{ storage === 'project' && pending.action === 'delete' ? '将从项目文件删除所选点位。' : actionNotes[pending.action] }}可先导出完整备份。</div><div class="mt-[10px] flex gap-[8px]"><WuButton :disabled="!canChange" tone="danger" @click="confirm">确认操作</WuButton><WuButton :disabled="busy" @click="manager.cancelAction">取消</WuButton></div></div>
+    <div class="shrink-0 relative after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-[var(--line)] p-[14px]">
+      <div v-if="pending" class="mb-[12px] rounded-[8px] outline -outline-offset-1 outline-[#745f38] bg-[#261f14] p-[12px]"><div class="text-[13px]">{{ actionLabels[pending.action] }} · {{ pending.ids.length }} 条</div><div class="mt-[6px] text-[12px] text-[#dec594]">{{ storage === 'project' && pending.action === 'delete' ? '将从项目文件删除所选点位。' : actionNotes[pending.action] }}可先导出完整备份。</div><div class="mt-[10px] flex gap-[8px]"><WuButton :disabled="!canChange" tone="danger" @click="confirm">确认操作</WuButton><WuButton :disabled="busy" @click="manager.cancelAction">取消</WuButton></div></div>
       <div class="flex flex-wrap items-center gap-[8px] text-[12px] text-[#91ae9e]">
         <span>共 {{ filtered.length }} 条 · 已选 {{ selectedRows.length }} 条</span>
       </div>

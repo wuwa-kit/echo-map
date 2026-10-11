@@ -224,7 +224,7 @@ onBeforeRouteLeave(() => {
   <div class="min-h-0 flex flex-1 flex-col bg-[#0d1e16] text-[#d7eadf]">
     <WuMessage v-if="error" :message="error" type="error" @close="store.dismissMessage" />
     <WuMessage v-else-if="notice" :message="notice" @close="store.dismissMessage" />
-    <div class="flex shrink-0 items-center justify-between gap-[10px] border-b border-[var(--line)] px-[16px] py-[10px]">
+    <div class="flex shrink-0 items-center justify-between gap-[10px] relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[16px] py-[10px]">
       <div class="flex items-center gap-[14px]"><WuButton variant="ghost" size="sm" icon="chevron-left" :disabled="busy" @click="returnToExplorer">返回</WuButton></div>
       <div class="flex items-center gap-[14px]">
         <WuButton variant="ghost" tone="accent" size="sm" :disabled="busy || !dataset" @click="openManagement">管理点位</WuButton>
@@ -234,7 +234,7 @@ onBeforeRouteLeave(() => {
     </div>
     <input ref="importFileRef" type="file" accept="application/json,.json" class="hidden" @change="importJson" />
     <div v-if="dataset && draft" class="min-h-0 flex flex-1 flex-col">
-        <div class="flex shrink-0 gap-[6px] border-b border-[var(--line)] p-[12px]">
+        <div class="flex shrink-0 gap-[6px] relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] p-[12px]">
           <WuButton v-for="tab in (['navigation', 'echo'] as const)" :key="tab" class="flex-1" :variant="editorMode === tab ? 'outline' : 'ghost'" :tone="editorMode === tab ? 'accent' : 'neutral'" :disabled="busy" @click="switchTab(tab)">{{ tab === 'navigation' ? '定位点' : '声骸点位' }}</WuButton>
         </div>
         <div class="flex shrink-0 items-center justify-between px-[18px] py-[14px]">
@@ -252,9 +252,9 @@ onBeforeRouteLeave(() => {
           <NavigationEditorFields v-else :key="draft.id" :arrival-confirmation-hint="arrivalConfirmationHint" @arrival-confirmed="confirmPosition($event, true)" />
         </WuScrollArea>
         <PointDuplicateNotice />
-        <div class="flex shrink-0 items-center gap-[10px] border-t border-[var(--line)] p-[14px]">
+        <div class="flex shrink-0 items-center gap-[10px] relative after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-[var(--line)] p-[14px]">
           <WuButton v-if="existing" variant="ghost" tone="danger" :disabled="busy" :loading="operation === 'delete'" @click="deletePoint">删除</WuButton>
-          <WuCheckBox v-if="canContinueAdding" v-tooltip="'保存后继续新增点位，复用当前类型、名称、图标和「可传送」状态'" class="flex min-h-[40px] items-center gap-[8px] text-[12px]" :model-value="continueAdding" :disabled="busy" @update:model-value="store.setContinueAdding">保存后复用设置</WuCheckBox>
+          <WuCheckBox v-if="canContinueAdding" v-tooltip="draft.kind === 'echo' ? '保存后新增声骸点位，清空位置和声骸种类' : '保存后继续新增点位，复用当前类型、名称、图标和「可传送」状态'" class="flex min-h-[40px] items-center gap-[8px] text-[12px]" :model-value="continueAdding" :disabled="busy" @update:model-value="store.setContinueAdding">{{ draft.kind === 'echo' ? '保存后新增' : '保存后复用设置' }}</WuCheckBox>
           <WuButton class="ml-auto" variant="solid" tone="accent" :disabled="busy || store.tileSaveBlocked" :loading="operation === 'save' && !pending" @click="save">保存</WuButton>
         </div>
     </div>
@@ -273,6 +273,6 @@ onBeforeRouteLeave(() => {
       <PointEditorDataPanel @close-requested="closeDataManagement" />
     </WuDialog>
     <WuDialog :open="pending !== null" :dismissible="!busy" @dismiss-requested="cancelPending"><div class="p-[20px]"><div class="mb-[16px] text-[14px]">当前修改尚未保存</div><div class="flex flex-wrap justify-end gap-[8px]"><WuButton :disabled="busy" @click="cancelPending">继续编辑</WuButton><WuButton :disabled="busy" @click="continuePending(false)">不保存</WuButton><WuButton variant="solid" tone="accent" :disabled="busy" :loading="operation === 'save'" @click="continuePending(true)">保存并继续</WuButton></div></div></WuDialog>
-    <WuDialog :open="candidates.length > 1" @dismiss-requested="candidates = []"><div class="p-[16px]"><div class="mb-[12px] text-[14px]">选择此处点位</div><WuScrollArea class="max-h-[320px]"><button v-for="point in candidatePoints" :key="point.id" type="button" class="mb-[6px] min-h-[40px] w-full cursor-pointer rounded-[7px] border border-[var(--line)] bg-[#142a22] px-[12px] text-left text-[12px] text-[#c7dfd2] hover:bg-[#1c3b2d]" @click="selectPoint(point.id)">{{ dataset ? pointTitle(point, dataset) : '' }}{{ isOfficialPoint(point) ? ' · 官方只读' : '' }}</button></WuScrollArea></div></WuDialog>
+    <WuDialog :open="candidates.length > 1" @dismiss-requested="candidates = []"><div class="p-[16px]"><div class="mb-[12px] text-[14px]">选择此处点位</div><WuScrollArea class="max-h-[320px]"><button v-for="point in candidatePoints" :key="point.id" type="button" class="mb-[6px] min-h-[40px] w-full cursor-pointer rounded-[7px] outline -outline-offset-1 outline-[var(--line)] bg-[#142a22] px-[12px] text-left text-[12px] text-[#c7dfd2] hover:bg-[#1c3b2d]" @click="selectPoint(point.id)">{{ dataset ? pointTitle(point, dataset) : '' }}{{ isOfficialPoint(point) ? ' · 官方只读' : '' }}</button></WuScrollArea></div></WuDialog>
   </div>
 </template>

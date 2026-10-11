@@ -54,11 +54,13 @@ const painted: (MarkerPath | undefined)[][] = []
 const portraits: PortraitImage[] = []
 const drawImage = vi.fn()
 const fillText = vi.fn()
+const fillRect = vi.fn()
 beforeEach(() => {
   painted.length = 0
   portraits.length = 0
   drawImage.mockClear()
   fillText.mockClear()
+  fillRect.mockClear()
   vi.stubGlobal('window', { devicePixelRatio: 2 })
   vi.stubGlobal('Path2D', MarkerPath)
   vi.stubGlobal('Image', PortraitImage)
@@ -68,7 +70,7 @@ beforeEach(() => {
     painted.push(paths)
     const context = {
       clearRect() {}, scale() {}, setTransform() {}, beginPath() {}, roundRect() {}, stroke() {},
-      save() {}, restore() {}, clip() {}, drawImage, fillText,
+      save() {}, restore() {}, clip() {}, drawImage, fillText, fillRect,
       fill(path?: MarkerPath) { paths.push(path) },
     }
     return { width: 0, height: 0, getContext: () => context }
@@ -77,6 +79,81 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('echo marker appearance', () => {
+  it.each([false, true])('updates cached cluster scale during zoom while keeping export fixed (export=%s)', (exportMode) => {
+    const points = createPointLayers(() => false, { exportMode })
+    const { echoLocations } = libraryLocations({ version: 1, points: [mixedPoint('zoom')] }, referenceDataset)
+    points.update(echoLocations, [], [], referenceDataset.echoes)
+    const feature = new Feature({
+      geometry: new Point([0, 0]),
+      features: echoLocations.map((location) => new Feature({ geometry: new Point([0, 0]), mapPoint: { category: 'echo', location } })),
+    })
+    const render = points.layers[1]?.getStyleFunction()
+    const base = render?.(feature, 1)
+    const baseScale = Array.isArray(base) ? base[0]?.getImage()?.getScaleArray()[0] : undefined
+    if (!baseScale) throw new Error('需要图标缩放')
+    const near = render?.(feature, 0.25)
+    expect(Array.isArray(near) && near[0]?.getImage()?.getScaleArray()[0]).toBeCloseTo(baseScale * (exportMode ? 1 : 2))
+    const far = render?.(feature, 1)
+    expect(Array.isArray(far) && far[0]?.getImage()?.getScaleArray()[0]).toBeCloseTo(baseScale)
+    points.dispose()
+  })
+
+  it.each([2, 3, 4])('centers portraits on the triangle centroids for %i diamond regions', (count) => {
+    const grouped = createEchoMarkerStyles(() => {})
+    const members = referenceDataset.echoes.slice(0, count).map(({ id }) => ({ echoId: id, count: 1 }))
+    const entry = grouped.get(members, referenceDataset.echoes)
+    for (const portrait of portraits) {
+      portrait.complete = true
+      portrait.naturalWidth = 60
+      portrait.naturalHeight = 120
+    }
+    entry.redraw()
+    expect(drawImage).toHaveBeenCalledTimes(count)
+    for (const [, sx, sy, sw, sh, x, y, width, height] of drawImage.mock.calls) {
+      const half = 22 - 5 * Math.SQRT2
+      const expectedX = 23 + (x < 23 ? -half / 3 : half / 3)
+      const expectedY = height > half + 0.01 ? 23 : 23 + (y < 23 ? -half / 3 : half / 3)
+      expect(x + (30 - sx) * width / sw).toBeCloseTo(expectedX)
+      expect(y + (60 - sy) * height / sh).toBeCloseTo(expectedY)
+      expect(width / sw).toBeCloseTo(height / sh)
+      expect(sx).toBeGreaterThanOrEqual(-0.000001)
+      expect(sy).toBeGreaterThanOrEqual(-0.000001)
+      expect(sx + sw).toBeLessThanOrEqual(60.000001)
+      expect(sy + sh).toBeLessThanOrEqual(120.000001)
+    }
+    grouped.dispose()
+  })
+
+  it.each([2, 3, 4])('fills %i composition regions with centered cover crops and single dividers', (count) => {
+    const grouped = createEchoMarkerStyles(() => {})
+    const members = referenceDataset.echoes.slice(0, count).map(({ id }) => ({ echoId: id, count: 1 }))
+    const entry = grouped.get(members, referenceDataset.echoes, { shape: 'circle' })
+    for (const portrait of portraits) {
+      portrait.complete = true
+      portrait.naturalWidth = 120
+      portrait.naturalHeight = 60
+    }
+    fillRect.mockClear()
+    entry.redraw()
+    expect(drawImage).toHaveBeenCalledTimes(count)
+    for (const call of drawImage.mock.calls) {
+      expect(call).toHaveLength(9)
+      const [, sx, sy, sw, sh, , , width, height] = call
+      expect(sx).toBeCloseTo((120 - sw) / 2)
+      expect(sy).toBeCloseTo((60 - sh) / 2)
+      expect(sw / sh).toBeCloseTo(width / height)
+      expect(sw === 120 || sh === 60).toBe(true)
+    }
+    const destinations = drawImage.mock.calls.map((call) => call.slice(5))
+    const area = destinations.reduce((total, [, , width, height]) => total + width * height, 0)
+    // Circle content spans 36 canvas units; all cells together fill its bounding square.
+    expect(area).toBeCloseTo(36 * 36)
+    expect(fillRect).toHaveBeenCalledTimes(count === 2 ? 1 : 2)
+    if (count === 3) expect(fillRect.mock.calls[1]?.[0]).toBe(23)
+    if (count === 4) expect(fillRect.mock.calls[1]?.[0]).toBe(5)
+    grouped.dispose()
+  })
+
   it('retries failed navigation artwork without retaining error callbacks or changing the export width', async () => {
     const fixture = referenceDataset.navigationPoints.find(({ kind, iconUrl }) => kind === 'beacon' && iconUrl)
     if (!fixture) throw new Error('Missing beacon fixture')

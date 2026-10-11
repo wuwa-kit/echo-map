@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 
-const echoFilterSourceUrl = new URL('../src/components/filters/EchoFilter.vue', import.meta.url)
+const echoFilterSourceUrl = new URL('../src/components/filters/EchoFilterControls.vue', import.meta.url)
 const multiSelectSourceUrl = new URL('../src/components/base/WuMultiSelect.vue', import.meta.url)
 const searchIconSourceUrl = new URL('../src/assets/svg/search.svg', import.meta.url)
 

@@ -15,6 +15,12 @@ export interface WuTooltipOptions {
 
 export type WuTooltipValue = string | WuTooltipOptions | null | undefined
 
+declare module 'vue' {
+  interface GlobalDirectives {
+    vTooltip: typeof vTooltip
+  }
+}
+
 const hosts = new WeakMap<HTMLElement, HTMLElement>()
 
 function dispose(element: HTMLElement): void {

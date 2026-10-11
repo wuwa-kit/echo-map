@@ -63,7 +63,7 @@ describe('WuEllipsis overflow detection', () => {
     expect(floorSwitcherSource).toContain(": 'w-max rounded-[9px]'")
     expect(floorSwitcherSource).not.toContain('w-[176px]')
     expect(floorSwitcherSource).not.toContain('w-[calc(100%_-_36px)]')
-    expect(floorSwitcherSource).toContain("'right-[2px] top-[2px] h-[36px] w-[28px] rounded-[6px] border-0 bg-transparent'")
+    expect(floorSwitcherSource).toContain("'right-[2px] top-[2px] h-[36px] w-[28px] rounded-[6px] bg-transparent'")
     expect(floorSwitcherSource).toContain(':tooltip-text="floorHint(group.name, floor.name, floor.id)"')
     expect(floorSwitcherSource).not.toContain('flex-1 truncate')
     expect(floorSwitcherSource).not.toContain('showHint')

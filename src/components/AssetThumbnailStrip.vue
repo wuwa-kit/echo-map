@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { vTooltip } from './base/tooltip.ts'
 import { computed, nextTick, shallowRef, useTemplateRef, watch } from 'vue'
 import { useEventListener, useResizeObserver } from '@vueuse/core'
 import type { OfficialAsset } from '../domain/types.ts'
@@ -58,8 +57,8 @@ watch(() => props.selectedIndex, async () => {
       <div class="absolute left-0 top-0 flex gap-[8px]" :style="{ transform: `translateX(${window.before}px)` }">
         <button
           v-for="(asset, index) in visibleAssets" :key="asset.id" type="button" v-tooltip="asset.name"
-          class="h-[64px] w-[64px] shrink-0 cursor-pointer overflow-hidden rounded-[7px] border-2 p-[3px] outline-none transition-colors"
-          :class="window.start + index === selectedIndex ? 'border-[var(--accent)] bg-[#214b39]' : 'border-transparent bg-[#13281f] hover:border-[#477b68]'"
+          class="h-[64px] w-[64px] shrink-0 cursor-pointer overflow-hidden rounded-[7px] outline-2 -outline-offset-2 p-[3px] transition-colors"
+          :class="window.start + index === selectedIndex ? 'outline-[var(--accent)] bg-[#214b39]' : 'outline-transparent bg-[#13281f] hover:outline-[#477b68]'"
           @click="emit('select', asset.id)"
         >
           <AssetImage :key="asset.previewUrl" :src="asset.previewUrl" class="h-full w-full rounded-[3px]" />

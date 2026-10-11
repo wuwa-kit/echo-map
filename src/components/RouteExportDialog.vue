@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { vTooltip } from './base/tooltip.ts'
 import { buttonClasses } from './base/button-styles.ts'
 import WuButton from './base/WuButton.vue'
 import { onBeforeUnmount, useTemplateRef, watch } from 'vue'
@@ -26,9 +25,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="panelRef" popover="manual" class="fixed inset-0 m-0 h-[100dvh] max-h-none w-full max-w-none border-0 bg-[#07110ff5] p-0 text-[#e7f5ee]">
+  <div ref="panelRef" popover="manual" class="fixed inset-0 m-0 h-[100dvh] max-h-none w-full max-w-none bg-[#07110ff5] p-0 text-[#e7f5ee]">
     <div class="mx-auto h-full max-w-[900px] flex flex-col">
-      <div class="shrink-0 flex items-center justify-between gap-[12px] border-b border-[#294539] p-[16px]">
+      <div class="shrink-0 flex items-center justify-between gap-[12px] relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[#294539] p-[16px]">
         <div class="text-[18px] font-semibold">路线长图</div>
         <WuButton size="lg" @click="store.close">{{ status === 'running' ? '取消并关闭' : '关闭' }}</WuButton>
       </div>
@@ -42,7 +41,7 @@ onBeforeUnmount(() => {
         <WuButton size="lg" variant="solid" tone="accent" @click="store.retry">重新生成</WuButton>
       </div>
       <template v-else-if="artifacts">
-        <div class="shrink-0 border-b border-[#294539] p-[16px]">
+        <div class="shrink-0 relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[#294539] p-[16px]">
           <div v-tooltip="artifacts.title" class="line-clamp-2 text-[15px]">{{ artifacts.title }}</div>
           <div class="mt-[6px] text-[12px] text-[#afc6bb]">{{ artifacts.routes.length }} 张路线图 · 固定 2 列 · {{ artifacts.maps.length }} 张分地图 · {{ artifacts.pages.length }} 张手机分卷</div>
           <div class="mt-[12px] flex gap-[8px] overflow-x-auto whitespace-nowrap pb-[4px]">

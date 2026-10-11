@@ -22,42 +22,42 @@ const padding = { xs: 'px-[6px] py-[3px]', sm: 'px-[8px] py-[6px]', md: 'px-[12p
 const squares = { xs: 'h-[24px] w-[24px] p-0', sm: 'h-[32px] w-[32px] p-0', md: 'h-[40px] w-[40px] p-0', lg: 'h-[44px] w-[44px] p-0' }
 const colors = {
   neutral: {
-    solid: 'border-[var(--line)] bg-[#142a22] text-[#d7eadf]',
-    outline: 'border-[var(--line)] bg-transparent text-[#c7dfd2]',
-    ghost: 'border-transparent bg-transparent text-[#91ae9e]',
+    solid: 'outline-[var(--line)] bg-[#142a22] text-[#d7eadf]',
+    outline: 'outline-[var(--line)] bg-transparent text-[#c7dfd2]',
+    ghost: 'outline-transparent bg-transparent text-[#91ae9e]',
   },
   accent: {
-    solid: 'border-transparent bg-[var(--accent)] text-[#092519]',
-    outline: 'border-[#377c60] bg-transparent text-[var(--accent)]',
-    ghost: 'border-transparent bg-transparent text-[var(--accent)]',
+    solid: 'outline-transparent bg-[var(--accent)] text-[#092519]',
+    outline: 'outline-[#377c60] bg-transparent text-[var(--accent)]',
+    ghost: 'outline-transparent bg-transparent text-[var(--accent)]',
   },
   danger: {
-    solid: 'border-transparent bg-[#ff8d7e] text-[#351710]',
-    outline: 'border-[#91584e] bg-transparent text-[#ffad9f]',
-    ghost: 'border-transparent bg-transparent text-[#ffad9f]',
+    solid: 'outline-transparent bg-[#ff8d7e] text-[#351710]',
+    outline: 'outline-[#91584e] bg-transparent text-[#ffad9f]',
+    ghost: 'outline-transparent bg-transparent text-[#ffad9f]',
   },
 } satisfies Record<WuButtonTone, Record<WuButtonVariant, string>>
 const interactions = {
   neutral: {
-    solid: 'hover:border-[#477b68] hover:bg-[#1c3b2d] active:bg-[#244b39]',
-    outline: 'hover:border-[#477b68] hover:bg-[#193329] active:bg-[#244b39]',
+    solid: 'hover:outline-[#477b68] hover:bg-[#1c3b2d] active:bg-[#244b39]',
+    outline: 'hover:outline-[#477b68] hover:bg-[#193329] active:bg-[#244b39]',
     ghost: 'hover:bg-[#183128] hover:text-[#e7f4ee] active:bg-[#244b39]',
   },
   accent: {
     solid: 'hover:bg-[#8fffd4] active:bg-[#4bd5a9]',
-    outline: 'hover:border-[var(--accent)] hover:bg-[#193b2c] active:bg-[#245442]',
+    outline: 'hover:outline-[var(--accent)] hover:bg-[#193b2c] active:bg-[#245442]',
     ghost: 'hover:bg-[#193b2c] hover:text-[#b9ffe7] active:bg-[#245442]',
   },
   danger: {
     solid: 'hover:bg-[#ffad9f] active:bg-[#e87769]',
-    outline: 'hover:border-[#ff8d7e] hover:bg-[#382019] active:bg-[#4b2922]',
+    outline: 'hover:outline-[#ff8d7e] hover:bg-[#382019] active:bg-[#4b2922]',
     ghost: 'hover:bg-[#382019] hover:text-[#ffd0b8] active:bg-[#4b2922]',
   },
 } satisfies Record<WuButtonTone, Record<WuButtonVariant, string>>
 
 export function buttonClasses({ variant = 'outline', tone = 'neutral', size = 'md', iconOnly = false, disabled = false, loading = false }: ButtonStyleOptions = {}): string[] {
   return [
-    'inline-flex min-w-0 shrink-0 select-none items-center justify-center gap-[var(--wu-button-gap)] border border-solid text-center [font-family:inherit] font-medium no-underline transition-colors duration-150 motion-reduce:transition-none',
+    'inline-flex min-w-0 shrink-0 select-none items-center justify-center gap-[var(--wu-button-gap)] outline -outline-offset-1 outline-solid text-center [font-family:inherit] font-medium no-underline transition-colors duration-150 motion-reduce:transition-none',
     sizes[size],
     iconOnly ? squares[size] : padding[size],
     colors[tone][variant],

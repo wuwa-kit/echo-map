@@ -84,32 +84,59 @@ export function createEchoMarkerStyles(onChange: () => void, pixelRatio = window
         return
       }
       drawPortraitMarker(context, shape, undefined, (context, contentSize, center) => {
-        const cellSize = contentSize * (count === 2 ? 0.5 : 0.42)
-        const offset = contentSize / 4
-        const positions = count === 2 ? [[-offset, 0], [offset, 0]]
-          : count === 3 ? [[0, -offset], [-offset / 1.4, offset / 1.4], [offset / 1.4, offset / 1.4]]
-            : [[0, -offset], [offset, 0], [0, offset], [-offset, 0]]
+        const half = contentSize / 2
+        const left = center - half
+        const top = center - half
+        const cells = count === 2
+          ? [[left, top, half, contentSize], [center, top, half, contentSize]]
+          : count === 3
+            ? [[left, top, half, contentSize], [center, top, half, half], [center, center, half, half]]
+            : [[left, top, half, half], [center, top, half, half], [left, center, half, half], [center, center, half, half]]
         portraits.forEach(({ echo, image }, index) => {
-          const [x = 0, y = 0] = positions[index] ?? []
-          if (image?.complete && image.naturalWidth > 0) {
-            const scale = cellSize / Math.max(image.naturalWidth, image.naturalHeight)
-            const width = image.naturalWidth * scale
-            const height = image.naturalHeight * scale
-            context.drawImage(image, center + x - width / 2, center + y - height / 2, width, height)
+          const cell = cells[index]
+          if (!cell) return
+          const [x = 0, y = 0, width = 0, height = 0] = cell
+          // A diamond clipped by these cells forms triangles. Anchor the portrait
+          // at the triangle centroid, rather than the center of its bounding box.
+          const anchorX = shape === 'diamond' ? center + (x < center ? -half / 3 : half / 3) : x + width / 2
+          const anchorY = shape === 'diamond'
+            ? height === contentSize ? center : center + (y < center ? -half / 3 : half / 3)
+            : y + height / 2
+          if (image?.complete && image.naturalWidth > 0 && image.naturalHeight > 0) {
+            const scale = Math.max(
+              2 * Math.max(anchorX - x, x + width - anchorX) / image.naturalWidth,
+              2 * Math.max(anchorY - y, y + height - anchorY) / image.naturalHeight,
+            )
+            const sourceWidth = width / scale
+            const sourceHeight = height / scale
+            context.drawImage(image,
+              image.naturalWidth / 2 + (x - anchorX) / scale, image.naturalHeight / 2 + (y - anchorY) / scale,
+              sourceWidth, sourceHeight, x, y, width, height)
           } else if (showText) {
             context.fillStyle = echo.cost === 3 ? '#e9c57c' : '#9adac3'
             context.font = '600 6px sans-serif'
             context.textAlign = 'center'
             context.textBaseline = 'middle'
-            context.fillText(echo.name.slice(0, 2), center + x, center + y)
+            context.fillText(echo.name.slice(0, 2), anchorX, anchorY)
           }
         })
+        if (count >= 2) {
+          // Convert one display pixel to canvas coordinates; the outer frame clips the dividers.
+          const lineWidth = PORTRAIT_MARKER_SIZES[4] / size
+          context.fillStyle = '#fff'
+          context.fillRect(center - lineWidth / 2, top, lineWidth, contentSize)
+          if (count >= 3) {
+            context.fillRect(count === 3 ? center : left, center - lineWidth / 2,
+              count === 3 ? half : contentSize, lineWidth)
+          }
+        }
         if (showText && composition.overflow > 0) {
           context.fillStyle = '#cbe6db'
           context.font = '600 7px sans-serif'
           context.textAlign = 'center'
           context.textBaseline = 'middle'
-          context.fillText(`+${composition.overflow}`, center - offset, center)
+          const offset = half / (shape === 'diamond' ? 3 : 2)
+          context.fillText(`+${composition.overflow}`, center + offset, center + offset)
         }
         if (showText && count === 0) {
           context.fillStyle = '#91a99e'

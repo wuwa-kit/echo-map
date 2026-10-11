@@ -2,7 +2,7 @@ import { access } from 'node:fs/promises'
 import { calculateTileExtent, officialToMapCoordinate } from '../src/map/projection.ts'
 import { readPointLibrary } from './lib/point-files.ts'
 import { isOfficialEchoMapIncluded } from '../src/domain/official-echo-scope.ts'
-import { officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
+import { echoNotesSchema, officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
 import { mapDisplayPolicySchema, officialAssetSchema, officialEchoPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { MAP_DISPLAY_TIERS } from '../src/domain/map-display-tier.ts'
 import { navigationIconById } from '../src/domain/navigation-icons.ts'
@@ -46,6 +46,10 @@ const officialLibrary = parsePointLibrary(officialEcho.library, dataset, 'offici
 const echoIds = new Set(dataset.echoes.map(({ id }) => id))
 const sonataIds = new Set(dataset.sonatas.map(({ id }) => id))
 const errors: string[] = []
+const echoNotes = echoNotesSchema.parse(await readJson<unknown>(projectPath('data', 'config', 'echo-notes.json')))
+for (const name of Object.keys(echoNotes)) {
+  if (!dataset.echoes.some((echo) => echo.name === name)) errors.push(`声骸备注引用了未知声骸：${name}`)
+}
 const classifiedTypeIds = [...Object.values(officialNavigationTypeIds).flat(), ...unclassifiedNavigationTypeIds]
 if (new Set(classifiedTypeIds).size !== classifiedTypeIds.length) errors.push('同一官方类型 ID 不能属于多个定位点类型')
 const localIconIds = new Set<string>()

@@ -110,7 +110,8 @@ describe('WuSelect Popover', () => {
     )
     expect(triggerSource).toContain('<WuInput v-model="searchQuery"')
     expect(multiSelectSource).toContain('[&:popover-open]:overflow-visible')
-    expect(multiSelectSource).toContain('bottom-[calc(100%+6px)]')
+    expect(multiSelectSource).toContain('bottom-[calc(100%+6px)] left-0 w-full')
+    expect(multiSelectSource).toContain('!translate-none !opacity-100 !transition-none')
   })
 
   it('弹层顶部使用当前结果三态选择和自适应已选图标摘要', async () => {

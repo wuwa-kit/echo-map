@@ -414,3 +414,5 @@ export interface OfficialMapAssetCatalog {
   resourceHash: string
   assets: OfficialAsset[]
 }
+export type EchoNotes = Readonly<Record<string, string>>
+

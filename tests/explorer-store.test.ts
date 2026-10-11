@@ -9,6 +9,25 @@ import { echoMembers } from '../src/domain/point-library.ts'
 describe('explorer point group visibility', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
+  it('searches names and costs within explicit sonata filters', async () => {
+    const store = useExplorerStore()
+    const dataset = await readMapDataset()
+    store.setDataset(dataset)
+    const echo = dataset.echoes[0]
+    const sonata = dataset.sonatas.find(({ id }) => id === echo?.sonataIds[0])
+    if (!echo || !sonata) throw new Error('需要声骸与套装')
+    store.setEchoSearch(`${sonata.name} c${echo.cost}`)
+    expect(store.filteredEchoes).toEqual([])
+    store.setSonataFilters([sonata.id])
+    store.setEchoSearch(`c${echo.cost}`)
+    expect(store.filteredEchoes).toEqual(dataset.echoes.filter((item) => item.sonataIds.includes(sonata.id) && item.cost === echo.cost))
+    store.setEchoCostFilters([echo.cost === 1 ? 3 : 1])
+    expect(store.filteredEchoes).toEqual([])
+    store.setEchoCostFilters([])
+    store.setEchoSearch(`${echo.name} C${echo.cost}`)
+    expect(store.filteredEchoes).toContainEqual(echo)
+  })
+
   it('hides only non-teleport navigation markers without changing route inputs or the library', async () => {
     const store = useExplorerStore()
     store.setDataset(await readMapDataset())

@@ -17,6 +17,7 @@ import { bossMarkerShape } from './boss-marker.ts'
 import type { EchoDefinition, EchoMapLocation, MapDisplayPoint, NavigationPoint, RegionLabel, RouteResult } from '../domain/types.ts'
 import { isMapPointVisibleAtScale, isPointVisibleAtScale, MAP_POINT_DISPLAY_POLICIES } from './point-visibility.ts'
 import { gameScaleForResolution } from './map-scale.ts'
+import { createMarkerZoomStyles } from './marker-zoom.ts'
 import { createPointMarkerStyles, NON_TELEPORT_BRIGHTNESS, NON_TELEPORT_OPACITY } from './point-marker-styles.ts'
 
 class InteractionCluster extends Cluster {
@@ -237,7 +238,11 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     updateWhileAnimating: true, updateWhileInteracting: true,
   })
   const layers = [labelLayer, echoLayer, navigationLayer, backgroundEchoLayer, backgroundNavigationLayer, nonTeleportLayer]
-  const markerStyles = createPointMarkerStyles(redrawPointLayers, options)
+  const markerStyles = createPointMarkerStyles(redrawPointLayers, {
+    ...options,
+    pixelRatio: options.exportMode ? options.pixelRatio : 2 * Math.max(2, Math.ceil(options.pixelRatio ?? window.devicePixelRatio ?? 1)),
+  })
+  const zoomStyles = createMarkerZoomStyles()
   const resizedMarkers = new WeakSet()
 
   function resizeExportMarkers(styles: Style | Style[] | undefined, artworkWidth?: number): void {
@@ -263,7 +268,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     options.onStyleChange?.()
   }
 
-  function clusterStyle(feature: FeatureLike, resolution: number): Style[] | undefined {
+  function clusterStyle(feature: FeatureLike, resolution: number): Style | Style[] | undefined {
     const scale = gameScaleForResolution(resolution)
     const forced = options.exportMode || options.forceVisibleCategory?.() === 'echo'
     if (!forced && !isPointVisibleAtScale(MAP_POINT_DISPLAY_POLICIES.echo, scale)) {
@@ -274,7 +279,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     const cached = clusterStyleCache.get(feature)
     if (cached?.members === members) {
       if (feature instanceof Feature && feature.get('locations') !== cached.locations) feature.set('locations', cached.locations, true)
-      return cached.styles
+      return options.exportMode ? cached.styles : zoomStyles(cached.styles, resolution)
     }
     const locations = members.flatMap((member) => {
       const point = member.get('mapPoint') as MapDisplayPoint
@@ -289,7 +294,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
       ? [...pointStyles, ...floorBadgeStylesFor(renderedMarkerSize(pointStyles),
         selectedLevelId === null || !locations.some(({ levelId }) => levelId === selectedLevelId))] : pointStyles
     if (styles) clusterStyleCache.set(feature, { members, locations, styles })
-    return styles
+    return options.exportMode ? styles : zoomStyles(styles, resolution)
   }
 
   function pointFeature(point: MapDisplayPoint): Feature<Point> {
@@ -304,7 +309,8 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     const forced = point.category === options.forceVisibleCategory?.()
       || (point.category === 'navigation' && point.location.mode === 'fast-travel' && routeTeleportIds.has(point.location.id))
     if (!options.exportMode && !forced && !isMapPointVisibleAtScale(point, gameScaleForResolution(resolution))) return undefined
-    return pointMarkerStyle(point)
+    const styles = pointMarkerStyle(point)
+    return options.exportMode ? styles : zoomStyles(styles, resolution)
   }
 
   function navigationStyle(feature: FeatureLike, resolution: number, teleport: boolean): Style | Style[] | undefined {

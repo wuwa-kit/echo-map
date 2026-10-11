@@ -108,15 +108,15 @@ useProvideWuSelectContext({
       :popovertarget="popover?.id"
       :class="[
         invalid
-          ? 'border-[#ff8d7e]'
+          ? 'outline-[#ff8d7e]'
           : disabled
-            ? 'border-[rgba(169,207,192,0.1)]'
-            : 'border-[var(--line)] hover:border-[rgba(101,241,194,0.36)]',
+            ? 'outline-[rgba(169,207,192,0.1)]'
+            : 'outline-[var(--line)] hover:outline-[rgba(101,241,194,0.36)]',
         disabled
           ? 'cursor-not-allowed bg-[#101c19] text-[#60746d]'
           : 'cursor-pointer bg-[#152b24] text-[#dce9e3]',
       ]"
-      class="h-[38px] w-full min-w-0 flex items-center rounded-[7px] border pl-[11px] pr-[34px] text-left text-[11px] [font-family:inherit] shadow-[inset_0_1px_rgba(255,255,255,0.025),0_5px_16px_rgba(0,0,0,0.1)] transition-[border-color,box-shadow,background-color] duration-180"
+      class="h-[38px] w-full min-w-0 flex items-center rounded-[7px] outline -outline-offset-1 pl-[11px] pr-[34px] text-left text-[11px] [font-family:inherit] shadow-[inset_0_1px_rgba(255,255,255,0.025),0_5px_16px_rgba(0,0,0,0.1)] transition-[outline-color,box-shadow,background-color] duration-180"
     >
       <span class="block min-w-0 truncate" :class="muted && !disabled ? 'text-[#789788]' : ''">{{ selectedLabel }}</span>
     </button>
@@ -132,7 +132,7 @@ useProvideWuSelectContext({
       width="trigger"
       :max-height="320"
       :gap="6"
-      class="border border-[rgba(169,207,192,0.18)] rounded-[9px] bg-[rgba(8,20,17,0.98)] p-[4px] text-[#dce9e3] shadow-[0_18px_48px_rgba(0,0,0,0.42),inset_0_1px_rgba(255,255,255,0.035)]"
+      class="outline -outline-offset-1 outline-[rgba(169,207,192,0.18)] rounded-[9px] bg-[rgba(8,20,17,0.98)] p-[4px] text-[#dce9e3] shadow-[0_18px_48px_rgba(0,0,0,0.42),inset_0_1px_rgba(255,255,255,0.035)]"
       @opened="onPopoverOpened"
       @closed="onPopoverClosed"
     >

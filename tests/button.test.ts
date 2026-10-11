@@ -58,6 +58,7 @@ function fixture(props: InstanceType<typeof WuButton>['$props'] & ButtonHTMLAttr
   const app = renderer.createApp({
     setup: () => () => h(WuButton, { ...state.value, ref: reference, onClick }, slots),
   })
+  app.directive('tooltip', vTooltip)
   app.mount(host)
   cleanups.push(() => app.unmount())
   const button = host.children[0]

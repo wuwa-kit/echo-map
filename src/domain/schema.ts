@@ -2,7 +2,9 @@ import { z } from 'zod'
 import { navigationPointTypeIds, navigationPointTypes, navigationTypeErrors } from './navigation-point-types.ts'
 import { navigationIconById, navigationTypeIcons } from './navigation-icons.ts'
 import type { RefinementCtx } from 'zod'
-import type { MapDataset, NavigationKind, NavigationMode, NavigationPointType } from './types.ts'
+import type { EchoNotes, MapDataset, NavigationKind, NavigationMode, NavigationPointType } from './types.ts'
+
+export const echoNotesSchema: z.ZodType<EchoNotes> = z.record(z.string().trim().min(1), z.string().trim().min(1))
 
 const finiteNumber = z.number().finite()
 const nullableString = z.string().nullable().default(null)

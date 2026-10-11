@@ -1132,7 +1132,7 @@ describe('point editor actions', () => {
     expect(store.notice).toBe('保存成功')
   })
 
-  it('keeps saved navigation edits and echo saves on their current point even when continuing is enabled', async () => {
+  it('keeps saved edits on their current point and clears settings for new echo points', async () => {
     const store = usePointEditorStore()
     await store.load('navigation')
     store.setPointType('small-beacon')
@@ -1147,11 +1147,32 @@ describe('point editor actions', () => {
     expect(await store.savePoint()).toBe(true)
     expect(store.draft?.id).toBe(id)
     store.switchEditorTab('echo')
-    expect(store.canContinueAdding).toBe(false)
+    expect(store.canContinueAdding).toBe(true)
     store.addMember(smallEcho.id)
+    store.setMemberCount(smallEcho.id, 3)
+    store.addMember(eliteEcho.id)
+    store.setNote('仅当前声骸点位的备注')
     store.setCoordinateText('1, 2, 3')
     store.applyCoordinateText()
     const echoId = store.draft?.id
+    expect(await store.savePoint()).toBe(true)
+    expect(store.draft?.id).not.toBe(echoId)
+    expect(store.draft).toMatchObject({
+      kind: 'echo', members: [], compositionStatus: 'partial',
+      coordinate: { x: null, y: null, z: null }, note: '',
+    })
+    expect(disk.points.find(({ id }) => id === echoId)).toMatchObject({
+      members: [{ echoId: smallEcho.id, count: 3 }, { echoId: eliteEcho.id, count: 1 }],
+      coordinate: { x: 1, y: 2, z: 3 },
+    })
+    expect(store.hasUnsavedChanges).toBe(false)
+    expect(store.canContinueAdding).toBe(true)
+    expect(store.positionInput.text).toBeNull()
+    expect(store.notice).toBe('保存成功')
+    if (!echoId) throw new Error('需要声骸点位 ID')
+    store.selectPoint(echoId)
+    expect(store.canContinueAdding).toBe(false)
+    store.setCoordinate('x', '20')
     expect(await store.savePoint()).toBe(true)
     expect(store.draft?.id).toBe(echoId)
     expect(disk.points).toHaveLength(2)

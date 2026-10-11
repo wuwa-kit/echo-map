@@ -9,7 +9,9 @@ describe('echo list filtering', () => {
 
     expect(source).not.toContain('声骸目标')
     expect(source).not.toContain('ECHO TARGETS')
-    expect(source).toContain('placeholder="搜索当前声骸列表"')
+    const controls = await readFile(new URL('../src/components/filters/EchoFilterControls.vue', import.meta.url), 'utf8')
+    expect(controls).toContain('placeholder="搜索声骸 / C1、C3"')
+    expect(source).toContain('<EchoFilterControls')
     expect(source).toContain('{{ currentSelectedCount }} / {{ candidateEchoes.length }}')
     expect(source).toContain(':disabled="candidateEchoes.length === 0"')
     expect(source).toContain('store.selectCandidateEchoes()')

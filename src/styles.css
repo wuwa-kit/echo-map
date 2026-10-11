@@ -23,11 +23,22 @@
 
 * {
   box-sizing: border-box;
+  border-width: 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
+@layer base {
+  * {
+    outline-style: none;
+  }
+}
+
 *::-webkit-scrollbar {
+  display: none;
+}
+
+input[type='search']::-webkit-search-cancel-button {
   display: none;
 }
 

@@ -14,6 +14,8 @@ import { authoredPointMapDisplay, editorLibraryLocations } from '../domain/point
 import { matchesGravity } from '../domain/gravity.ts'
 import { isOfficialPointReplaced } from '../domain/point-matching.ts'
 import { createEditorArrivalStyle, createEditorSelectionStyle } from '../map/editor-marker.ts'
+import { createMarkerZoomStyles } from '../map/marker-zoom.ts'
+import { createEditorGridLayer } from '../map/editor-grid.ts'
 import View from 'ol/View.js'
 import type MapBrowserEvent from 'ol/MapBrowserEvent.js'
 import { defaults as defaultControls } from 'ol/control/defaults.js'
@@ -47,8 +49,11 @@ const emit = defineEmits<{ editorPointsSelected: [ids: string[]], pointAddReques
 const editor = usePointEditorStore()
 const store = useExplorerStore()
 const selectionSource = new VectorSource()
-const selectionLayer = new VectorLayer({ source: selectionSource, zIndex: 50 })
+const selectionLayer = new VectorLayer({ source: selectionSource, zIndex: 50, updateWhileAnimating: true, updateWhileInteracting: true })
+const zoomSelectionStyles = createMarkerZoomStyles()
 const arrivalStyle = createEditorArrivalStyle()
+const editorGrid = createEditorGridLayer()
+watch(() => Boolean(props.editing && editor.editorMode === 'echo'), (visible) => editorGrid.setVisible(visible), { immediate: true })
 const draftInView = shallowRef(false)
 const arrivalInView = shallowRef(false)
 function updateDraftInView(): void {
@@ -218,7 +223,7 @@ function rebuildDraft(): void {
     ? coordinateInputPreviewXY(editor.arrivalInput, draft.teleportCoordinate ?? { x: null, y: null, z: null }) : null
   if (arrival) {
     const feature = new Feature({ geometry: new Point(gameToMapCoordinate(...arrival)) })
-    feature.setStyle(arrivalStyle)
+    feature.setStyle((_feature, resolution) => zoomSelectionStyles(arrivalStyle, resolution))
     selectionSource.addFeature(feature)
   }
   const coordinate = coordinateInputPreviewXY(editor.positionInput, draft.coordinate)
@@ -227,7 +232,8 @@ function rebuildDraft(): void {
   if (!display) return
   const feature = new Feature({ geometry: new Point([display.location.coordinate.mapX, display.location.coordinate.mapY]), mapPoint: display })
   const editingExisting = editor.allPoints.some(({ id }) => id === draft.id)
-  feature.setStyle(createEditorSelectionStyle(editingExisting ? '编辑中' : '新增'))
+  const selectionStyle = createEditorSelectionStyle(editingExisting ? '编辑中' : '新增')
+  feature.setStyle((_feature, resolution) => zoomSelectionStyles(selectionStyle, resolution))
   selectionSource.addFeature(feature)
 }
 
@@ -316,7 +322,7 @@ onMounted(() => {
     target: mapTarget.value,
     controls: defaultControls({ rotate: false, zoom: false, attribution: false }),
     interactions: defaultInteractions({ pinchRotate: false, altShiftDragRotate: false }),
-    layers: [...points.layers, ...editorPoints.layers, routeLayer.layer, selectionLayer],
+    layers: [...points.layers, ...editorPoints.layers, editorGrid, routeLayer.layer, selectionLayer],
     view: new View({ projection, enableRotation: false, center: [0, 0], resolution: 4 }),
   })
   map.on('movestart', closeContextMenu)
@@ -373,6 +379,7 @@ onBeforeUnmount(() => {
   selectionSource.clear(true)
   routeLayer.dispose()
   baseLayers.dispose()
+  editorGrid.dispose()
   map?.dispose()
   map = null
 })
@@ -381,7 +388,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="relative h-full w-full min-h-0 min-w-0">
     <span ref="contextAnchorRef" class="pointer-events-none fixed h-0 w-0" :style="{ left: `${contextPosition.x}px`, top: `${contextPosition.y}px` }" />
-    <WuPopover ref="contextMenuRef" :anchor="contextAnchor" :disabled="!editing || editor.busy" width="content" :gap="0" class="rounded-[8px] border border-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
+    <WuPopover ref="contextMenuRef" :anchor="contextAnchor" :disabled="!editing || editor.busy" width="content" :gap="0" class="rounded-[8px] outline -outline-offset-1 outline-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
       <WuButton variant="ghost" :disabled="!editor.draft" @click="syncPosition">同步位置</WuButton>
       <WuButton variant="ghost" @click="requestPoint('navigation')">添加定位</WuButton>
       <WuButton variant="ghost" @click="requestPoint('echo')">添加声骸</WuButton>

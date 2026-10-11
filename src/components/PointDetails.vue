@@ -51,7 +51,7 @@ function echoCost(echoId: string): EchoDefinition['cost'] | null {
       <span>{{ candidateCount }} 处相邻点位</span>
     </template>
     <WuScrollArea class="min-h-0 max-h-[320px] flex-1" content-class="p-[12px] pb-[4px]">
-      <button v-for="candidate in candidates" :key="candidate.point.id" type="button" class="mb-[8px] w-full rounded-[8px] border border-[var(--line)] bg-[#142a21] p-[10px] text-left text-[#c4e5d5] hover:border-[#477b68] hover:bg-[#193329]" @click="store.selectPointCandidate(candidate.point.id)">
+      <button v-for="candidate in candidates" :key="candidate.point.id" type="button" class="mb-[8px] w-full rounded-[8px] outline -outline-offset-1 outline-[var(--line)] bg-[#142a21] p-[10px] text-left text-[#c4e5d5] hover:outline-[#477b68] hover:bg-[#193329]" @click="store.selectPointCandidate(candidate.point.id)">
         <span class="block">{{ candidate.title }}</span>
         <span class="mt-[4px] block text-[12px] text-[#99b8a9]">{{ candidate.summary }}</span>
         <span class="mt-[4px] block font-mono text-[12px]">{{ coordinateTitle(candidate.point.gameCoordinate) }}</span>

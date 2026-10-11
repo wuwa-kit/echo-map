@@ -149,7 +149,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   const inputValues = formField('inputValues')
   const dirty = computed(() => formDirty(forms.value[editorMode.value]))
   const editing = computed(() => draft.value !== null)
-  const canContinueAdding = computed(() => draft.value?.kind === 'navigation'
+  const canContinueAdding = computed(() => draft.value !== null
     && !draft.value.replacesOfficialIds?.length
     && !library.value.points.some(({ id }) => id === draft.value?.id))
   const allPoints = completePoints
@@ -633,10 +633,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     })
     if (await commit(next, 'save')) {
       openDraft({ ...formPoint(saved), levelId: fields.value?.levelId })
-      if (addNext && saved.kind === 'navigation') {
-        newPoint('navigation')
-        setPointType(saved.pointType ?? null)
-        if (draft.value?.kind === 'navigation') {
+      if (addNext) {
+        newPoint(saved.kind)
+        if (saved.kind === 'navigation') setPointType(saved.pointType ?? null)
+        if (draft.value?.kind === 'navigation' && saved.kind === 'navigation') {
           openDraft(produce(draft.value, (point) => {
             point.name = saved.name
             point.mode = saved.mode

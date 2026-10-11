@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { buttonClasses } from './base/button-styles.ts'
-import { vTooltip } from './base/tooltip.ts'
 import WuButton from './base/WuButton.vue'
 import WuSwitch from './base/WuSwitch.vue'
 import { storeToRefs } from 'pinia'
@@ -22,7 +21,7 @@ const lastCommitTime = __LAST_COMMIT_TIME__
 <template>
   <div class="min-h-0 flex flex-1 flex-col">
     <WuScrollArea class="min-h-0 flex-1" content-class="pb-[16px]">
-      <div v-if="dataset && !compact" class="border-b border-[var(--line)] p-[18px]">
+      <div v-if="dataset && !compact" class="relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] p-[18px]">
         <div class="flex items-center justify-between gap-[12px]">
           <div class="flex min-w-0 items-center gap-[11px]">
             <WuSvg name="brand" class="shrink-0 text-[var(--accent)] [--wu-svg-h:34px]" />
@@ -51,13 +50,13 @@ const lastCommitTime = __LAST_COMMIT_TIME__
         </div>
       </div>
 
-      <div class="border-b border-[var(--line)] p-[16px]">
+      <div class="relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] p-[16px]">
         <div class="min-w-0 flex items-center gap-[4px] whitespace-nowrap">
           <WuButton variant="ghost" tone="accent" :size="compact ? 'lg' : 'xs'" @click="$emit('editRequested')">点位录入</WuButton>
           <RouterLink to="/assets" target="_blank" rel="noopener" :class="buttonClasses({ variant: 'ghost', tone: 'accent', size: compact ? 'lg' : 'xs' })">资产浏览</RouterLink>
         </div>
       </div>
-      <div class="border-b border-[var(--line)] px-[18px] py-[8px]">
+      <div class="relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[18px] py-[8px]">
         <WuSwitch :model-value="hideNonTeleportPoints" @update:model-value="store.setHideNonTeleportPoints">隐藏非传送点</WuSwitch>
       </div>
       <EchoFilter :compact="compact" />

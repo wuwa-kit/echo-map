@@ -31,7 +31,7 @@ describe('map corner controls layout', () => {
     expect(floorSource).toContain("compactFloors ? 'h-[36px]' : 'h-[40px]'")
     expect(floorSource).toContain("compactFloors ? 'h-[36px] justify-center' : 'h-[40px] gap-[6px] px-[10px]'")
     expect(floorSource).toContain('h-[24px] flex items-center bg-[#10231c] px-[8px] text-[11px]')
-    expect(floorSource).toContain("compactFloors ? 'h-[22px] w-[22px] rotate-45 border-2' : 'h-[18px] w-[18px]'")
+    expect(floorSource).toContain("compactFloors ? 'h-[22px] w-[22px] rotate-45' : 'h-[18px] w-[18px]'")
     expect(floorSource).toContain("compactFloors ? 'left-full top-0 h-[36px] w-[24px]")
     expect(floorSource).toContain('class="text-[16px]"')
   })

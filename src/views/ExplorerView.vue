@@ -189,7 +189,7 @@ const loadError = computed(() => {
     :style="{ '--viewport-height': `${viewportHeight}px`, '--viewport-top': `${viewportTop}px` }"
   >
     <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center gap-[14px] p-[24px] text-center text-[14px] text-[#9ab0a7]">
-      <span class="h-[34px] w-[34px] animate-spin border-2 border-[rgba(101,241,194,0.16)] border-t-[var(--accent)] rounded-full" />
+      <WuSvg name="loader" class="animate-spin text-[var(--accent)] [--wu-svg-h:34px]" />
       <div class="text-[20px] text-[#e4f0eb]">正在装载地图数据</div>
       <div>加载声骸、地图与楼层信息…</div>
     </div>
@@ -215,10 +215,10 @@ const loadError = computed(() => {
       <div
         v-show="!compact || controlVisible"
         ref="controlDockRef"
-        class="absolute z-80 min-h-0 flex flex-col overflow-hidden border border-[var(--line)] bg-[var(--panel)] shadow-xl transition-transform duration-300 ease-out motion-reduce:transition-none"
+        class="absolute z-80 min-h-0 flex flex-col overflow-hidden outline -outline-offset-1 outline-[var(--line)] bg-[var(--panel)] shadow-xl transition-transform duration-300 ease-out motion-reduce:transition-none"
         :class="compact ? compactPanelClass : ['inset-y-0 right-0 w-[var(--control-panel-width)]', controlPanelCollapsed ? 'pointer-events-none translate-x-full' : 'translate-x-0']"
       >
-        <div v-if="compact" class="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-[16px] py-[6px]">
+        <div v-if="compact" class="flex shrink-0 items-center justify-between relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[16px] py-[6px]">
           <span v-if="!editingMode" class="text-[16px] font-semibold">筛选与路线</span>
           <WuButton size="lg" variant="ghost" tone="accent" @click="closeSheet">查看地图</WuButton>
         </div>
@@ -237,7 +237,7 @@ const loadError = computed(() => {
       <div
         v-if="compact"
         ref="mobileBarRef"
-        class="absolute inset-x-0 bottom-0 z-90 flex h-[var(--mobile-bar-height)] items-start border-t border-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-[10px]"
+        class="absolute inset-x-0 bottom-0 z-90 flex h-[var(--mobile-bar-height)] items-start after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-[var(--line)] bg-[#091412] pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))] pt-[10px]"
       >
         <WuButton class="w-full" size="lg" :variant="mobileSheet === 'filters' ? 'solid' : 'outline'" tone="accent" @click="openSheet('filters')">
           {{ editingMode ? '点位录入' : planning ? '路线优化中…' : '筛选与路线' }}<span v-if="!editingMode && selectedEchoIds.length" class="ml-[6px] text-[var(--accent)]">{{ selectedEchoIds.length }}</span>

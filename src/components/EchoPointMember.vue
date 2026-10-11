@@ -15,7 +15,7 @@ const countLabel = computed(() => props.count === null ? '数量未知' : `${pro
 </script>
 
 <template>
-  <div class="flex items-center gap-[10px] rounded-[8px] border bg-[#10241c] p-[8px]" :class="active ? 'border-[#3c866c] text-[#71ecc0]' : 'border-[var(--line)] text-[#c9e1d6]'">
+  <div class="flex items-center gap-[10px] rounded-[8px] outline -outline-offset-1 bg-[#10241c] p-[8px]" :class="active ? 'outline-[#3c866c] text-[#71ecc0]' : 'outline-[var(--line)] text-[#c9e1d6]'">
     <div class="h-[42px] w-[42px] shrink-0 flex items-center justify-center overflow-hidden rounded-[8px] bg-[#0a1712]">
       <img v-if="iconUrl" :src="iconUrl" class="h-[38px] w-[38px] object-contain" loading="lazy" />
       <span v-else class="text-[18px] text-[#688679]">?</span>

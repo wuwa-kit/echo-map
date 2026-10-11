@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { vTooltip } from './tooltip.ts'
 import WuButton from './WuButton.vue'
 import { computed, shallowRef, useAttrs, useId, useTemplateRef } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
@@ -87,7 +86,7 @@ function browseTo(depth: number): void {
   <div class="relative min-w-0">
     <button
       v-bind="attrs" ref="triggerRef" type="button" :disabled="disabled"
-      class="h-[var(--wu-cascader-height,44px)] w-full min-w-0 flex cursor-pointer items-center justify-center gap-[var(--wu-cascader-gap,10px)] border border-[var(--line)] rounded-[8px] bg-[#152b24] px-[var(--wu-cascader-padding,14px)] text-[14px] text-[#eaf4ef] shadow-lg hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
+      class="h-[var(--wu-cascader-height,44px)] w-full min-w-0 flex cursor-pointer items-center justify-center gap-[var(--wu-cascader-gap,10px)] outline -outline-offset-1 outline-[var(--line)] rounded-[8px] bg-[#152b24] px-[var(--wu-cascader-padding,14px)] text-[14px] text-[#eaf4ef] shadow-lg hover:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
       :popovertarget="panelId" v-tooltip="placeholder"
     >
       <span class="min-w-0 truncate">{{ placeholder }}</span>
@@ -96,17 +95,17 @@ function browseTo(depth: number): void {
     <WuPopover
       :id="panelId" ref="popoverRef" :anchor="trigger" :disabled="disabled" :width="panelWidth"
       :gap="popoverGap" :viewport-margin="popoverViewportMargin"
-      class="border border-[var(--line)] bg-[#101f1a] text-[#dce9e3] shadow-2xl"
+      class="outline -outline-offset-1 outline-[var(--line)] bg-[#101f1a] text-[#dce9e3] shadow-2xl"
       :class="compact ? 'rounded-[9px]' : 'rounded-[12px]'"
       @opened="onOpened" @closed="onClosed"
     >
       <slot v-if="showHeader" name="header" :close="close">
-        <div class="flex shrink-0 items-center justify-between gap-[10px] border-b border-[var(--line)] px-[12px] py-[5px]">
+        <div class="flex shrink-0 items-center justify-between gap-[10px] relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[12px] py-[5px]">
           <span class="min-w-0 text-[14px] font-semibold">{{ title ?? placeholder }}</span>
           <WuButton variant="ghost" size="lg" @click="close()">关闭</WuButton>
         </div>
       </slot>
-      <div v-if="narrow && showPath" class="flex shrink-0 flex-wrap items-center gap-x-[5px] border-b border-[var(--line)] px-[12px] py-[4px] text-[13px]">
+      <div v-if="narrow && showPath" class="flex shrink-0 flex-wrap items-center gap-x-[5px] relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[12px] py-[4px] text-[13px]">
         <WuButton variant="ghost" tone="accent" size="lg" @click="browseTo(0)">{{ rootLabel }}</WuButton>
         <template v-for="(ancestor, index) in path" :key="ancestor.value">
           <WuSvg name="chevron-right" class="text-[#627e70] [--wu-svg-h:12px]" />
@@ -116,7 +115,7 @@ function browseTo(depth: number): void {
       <div class="min-h-0 flex overflow-x-auto overscroll-contain">
         <div
           v-for="column in visibleColumns" :key="column.depth" class="min-h-0 min-w-0 flex flex-col"
-          :class="narrow ? 'w-full' : compact ? 'w-max min-w-[112px] max-w-[180px] shrink-0 border-r border-[var(--line)] last:border-r-0' : 'w-[210px] shrink-0 border-r border-[var(--line)] last:border-r-0'"
+          :class="narrow ? 'w-full' : compact ? 'w-max min-w-[112px] max-w-[180px] shrink-0 relative after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-[var(--line)] last:after:hidden' : 'w-[210px] shrink-0 relative after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-[var(--line)] last:after:hidden'"
         >
           <span
             v-if="!narrow && showPath" class="shrink-0 text-[12px] text-[#91ab9d]"
@@ -127,7 +126,7 @@ function browseTo(depth: number): void {
               <button
                 v-for="option in column.options" :key="option.value"
                 type="button" :disabled="option.disabled"
-                class="w-full min-w-0 flex cursor-pointer items-center justify-between border-0 text-left disabled:cursor-not-allowed disabled:opacity-40"
+                class="w-full min-w-0 flex cursor-pointer items-center justify-between text-left disabled:cursor-not-allowed disabled:opacity-40"
                 :class="[
                   path[column.depth]?.value === option.value || selectedValue === option.value ? 'bg-[#244b39] text-[#eafff2]' : option.count === 0 ? 'bg-transparent text-[#60746d] hover:bg-[#1c372b]' : 'bg-transparent text-[#dce9e3] hover:bg-[#1c372b]',
                   compact ? 'min-h-[40px] gap-[5px] rounded-[5px] px-[8px] py-[5px]' : 'min-h-[48px] gap-[8px] rounded-[7px] px-[10px] py-[8px]',

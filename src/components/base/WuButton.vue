@@ -3,7 +3,6 @@ import { useTemplateRef } from 'vue'
 import { buttonClasses } from './button-styles.ts'
 import type { WuButtonSize, WuButtonTone, WuButtonVariant } from './button-styles.ts'
 import WuSvg from './WuSvg.vue'
-import { vTooltip } from './tooltip.ts'
 import type { WuTooltipValue } from './tooltip.ts'
 
 const props = withDefaults(defineProps<{

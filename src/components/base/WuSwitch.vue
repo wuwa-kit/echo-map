@@ -11,8 +11,8 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
   >
     <span><slot /></span>
     <span
-      class="flex h-[20px] w-[36px] shrink-0 items-center rounded-full border p-[2px] transition-colors"
-      :class="modelValue ? 'border-[var(--accent)] bg-[var(--accent)]' : 'border-[#537166] bg-[#233b32]'"
+      class="flex h-[20px] w-[36px] shrink-0 items-center rounded-full outline -outline-offset-1 p-[3px] transition-colors"
+      :class="modelValue ? 'outline-[var(--accent)] bg-[var(--accent)]' : 'outline-[#537166] bg-[#233b32]'"
     >
       <span
         class="h-[14px] w-[14px] rounded-full transition-transform"

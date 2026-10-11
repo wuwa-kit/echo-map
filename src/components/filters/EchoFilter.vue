@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import WuButton from '../base/WuButton.vue'
+import EchoFilterControls from './EchoFilterControls.vue'
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../../stores/explorer.ts'
 import WuScrollArea from '../base/WuScrollArea.vue'
 import WuCheckBox from '../base/WuCheckBox.vue'
-import WuInput from '../base/WuInput.vue'
-import WuMultiSelect from '../base/WuMultiSelect.vue'
 import WuSvg from '../base/WuSvg.vue'
 import WuTooltip from '../base/WuTooltip.vue'
-import type { EchoCostFilter } from '../../url/explorer-url.ts'
 import { echoLocationCoverage } from '../../route/route-groups.ts'
 
 defineProps<{ compact: boolean }>()
@@ -29,18 +26,6 @@ const selectedEchoes = computed(() => {
 const currentSelectedCount = computed(() => candidateEchoes.value.filter(({ id }) => selectedEchoIdSet.value.has(id)).length)
 const allCurrentSelected = computed(() => candidateEchoes.value.length > 0 && currentSelectedCount.value === candidateEchoes.value.length)
 const someCurrentSelected = computed(() => currentSelectedCount.value > 0 && !allCurrentSelected.value)
-const sonataOptions = computed(() => dataset.value?.sonatas.map(({ id, name, iconUrl }) => ({ value: id, label: name, iconUrl })) ?? [])
-const costOptions = [{ value: 1, label: 'C1' }, { value: 3, label: 'C3' }] as const
-const activeCostFilterSet = computed(() => new Set<EchoCostFilter>(echoCostFilters.value))
-
-function toggleCostFilter(cost: EchoCostFilter): void {
-  const next = new Set(activeCostFilterSet.value)
-  if (next.has(cost)) next.delete(cost)
-  else next.add(cost)
-  const filters = costOptions.filter(({ value }) => next.has(value)).map(({ value }) => value)
-  store.setEchoCostFilters(filters)
-}
-
 function setCurrentSelection(selected: boolean): void {
   if (selected) store.selectCandidateEchoes()
   else store.deselectCandidateEchoes()
@@ -52,25 +37,8 @@ const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCovera
 </script>
 
 <template>
-  <div id="echo-filters" class="border-b border-[var(--line)] p-[18px]">
-    <div class="mb-[10px]">
-      <div class="min-w-0">
-        <WuMultiSelect
-          id="sonata-filter-select"
-          :model-value="sonataFilterIds"
-          :options="sonataOptions"
-          label="合鸣套装"
-          all-label="全部套装"
-          search-placeholder="搜索合鸣套装"
-          @update:model-value="store.setSonataFilters"
-        />
-      </div>
-    </div>
-    <div class="mb-[10px] flex h-[44px] w-full min-[1024px]:h-[34px] items-center gap-[7px] border border-[var(--line)] rounded-[7px] bg-[rgba(21,40,35,0.78)] px-[10px] text-[#6f887f] focus-within:border-[rgba(101,241,194,0.55)]">
-      <WuSvg name="search" class="shrink-0 [--wu-svg-h:14px]" />
-      <WuInput variant="plain" size="sm" :model-value="echoSearch" type="search" placeholder="搜索当前声骸列表" @update:model-value="store.setEchoSearch" />
-    </div>
-    <div class="mb-[9px] flex items-center justify-between gap-[7px]">
+  <div id="echo-filters" class="relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] p-[18px]">
+    <EchoFilterControls :sonatas="dataset?.sonatas ?? []" :sonata-ids="sonataFilterIds" :costs="echoCostFilters" :search="echoSearch" :compact="compact" @sonatas-changed="store.setSonataFilters" @costs-changed="store.setEchoCostFilters" @search-changed="store.setEchoSearch">
       <WuCheckBox
         class="flex shrink-0 items-center gap-[6px] text-[12px] min-[1024px]:text-[9px] text-[#8fa69d]"
         :model-value="allCurrentSelected"
@@ -78,10 +46,7 @@ const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCovera
         :disabled="candidateEchoes.length === 0"
         @update:model-value="setCurrentSelection"
       >{{ currentSelectedCount }} / {{ candidateEchoes.length }}</WuCheckBox>
-      <div class="flex shrink-0 gap-[5px]">
-        <WuButton v-for="option in costOptions" :key="option.value" :size="compact ? 'lg' : 'xs'" :tone="activeCostFilterSet.has(option.value) ? 'accent' : 'neutral'" @click="toggleCostFilter(option.value)">{{ option.label }}</WuButton>
-      </div>
-    </div>
+    </EchoFilterControls>
     <WuScrollArea
       class="h-[290px]"
       content-class="flex flex-col gap-[4px] pr-[2px]"
@@ -93,10 +58,10 @@ const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCovera
       <button
         v-for="echo in filteredEchoes"
         :key="echo.id"
-        class="grid min-h-[48px] w-full cursor-pointer grid-cols-[40px_minmax(0,1fr)_20px] items-center rounded-[6px] border px-[8px] py-[4px] pl-[4px] text-left [font-family:inherit]"
+        class="grid min-h-[48px] w-full cursor-pointer grid-cols-[40px_minmax(0,1fr)_20px] items-center rounded-[6px] outline -outline-offset-1 px-[8px] py-[4px] pl-[4px] text-left [font-family:inherit]"
         :class="selectedEchoIds.includes(echo.id)
-          ? 'border-[rgba(101,241,194,0.34)] bg-[rgba(34,65,55,0.66)]'
-          : 'border-transparent bg-[rgba(25,43,38,0.48)] hover:border-[rgba(101,241,194,0.34)] hover:bg-[rgba(34,65,55,0.66)]'"
+          ? 'outline-[rgba(101,241,194,0.34)] bg-[rgba(34,65,55,0.66)]'
+          : 'outline-transparent bg-[rgba(25,43,38,0.48)] hover:outline-[rgba(101,241,194,0.34)] hover:bg-[rgba(34,65,55,0.66)]'"
         type="button"
         @click="store.toggleEcho(echo.id)"
       >
@@ -111,11 +76,11 @@ const locationCoverageByEcho = computed(() => dataset.value ? echoLocationCovera
         <WuSvg :name="selectedEchoIds.includes(echo.id) ? 'check' : 'plus'" class="text-[var(--accent)] [--wu-svg-h:14px]" />
       </button>
     </WuScrollArea>
-    <div v-if="selectedEchoes.length" class="mt-[10px] min-w-0 border-t border-[var(--line)] pt-[10px]">
+    <div v-if="selectedEchoes.length" class="mt-[10px] min-w-0 relative after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-[var(--line)] pt-[10px]">
       <div class="min-w-0 overflow-x-auto overscroll-x-contain pb-[2px]">
         <div class="w-max flex gap-[5px]">
           <WuTooltip v-for="echo in selectedEchoes" :key="echo.id" :content="echo.name" placement="top" :gap="6" class="shrink-0">
-            <button type="button" class="h-[36px] w-[36px] shrink-0 flex cursor-pointer items-center justify-center rounded-[6px] border border-[rgba(101,241,194,0.34)] bg-[rgba(34,65,55,0.66)] p-[2px] hover:border-[rgba(101,241,194,0.72)] hover:bg-[#264b3c]" @click="store.toggleEcho(echo.id)">
+            <button type="button" class="h-[36px] w-[36px] shrink-0 flex cursor-pointer items-center justify-center rounded-[6px] outline -outline-offset-1 outline-[rgba(101,241,194,0.34)] bg-[rgba(34,65,55,0.66)] p-[2px] hover:outline-[rgba(101,241,194,0.72)] hover:bg-[#264b3c]" @click="store.toggleEcho(echo.id)">
               <img class="h-[30px] w-[30px] object-contain" :src="echo.iconUrl" />
             </button>
           </WuTooltip>

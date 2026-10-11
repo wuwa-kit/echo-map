@@ -3,7 +3,8 @@
 }
 
 .ol-control {
-  border: 1px solid var(--line) !important;
+  outline: 1px solid var(--line) !important;
+  outline-offset: -1px;
   border-radius: 7px !important;
   background: rgba(8, 19, 17, 0.82) !important;
   backdrop-filter: blur(10px);
