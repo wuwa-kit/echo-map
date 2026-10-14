@@ -44,7 +44,7 @@ function render(layer: VectorLayer, context: ReturnType<typeof drawingContext>, 
 }
 
 describe('route map lines', () => {
-  it('uses one color without arrow outlines and applies opacity once after drawing', () => {
+  it('outlines lines and arrows and applies opacity once after drawing', () => {
     const routeLayer = createRouteLayer()
     const context = drawingContext()
     const strokes: { color: string; width: number; alpha: number; composite: string }[] = []
@@ -55,10 +55,12 @@ describe('route map lines', () => {
       routeLayer.update({ points: [point('first', 0), point('second', 200)], totalCost: 200, startPointId: null, algorithm: 'exact' })
       render(routeLayer.layer, context)
       expect(strokes).toEqual([
-        { color: '#65f1c2', width: 3, alpha: 1, composite: 'source-over' },
-        { color: '#65f1c2', width: 3, alpha: 1, composite: 'source-over' },
+        { color: '#07110f', width: 4, alpha: 1, composite: 'source-over' },
+        { color: '#65f1c2', width: 2, alpha: 1, composite: 'source-over' },
+        { color: '#07110f', width: 4, alpha: 1, composite: 'source-over' },
+        { color: '#65f1c2', width: 2, alpha: 1, composite: 'source-over' },
       ])
-      expect(opacityPasses).toEqual([{ alpha: 0.6, composite: 'destination-in' }])
+      expect(opacityPasses).toEqual([{ alpha: 0.95, composite: 'destination-in' }])
       expect(context.resetTransform).toHaveBeenCalledOnce()
       expect(context.fillRect).toHaveBeenCalledExactlyOnceWith(0, 0, 600, 600)
       expect(context.fillRect.mock.invocationCallOrder[0]).toBeGreaterThan(context.stroke.mock.invocationCallOrder.at(-1) ?? 0)
@@ -274,7 +276,7 @@ describe('route map lines', () => {
         render(routeLayer.layer, context, scale)
         const tail = context.moveTo.mock.calls[1], tip = context.lineTo.mock.calls[1]
         if (!tail || !tip) throw new Error('路线没有方向箭头')
-        return { width: strokes[0] ?? 0, arrowWidth: strokes[1] ?? 0, dash: context.setLineDash.mock.calls[0]?.[0]?.[0] ?? 0, arrow: tip[0] - tail[0] }
+        return { outlineWidth: strokes[0] ?? 0, width: strokes[1] ?? 0, arrowWidth: strokes[3] ?? 0, dash: context.setLineDash.mock.calls[0]?.[0]?.[0] ?? 0, arrow: tip[0] - tail[0] }
       })
       expect(sizes[0]).toEqual(sizes[1])
       for (const key of ['width', 'arrowWidth', 'dash', 'arrow'] as const) {
@@ -286,8 +288,9 @@ describe('route map lines', () => {
         expect(sizes[index]?.arrow).toBeLessThan(sizes[index - 1]?.arrow ?? 0)
       }
       for (const size of sizes) {
-        expect(size.width).toBeGreaterThanOrEqual(1)
-        expect(size.arrow / size.width).toBeCloseTo(3)
+        expect(size.outlineWidth - size.width).toBeCloseTo(2)
+        expect(size.width).toBeGreaterThanOrEqual(0.8)
+        expect(size.arrow / size.width).toBeCloseTo(4.5)
         expect(size.arrowWidth).toBeCloseTo(size.width)
       }
     } finally { routeLayer.dispose() }
@@ -350,10 +353,10 @@ describe('route map lines', () => {
       const dx = endCorner[0] - startCorner[0]
       const dy = endCorner[1] - startCorner[1]
       const length = Math.hypot(dx, dy)
-      expect(context.moveTo.mock.calls[0]?.[0]).toBeCloseTo(startCorner[0] + dx / length * 5.5)
-      expect(context.moveTo.mock.calls[0]?.[1]).toBeCloseTo(startCorner[1] + dy / length * 5.5)
-      expect(context.lineTo.mock.calls[0]?.[0]).toBeCloseTo(endCorner[0] - dx / length * 5.5)
-      expect(context.lineTo.mock.calls[0]?.[1]).toBeCloseTo(endCorner[1] - dy / length * 5.5)
+      expect(context.moveTo.mock.calls[0]?.[0]).toBeCloseTo(startCorner[0] + dx / length * 5)
+      expect(context.moveTo.mock.calls[0]?.[1]).toBeCloseTo(startCorner[1] + dy / length * 5)
+      expect(context.lineTo.mock.calls[0]?.[0]).toBeCloseTo(endCorner[0] - dx / length * 5)
+      expect(context.lineTo.mock.calls[0]?.[1]).toBeCloseTo(endCorner[1] - dy / length * 5)
       expect(context.fill).toHaveBeenCalledTimes(2)
       expect(context.closePath).toHaveBeenCalledTimes(2)
       expect(context.clearRect).not.toHaveBeenCalled()
@@ -379,8 +382,8 @@ describe('route map lines', () => {
       })
       render(routeLayer.layer, context)
       expect(context.moveTo.mock.calls[0]).toEqual([100, 200])
-      expect(context.lineTo.mock.calls[0]).toEqual([100, 127.5])
-      expect(context.stroke).toHaveBeenCalledTimes(3)
+      expect(context.lineTo.mock.calls[0]).toEqual([100, 127])
+      expect(context.stroke).toHaveBeenCalledTimes(5)
     } finally {
       routeLayer.dispose()
       iconLayer.dispose()
@@ -413,7 +416,7 @@ describe('route map lines', () => {
       for (const scale of [1, 2]) {
         const context = drawingContext()
         render(routeLayer.layer, context, scale)
-        expect(context.moveTo.mock.calls[0]).toEqual([100 * scale + (unreadable ? 16 : 4) + 5.5, 200])
+        expect(context.moveTo.mock.calls[0]).toEqual([100 * scale + (unreadable ? 16 : 4) + 5, 200])
         expect(context.lineTo.mock.calls[0]).toEqual([200 * scale, 200])
         expect(context.fill).toHaveBeenCalledOnce()
       }
@@ -426,8 +429,8 @@ describe('route map lines', () => {
   })
 
   it.each([
-    { pointType: 'normal-boss', typeName: '星海迷途之扉', expected: [100 + 22 + 5.5, 200], vertices: 4 },
-    { pointType: 'weekly-boss', typeName: '我的周本定位点', expected: [100 + 22 + 5.5, 200], vertices: 8 },
+    { pointType: 'normal-boss', typeName: '星海迷途之扉', expected: [100 + 22 + 5, 200], vertices: 4 },
+    { pointType: 'weekly-boss', typeName: '我的周本定位点', expected: [100 + 22 + 5, 200], vertices: 8 },
   ])('uses the rendered boss border for $pointType with name $typeName', ({ pointType, typeName, expected, vertices }) => {
     const source = new VectorSource({ features: [new Feature({
       geometry: new Point([100, 0]), mapPoint: { category: 'navigation', location: { id: 'boss', kind: 'boss', pointType, typeName, iconUrl: 'boss.png' } },

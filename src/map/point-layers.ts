@@ -70,6 +70,7 @@ const NON_TELEPORT_Z_INDEX = -4
 const NAVIGATION_HEIGHT_Z_INDEX_STEP = 8
 const ECHO_CLUSTER_DISTANCE = 32
 const EXPORT_MARKER_SCALE = 0.6
+const UNUSED_TELEPORT_OPACITY = 0.35
 
 export function mapFeaturePointIds(feature: FeatureLike): string[] | undefined {
   const locations = feature.get('locations') as EchoMapLocation[] | undefined
@@ -197,6 +198,8 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   let clusterStyleCache = new WeakMap<FeatureLike, { members: Feature<Point>[]; locations: EchoMapLocation[]; styles: Style[] }>()
   const labelStyleCache = new globalThis.Map<string, Style>()
   let routeTeleportIds = new Set<string>()
+  let hasVisibleRoute = false
+  let dimmedStyles = new WeakMap<Style, Style>()
 
   const echoLayer = new VectorLayer({
     source: clusters ?? echoSource,
@@ -260,6 +263,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   }
 
   function redrawPointLayers(): void {
+    dimmedStyles = new WeakMap()
     echoLayer.changed()
     backgroundEchoLayer.changed()
     navigationLayer.changed()
@@ -320,8 +324,10 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
   }
 
   function setVisibleRoutes(routes: readonly RouteResult[]): void {
-    const ids = new Set(routes.flatMap(({ points }) => points.flatMap(({ teleportFrom }) => teleportFrom ? [teleportFrom.id] : [])))
-    if (ids.size === routeTeleportIds.size && [...ids].every((id) => routeTeleportIds.has(id))) return
+    const visible = routes.some(({ points }) => points.length > 1 || points.some(({ teleportFrom }) => teleportFrom))
+    const ids = new Set(routes.flatMap(({ points }) => points.flatMap(({ id, teleportFrom }) => teleportFrom ? [id, teleportFrom.id] : [id])))
+    if (visible === hasVisibleRoute && ids.size === routeTeleportIds.size && [...ids].every((id) => routeTeleportIds.has(id))) return
+    hasVisibleRoute = visible
     routeTeleportIds = ids
     navigationLayer.changed()
     backgroundNavigationLayer.changed()
@@ -362,7 +368,23 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
       if (image) elevated.setImage(image)
       if (text) elevated.setText(text)
       elevated.setZIndex(height * NAVIGATION_HEIGHT_Z_INDEX_STEP + (base.getZIndex() ?? 0))
-      return elevated
+      if (!hasVisibleRoute || nonTeleport || routeTeleportIds.has(point.location.id)) return elevated
+      let dimmed = dimmedStyles.get(elevated)
+      if (!dimmed) {
+        dimmed = elevated.clone()
+        const dimmedImage = dimmed.getImage()
+        if (dimmedImage) dimmedImage.setOpacity(dimmedImage.getOpacity() * UNUSED_TELEPORT_OPACITY)
+        const dimmedText = dimmed.getText()
+        for (const paint of [dimmedText?.getFill(), dimmedText?.getStroke()]) {
+          const color = paint?.getColor()
+          if (!paint || !color || (typeof color !== 'string' && !Array.isArray(color))) continue
+          const [red = 0, green = 0, blue = 0, alpha = 1] = asArray(color)
+          paint.setColor([red, green, blue, alpha * UNUSED_TELEPORT_OPACITY])
+        }
+        dimmedStyles.set(elevated, dimmed)
+      }
+      if (image) dimmed.getImage()?.setScale(image.getScale())
+      return dimmed
     })
   }
 
@@ -393,6 +415,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     selectedLevelId = levelId
     clusterStyleCache = new WeakMap()
     navigationHeightStyles = new WeakMap()
+    dimmedStyles = new WeakMap()
     echoSource.clear(true)
     navigationSource.clear(true)
     backgroundEchoSource.clear(true)

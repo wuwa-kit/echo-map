@@ -512,7 +512,12 @@ describe('map display layer integration', () => {
           for (const resolution of [128, 64, 16]) {
             expect(Boolean(layer?.getStyleFunction()?.(feature, resolution))).toBe(ids.includes(point.location.id))
           }
-          expect(layer?.getStyleFunction()?.(feature, mapResolutionForScale(2))).toBeDefined()
+          const visibleStyles = layer?.getStyleFunction()?.(feature, mapResolutionForScale(2))
+          expect(visibleStyles).toBeDefined()
+          const expectedOpacity = routes.length > 0 && !ids.includes(point.location.id) ? 0.35 : 1
+          for (const style of Array.isArray(visibleStyles) ? visibleStyles : visibleStyles ? [visibleStyles] : []) {
+            if (point.location.mode === 'fast-travel') expect(style.getImage()?.getOpacity()).toBeCloseTo(expectedOpacity)
+          }
         }
       }
       expect(echoLayer?.getStyleFunction()?.(echoFeature, 64)).toBeUndefined()

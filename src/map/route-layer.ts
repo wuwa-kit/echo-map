@@ -13,8 +13,11 @@ import { createIconOutlineCache } from './icon-outline.ts'
 import type { MapDisplayPoint, RoutePoint, RouteResult } from '../domain/types.ts'
 
 const ICON_GAP = 4
-const LINE_WIDTH = 3
-const ROUTE_OPACITY = 0.6
+const LINE_WIDTH = 2
+const ROUTE_OPACITY = 0.95
+const ROUTE_COLOR = '#65f1c2'
+const ROUTE_OUTLINE_COLOR = '#07110f'
+const ROUTE_OUTLINE_WIDTH = 1
 const ARROW_LENGTH = 9
 const ARROW_HALF_WIDTH = 5
 const ARROW_SPACING = 80
@@ -213,6 +216,7 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     // maps and exports, independent of their URL zoom and device pixel ratio.
     const scale = Math.max(MIN_ROUTE_SCALE, Math.min(1, 1 / Math.sqrt(resolution)))
     const lineWidth = LINE_WIDTH * scale
+    const outlineWidth = Math.max(1, ROUTE_OUTLINE_WIDTH * scale)
     const extent = buffer(frameState.extent, 64 * resolution)
     const icons: VisibleIcon[] = []
     const iconsByPoint = new Map<string, VisibleIcon>()
@@ -264,39 +268,47 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     context.setTransform(a, b, c, d, e, f)
     context.globalAlpha = 1
     context.globalCompositeOperation = 'source-over'
-    context.strokeStyle = '#65f1c2'
-    context.lineWidth = lineWidth
     context.lineCap = 'round'
+    context.lineJoin = 'round'
+    const strokeRoute = (): void => {
+      context.strokeStyle = ROUTE_OUTLINE_COLOR
+      context.lineWidth = lineWidth + outlineWidth * 2
+      context.stroke()
+      context.strokeStyle = ROUTE_COLOR
+      context.lineWidth = lineWidth
+      context.stroke()
+    }
     context.setLineDash([9 * scale, 7 * scale])
+    context.beginPath()
     const arrows: [Pixel, Pixel, Pixel][] = []
     for (const { from, to } of legs) {
       const endpoints = linkEndpoints(pixel([...from.mapCoordinate]), pixel([...to.mapCoordinate]), from.isTeleportArrival ? undefined : iconsByPoint.get(from.id), iconsByPoint.get(to.id), lineWidth)
       if (!endpoints) continue
-      context.beginPath()
       context.moveTo(...endpoints[0])
       context.lineTo(...endpoints[1])
-      context.stroke()
       arrows.push(...directionArrows(endpoints, frameState.size, scale))
     }
+    strokeRoute()
     context.setLineDash([])
-    context.lineJoin = 'round'
-    if (arrows.length > 0) {
-      context.beginPath()
-      for (const [left, tip, right] of arrows) {
-        context.moveTo(...left)
-        context.lineTo(...tip)
-        context.lineTo(...right)
-      }
-      context.stroke()
+    context.beginPath()
+    for (const [left, tip, right] of arrows) {
+      context.moveTo(...left)
+      context.lineTo(...tip)
+      context.lineTo(...right)
     }
-    context.fillStyle = '#07110f'
-    context.strokeStyle = '#65f1c2'
-    context.lineWidth = Math.max(1.5, 2 * scale)
+    if (arrows.length > 0) strokeRoute()
+    context.fillStyle = ROUTE_OUTLINE_COLOR
+    const arrivalLineWidth = Math.max(1.5, 2 * scale)
     for (const arrival of teleportArrivals) {
       const [x, y] = pixel([...arrival.mapCoordinate])
       context.beginPath()
       context.arc(x, y, TELEPORT_ARRIVAL_RADIUS * scale, 0, Math.PI * 2)
       context.fill()
+      context.strokeStyle = ROUTE_OUTLINE_COLOR
+      context.lineWidth = arrivalLineWidth + outlineWidth * 2
+      context.stroke()
+      context.strokeStyle = ROUTE_COLOR
+      context.lineWidth = arrivalLineWidth
       context.stroke()
     }
     // Clip against visible outlines, including unrelated icons crossed by a leg.
