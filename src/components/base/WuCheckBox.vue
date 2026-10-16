@@ -2,6 +2,7 @@
 import WuSvg from './WuSvg.vue'
 
 const props = withDefaults(defineProps<{
+  modelValue: boolean
   disabled?: boolean
   indeterminate?: boolean
 }>(), {
@@ -9,13 +10,15 @@ const props = withDefaults(defineProps<{
   indeterminate: false,
 })
 
-const model = defineModel<boolean>({ required: true })
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+}>()
 
 function toggle(): void {
   if (props.disabled) {
     return
   }
-  model.value = !model.value
+  emit('update:modelValue', props.indeterminate ? false : !props.modelValue)
 }
 </script>
 
@@ -27,7 +30,7 @@ function toggle(): void {
   >
     <span
       class="pointer-events-none grid h-[14px] w-[14px] shrink-0 place-items-center outline -outline-offset-1 rounded-[4px] transition-[outline-color,background-color,box-shadow] duration-150"
-      :class="model || props.indeterminate
+      :class="props.modelValue || props.indeterminate
         ? 'outline-[rgba(101,241,194,0.72)] bg-[var(--accent)] text-[#0b211a] shadow-[0_0_8px_rgba(101,241,194,0.18)]'
         : props.disabled
           ? 'outline-[rgba(169,207,192,0.1)] bg-[rgba(12,25,21,0.72)] text-transparent'

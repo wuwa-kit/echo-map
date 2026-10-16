@@ -12,13 +12,42 @@ vi.mock('../scripts/lib/files.ts', () => ({
 
 afterEach(() => { vi.restoreAllMocks() })
 
+it('excludes nightmare C1/C3 echoes and the designated nightmare sonata while preserving mixed memberships', async () => {
+  vi.spyOn(console, 'log').mockImplementation(() => {})
+  const record = (id: number, name: string, cost?: number) => ({
+    id, name, content: { contentUrl: '', relateTagIds: cost ? [`c${cost}`] : [], linkConfig: { entryId: String(id) } },
+  })
+  vi.mocked(postFormJson).mockImplementation(async (_url, _headers, body) => {
+    if (body.id) {
+      expect(body.id).toBe('1')
+      return { data: { content: { title: '混合套装', modules: [{ title: '对应声骸', components: [
+        { title: 'COST 1', content: '<a href="/mc/item/11">梦魇·小声骸</a><a href="/mc/item/12">普通声骸</a>' },
+        { title: 'COST 3', content: '<a href="/mc/item/13">梦魇·精英</a><a href="/mc/item/14">共鸣回响·梦魇测试</a>' },
+      ] }] } } }
+    }
+    return { data: {
+      results: { records: body.catalogueId === '1107' ? [
+        record(11, '梦魇·小声骸', 1), record(12, '普通声骸', 1),
+        record(13, '梦魇·精英', 3), record(14, '共鸣回响·梦魇测试', 3),
+      ] : [record(22147, '碎梦亡鬼之魇'), record(1, '混合套装')] },
+      tagTree: [{ id: 'costs', name: 'COST', children: [1, 3].map((cost) => ({ id: `c${cost}`, name: `C${cost}`, children: [] })) }],
+    } }
+  })
+  const snapshot = await syncWiki()
+  expect(snapshot.totalEchoCount).toBe(4)
+  expect(snapshot.excludedEchoNames).toEqual(expect.arrayContaining(['梦魇·小声骸', '梦魇·精英']))
+  expect(snapshot.echoes.map(({ id }) => id).sort()).toEqual(['wiki-echo-12', 'wiki-echo-14'])
+  expect(snapshot.echoes.every(({ sonataIds }) => sonataIds.length === 1 && sonataIds[0] === 'wiki-sonata-1')).toBe(true)
+  expect(snapshot.sonatas).toEqual([expect.objectContaining({ id: 'wiki-sonata-1', c1EchoIds: ['wiki-echo-12'], c3EchoIds: ['wiki-echo-14'] })])
+})
+
 it('preserves Wiki display order while writing whitelisted per-COST sonata memberships', async () => {
   vi.spyOn(console, 'log').mockImplementation(() => {})
   const tag = (id: string, name: string) => ({ id, name, children: [] })
   const record = (id: number, name: string, relateTagIds: string[] = []) => ({ id, name, content: { contentUrl: '', relateTagIds, linkConfig: { entryId: String(id) } } })
   vi.mocked(postFormJson).mockImplementation(async (_url, _headers, body) => {
     if (body.id === '111') return { data: { content: { title: '小声骸（敌人）' } } }
-    if (body.id) return { data: { content: { modules: [{ title: '对应声骸', components: [
+    if (body.id) return { data: { content: { title: body.id === '1' ? '甲套装' : body.id === '2' ? '乙套装' : '空套装', modules: [{ title: '对应声骸', components: [
       { title: 'COST 4', content: '<a href="/mc/item/13">BOSS</a>' },
       ...(body.id === '3' ? [] : [{ title: 'COST 1', content: `<a href="/mc/item/${body.id === '2' ? '111' : '11'}">小声骸</a>` }]),
       ...(body.id === '1' ? [{ title: 'COST 3', content: '<a href="/mc/item/12">精英声骸</a>' }] : []),

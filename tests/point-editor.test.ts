@@ -2,6 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick, watchEffect } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { usePointEditorStore } from '../src/stores/point-editor.ts'
+import { useEchoSearchHistoryStore } from '../src/stores/echo-search-history.ts'
 import { useExplorerStore } from '../src/stores/explorer.ts'
 import { loadMapAssetCatalog, loadMapDataset } from '../src/data/load.ts'
 import { readEditorLibrary, saveEditorLibrary } from '../src/data/editor-client.ts'
@@ -72,6 +73,32 @@ async function saveWithDuplicateConfirmation(store: ReturnType<typeof usePointEd
 }
 
 describe('point editor actions', () => {
+  it('records the search immediately when adding a draft member before saving', async () => {
+    const store = usePointEditorStore()
+    await store.load('echo')
+    store.newPoint('echo')
+    const history = useEchoSearchHistoryStore()
+    store.setMonsterSearch(' 小声骸 ')
+    expect(history.entries).toEqual([])
+    store.addMember(smallEcho.id)
+    expect(history.entries).toEqual(['小声骸'])
+    expect(store.editing).toBe(true)
+    expect(store.dirty).toBe(true)
+    expect(saveEditorLibrary).not.toHaveBeenCalled()
+    store.setMonsterSearch('C1')
+    store.addMember(smallEcho.id)
+    expect(history.entries).toEqual(['C1', '小声骸'])
+    store.setMonsterSearch('小声骸')
+    store.addMember(smallEcho.id)
+    expect(history.entries).toEqual(['小声骸', 'C1'])
+    store.setMonsterSearch('不应记录')
+    store.addMember('missing')
+    store.adjustMemberCount(smallEcho.id, -1)
+    store.setMemberCount(smallEcho.id, 999)
+    store.addMember(smallEcho.id)
+    expect(history.entries).toEqual(['小声骸', 'C1'])
+  })
+
   it('keeps ten unique completed manual names, supports deletion, and restores them', async () => {
     const store = usePointEditorStore()
     await store.load('navigation')

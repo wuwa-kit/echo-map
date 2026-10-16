@@ -169,6 +169,9 @@ for (const label of dataset.regionLabels) {
 }
 
 for (const echo of dataset.echoes) {
+  if (echo.name.startsWith('梦魇·')) {
+    errors.push(`${echo.name} 是已排除的梦魇声骸`)
+  }
   if (echo.cost !== 1 && echo.cost !== 3) {
     errors.push(`${echo.name} 不是 C1/C3 声骸`)
   }
@@ -181,6 +184,8 @@ for (const echo of dataset.echoes) {
     }
   }
 }
+
+if (sonataIds.has('wiki-sonata-22147')) errors.push('碎梦亡鬼之魇不应进入合鸣套装目录')
 
 if (dataset.navigationPoints.length || dataset.navigationPointGroups.length) errors.push('官方数据不应包含定位点或定位点分组')
 

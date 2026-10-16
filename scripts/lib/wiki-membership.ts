@@ -5,10 +5,19 @@ export function wikiEntryId(record: UnknownRecord): string {
   const content = asRecord(record.content, 'wiki record content')
   const config = content.linkConfig ? asRecord(content.linkConfig, 'wiki link config') : {}
   // Entry IDs exceed Number.MAX_SAFE_INTEGER; use the exact string in the link.
-  const id = asString(config.entryId) || asString(content.linkId)
-    || (asString(config.linkUrl) || asString(content.linkUrl)).match(/\/item\/(\d+)/u)?.[1]
+  const linkedIds = [config.linkUrl, content.linkUrl]
+    .map((value) => asString(value).match(/\/item\/(\d+)/u)?.[1])
+    .filter((value) => value !== undefined)
+  if (new Set(linkedIds).size > 1) throw new Error(`Wiki 条目链接冲突：${asString(record.name)}`)
+  const id = linkedIds[0] || asString(config.entryId) || asString(content.linkId)
   if (!id || !/^\d+$/u.test(id)) throw new Error(`Wiki 条目缺少精确链接 ID：${asString(record.name)}`)
   return id
+}
+
+export function validateWikiTitle(response: unknown, expectedName: string): void {
+  const data = asRecord(asRecord(response, 'wiki detail response').data, 'wiki detail data')
+  const title = asString(asRecord(data.content, 'wiki detail content').title).trim().replace(/（合鸣）$/u, '')
+  if (title !== expectedName.trim()) throw new Error(`Wiki 条目标题不匹配：预期 ${expectedName}，实际 ${title}`)
 }
 
 export function parseSonataMembers(response: unknown): Map<string, 1 | 3> {

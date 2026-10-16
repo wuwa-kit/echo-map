@@ -4,6 +4,7 @@ import { navigationIconById, navigationTypeIcons } from '../domain/navigation-ic
 import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
+import { useEchoSearchHistoryStore } from './echo-search-history.ts'
 import { freeze, produce } from 'immer'
 import { navigationPointTypeSchema, pointTransferSchema } from '../domain/schema.ts'
 import { emptyPointLibrary, isOfficialPoint, parseCoordinateInput, parsePointLibrary } from '../domain/point-library.ts'
@@ -387,6 +388,8 @@ export const usePointEditorStore = defineStore('point-editor', () => {
   }
 
   function addMember(echoId: string): void {
+    if (busy.value || draft.value?.kind !== 'echo') return
+    if ((draft.value.members.find(member => member.echoId === echoId)?.count ?? 0) >= 999) return
     if (!dataset.value?.echoes.some(({ id }) => id === echoId)) return
     clearInputError('members')
     clearInputError(`count:${echoId}`)
@@ -398,6 +401,7 @@ export const usePointEditorStore = defineStore('point-editor', () => {
       else point.members.push({ echoId, count: 1 })
       point.compositionStatus = 'partial'
     })
+    useEchoSearchHistoryStore().record(monsterSearch.value)
   }
 
   function setMemberCount(echoId: string, value: number | string): void {

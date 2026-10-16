@@ -1,9 +1,9 @@
 {
   "wikiEchoCount": 205,
-  "includedEchoCount": 140,
-  "excludedEchoCount": 65,
-  "sonataCount": 37,
-  "exactMatchedEchoCount": 115,
+  "includedEchoCount": 128,
+  "excludedEchoCount": 77,
+  "sonataCount": 36,
+  "exactMatchedEchoCount": 103,
   "aliasMatchedEchoCount": 3,
   "unmatchedEchoNames": [
     "不熄猎手",
@@ -29,6 +29,6 @@
     "巡宵枪卫",
     "玉冥蛇"
   ],
-  "provisionalEchoLocationCount": 6675,
+  "provisionalEchoLocationCount": 6654,
   "routeEligibleEchoLocationCount": 4
 }

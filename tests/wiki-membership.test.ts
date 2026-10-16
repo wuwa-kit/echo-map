@@ -1,7 +1,19 @@
 import { expect, it } from 'vitest'
-import { parseSonataMembers, wikiEntryId } from '../scripts/lib/wiki-membership.ts'
+import { parseSonataMembers, validateWikiTitle, wikiEntryId } from '../scripts/lib/wiki-membership.ts'
 
 const detail = (components: unknown[]) => ({ data: { content: { modules: [{ title: '对应声骸', components }] } } })
+
+it('prefers the destination URL over stale entry IDs and rejects conflicting URLs', () => {
+  expect(wikiEntryId({ content: { linkConfig: { entryId: '1408881479672999936', linkUrl: 'https://wiki.kurobbs.com/mc/item/1431439416570245120' }, linkId: '1408881479672999936' } })).toBe('1431439416570245120')
+  expect(() => wikiEntryId({ content: { linkConfig: { linkUrl: '/mc/item/123' }, linkUrl: '/mc/item/456' } })).toThrow('链接冲突')
+})
+
+it('rejects another sonata detail even when its membership structure is valid', () => {
+  expect(() => validateWikiTitle({ data: { content: { title: '荣斗铸锋之冠' } } }, '命理崩毁之弦')).toThrow('标题不匹配')
+  expect(() => validateWikiTitle({ data: { content: { title: ' 命理崩毁之弦 ' } } }, '命理崩毁之弦')).not.toThrow()
+  expect(() => validateWikiTitle({ data: { content: { title: '镜影流电之瞬（合鸣）' } } }, '镜影流电之瞬')).not.toThrow()
+  expect(() => validateWikiTitle({ data: { content: {} } }, '命理崩毁之弦')).toThrow('标题不匹配')
+})
 
 it('uses exact string entry links instead of rounded catalogue entry IDs', () => {
   expect(wikiEntryId({ entryId: 1553877397214363600, content: { linkConfig: { entryId: '1553877397214363648' } } })).toBe('1553877397214363648')

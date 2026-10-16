@@ -4,13 +4,15 @@ import { asArray, asNumber, asRecord, asString, nested } from './lib/raw.ts'
 import type { UnknownRecord } from './lib/raw.ts'
 import type { WikiSnapshot } from './lib/wiki.ts'
 import { withSonataEchoIds } from './lib/wiki.ts'
-import { parseSonataMembers, wikiEntryId } from './lib/wiki-membership.ts'
+import { parseSonataMembers, validateWikiTitle, wikiEntryId } from './lib/wiki-membership.ts'
 import { wikiCatalogueSchema } from '../src/domain/schema.ts'
 import type { EchoDefinition, NonEmptyArray, SonataEffect } from '../src/domain/types.ts'
 
 const WIKI_PAGE_API = 'https://api.kurobbs.com/wiki/core/catalogue/item/getPage'
 const ECHO_CATALOGUE_ID = '1107'
 const SONATA_CATALOGUE_ID = '1219'
+// 碎梦亡鬼之魇仅包含梦魇 C4，不纳入声骸目标目录。
+const EXCLUDED_SONATA_IDS = new Set(['22147'])
 
 interface WikiTag {
   id: string
@@ -98,13 +100,15 @@ export async function syncWiki(): Promise<WikiSnapshot> {
     throw new Error('声骸目录缺少“COST”标签组，拒绝生成可能污染的数据')
   }
 
-  const sonatas = normalizeSonatas(sonataCatalogue.records)
+  const sonataRecords = sonataCatalogue.records.filter((record) => !EXCLUDED_SONATA_IDS.has(asString(record.id)))
+  const sonatas = normalizeSonatas(sonataRecords)
   const memberships = new Map<string, { cost: 1 | 3; sonataIds: string[] }>()
   const knownEntries = new Map(echoCatalogue.records.map((record) => [wikiEntryId(record), wikiEntryId(record)]))
   console.log('正在读取 Wiki 套装详情的对应声骸…')
-  for (let index = 0; index < sonataCatalogue.records.length; index += 5) {
-    const entries = await Promise.all(sonataCatalogue.records.slice(index, index + 5).map(async (record) => {
+  for (let index = 0; index < sonataRecords.length; index += 5) {
+    const entries = await Promise.all(sonataRecords.slice(index, index + 5).map(async (record) => {
       const response = await postFormJson('https://api.kurobbs.com/wiki/core/catalogue/item/getEntryDetail', kuroHeaders(9), { id: wikiEntryId(record) })
+      validateWikiTitle(response, asString(record.name))
       return { sonataId: `wiki-sonata-${asString(record.id)}`, members: parseSonataMembers(response) }
     }))
     for (const { sonataId, members } of entries) {
@@ -145,7 +149,7 @@ export async function syncWiki(): Promise<WikiSnapshot> {
 
     const rawCost = relateTagIds.map((tagId) => costByTagId.get(tagId)).find((value) => value !== undefined)
     if (rawCost !== membership?.cost) throw new Error(`Wiki 目录与套装详情 COST 不一致：${name}`)
-    if (rawCost !== 1 && rawCost !== 3) {
+    if ((rawCost !== 1 && rawCost !== 3) || name.startsWith('梦魇·')) {
       excludedEchoNames.push(name)
       continue
     }
