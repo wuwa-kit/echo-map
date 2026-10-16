@@ -19,6 +19,7 @@ const emit = defineEmits<{
   sonatasChanged: [ids: string[]]
   costsChanged: [costs: (1 | 3)[]]
   searchChanged: [search: string]
+  searchConfirmed: []
 }>()
 const options = computed(() => props.sonatas.map(({ id, name, iconUrl }) => ({ value: id, label: name, iconUrl })))
 const costs = [1, 3] as const
@@ -26,6 +27,13 @@ const history = useEchoSearchHistoryStore()
 const searchAnchor = useTemplateRef<HTMLDivElement>('searchAnchorRef')
 const historyPopover = useTemplateRef<InstanceType<typeof WuPopover>>('historyPopoverRef')
 onMounted(history.restore)
+
+function confirmSearch(): void {
+  historyPopover.value?.hide()
+  emit('searchConfirmed')
+}
+
+defineExpose({ focusSearch: () => searchAnchor.value?.querySelector('input')?.focus() })
 
 function useHistory(value: string): void {
   history.record(value)
@@ -51,7 +59,7 @@ function toggleCost(cost: 1 | 3): void {
   </div>
   <div ref="searchAnchorRef" class="mb-[10px] flex h-[44px] w-full min-[1024px]:h-[34px] items-center gap-[7px] outline -outline-offset-1 outline-[var(--line)] rounded-[7px] bg-[rgba(21,40,35,0.78)] px-[10px] text-[#6f887f] focus-within:outline-[rgba(101,241,194,0.55)]" @focusin="historyPopover?.show()" @click="historyPopover?.show()">
     <WuSvg name="search" class="shrink-0 [--wu-svg-h:14px]" />
-    <WuSearchInput variant="plain" size="sm" :model-value="search" placeholder="搜索声骸 / C1、C3" @update:model-value="emit('searchChanged', $event)" @keydown="onSearchKeydown" />
+    <WuSearchInput variant="plain" size="sm" :model-value="search" placeholder="搜索声骸 / C1、C3" @update:model-value="emit('searchChanged', $event)" @confirm="confirmSearch" @keydown="onSearchKeydown" />
   </div>
   <WuPopover ref="historyPopoverRef" :anchor="searchAnchor" :disabled="history.entries.length === 0" placement="top-start" width="trigger" :max-height="240" :gap="6" class="rounded-[8px] outline -outline-offset-1 outline-[var(--line)] bg-[#12271f] shadow-xl">
     <div class="min-h-0 overflow-y-auto p-[10px]">

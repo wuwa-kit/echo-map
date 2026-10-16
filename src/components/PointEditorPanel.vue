@@ -49,6 +49,7 @@ const floorOptions = computed(() => floorSelectOptions(
 ))
 const importFile = useTemplateRef<HTMLInputElement>('importFileRef')
 const positionFields = useTemplateRef<InstanceType<typeof PointCoordinateFields>>('positionFieldsRef')
+const echoFields = useTemplateRef<InstanceType<typeof EchoEditorFields>>('echoFieldsRef')
 const candidates = shallowRef<string[]>([])
 const pending = shallowRef<(() => void) | null>(null)
 const positionConfirmationHint = computed(() => {
@@ -167,6 +168,15 @@ async function save(): Promise<void> {
     syncLibrary()
   }
 }
+async function saveFromEchoSearch(): Promise<void> {
+  if (busy.value || pending.value || importPreview.value || store.duplicateConfirmation) return
+  const input = document.activeElement
+  await save()
+  await nextTick()
+  if (!active) return
+  if (input instanceof HTMLInputElement && input.isConnected) input.focus()
+  else echoFields.value?.focusSearch()
+}
 async function confirmPosition(coordinate: [number, number], teleport = false): Promise<void> {
   if (busy.value || pending.value || importPreview.value) return
   const action = store.confirmPosition(props.isPositionInView(coordinate), Date.now(), teleport)
@@ -248,7 +258,7 @@ onBeforeRouteLeave(() => {
             <WuOption :value="null">主地图</WuOption>
             <WuOption v-for="floor in floorOptions" :key="floor.id" :value="floor.id">{{ floor.label }}</WuOption>
           </WuSelect>
-          <EchoEditorFields v-if="draft.kind === 'echo'" :key="draft.id" />
+          <EchoEditorFields v-if="draft.kind === 'echo'" :key="draft.id" ref="echoFieldsRef" @save-requested="saveFromEchoSearch" />
           <NavigationEditorFields v-else :key="draft.id" :arrival-confirmation-hint="arrivalConfirmationHint" @arrival-confirmed="confirmPosition($event, true)" />
         </WuScrollArea>
         <PointDuplicateNotice />

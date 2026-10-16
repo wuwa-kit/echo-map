@@ -13,6 +13,9 @@ import echoNotesJson from '../../data/config/echo-notes.json?raw'
 import { echoNotesSchema } from '../domain/schema.ts'
 
 const echoNotes = echoNotesSchema.parse(JSON.parse(echoNotesJson))
+const emit = defineEmits<{ saveRequested: [] }>()
+const filterControls = useTemplateRef<InstanceType<typeof EchoFilterControls>>('filterControlsRef')
+defineExpose({ focusSearch: () => filterControls.value?.focusSearch() })
 
 const store = usePointEditorStore()
 const filters = useEditorEchoFiltersStore()
@@ -57,7 +60,7 @@ async function locateEcho(echoId: string): Promise<void> {
 <template>
   <div v-if="draft?.kind === 'echo'" class="mt-[24px]">
     <div class="mb-[10px] text-[13px] font-semibold">声骸与数量</div>
-    <EchoFilterControls :sonatas="dataset?.sonatas ?? []" :sonata-ids="filters.sonataIds" :costs="filters.costs" :search="monsterSearch" @sonatas-changed="filters.setSonatas" @costs-changed="filters.setCosts" @search-changed="store.setMonsterSearch" />
+    <EchoFilterControls ref="filterControlsRef" :sonatas="dataset?.sonatas ?? []" :sonata-ids="filters.sonataIds" :costs="filters.costs" :search="monsterSearch" @sonatas-changed="filters.setSonatas" @costs-changed="filters.setCosts" @search-changed="store.setMonsterSearch" @search-confirmed="emit('saveRequested')" />
     <WuScrollArea ref="echoListRef" class="mt-[6px] max-h-[240px]" content-class="grid grid-cols-2 gap-[5px]">
       <div
         v-for="echo in echoes" :key="echo.id" ref="echoItemsRef" :data-echo-id="echo.id"
