@@ -153,6 +153,21 @@
       "mode": "entrance"
     },
     {
+      "id": "26ff19e0-ab26-4468-bb88-0eedcd8eab6c",
+      "stateId": 912,
+      "coordinate": {
+        "x": 549,
+        "y": 432,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "landmark"
+    },
+    {
       "id": "2729a9f7-5bf7-48a7-aa79-ea5900a2a39b",
       "stateId": 912,
       "coordinate": {
@@ -215,6 +230,21 @@
       "mode": "entrance"
     },
     {
+      "id": "3498f173-9e16-434d-8c6d-d559074bd338",
+      "stateId": 912,
+      "coordinate": {
+        "x": -668,
+        "y": -535,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "landmark"
+    },
+    {
       "id": "34f42e31-35e2-4afa-9898-25798f4e41a1",
       "stateId": 912,
       "coordinate": {
@@ -227,6 +257,21 @@
       "name": "危锁奇藏",
       "navigationKind": "landmark",
       "iconId": "icon-91190f4a8db6640e",
+      "mode": "landmark"
+    },
+    {
+      "id": "365c1bb9-ffd2-4501-b985-30af3cf31cc9",
+      "stateId": 912,
+      "coordinate": {
+        "x": -46,
+        "y": -575,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
       "mode": "landmark"
     },
     {
@@ -382,6 +427,21 @@
       "navigationKind": "landmark",
       "iconId": "icon-074b98c743b15b00",
       "mode": "entrance"
+    },
+    {
+      "id": "526c9baa-aa1f-4e5a-b3d4-f63355f49f72",
+      "stateId": 912,
+      "coordinate": {
+        "x": 159,
+        "y": -204,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "landmark"
     },
     {
       "id": "52886837-4e9a-4c24-b05f-6358f28eabe4",
@@ -865,6 +925,21 @@
       "mode": "fast-travel"
     },
     {
+      "id": "ce0cb027-2c7a-4cc7-bec7-61b79a0439fc",
+      "stateId": 912,
+      "coordinate": {
+        "x": -570,
+        "y": 549,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "landmark"
+    },
+    {
       "id": "cf0deac2-5dcb-4561-841e-91cdf635c8b9",
       "stateId": 912,
       "coordinate": {
@@ -1066,6 +1141,21 @@
       "pointType": "small-beacon",
       "iconId": "icon-b396dbca18b10761",
       "mode": "fast-travel"
+    },
+    {
+      "id": "f1778c97-4693-4c1c-a47d-ab4ff8bbc1dc",
+      "stateId": 912,
+      "coordinate": {
+        "x": -473,
+        "y": -85,
+        "z": 0
+      },
+      "note": "",
+      "kind": "navigation",
+      "name": "御剑飞行点",
+      "navigationKind": "landmark",
+      "iconId": "icon-not-found",
+      "mode": "landmark"
     },
     {
       "id": "f180b17b-78f2-4783-87d1-17494cecffca",

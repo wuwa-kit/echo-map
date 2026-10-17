@@ -12,7 +12,7 @@ import { echoMembers, emptyPointLibrary, libraryLocations } from '../domain/poin
 import { combinePointLibraries } from '../domain/point-matching.ts'
 import {
   hasGameCoordinate,
-  isRouteStart,
+  selectRouteStarts,
   matchesMapContext,
   matchesMapScope,
   selectActiveEchoIds,
@@ -162,7 +162,10 @@ export const useExplorerStore = defineStore('explorer', () => {
     return !supportsGravity.value || point.gravityType === selectedGravity.value
   }
   const routeEligibleLocations = computed(() => visibleEchoLocations.value.filter((point) => hasGameCoordinate(point) && hasRouteGravity(point)))
-  const routeEligibleNavigationPoints = computed(() => scopedNavigationPoints.value.filter((point) => isRouteStart(point) && hasRouteGravity(point)))
+  const routeEligibleNavigationPoints = computed(() => selectRouteStarts(
+    allNavigationPoints.value.filter((point) => matchesMapContext(point, mapScope.value) && hasRouteGravity(point)),
+    selectedLevelId.value,
+  ))
   const routeGroupCandidates = computed(() => dataset.value ? createRouteGroupCandidates(
     dataset.value, allEchoLocations.value, allNavigationPoints.value, activeEchoIds.value, showProvisional.value,
   ) : [])

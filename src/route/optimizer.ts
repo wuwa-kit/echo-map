@@ -104,8 +104,14 @@ function bestStart(point: RoutePoint, startPoints: RoutePoint[], context: Distan
 
   let index = -1
   let cost = Number.POSITIVE_INFINITY
+  const useBaseMap = point.levelId !== null && !startPoints.some((start) => (
+    start.stateId === point.stateId && start.levelId === point.levelId
+  ))
   startPoints.forEach((startPoint, candidateIndex) => {
-    const candidateCost = movementCost(startPoint, point, context)
+    let candidateCost = movementCost(startPoint, point, context)
+    if (!Number.isFinite(candidateCost) && useBaseMap && startPoint.stateId === point.stateId && startPoint.levelId === null) {
+      candidateCost = coordinateDistance(startPoint.coordinate, point.coordinate)
+    }
     if (candidateCost < cost) {
       cost = candidateCost
       index = candidateIndex
@@ -295,9 +301,12 @@ function greedyOrder(points: RoutePoint[], start: RoutePoint | null, context: Ro
     let bestCost = Number.POSITIVE_INFINITY
     for (const index of remaining) {
       // Each seed chooses its first target; all later legs may teleport again.
-      const cost = order.length === 0 && current
+      let cost = order.length === 0 && current
         ? movementCost(current, points[index] as RoutePoint, context)
         : travelCost(current, points[index] as RoutePoint, context)
+      if (order.length === 0 && !Number.isFinite(cost)) {
+        cost = travelCost(null, points[index] as RoutePoint, context)
+      }
       if (cost < bestCost) {
         bestCost = cost
         bestIndex = index

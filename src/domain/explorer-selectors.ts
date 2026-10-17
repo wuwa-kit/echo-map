@@ -74,3 +74,9 @@ export function hasGameCoordinate(location: PointLocationBase): boolean {
 export function isRouteStart(location: NavigationPoint): boolean {
   return location.mode === 'fast-travel' && navigationRouteCoordinate(location) !== null
 }
+
+export function selectRouteStarts(points: readonly NavigationPoint[], levelId: string | null): NavigationPoint[] {
+  const eligible = points.filter(isRouteStart)
+  const local = eligible.filter((point) => point.levelId === levelId)
+  return local.length > 0 || levelId === null ? local : eligible.filter((point) => point.levelId === null)
+}

@@ -1,6 +1,7 @@
 import type { EchoMapLocation, GravityType, MapDataset, NavigationPoint, RoutePlanGroup } from '../domain/types.ts'
 import { gravityName, hasGravityMap } from '../domain/gravity.ts'
-import { echoMembers, navigationRouteCoordinate } from '../domain/point-library.ts'
+import { echoMembers } from '../domain/point-library.ts'
+import { selectRouteStarts } from '../domain/explorer-selectors.ts'
 import { DEFAULT_STATE_ID } from '../url/explorer-url.ts'
 
 export interface RouteGroupCandidate extends Omit<RoutePlanGroup, 'route'> {
@@ -88,13 +89,10 @@ export function createRouteGroupCandidates(
   for (const group of groups.values()) {
     group.echoCount = echoIdsByGroup.get(group.id)?.size ?? 0
     const state = dataset.states.find(({ id }) => id === group.stateId)
-    group.navigationPoints = navigationPoints.filter((point) => (
+    group.navigationPoints = selectRouteStarts(navigationPoints.filter((point) => (
       point.stateId === group.stateId
-      && point.levelId === group.levelId
-      && point.mode === 'fast-travel'
-      && navigationRouteCoordinate(point) !== null
       && (!hasGravityMap(state) || point.gravityType === group.gravityType)
-    ))
+    )), group.levelId)
   }
 
   return [...groups.values()].sort((left, right) => {

@@ -4,6 +4,8 @@ import { movementCost, optimizeRoute } from '../src/route/optimizer.ts'
 import { gameToMapCoordinate, mapToGameCoordinate } from '../src/map/projection.ts'
 import type { EchoLocation, NavigationPoint } from '../src/domain/types.ts'
 import { referenceDataset } from './fixtures/point-library.ts'
+import { selectRouteStarts } from '../src/domain/explorer-selectors.ts'
+import { createRouteGroupCandidates } from '../src/route/route-groups.ts'
 
 const location: EchoLocation = {
   gravityType: null,
@@ -27,6 +29,34 @@ function navigationAt(name: string): NavigationPoint {
 }
 
 describe('route input conversion', () => {
+  it.each([1, 16, 258])('routes %i floor targets from the base map when no local teleport exists', (count) => {
+    const base = { ...startPoint, id: 'base', levelId: null, gameCoordinate: { x: 1, y: 2, z: 0 } }
+    const otherFloor = { ...startPoint, id: 'other', levelId: 'other-floor' }
+    const landmark = { ...startPoint, id: 'landmark', mode: 'landmark' as const }
+    const navigation = [base, otherFloor, landmark]
+    const targets = Array.from({ length: count }, (_, index) => ({
+      ...location, id: `target-${index}`, gameCoordinate: { x: 1 + index, y: 2, z: 30 },
+    }))
+    const starts = selectRouteStarts(navigation, location.levelId)
+    expect(starts).toEqual([base])
+    const groups = createRouteGroupCandidates(referenceDataset, targets, navigation, new Set(['echo']), false)
+    expect(groups[0]?.navigationPoints).toEqual(starts)
+    const route = optimizeRoute(createRoutePlanInput(null, targets, starts, 8))
+    expect(route.points).toHaveLength(count)
+    expect(route.startPointId).toBe('base')
+    expect(route.points[0]?.teleportFrom?.levelId).toBeNull()
+    expect(route.totalCost).toBeCloseTo(30 + count - 1)
+  })
+
+  it('prefers local teleports and never falls back to another floor', () => {
+    const base = { ...startPoint, id: 'base', levelId: null }
+    expect(selectRouteStarts([base, startPoint], location.levelId)).toEqual([startPoint])
+    expect(selectRouteStarts([startPoint], 'other-floor')).toEqual([])
+    expect(selectRouteStarts([startPoint], null)).toEqual([])
+    const groups = createRouteGroupCandidates(referenceDataset, [location], [base, startPoint], new Set(['echo']), false)
+    expect(groups[0]?.navigationPoints).toEqual([startPoint])
+  })
+
   it('preserves independent map XY and authoritative XYZ with floor identity', () => {
     expect(createRoutePlanInput(null, [location], [], 8)).toEqual({
       points: [{
