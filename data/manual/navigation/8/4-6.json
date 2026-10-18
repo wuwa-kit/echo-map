@@ -63,7 +63,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -162,7 +163,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -417,7 +419,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -671,7 +674,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1159,7 +1163,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1207,7 +1212,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1237,7 +1243,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1282,7 +1289,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1314,7 +1322,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1335,6 +1344,7 @@
     {
       "id": "d8e0c816-7552-4852-ae86-31a40378a685",
       "stateId": 8,
+      "levelId": "-1/47",
       "coordinate": {
         "x": -349,
         "y": -8107,
@@ -1665,7 +1675,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     }
   ]

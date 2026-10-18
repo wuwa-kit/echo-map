@@ -58,7 +58,7 @@ describe('navigation icon categories', () => {
     manager.select('unpack-map-3-3-2')
     manager.setView('icons')
     expect(manager.filters).toMatchObject({ view: 'icons', category: 'all', selectedId: null })
-    expect(manager.filtered).toHaveLength(396)
+    expect(manager.filtered).toHaveLength(524)
     expect(library.draft.icons).toBe(base)
     expect(library.draft.categories[0]?.icons[0]?.iconId).toBe('unpack-map-3-3-2')
     manager.setSearch('不存在的图标')
@@ -122,8 +122,8 @@ describe('navigation icon categories', () => {
   it('keeps boss icons in built-in groups while preserving source resources', () => {
     const library = useNavigationIconLibraryStore()
     const manager = useNavigationIconManagerStore()
-    expect(library.pool).toHaveLength(396)
-    for (const [source, count] of [['placeholder', 1], ['map', 11], ['wiki', 33], ['unpacked', 351]] as const) {
+    expect(library.pool).toHaveLength(524)
+    for (const [source, count] of [['placeholder', 1], ['map', 12], ['wiki', 32], ['unpacked', 351], ['echo-catalog', 128]] as const) {
       manager.setSource(source)
       expect(manager.filtered).toHaveLength(count)
     }
@@ -200,7 +200,8 @@ describe('navigation icon categories', () => {
     expect(manager.unclassifiedCount).toBe(0)
     manager.setCategoryInput('新名称')
     manager.renameCategory()
-    expect(manager.activeCategory?.name).toBe('新名称')
+    expect(manager.activeCategoryName).toBe('新名称')
+    expect(manager.activeCategory?.name).toBe('服务')
     manager.deleteCategory()
     expect(manager.filters.category).toBe('all')
     expect(library.draft.categories).toEqual([])
@@ -224,7 +225,7 @@ describe('navigation icon categories', () => {
 it('keeps unclassified membership editable while protecting its name and deletion', () => {
   const library = useNavigationIconLibraryStore()
   const manager = useNavigationIconManagerStore()
-  library.accept({ ...library.saved, categories: [{ id: 'unclassified', name: '未分类', icons: [] }] })
+  library.accept({ ...library.saved, categories: [{ id: 'unclassified', name: '其它', icons: [] }] })
   manager.setCategory('unclassified')
   expect(manager.filtered).toEqual([])
   library.addToCategory('unclassified', ['unpack-map-1-1-1'])
@@ -232,7 +233,7 @@ it('keeps unclassified membership editable while protecting its name and deletio
   expect(manager.filtered.map(icon => icon.id)).toEqual(['unpack-map-1-1-1'])
   library.renameCategory('unclassified', '改名')
   library.deleteCategory('unclassified')
-  expect(manager.activeCategory?.name).toBe('未分类')
+  expect(manager.activeCategory?.name).toBe('其它')
   expect(navigationPickerGroups(library.draft, library.catalog).find(group => group.id === 'unclassified')?.icons[0]?.name).toBe(library.catalog.find(icon => icon.id === 'unpack-map-1-1-1')?.name)
   library.removeFromCategory('unclassified', ['unpack-map-1-1-1'])
   expect(manager.filtered).toEqual([])

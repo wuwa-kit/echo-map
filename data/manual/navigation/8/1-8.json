@@ -152,7 +152,8 @@
       "kind": "navigation",
       "name": "雾隐阁",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-4",
       "mode": "fast-travel"
     },
     {
@@ -288,7 +289,8 @@
       "kind": "navigation",
       "name": "机巧伶",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-2",
       "mode": "fast-travel"
     },
     {
@@ -332,8 +334,9 @@
       "note": "",
       "kind": "navigation",
       "name": "梁鸢回收",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "unpack-map-2-5-8",
       "mode": "fast-travel"
     },
     {
@@ -365,7 +368,8 @@
       "kind": "navigation",
       "name": "机巧伶",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-2",
       "mode": "fast-travel"
     },
     {
@@ -447,7 +451,8 @@
       "kind": "navigation",
       "name": "机巧伶",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-2",
       "mode": "fast-travel"
     },
     {
@@ -492,7 +497,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "fast-travel"
     },
     {
@@ -664,7 +670,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "fast-travel"
     },
     {
@@ -727,7 +734,8 @@
       "kind": "navigation",
       "name": "机巧伶",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-2",
       "mode": "fast-travel"
     },
     {
@@ -852,7 +860,8 @@
       "kind": "navigation",
       "name": "锁天工",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-3",
       "mode": "fast-travel"
     },
     {
@@ -958,8 +967,9 @@
       "note": "",
       "kind": "navigation",
       "name": "甲大王",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "unpack-map-2-5-10",
       "mode": "fast-travel"
     },
     {
@@ -974,7 +984,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "fast-travel"
     },
     {
@@ -1364,7 +1375,8 @@
       "kind": "navigation",
       "name": "清宵的道馆",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-13",
       "mode": "fast-travel"
     },
     {
@@ -1410,7 +1422,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "fast-travel"
     },
     {
@@ -1503,7 +1516,8 @@
       "kind": "navigation",
       "name": "机巧伶",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-2",
       "mode": "fast-travel"
     },
     {
@@ -1518,7 +1532,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "fast-travel"
     },
     {
@@ -1624,8 +1639,8 @@
       "note": "",
       "kind": "navigation",
       "name": "全息战略·演武",
-      "navigationKind": "hologram",
-      "pointType": "hologram",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
       "iconId": "unpack-map-4-6-7",
       "mode": "fast-travel"
     },
@@ -1909,7 +1924,8 @@
       "kind": "navigation",
       "name": "机巧伶",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-2",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -6271,
@@ -1945,7 +1961,7 @@
       "kind": "navigation",
       "name": "隐秘入口",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-2-2-1",
+      "iconId": "unpack-map-3-3-4",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -6636,
@@ -1966,7 +1982,8 @@
       "kind": "navigation",
       "name": "机巧伶",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-2",
       "mode": "fast-travel"
     },
     {
@@ -1981,7 +1998,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "fast-travel"
     }
   ]

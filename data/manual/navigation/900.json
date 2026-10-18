@@ -61,8 +61,9 @@
       "note": "",
       "kind": "navigation",
       "name": "游戈风暴",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "navigationKind": "boss",
+      "pointType": "category-special-boss",
+      "iconId": "wiki-echo-11235",
       "mode": "landmark"
     },
     {
@@ -124,8 +125,9 @@
       "note": "",
       "kind": "navigation",
       "name": "嗟怨乐师",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "navigationKind": "boss",
+      "pointType": "category-special-boss",
+      "iconId": "wiki-echo-11232",
       "mode": "landmark"
     },
     {
@@ -238,9 +240,10 @@
       "note": "",
       "kind": "navigation",
       "name": "山脉护卫",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
-      "mode": "entrance"
+      "navigationKind": "boss",
+      "pointType": "category-special-boss",
+      "iconId": "wiki-echo-11130",
+      "mode": "landmark"
     },
     {
       "id": "da6ada64-76be-4e74-8faf-43e4ef3aac1e",

@@ -1,4 +1,4 @@
-import type { navigationPointTypes } from './navigation-point-types.ts'
+import type { builtInNavigationPointTypes } from './navigation-point-types.ts'
 
 export type NonEmptyArray<T> = [T, ...T[]]
 
@@ -151,7 +151,7 @@ export interface AuthoredEchoPoint extends AuthoredPointBase {
   compositionStatus?: 'partial' | 'complete'
 }
 
-export type NavigationPointType = keyof typeof navigationPointTypes
+export type NavigationPointType = keyof typeof builtInNavigationPointTypes | 'service' | 'unclassified' | `category-${string}`
 
 export type MapDisplayTier = 'always' | 'teleport' | 'nonTeleport'
 
@@ -159,7 +159,7 @@ export interface NavigationIconDefinition {
   id: string
   name: string
   url: string
-  source?: 'unpacked' | 'wiki' | 'map' | 'placeholder'
+  source?: 'unpacked' | 'wiki' | 'map' | 'placeholder' | 'echo-catalog'
 }
 
 export interface ManagedNavigationIcon {

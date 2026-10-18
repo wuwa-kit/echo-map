@@ -29,8 +29,8 @@
       "note": "",
       "kind": "navigation",
       "name": "全息战略·同步",
-      "navigationKind": "hologram",
-      "pointType": "hologram",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
       "iconId": "unpack-map-4-6-6",
       "mode": "fast-travel"
     },
@@ -61,7 +61,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -136,7 +137,8 @@
       "kind": "navigation",
       "name": "虚诞潜迹",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-12",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": 114,
@@ -156,7 +158,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -619,7 +622,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -850,7 +854,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -978,7 +983,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1008,7 +1014,8 @@
       "kind": "navigation",
       "name": "终焉矩阵",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-3-2-9",
       "mode": "fast-travel"
     },
     {
@@ -1024,7 +1031,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -1195,7 +1203,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1210,7 +1219,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1822,7 +1832,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -1852,7 +1863,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1882,7 +1894,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -1943,7 +1956,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -1959,7 +1973,8 @@
       "kind": "navigation",
       "name": "心之集域·夜之城",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-1-2-7",
       "mode": "landmark"
     },
     {
@@ -1990,7 +2005,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -2236,7 +2252,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -2395,7 +2412,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -2455,9 +2473,9 @@
       "note": "",
       "kind": "navigation",
       "name": "梦魇亚当·重锤",
-      "navigationKind": "boss",
-      "pointType": "normal-boss",
-      "iconId": "wiki-echo-22146",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-9",
       "mode": "fast-travel"
     },
     {
@@ -2525,7 +2543,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -2590,7 +2609,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -2807,7 +2827,8 @@
       "kind": "navigation",
       "name": "深潜游戏室",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-1-2-6",
       "mode": "fast-travel"
     },
     {
@@ -2897,7 +2918,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -2989,7 +3011,8 @@
       "kind": "navigation",
       "name": "学生公寓",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-9",
       "mode": "fast-travel"
     },
     {
@@ -3095,7 +3118,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -3110,7 +3134,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {
@@ -3190,7 +3215,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -3205,7 +3231,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -3330,7 +3357,8 @@
       "kind": "navigation",
       "name": "悲鸣行动：无音危机",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-3-2-11",
       "mode": "fast-travel"
     },
     {
@@ -3482,7 +3510,8 @@
       "kind": "navigation",
       "name": "造路悬仪",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-1",
       "mode": "fast-travel"
     },
     {
@@ -3635,7 +3664,8 @@
       "kind": "navigation",
       "name": "决斗家",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-4-4-7",
       "mode": "fast-travel"
     },
     {

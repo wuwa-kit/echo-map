@@ -4,6 +4,7 @@
     {
       "id": "2bf9105b-4b94-4150-9b81-aa8e66ea8941",
       "stateId": 902,
+      "levelId": "-1/16",
       "coordinate": {
         "x": 2420,
         "y": 471,
@@ -198,6 +199,7 @@
     {
       "id": "bb4fbb96-083f-49ff-a5d2-9c9ae1bf85ea",
       "stateId": 902,
+      "levelId": "-1/15",
       "coordinate": {
         "x": 2359,
         "y": 764,

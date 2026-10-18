@@ -34,6 +34,6 @@ async function confirmImport(): Promise<void> {
       <div class="text-[13px]">新增 {{ summary.added }} · 修改 {{ summary.changed }} · 删除 {{ summary.removed }}</div>
       <div class="mt-[8px] text-[12px] text-[#b29e79]">{{ importLabel }}。请核对上述变化，可先导出备份。</div>
     </div>
-    <template v-if="summary" #footer><WuButton :disabled="busy" @click="emit('closeRequested')">取消</WuButton><WuButton variant="solid" tone="danger" :disabled="busy || hasUnsavedChanges" :loading="operation === 'import'" @click="confirmImport">确认导入</WuButton></template>
+    <template v-if="summary" #footer><WuButton variant="solid" tone="danger" :disabled="busy || hasUnsavedChanges" :loading="operation === 'import'" @click="confirmImport">确认导入</WuButton></template>
   </WuDialog>
 </template>

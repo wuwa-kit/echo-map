@@ -12,7 +12,7 @@ import { useNavigationIconManagerStore } from '../src/stores/navigation-icon-man
 import { createNavigationIconRepository } from '../scripts/lib/navigation-icon-repository.ts'
 import type { NavigationIconLibrary } from '../src/domain/types.ts'
 import wiki from '../data/generated/wiki.json' with { type: 'json' }
-import bossIcons from '../data/generated/wiki-boss-icons.json' with { type: 'json' }
+import { normalBossIcons as bossIcons } from '../src/domain/normal-boss-icons.ts'
 import weeklyIcons from '../data/generated/map-boss-icons.json' with { type: 'json' }
 
 beforeEach(() => { setActivePinia(createPinia()); bindIconTestQuery() })
@@ -85,7 +85,7 @@ describe('managed navigation icons', () => {
   it('keeps all custom sources on the CDN and all portraits in the Wiki catalogue', () => {
     expect(initialNavigationIconLibrary.icons).toHaveLength(351)
     expect(navigationIconCatalog.filter(i => i.source === 'unpacked').some(i => i.url.includes('web-static.kurobbs.com'))).toBe(false)
-    expect(navigationIconCatalog.filter(i => i.source === 'wiki')).toHaveLength(33)
+    expect(navigationIconCatalog.filter(i => i.source === 'wiki')).toHaveLength(32)
     expect(navigationIconCatalog.find(i => i.id === 'unpack-map-2-3-13')?.name).toBe('中枢信标')
   })
 
@@ -107,4 +107,19 @@ describe('managed navigation icons', () => {
       expect(JSON.parse(await readFile(path, 'utf8'))).toEqual(saved.library)
     } finally { await rm(dir, { recursive: true, force: true }) }
   })
+})
+
+
+it('rejects catalogue name overrides and non-echo membership in special bosses', () => {
+  const library = useNavigationIconLibraryStore()
+  const echoes = library.pool.filter(icon => icon.source === 'echo-catalog')
+  expect(echoes.map(icon => icon.id).sort()).toEqual(wiki.echoes.filter(echo => (echo.cost === 1 || echo.cost === 3) && echo.sonataIds.length).map(echo => echo.id).sort())
+  const echo = echoes[0]
+  if (!echo) throw new Error('缺少声骸图鉴')
+  expect(() => library.importDraft({ ...library.saved, overrides: [{ id: echo.id, name: '禁止改名' }] })).toThrow()
+  expect(() => library.importDraft({ ...library.saved, categories: library.saved.categories.map(category => category.id === 'category-special-boss' ? { ...category, icons: [{ iconId: 'unpack-map-1-1-1' }] } : category) })).toThrow('特殊 BOSS')
+  library.addToCategory('category-special-boss', [echo.id, 'unpack-map-1-1-1'])
+  const members = library.draft.categories.find(category => category.id === 'category-special-boss')?.icons
+  expect(members).toContainEqual({ iconId: echo.id })
+  expect(members).not.toContainEqual({ iconId: 'unpack-map-1-1-1' })
 })

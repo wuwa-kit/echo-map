@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { navigationIconLibrarySchema } from '../domain/navigation-icon-library.ts'
 import type { NavigationIconLibrary } from '../domain/types.ts'
+import type { IconRemovalResolution } from '../domain/icon-removal.ts'
 
 const snapshotSchema = z.object({ library: navigationIconLibrarySchema, revision: z.string() })
 async function request(options?: RequestInit) {
@@ -15,8 +16,8 @@ async function request(options?: RequestInit) {
   return snapshotSchema.parse(body)
 }
 export function readNavigationIconLibrary() { return request() }
-export async function saveNavigationIconLibrary(library: NavigationIconLibrary, revision: string) {
-  const result = await request({ method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ library, revision }) })
+export async function saveNavigationIconLibrary(library: NavigationIconLibrary, revision: string, resolutions?: IconRemovalResolution[]) {
+  const result = await request({ method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ library, revision, resolutions }) })
   if (!result) throw new Error('本机写入接口不可用，修改尚未同步')
   return result
 }

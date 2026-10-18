@@ -9,7 +9,7 @@ import { navigationIconById } from '../src/domain/navigation-icons.ts'
 import { navigationIconCatalog, builtinBossGroups } from '../src/domain/navigation-icon-catalog.ts'
 import { navigationIconLibrarySchema } from '../src/domain/navigation-icon-library.ts'
 import { mapDisplayTierSchema, navigationIconDefinitionSchema } from '../src/domain/schema.ts'
-import { navigationPointTypeIds, navigationPointTypes, navigationPointDisplayTier } from '../src/domain/navigation-point-types.ts'
+import { getNavigationPointType, navigationPointTypeIds, navigationPointTypes, navigationPointDisplayTier } from '../src/domain/navigation-point-types.ts'
 import { officialNavigationTypeIds, unclassifiedNavigationTypeIds } from './lib/map/navigation-types.ts'
 import { buildOfficialAssets } from '../src/domain/official-assets.ts'
 import { MAP_POINT_DISPLAY_POLICIES, mapPointDisplayPolicy } from '../src/map/point-visibility.ts'
@@ -61,6 +61,10 @@ const localIconIds = new Set<string>()
 navigationIconLibrarySchema.parse(await readJson<unknown>(projectPath('data', 'manual', 'navigation-icons.json')))
 for (const icon of navigationIconCatalog) {
   navigationIconDefinitionSchema.parse(icon)
+  if (icon.source === 'echo-catalog') {
+    const echo = dataset.echoes.find(echo => echo.id === icon.id)
+    if (!echo || (echo.cost !== 1 && echo.cost !== 3) || !echo.sonataIds.length || echo.name !== icon.name || echo.iconUrl !== icon.url) errors.push(`声骸图鉴图标必须使用 C1/C3 图鉴原始资源：${icon.id}`)
+  }
   if (icon.url.startsWith('/')) await access(projectPath('public', icon.url.slice(1)))
   if (localIconIds.has(icon.id)) errors.push(`重复定位点图标 ID：${icon.id}`)
   localIconIds.add(icon.id)
@@ -72,7 +76,7 @@ for (const group of builtinBossGroups) {
   if (group.icons.some(icon => unpackedIconIds.has(icon.id))) errors.push(`BOSS 图标不能混入解包图标池：${group.name}`)
 }
 for (const type of navigationPointTypeIds) {
-  const rule = navigationPointTypes[type]
+  const rule = getNavigationPointType(type)
   if (rule.builtIn && !rule.icons.length) errors.push(`${rule.name} 的内置类型必须包含图标`)
   mapDisplayTierSchema.parse(navigationPointDisplayTier({ pointType: type, mode: rule.defaultMode }))
   if (new Set(rule.icons).size !== rule.icons.length) errors.push(`${rule.name} 的图标列表有重复项`)

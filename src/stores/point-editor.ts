@@ -1,7 +1,7 @@
 import { emptyCoordinateInput, coordinateInputPending, coordinateInputXY, coordinateInputPartialXY, commitCoordinateInput, coordinateAxes } from '../components/base/coordinate-input.ts'
 import type { CoordinateInputState, CoordinateInputChange } from '../components/base/coordinate-input.ts'
 import { navigationIconById, navigationTypeIcons, navigationPickerIcons } from '../domain/navigation-icons.ts'
-import { navigationPointTypes } from '../domain/navigation-point-types.ts'
+import { getNavigationPointType, navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { useEchoSearchHistoryStore } from './echo-search-history.ts'
@@ -712,11 +712,15 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     const parsed = navigationPointTypeSchema.safeParse(value)
     if (value !== null && !parsed.success) return
     if (draft.value.pointType === (parsed.success ? parsed.data : undefined)) return
-    const rule = parsed.success ? navigationPointTypes[parsed.data] : undefined
+    const rule = parsed.success ? getNavigationPointType(parsed.data) : undefined
     const icons = navigationTypeIcons(parsed.success ? parsed.data : undefined, '', [], useNavigationIconLibraryStore().catalog)
     const selectedIconId = draft.value.iconId
     const icon = rule?.icons.length === 1 ? icons[0] : icons.find(({ id }) => id === selectedIconId)
-    const mode = rule?.defaultMode ?? draft.value.mode
+    let mode = rule?.defaultMode ?? draft.value.mode
+    if (rule && !rule.teleportLocked) {
+      const nonTeleportMode = rule.defaultMode === 'fast-travel' ? 'landmark' : rule.defaultMode
+      mode = draft.value.mode === 'fast-travel' ? 'fast-travel' : nonTeleportMode
+    }
     clearInputError('pointType')
     clearInputError('icon')
     clearInputError('name')
@@ -736,10 +740,12 @@ export const usePointEditorStore = defineStore('point-editor', () => {
 
   function setIcon(id: string): void {
     if (busy.value || draft.value?.kind !== 'navigation') return
-    const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
+    const rule = draft.value.pointType ? getNavigationPointType(draft.value.pointType) : undefined
     if (rule?.builtIn && (rule.icons.length === 1 || !rule.icons.includes(id))) return
     const icon = navigationPickerIcons(draft.value.pointType, '', [], useNavigationIconLibraryStore().catalog).find((icon) => icon.id === id)
-    if (!icon) return
+    if (!icon || (draft.value.pointType === 'category-special-boss' && icon.source !== 'echo-catalog')) return
+    const changed = draft.value.iconId !== icon.id
+    const updateName = icon.id === 'icon-not-found' ? !draft.value.name.trim() : changed
     recentIconIds.value = produce(recentIconIds.value, (ids) => {
       const index = ids.indexOf(id)
       if (index !== -1) ids.splice(index, 1)
@@ -749,9 +755,11 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     try { localStorage.setItem(RECENT_ICONS_KEY, JSON.stringify(recentIconIds.value)) }
     catch { /* Recent icons remain available for this session. */ }
     clearInputError('icon')
+    if (updateName) clearInputError('name')
     edit((point) => {
       if (point.kind !== 'navigation') return
       point.iconId = icon.id
+      if (updateName) point.name = icon.name
     })
   }
 
@@ -782,6 +790,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
 
   function previewImport(text: string): void {
     if (!dataset.value || !canSwitch()) return
+    error.value = ''
+    notice.value = ''
+    importLabel.value = '替换全部人工点位'
     importPreview.value = null
     importWorkspace.value = null
     importReplaceAll.value = true
@@ -959,14 +970,14 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     setNote: (value: string) => edit((point) => { point.note = value }),
     setName: (value: string) => {
       if (busy.value || draft.value?.kind !== 'navigation') return
-      const fixedName = draft.value.pointType ? navigationPointTypes[draft.value.pointType].names[0] : undefined
+      const fixedName = draft.value.pointType ? getNavigationPointType(draft.value.pointType).names[0] : undefined
       if (fixedName !== undefined && value !== fixedName) return
       clearInputError('name')
       edit((point) => { if (point.kind === 'navigation') point.name = value })
     },
     setMode: (value: NavigationMode) => {
       if (busy.value || draft.value?.kind !== 'navigation') return
-      const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
+      const rule = draft.value.pointType ? getNavigationPointType(draft.value.pointType) : undefined
       if (rule?.teleportLocked) return
       const nonTeleportMode = rule?.defaultMode === 'fast-travel' ? 'landmark' : rule?.defaultMode ?? 'landmark'
       const mode = value === 'fast-travel' ? value : nonTeleportMode

@@ -106,7 +106,8 @@
       "kind": "navigation",
       "name": "声骸挑战·翱翔",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-1-3-4",
       "mode": "fast-travel"
     },
     {
@@ -1021,6 +1022,7 @@
     {
       "id": "5426673a-c57f-4a8b-818f-5e35fcf3fe10",
       "stateId": 8,
+      "levelId": "-1/12",
       "coordinate": {
         "x": 7839,
         "y": 6306,
@@ -1374,6 +1376,7 @@
     {
       "id": "6d5a620e-2acb-423a-8dce-7ee23ae3ae2d",
       "stateId": 8,
+      "levelId": "-1/9",
       "coordinate": {
         "x": 7993,
         "y": 4930,
@@ -1609,8 +1612,9 @@
       "note": "",
       "kind": "navigation",
       "name": "神秘气泡",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "unpack-map-1-8-3",
       "mode": "landmark"
     },
     {
@@ -1683,6 +1687,7 @@
     {
       "id": "7e78ecd1-c8d8-4286-b142-01b1804de93a",
       "stateId": 8,
+      "levelId": "-1/13",
       "coordinate": {
         "x": 9317,
         "y": 5352,
@@ -2170,14 +2175,15 @@
       "note": "",
       "kind": "navigation",
       "name": "全息战略",
-      "navigationKind": "hologram",
-      "pointType": "hologram",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
       "iconId": "unpack-map-4-3-15",
       "mode": "fast-travel"
     },
     {
       "id": "a7b70372-dc10-4220-847f-80cc2fee890d",
       "stateId": 8,
+      "levelId": "-1/11",
       "coordinate": {
         "x": 7759,
         "y": 5549,
@@ -2302,8 +2308,9 @@
       "note": "",
       "kind": "navigation",
       "name": "神秘气泡",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "unpack-map-1-8-3",
       "mode": "landmark"
     },
     {
@@ -2340,6 +2347,7 @@
     {
       "id": "b17936fe-dbbd-4850-ac6c-816fff15ba89",
       "stateId": 8,
+      "levelId": "-1/18",
       "coordinate": {
         "x": 9434,
         "y": 5963,
@@ -2516,8 +2524,9 @@
       "note": "",
       "kind": "navigation",
       "name": "神秘气泡",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "unpack-map-1-8-3",
       "mode": "landmark"
     },
     {
@@ -3007,8 +3016,9 @@
       "note": "",
       "kind": "navigation",
       "name": "神秘气泡",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "navigationKind": "service",
+      "pointType": "service",
+      "iconId": "unpack-map-1-8-3",
       "mode": "landmark"
     },
     {

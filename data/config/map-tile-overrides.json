@@ -6,5 +6,21 @@
   "8_-1_0": {
     "url": "https://prod-alicdn-community.kurobbs.com/forum/79b567744c30414796affd655cd6995120261018.png",
     "source": "https://github.com/TomyJan/WutheringWaves-UIResources/blob/3.7/UIResources/UiWorldMap/Image/MapTiles/T_MapTiles_-1_0_UI.png"
+  },
+  "909_1_1": {
+    "url": "https://prod-alicdn-community.kurobbs.com/forum/6e3cbbaf9ecb42428b489acd5aef050120261018.png",
+    "source": "https://github.com/TomyJan/WutheringWaves-UIResources/blob/3.7/UIResources/UiWorldMap/Image/AYTiles/T_AYTiles_1_1_3_UI.png"
+  },
+  "909_1_2": {
+    "url": "https://prod-alicdn-community.kurobbs.com/forum/15e7cc3df3ee43acb4ad5e8b68298f0f20261018.png",
+    "source": "https://github.com/TomyJan/WutheringWaves-UIResources/blob/3.7/UIResources/UiWorldMap/Image/AYTiles/T_AYTiles_1_2_3_UI.png"
+  },
+  "909_2_1": {
+    "url": "https://prod-alicdn-community.kurobbs.com/forum/0f2c82d13f9b4ea29119d0d04fc6d95620261018.png",
+    "source": "https://github.com/TomyJan/WutheringWaves-UIResources/blob/3.7/UIResources/UiWorldMap/Image/AYTiles/T_AYTiles_2_1_3_UI.png"
+  },
+  "909_2_2": {
+    "url": "https://prod-alicdn-community.kurobbs.com/forum/c3b6daf2b47849c19042c9d17a5e420420261018.png",
+    "source": "https://github.com/TomyJan/WutheringWaves-UIResources/blob/3.7/UIResources/UiWorldMap/Image/AYTiles/T_AYTiles_2_2_3_UI.png"
   }
 }

@@ -1,5 +1,6 @@
 import { writePointLibrary } from './lib/point-files.ts'
 import bossIcons from '../data/generated/map-boss-icons.json' with { type: 'json' }
+import { mapNormalBossIcons } from './lib/map/normal-boss-icons.ts'
 import { selectOfficialEchoLocations } from '../src/domain/official-echo-scope.ts'
 import { deduplicateMapAssets, normalizeMapAssets } from './lib/map/asset-catalog.ts'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
@@ -104,6 +105,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
     writeJson(projectPath('public', 'data', 'map-asset-catalog.json'), assetCatalog, { compact: true }),
     writeJson(projectPath('data', 'generated', 'sync-report.json'), report),
     writeJson(projectPath('data', 'generated', 'map-boss-icons.json'), bosses),
+    writeJson(projectPath('data', 'generated', 'map-normal-boss-icons.json'), mapNormalBossIcons(assetCatalog)),
   ])
   console.log(`地图同步完成：${dataset.states.length} 张地图，${dataset.echoLocations.length} 个声骸点`)
   console.log(`可参与路线的示例/实测点：${report.routeEligibleEchoLocationCount}；待补 XYZ：${report.provisionalEchoLocationCount}`)

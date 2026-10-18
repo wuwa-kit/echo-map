@@ -192,8 +192,8 @@
       "note": "",
       "kind": "navigation",
       "name": "全息战略",
-      "navigationKind": "hologram",
-      "pointType": "hologram",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
       "iconId": "unpack-map-4-3-15",
       "mode": "landmark"
     },
@@ -345,6 +345,7 @@
     {
       "id": "20ccf663-67ac-45d7-b882-157653a772ad",
       "stateId": 8,
+      "levelId": "-1/7",
       "coordinate": {
         "x": -371,
         "y": 1830,
@@ -906,8 +907,8 @@
       "note": "",
       "kind": "navigation",
       "name": "全息战略",
-      "navigationKind": "hologram",
-      "pointType": "hologram",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
       "iconId": "unpack-map-4-3-15",
       "mode": "landmark"
     },
@@ -1184,7 +1185,7 @@
       "kind": "navigation",
       "name": "隐秘入口",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-2-2-1",
+      "iconId": "unpack-map-3-3-4",
       "mode": "landmark"
     },
     {
@@ -1396,7 +1397,7 @@
       "kind": "navigation",
       "name": "隐秘入口",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-2-2-1",
+      "iconId": "unpack-map-3-3-4",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -1564,
@@ -1503,6 +1504,7 @@
     {
       "id": "aab046e3-8981-44fb-a969-ee9bbadffc8f",
       "stateId": 8,
+      "levelId": "-1/2",
       "coordinate": {
         "x": 2684,
         "y": 3245,
@@ -1751,8 +1753,8 @@
       "note": "",
       "kind": "navigation",
       "name": "全息战略",
-      "navigationKind": "hologram",
-      "pointType": "hologram",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
       "iconId": "unpack-map-4-3-15",
       "mode": "landmark"
     },
@@ -1799,8 +1801,8 @@
       "note": "",
       "kind": "navigation",
       "name": "全息战略",
-      "navigationKind": "hologram",
-      "pointType": "hologram",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
       "iconId": "unpack-map-4-3-15",
       "mode": "landmark"
     },
@@ -2022,8 +2024,8 @@
       "note": "",
       "kind": "navigation",
       "name": "全息战略",
-      "navigationKind": "hologram",
-      "pointType": "hologram",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
       "iconId": "unpack-map-4-3-15",
       "mode": "landmark"
     },
@@ -2165,8 +2167,8 @@
       "note": "",
       "kind": "navigation",
       "name": "全息战略",
-      "navigationKind": "hologram",
-      "pointType": "hologram",
+      "navigationKind": "landmark",
+      "pointType": "unclassified",
       "iconId": "unpack-map-4-3-15",
       "mode": "landmark"
     },

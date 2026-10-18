@@ -113,8 +113,9 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
     if (cached) return cached
     const colors = otherFloor ? FLOOR_BADGE_COLORS.otherFloor : FLOOR_BADGE_COLORS.active
     const zIndex = nonTeleport ? NON_TELEPORT_Z_INDEX : 0
+    const dimmed = nonTeleport && otherFloor
     const badgeColor = (color: string): string => {
-      if (!nonTeleport) return color
+      if (!dimmed) return color
       const [red = 0, green = 0, blue = 0] = asArray(color)
       const gray = Math.round((red * 0.2126 + green * 0.7152 + blue * 0.0722) * NON_TELEPORT_BRIGHTNESS)
       return `rgb(${gray}, ${gray}, ${gray})`
@@ -177,7 +178,7 @@ export function createPointLayers(isMoving: () => boolean = () => false, options
         }),
       }),
     ]
-    if (nonTeleport) {
+    if (dimmed) {
       for (const style of styles) style.getImage()?.setOpacity(NON_TELEPORT_OPACITY)
     }
     floorBadgeStyleCache.set(key, styles)

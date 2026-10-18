@@ -9,8 +9,9 @@ import { useNavigationIconLibraryStore } from './navigation-icon-library.ts'
 import { categoryMoveOrder, compareIconPosition, iconDisplayName, navigationIconLibrarySchema } from '../domain/navigation-icon-library.ts'
 import { readNavigationIconLibrary, saveNavigationIconLibrary } from '../data/navigation-icon-client.ts'
 import { builtInIconType, builtInNavigationIconCategories } from '../domain/navigation-point-types.ts'
-import { iconSources } from '../domain/navigation-icon-pool.ts'
+import { echoCatalogCosts, iconSources } from '../domain/navigation-icon-pool.ts'
 import type { IconSource } from '../domain/navigation-icon-pool.ts'
+import type { IconRemovalResolution } from '../domain/icon-removal.ts'
 
 export const iconFilterSchema = z.enum(['all', 'unnamed'])
 const usageSchema = z.object({ points: z.array(z.object({ id: z.string(), name: z.string().optional(), iconId: z.string().optional(), stateId: z.number() })) })
@@ -54,12 +55,16 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
     }
   }
   const addingCategoryId = shallowRef<string | null>(null)
+  const addingOpen = shallowRef(false)
   const addingIds = shallowRef<string[]>([])
   const addingSource = shallowRef<'all' | IconSource>('all')
-  const addingCategory = computed(() => library.draft.categories.find(category => category.id === addingCategoryId.value) ?? null)
-  const addingMemberIds = computed(() => new Set([...library.draft.categories.flatMap(category => category.icons.map(member => member.iconId)), ...library.pool.filter(icon => (builtInIconType(icon.id)?.icons.length ?? 0) > 1).map(icon => icon.id)]))
-  const addingIcons = computed(() => library.pool.filter(icon =>
-    icon.source !== 'placeholder' && (addingSource.value === 'all' || icon.source === addingSource.value)
+  const addingEchoCost = shallowRef<1 | 3 | null>(null)
+  const addingEchoCostVisible = computed(() => addingSource.value === 'echo-catalog' || addingCategoryId.value === 'category-special-boss')
+  const addingCategory = computed(() => library.saved.categories.find(category => category.id === addingCategoryId.value) ?? null)
+  const addingMemberIds = computed(() => new Set([...library.saved.categories.flatMap(category => category.icons.map(member => member.iconId)), ...library.pool.filter(icon => (builtInIconType(icon.id)?.icons.length ?? 0) > 1).map(icon => icon.id)]))
+  const addingIcons = computed(() => library.savedPool.filter(icon =>
+    icon.source !== 'placeholder' && (addingCategoryId.value !== 'category-special-boss' || icon.source === 'echo-catalog') && (addingSource.value === 'all' || icon.source === addingSource.value)
+    && (!addingEchoCostVisible.value || addingEchoCost.value === null || echoCatalogCosts.get(icon.id) === addingEchoCost.value)
     && (iconDisplayName(icon) + ' ' + icon.id).toLocaleLowerCase().includes(memberSearch.value.trim().toLocaleLowerCase()),
   ).toSorted(compareIconPosition))
   function openAddIcons(): void {
@@ -67,18 +72,27 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
     addingCategoryId.value = activeCategory.value.id
     addingIds.value = []
     addingSource.value = 'all'
+    addingEchoCost.value = null
     memberSearch.value = ''
+    addingOpen.value = true
   }
   function closeAddIcons(): void {
     if (saving.value) return
+    addingOpen.value = false
+  }
+  function finishCloseAddIcons(): void {
+    if (addingOpen.value) return
     addingCategoryId.value = null
     addingIds.value = []
+    addingSource.value = 'all'
+    addingEchoCost.value = null
     memberSearch.value = ''
   }
   function setAddingSource(source: 'all' | IconSource): void { if (!saving.value) addingSource.value = source }
+  function setAddingEchoCost(cost: 1 | 3 | null): void { if (!saving.value) addingEchoCost.value = cost }
   function clearAddingSelection(): void { if (!saving.value) addingIds.value = [] }
   function toggleAddingIcon(id: string): void {
-    if (saving.value || addingMemberIds.value.has(id) || !library.pool.some(icon => icon.id === id && icon.source !== 'placeholder')) return
+    if (saving.value || addingMemberIds.value.has(id) || !library.pool.some(icon => icon.id === id && icon.source !== 'placeholder' && (addingCategoryId.value !== 'category-special-boss' || icon.source === 'echo-catalog'))) return
     addingIds.value = produce(addingIds.value, next => {
       const index = next.indexOf(id)
       if (index < 0) next.push(id)
@@ -109,16 +123,23 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
     select(id)
   }
   const detailsOpen = shallowRef(false)
+  const detailsClosing = shallowRef(false)
+  const detailsVisible = computed(() => !!selected.value && !detailsClosing.value)
   const referencesOpen = shallowRef(false)
   const aliasCategory = shallowRef<string | null>(null)
-  const renamedIconIds = shallowRef<string[]>([])
+  const pendingIconNames = shallowRef<Record<string, string>>({})
   function closeDetails(): void {
-    library.discardIconNames(renamedIconIds.value)
-    renamedIconIds.value = []
+    detailsOpen.value = false
+    detailsClosing.value = true
+  }
+  function finishCloseDetails(): void {
+    if (!detailsClosing.value) return
+    pendingIconNames.value = {}
     pendingIconCategories.value = {}
     openedCategoryId.value = null
     detailsOpen.value = false
     filters.value = produce(filters.value, next => { next.selectedId = null })
+    detailsClosing.value = false
   }
   function toggleReferences(): void { referencesOpen.value = !referencesOpen.value }
   function toggleAlias(id: string): void { aliasCategory.value = aliasCategory.value === id ? null : id }
@@ -157,8 +178,9 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
   }
   const filtered = computed(() => library.pool.filter(icon => matchesIcon(icon, filters.value)).toSorted(compareIconPosition))
   const selected = computed(() => filtered.value.find(icon => icon.id === filters.value.selectedId) ?? null)
+  const selectedIconName = computed(() => selected.value ? pendingIconNames.value[selected.value.id] ?? selected.value.name : '')
   const references = computed(() => selected.value ? usageByIcon.value.get(selected.value.id) ?? [] : [])
-  const duplicateName = computed(() => selected.value?.name.trim() && library.pool.some(icon => icon.id !== selected.value?.id && icon.name.trim() === selected.value?.name.trim()))
+  const duplicateName = computed(() => selectedIconName.value.trim() && library.pool.some(icon => icon.id !== selected.value?.id && icon.name.trim() === selectedIconName.value.trim()))
   const unnamedCount = computed(() => library.pool.filter(icon => !icon.name.trim()).length)
 
   function reconcileSelection(): void {
@@ -182,6 +204,7 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
   }
   function setView(view: 'categories' | 'icons'): void {
     if (filters.value.view === view) return
+    pendingCategoryNames.value = {}
     openedCategoryId.value = null
     filters.value = produce(filters.value, next => {
       next.view = view
@@ -216,6 +239,7 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
   function setCategory(id: string): void {
     openedCategoryId.value = null
     if (id !== 'all' && !builtInNavigationIconCategories.some(category => category.id === id) && id !== 'unclassified' && !library.draft.categories.some(category => category.id === id)) return
+    if (id !== filters.value.category) pendingCategoryNames.value = {}
     filters.value = produce(filters.value, next => { next.category = id })
     reconcileSelection()
     categoryInput.value = ''
@@ -229,15 +253,17 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
     try { setCategory(library.createCategory(categoryInput.value)); error.value = '' }
     catch (failure) { reportError(failure instanceof Error ? failure.message : '创建分类失败') }
   }
+  const pendingCategoryNames = shallowRef<Record<string, string>>({})
+  const activeCategoryName = computed(() => activeCategory.value ? pendingCategoryNames.value[activeCategory.value.id] ?? activeCategory.value.name : '')
   function renameActiveCategory(name: string): void {
-    if (!activeCategory.value) return
-    try { library.renameCategory(activeCategory.value.id, name); error.value = '' }
-    catch (failure) { reportError(failure instanceof Error ? failure.message : '重命名失败') }
+    const category = activeCategory.value
+    if (busy.value || saving.value || !category || category.id === 'unclassified') return
+    pendingCategoryNames.value = produce(pendingCategoryNames.value, next => { next[category.id] = name.slice(0, 100) })
   }
   function renameCategory(): void {
     if (busy.value || !activeCategory.value) return
-    try { library.renameCategory(activeCategory.value.id, categoryInput.value); categoryInput.value = ''; error.value = '' }
-    catch (failure) { reportError(failure instanceof Error ? failure.message : '重命名失败') }
+    renameActiveCategory(categoryInput.value)
+    categoryInput.value = ''
   }
   function deleteCategory(): void {
     if (busy.value || !activeCategory.value) return
@@ -262,7 +288,12 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
   }
   function select(id: string): void {
     if (library.pool.some(icon => icon.id === id)) {
+      if (!detailsOpen.value || !selected.value) {
+        pendingIconNames.value = {}
+        pendingIconCategories.value = {}
+      }
       filters.value = produce(filters.value, draft => { draft.selectedId = id })
+      detailsClosing.value = false
       detailsOpen.value = true
       referencesOpen.value = false
       aliasCategory.value = null
@@ -270,10 +301,9 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
   }
   function setSearch(value: string): void { search.value = value; reconcileSelection() }
   function rename(value: string): void {
-    if (busy.value || !selected.value) return
+    if (busy.value || saving.value || !selected.value || selected.value.source === 'placeholder' || selected.value.source === 'echo-catalog') return
     const id = selected.value.id
-    if (!renamedIconIds.value.includes(id)) renamedIconIds.value = produce(renamedIconIds.value, next => { next.push(id) })
-    library.rename(id, value)
+    pendingIconNames.value = produce(pendingIconNames.value, next => { next[id] = value.slice(0, 200) })
   }
   function nextUnnamed(direction: -1 | 1): void {
     const icons = filtered.value
@@ -284,6 +314,7 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
     }
   }
   async function loadUsage(): Promise<void> {
+    usageLoaded.value = false
     usageError.value = ''
     try {
       let response = await fetch('/api/editor/library', { cache: 'no-store' })
@@ -349,29 +380,74 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
     })()
     return savePending
   }
+  const removalOpen = shallowRef(false)
+  const removalItems = shallowRef<{ iconId: string; name: string; categoryName: string; pointIds: string[]; options: { id: string; name: string }[] }[]>([])
+  const removalChoices = shallowRef<Record<string, string>>({})
+  let resolveRemoval: ((value: IconRemovalResolution[] | null) => void) | null = null
+  function setRemovalChoice(iconId: string, replacementId: string | number | null): void {
+    if (typeof replacementId !== 'string' || !removalItems.value.some(item => item.iconId === iconId && (replacementId === 'icon-not-found' || item.options.some(option => option.id === replacementId)))) return
+    removalChoices.value = produce(removalChoices.value, next => { next[iconId] = replacementId })
+  }
+  const canConfirmRemoval = computed(() => removalItems.value.every(item => !!removalChoices.value[item.iconId]))
+  function cancelRemoval(): void {
+    removalOpen.value = false
+    resolveRemoval?.(null)
+    resolveRemoval = null
+  }
+  function confirmRemoval(): void {
+    if (!canConfirmRemoval.value) return
+    removalOpen.value = false
+    resolveRemoval?.(removalItems.value.map(item => ({ iconId: item.iconId, pointIds: [...item.pointIds], replacementId: removalChoices.value[item.iconId] ?? '' })))
+    resolveRemoval = null
+  }
   async function persistOperation(update: (next: Draft<NavigationIconLibrary>) => void): Promise<boolean> {
-    if (!editable.value || busy.value || saving.value || !revision.value) return false
+    if (!editable.value || busy.value || saving.value || removalOpen.value || !revision.value) return false
     saving.value = true
     try {
       const submitted = produce(library.saved, update)
-      const result = await saveNavigationIconLibrary(submitted, revision.value)
+      const assigned = new Set(submitted.categories.flatMap(category => category.icons.map(icon => icon.iconId)))
+      const removed = library.saved.categories.flatMap(category => category.icons.filter(icon => !assigned.has(icon.iconId) && !builtInIconType(icon.iconId)?.builtIn).map(icon => ({ iconId: icon.iconId, category })))
+      let resolutions: IconRemovalResolution[] | undefined
+      if (removed.length) {
+        await loadUsage()
+        if (!usageLoaded.value) throw new Error('无法核对定位点引用，未移除图标，请重试')
+        removalItems.value = removed.flatMap(({ iconId, category }) => {
+          const pointIds = (usageByIcon.value.get(iconId) ?? []).map(point => point.id)
+          return pointIds.length ? [{ iconId, name: iconDisplayName(library.savedPool.find(icon => icon.id === iconId) ?? { id: iconId, name: '' }), categoryName: category.name, pointIds,
+            options: category.icons.filter(icon => icon.iconId !== iconId && assigned.has(icon.iconId)).map(icon => ({ id: icon.iconId, name: iconDisplayName(library.savedPool.find(item => item.id === icon.iconId) ?? { id: icon.iconId, name: '' }) })),
+          }] : []
+        })
+        if (removalItems.value.length) {
+          removalChoices.value = {}
+          removalOpen.value = true
+          const decision = await new Promise<IconRemovalResolution[] | null>(resolve => { resolveRemoval = resolve })
+          if (!decision) return false
+          resolutions = decision
+        }
+      }
+      const result = resolutions ? await saveNavigationIconLibrary(submitted, revision.value, resolutions) : await saveNavigationIconLibrary(submitted, revision.value)
       library.acknowledgeOperation(result.library, update)
       revision.value = result.revision
+      if (resolutions) await loadUsage()
       return true
     } catch (failure) {
       reportError(failure instanceof Error ? failure.message : '保存失败，请重试')
       return false
     } finally { saving.value = false }
   }
-  const categoryNameDirty = computed(() => !!activeCategory.value && activeCategory.value.name !== library.saved.categories.find(category => category.id === activeCategory.value?.id)?.name)
+  const categoryNameDirty = computed(() => !!activeCategory.value && activeCategoryName.value !== library.saved.categories.find(category => category.id === activeCategory.value?.id)?.name)
   async function saveCategoryName(): Promise<void> {
     const category = activeCategory.value
     if (!category || category.id === 'unclassified') return
-    const { id, name } = category
-    await persistOperation(next => { const target = next.categories.find(category => category.id === id); if (target) target.name = name })
+    const id = category.id
+    const name = activeCategoryName.value.trim()
+    if (!name || library.saved.categories.some(item => item.id !== id && item.name === name)) { reportError('分类名称不能为空或重复'); return }
+    if (await persistOperation(next => { const target = next.categories.find(category => category.id === id); if (target) target.name = name })) {
+      pendingCategoryNames.value = produce(pendingCategoryNames.value, next => { delete next[id] })
+    }
   }
   const pendingDeleteCategoryId = shallowRef<string | null>(null)
-  const pendingDeleteCategory = computed(() => library.draft.categories.find(category => category.id === pendingDeleteCategoryId.value) ?? null)
+  const pendingDeleteCategory = computed(() => library.saved.categories.find(category => category.id === pendingDeleteCategoryId.value) ?? null)
   function requestCategoryDeletion(): void {
     if (!editable.value || busy.value || saving.value || !activeCategory.value || activeCategory.value.id === 'unclassified') return
     pendingDeleteCategoryId.value = activeCategory.value.id
@@ -387,17 +463,19 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
     }
   }
   const pendingIconCategories = shallowRef<Record<string, string | null>>({})
+  const selectedSavedIconCategoryId = computed(() => library.saved.categories.find(category => category.icons.some(member => member.iconId === selected.value?.id))?.id ?? null)
   const selectedIconCategoryId = computed(() => {
     const id = selected.value?.id
     if (!id) return null
     if (Object.hasOwn(pendingIconCategories.value, id)) return pendingIconCategories.value[id] ?? null
-    return library.draft.categories.find(category => category.icons.some(member => member.iconId === id))?.id ?? null
+    return library.saved.categories.find(category => category.icons.some(member => member.iconId === id))?.id ?? null
   })
   function setSelectedIconCategory(value: string | number | null): void {
     const id = selected.value?.id
     if (!editable.value || busy.value || saving.value || !id || selected.value?.source === 'placeholder') return
     if ((builtInIconType(id)?.icons.length ?? 0) > 1) return
-    if (value !== null && !library.draft.categories.some(category => category.id === value)) return
+    if (value === 'category-special-boss' && selected.value?.source !== 'echo-catalog') return
+    if (value !== null && !library.saved.categories.some(category => category.id === value)) return
     pendingIconCategories.value = produce(pendingIconCategories.value, next => { next[id] = typeof value === 'string' ? value : null })
   }
   const selectedIconDirty = computed(() => {
@@ -405,14 +483,15 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
     if (!id) return false
     const value = (data: NavigationIconLibrary) => data.icons.find(icon => icon.id === id) ?? data.overrides.find(icon => icon.id === id)
     const savedCategory = library.saved.categories.find(category => category.icons.some(member => member.iconId === id))?.id ?? null
-    return selectedIconCategoryId.value !== savedCategory || JSON.stringify(value(library.draft)) !== JSON.stringify(value(library.saved))
+    return selectedIconName.value !== selected.value?.name || selectedIconCategoryId.value !== savedCategory || JSON.stringify(value(library.draft)) !== JSON.stringify(value(library.saved))
   })
   async function saveSelectedIcon(): Promise<void> {
     if (selected.value?.source === 'placeholder') return
     const id = selected.value?.id
     if (!id) return
     const icon = library.draft.icons.find(icon => icon.id === id)
-    const override = library.draft.overrides.find(icon => icon.id === id)
+    const name = selectedIconName.value
+    const nameEditable = selected.value?.source !== 'echo-catalog'
     const categoryId = selectedIconCategoryId.value
     const saved = await persistOperation(next => {
       if (categoryId !== null && !next.categories.some(category => category.id === categoryId)) throw new Error('分类已不存在')
@@ -423,14 +502,15 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
       }
       if (icon) {
         const target = next.icons.find(icon => icon.id === id)
-        if (target) target.name = icon.name
-      } else if (override) {
+        if (target) target.name = name
+      } else if (nameEditable) {
         const index = next.overrides.findIndex(icon => icon.id === id)
-        if (index < 0) next.overrides.push({ ...override })
-        else next.overrides[index] = { ...override }
+        if (index < 0) next.overrides.push({ id, name })
+        else next.overrides[index] = { id, name }
       }
     })
     if (saved) {
+      pendingIconNames.value = produce(pendingIconNames.value, next => { delete next[id] })
       pendingIconCategories.value = produce(pendingIconCategories.value, next => { delete next[id] })
       reconcileSelection()
       messageStore.showSuccess('图标已保存')
@@ -484,14 +564,17 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
   function discarded(): void { if (!busy.value) { library.discard(); reconcileCategories(); notice.value = '已还原到最近保存的配置'; error.value = '' } }
   function exported(): void { notice.value = '配置已导出；下载文件不等于保存到项目' }
   return {
+    removalOpen: shallowReadonly(removalOpen), removalItems: shallowReadonly(removalItems), removalChoices: shallowReadonly(removalChoices), canConfirmRemoval, setRemovalChoice, cancelRemoval, confirmRemoval,
     addingCategory, addingIcons, addingMemberIds, addingIds: shallowReadonly(addingIds), addingSource: shallowReadonly(addingSource),
+    addingEchoCost: shallowReadonly(addingEchoCost), addingEchoCostVisible, setAddingEchoCost,
+    addingOpen: shallowReadonly(addingOpen), finishCloseAddIcons, detailsVisible, finishCloseDetails,
     openAddIcons, closeAddIcons, setAddingSource, clearAddingSelection, toggleAddingIcon, confirmAddIcons,
     pendingDeleteCategory, requestCategoryDeletion, cancelCategoryDeletion,
-    selectedIconCategoryId, setSelectedIconCategory, categoryNameDirty, selectedIconDirty, saveCategoryName, deleteActiveCategory, saveSelectedIcon,
+    selectedIconName, selectedSavedIconCategoryId, selectedIconCategoryId, setSelectedIconCategory, categoryNameDirty, selectedIconDirty, saveCategoryName, deleteActiveCategory, saveSelectedIcon,
     detailsOpen: shallowReadonly(detailsOpen), referencesOpen: shallowReadonly(referencesOpen), aliasCategory: shallowReadonly(aliasCategory), closeDetails, toggleReferences, toggleAlias,
     memberSearch: shallowReadonly(memberSearch), setMemberSearch, renameActiveCategory, setView, addCategoryMember, removeCategoryMember, setSource, editable, saving: shallowReadonly(saving), edit, flushEdits,
     createCategoryOpen: shallowReadonly(createCategoryOpen), openCreateCategory, closeCreateCategory, saveNewCategory,
-    categoryInput: shallowReadonly(categoryInput), activeCategory, unclassifiedCount,
+    categoryInput: shallowReadonly(categoryInput), activeCategoryName, activeCategory, unclassifiedCount,
     reorderCategory, setCategory, setCategoryInput, createCategory, renameCategory, deleteCategory, setMembership,
     filters: shallowReadonly(filters), search: shallowReadonly(search), busy: shallowReadonly(busy), loaded: shallowReadonly(loaded),
     error: shallowReadonly(error), notice: shallowReadonly(notice), revision: shallowReadonly(revision), usageError: shallowReadonly(usageError), usageLoaded: shallowReadonly(usageLoaded),

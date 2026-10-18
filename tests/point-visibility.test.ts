@@ -27,7 +27,7 @@ describe('map point scale visibility', () => {
     }
   })
 
-  it.each(['service', 'normal-boss', 'hologram', 'entrance', 'tacet-field'] as const)('uses actual teleport mode for %s independently of its icon', (type) => {
+  it.each(['service', 'normal-boss', 'unclassified', 'entrance', 'tacet-field'] as const)('uses actual teleport mode for %s independently of its icon', (type) => {
     for (const mode of ['fast-travel', 'landmark', 'entrance', 'local-transit', 'unknown'] as const) {
       const point: MapDisplayPoint = { category: 'navigation', location: { ...navigationPoint(type), mode } }
       for (const scale of [64, 4.00001, 4, 3, 2.00001, 2, 1, 0.1]) {

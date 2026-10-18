@@ -101,6 +101,29 @@ describe('map display layer integration', () => {
     } finally { points.dispose() }
   })
 
+  it.each(['landmark', 'entrance', 'local-transit'] as const)('highlights matching floor badges for %s points', (mode) => {
+    const points = createPointLayers()
+    const point = { ...navigationPoint('small-beacon'), iconUrl: '', mode, levelId: 'a1' }
+    try {
+      for (const selectedLevel of [null, 'a1', 'a2', 'a1']) {
+        points.update([], [point], [], [], undefined, selectedLevel)
+        const styles = points.styleFor({ category: 'navigation', location: point })
+        if (!Array.isArray(styles)) throw new Error('需要定位点样式')
+        const badge = styles.map((style) => style.getImage()).find((image) =>
+          image instanceof RegularShape && image.getPoints() === 6 && image.getStroke()?.getWidth() === 1.5
+          && image.getFill()?.getColor() === 'rgba(0, 0, 0, 0.72)')
+        if (!(badge instanceof RegularShape)) throw new Error('需要分层标记')
+        if (selectedLevel === 'a1') {
+          expect(badge.getStroke()?.getColor()).toBe('#e8dd93')
+          expect(badge.getOpacity()).toBe(1)
+        } else {
+          expect(badge.getStroke()?.getColor()).not.toBe('#e8dd93')
+          expect(badge.getOpacity()).toBeLessThan(1)
+        }
+      }
+    } finally { points.dispose() }
+  })
+
   it('keeps floor point badges visible on the base map and when switching floors', () => {
     const points = createPointLayers()
     const point = referenceDataset.navigationPoints[0]

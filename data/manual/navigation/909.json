@@ -43,7 +43,8 @@
       "kind": "navigation",
       "name": "虚蚀古代乔木",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-1-8-4",
       "mode": "fast-travel"
     },
     {
@@ -473,9 +474,10 @@
       },
       "note": "",
       "kind": "navigation",
-      "name": "勘探基站",
+      "name": "其它",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-3-6",
       "mode": "fast-travel"
     },
     {
@@ -506,7 +508,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-1-2-8",
+      "iconId": "unpack-map-4-2-6",
       "mode": "landmark"
     },
     {
@@ -587,7 +589,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-1-2-8",
+      "iconId": "unpack-map-4-2-6",
       "mode": "landmark"
     },
     {
@@ -647,7 +649,8 @@
       "kind": "navigation",
       "name": "虚蚀古代乔木",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-1-8-4",
       "mode": "fast-travel"
     },
     {
@@ -779,6 +782,7 @@
     {
       "id": "7670f843-e776-4730-be34-92f39f220743",
       "stateId": 909,
+      "levelId": "-1/49",
       "coordinate": {
         "x": 787,
         "y": -129,
@@ -866,7 +870,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-1-2-8",
+      "iconId": "unpack-map-4-2-6",
       "mode": "landmark"
     },
     {
@@ -956,7 +960,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-1-2-8",
+      "iconId": "unpack-map-4-2-6",
       "mode": "landmark"
     },
     {
@@ -1002,7 +1006,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-1-2-8",
+      "iconId": "unpack-map-4-2-6",
       "mode": "landmark"
     },
     {
@@ -1267,7 +1271,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-1-2-8",
+      "iconId": "unpack-map-4-2-6",
       "mode": "landmark"
     },
     {
@@ -1282,7 +1286,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-1-2-8",
+      "iconId": "unpack-map-4-2-6",
       "mode": "landmark"
     },
     {
@@ -1375,7 +1379,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "unpack-map-1-2-8",
+      "iconId": "unpack-map-4-2-6",
       "mode": "landmark"
     },
     {
@@ -1411,6 +1415,7 @@
     {
       "id": "cc003d09-2273-48b6-9250-d91d71492488",
       "stateId": 909,
+      "levelId": "-1/50",
       "coordinate": {
         "x": 765,
         "y": 926,
@@ -1546,7 +1551,8 @@
       "kind": "navigation",
       "name": "虚蚀古代乔木",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-1-8-4",
       "mode": "fast-travel"
     },
     {
@@ -1606,12 +1612,14 @@
       "kind": "navigation",
       "name": "虚蚀古代乔木",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-1-8-4",
       "mode": "fast-travel"
     },
     {
       "id": "fa169e67-e3c0-4ba7-b890-b25aedcb3b78",
       "stateId": 909,
+      "levelId": "-1/53",
       "coordinate": {
         "x": 1377,
         "y": 582,

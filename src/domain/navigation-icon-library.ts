@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { NavigationIconLibrary, ManagedNavigationIcon, NavigationIconCategory } from './types.ts'
-import { officialIconPool } from './navigation-icon-pool.ts'
+import { officialIconPool, echoCatalogIconPool } from './navigation-icon-pool.ts'
 import { builtInIconType, navigationPointTypes } from './navigation-point-types.ts'
 
 export function iconPosition(id: string): { atlas: number; column: number; row: number } {
@@ -60,18 +60,20 @@ export const navigationIconLibrarySchema: z.ZodType<NavigationIconLibrary> = z.o
     if (type.builtIn && type.icons.some(id => ![...icons, ...officialIconPool].some(icon => icon.id === id))) context.addIssue({ code: 'custom', message: `${type.name}的内置图标不能删除` })
   }
   if (new Set(icons.map(({ id }) => id)).size !== icons.length) context.addIssue({ code: 'custom', message: '图标 ID 重复' })
-  const ids = new Set([...icons, ...officialIconPool].map(icon => icon.id))
+  const ids = new Set(['icon-not-found', ...[...icons, ...officialIconPool, ...echoCatalogIconPool].map(icon => icon.id)])
   if (new Set(overrides.map(entry => entry.id)).size !== overrides.length || overrides.some(entry => !officialIconPool.some(icon => icon.id === entry.id))) context.addIssue({ code: 'custom', message: '来源图标设置重复或引用了未知图标' })
   if (new Set(categories.map(category => category.id)).size !== categories.length) context.addIssue({ code: 'custom', message: '分类 ID 重复' })
   if (new Set(categories.map(category => category.name)).size !== categories.length) context.addIssue({ code: 'custom', message: '分类名称重复' })
   const assigned = new Set<string>()
   for (const category of categories) {
     for (const { iconId } of category.icons) {
+      if (category.id === 'category-special-boss' && !echoCatalogIconPool.some(icon => icon.id === iconId)) context.addIssue({ code: 'custom', message: '特殊 BOSS 只能添加 C1/C3 声骸图鉴图标' })
+      if (iconId === 'icon-not-found' && category.id !== 'unclassified') context.addIssue({ code: 'custom', message: '图标未找到只能属于其它分类' })
       if ((builtInIconType(iconId)?.icons.length ?? 0) > 1) context.addIssue({ code: 'custom', message: '该图标属于内置类型，不能加入普通分类' })
       if (assigned.has(iconId)) context.addIssue({ code: 'custom', message: '每个图标只能加入一个分类' })
       assigned.add(iconId)
     }
-    if (category.id === 'unclassified' && (category.name !== '未分类' || category.order !== undefined)) context.addIssue({ code: 'custom', message: '未分类名称和位置固定' })
+    if (category.id === 'unclassified' && (category.name !== '其它' || category.order !== undefined)) context.addIssue({ code: 'custom', message: '其它名称和位置固定' })
     if (new Set(category.icons.map(icon => icon.iconId)).size !== category.icons.length) context.addIssue({ code: 'custom', message: '分类内图标重复' })
     if (category.icons.some(icon => !ids.has(icon.iconId))) context.addIssue({ code: 'custom', message: '分类引用了不存在的图标' })
   }

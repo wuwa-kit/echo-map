@@ -1,7 +1,7 @@
 import { pointLibrarySchema } from './schema.ts'
 import type { AuthoredCoordinate, AuthoredPoint, EchoMapLocation, AuthoredEchoLocation, GameCoordinate, MapDataset, NavigationKind, NavigationMode, NavigationPoint, NavigationPointGroup, PointLibrary, PointQuality } from './types.ts'
 import { gameToMapCoordinate, officialToMapCoordinate } from '../map/projection.ts'
-import { navigationPointTypes } from './navigation-point-types.ts'
+import { getNavigationPointType, navigationPointTypes } from './navigation-point-types.ts'
 import { navigationPointIconUrl } from './navigation-icons.ts'
 import { pointRegionResolver } from './point-region.ts'
 import { isOfficialEchoMapIncluded } from './official-echo-scope.ts'
@@ -79,7 +79,7 @@ export function echoMembers(location: EchoMapLocation): readonly {
 }
 
 export function pointTitle(point: AuthoredPoint, dataset: Pick<MapDataset, 'echoes'>): string {
-  if (point.kind === 'navigation') return point.name.trim() || (point.pointType ? navigationPointTypes[point.pointType].name : '未设置类型')
+  if (point.kind === 'navigation') return point.name.trim() || (point.pointType ? getNavigationPointType(point.pointType).name : '未设置类型')
   const names = new Map(dataset.echoes.map(({ id, name }) => [id, name]))
   return point.members.map(({ echoId, count }) => `${names.get(echoId) ?? echoId} ×${count}`).join(' · ') || '未添加怪物'
 }

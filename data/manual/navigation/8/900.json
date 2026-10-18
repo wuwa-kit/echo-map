@@ -42,9 +42,10 @@
       },
       "note": "",
       "kind": "navigation",
-      "name": "棘刺河豚",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "name": "咕咕河豚",
+      "navigationKind": "boss",
+      "pointType": "category-special-boss",
+      "iconId": "wiki-echo-11114",
       "mode": "landmark"
     },
     {
@@ -58,8 +59,9 @@
       "note": "",
       "kind": "navigation",
       "name": "鸣泣之刃",
-      "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "navigationKind": "boss",
+      "pointType": "category-special-boss",
+      "iconId": "wiki-echo-11137",
       "mode": "landmark"
     },
     {
@@ -142,7 +144,7 @@
       "name": "库卡斯",
       "navigationKind": "service",
       "pointType": "service",
-      "iconId": "unpack-map-4-3-10",
+      "iconId": "unpack-map-1-1-7",
       "mode": "fast-travel"
     },
     {

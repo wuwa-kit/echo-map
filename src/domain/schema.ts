@@ -18,7 +18,7 @@ export const navigationIconDefinitionSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   url: navigationIconUrlSchema.or(z.string().regex(/^\/icons\/(?:icon-not-found\.png|navigation\/[1-4]-\d+-\d+\.png)$/u)),
-  source: z.enum(['unpacked', 'wiki', 'map', 'placeholder']).optional(),
+  source: z.enum(['unpacked', 'wiki', 'map', 'placeholder', 'echo-catalog']).optional(),
 }).strict()
 export const officialAssetSchema = z.object({
   id: z.string().min(1),
@@ -105,6 +105,7 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     for (const message of navigationTypeErrors({ ...point, kind: point.navigationKind })) issue(message)
     const rule = point.pointType ? navigationPointTypes[point.pointType] : undefined
     const fixedName = rule?.names[0]
+    if (point.pointType === 'category-special-boss' && navigationIconById(point.iconId)?.source !== 'echo-catalog') issue('特殊 BOSS 只能使用 C1/C3 声骸图鉴图标')
     if (rule?.builtIn && !rule.icons.includes(point.iconId ?? '')) issue(`${rule.name}必须使用内置图标`)
     if (fixedName !== undefined && point.name !== fixedName) issue(`名称固定为“${fixedName}”，不允许自定义`)
     if (point.iconId && !navigationIconById(point.iconId)) issue('定位点引用了未知图标')

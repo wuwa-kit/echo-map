@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue'
 import { floatingExitSize } from './floating-exit-size.ts'
 import WuDialogContent from './WuDialogContent.ts'
 import WuButton from './WuButton.vue'
@@ -25,22 +25,34 @@ const props = withDefaults(defineProps<{
   closeText: '关闭',
 })
 const sizes = { sm: 'w-[min(420px,calc(100vw-32px))]', md: 'w-[min(680px,calc(100vw-32px))]', lg: 'w-[min(1080px,calc(100vw-32px))]', fullscreen: 'm-0 h-dvh max-h-none w-screen max-w-none rounded-none' }
-const emit = defineEmits<{ dismissRequested: [] }>()
+const emit = defineEmits<{ dismissRequested: []; beforeOpen: []; afterClose: [] }>()
 const panel = useTemplateRef<HTMLDialogElement>('panelRef')
 const isSupported = useSupported(() => typeof HTMLDialogElement !== 'undefined' && 'showModal' in HTMLDialogElement.prototype)
 
 const exitSize = floatingExitSize()
+let transitionId = 0
+let disposed = false
 
 function show(): void {
   const element = panel.value
   if (!isSupported.value || !element?.isConnected || element.open) return
+  transitionId++
+  emit('beforeOpen')
   exitSize.restore()
   element.showModal()
 }
 
 function hide(): void {
   const element = panel.value
-  if (element?.isConnected && element.open) element.close()
+  if (!element?.isConnected || !element.open) return
+  const id = ++transitionId
+  element.close()
+  void nextTick().then(async () => {
+    await Promise.allSettled(element.getAnimations().map(animation => animation.finished))
+    if (disposed || id !== transitionId || props.open || element.open) return
+    exitSize.restore()
+    emit('afterClose')
+  })
 }
 
 function requestDismiss(): void {
@@ -67,7 +79,7 @@ watch(() => [props.open, isSupported.value] as const, ([open, supported]) => {
   else hide()
 }, { immediate: true, flush: 'post' })
 onMounted(() => { if (props.open) show() })
-onBeforeUnmount(() => { hide(); exitSize.restore() })
+onBeforeUnmount(() => { disposed = true; hide(); exitSize.restore() })
 
 defineExpose({ show, hide, isSupported })
 </script>

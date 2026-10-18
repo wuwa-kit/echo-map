@@ -743,7 +743,8 @@
       "kind": "navigation",
       "name": "声骸挑战·咕咕河豚",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-4-12",
       "mode": "landmark"
     },
     {

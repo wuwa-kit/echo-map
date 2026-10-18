@@ -9,7 +9,7 @@ import { readEditorLibrary, saveEditorLibrary } from '../src/data/editor-client.
 import { referenceDataset, mixedPoint, smallEcho, eliteEcho } from './fixtures/point-library.ts'
 import type { MapStateDefinition, PointLibrary } from '../src/domain/types.ts'
 import { commitCoordinateInput, editCoordinateInput, emptyCoordinateInput } from '../src/components/base/coordinate-input.ts'
-import { navigationPointTypeIds, navigationPointTypes } from '../src/domain/navigation-point-types.ts'
+import { getNavigationPointType, navigationPointTypeIds, navigationPointTypes } from '../src/domain/navigation-point-types.ts'
 import { navigationIconById, navigationTypeIcons } from '../src/domain/navigation-icons.ts'
 import { editorLibraryLocations, libraryLocations, parsePointLibrary } from '../src/domain/point-library.ts'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
@@ -266,11 +266,12 @@ describe('point editor actions', () => {
   })
 
   it.each([
-    ['central-beacon', Infinity], ['small-beacon', 4], ['entrance', 2],
+    ['central-beacon', Infinity], ['small-beacon', 4], ['entrance', 2], ['unclassified', 2],
   ] as const)('derives visibility from %s through saving, reloading and type changes', async (pointType, threshold) => {
     const store = usePointEditorStore()
     await store.load('navigation')
     store.setPointType(pointType)
+    if (pointType === 'unclassified') store.setIcon('icon-not-found')
     store.setCoordinateText('100, 100, 20')
     store.applyCoordinateText()
     expect(await store.savePoint()).toBe(true)
@@ -1059,7 +1060,7 @@ describe('point editor actions', () => {
     selectMapContext({ stateId: state.id, levelId: floor.id })
     store.setContinueAdding(true)
     store.setPointType(pointType)
-    const rule = navigationPointTypes[pointType]
+    const rule = getNavigationPointType(pointType)
     for (const x of [10, 20]) {
       store.setCoordinateText(`${x}, 2, 3`)
       store.applyCoordinateText()
@@ -1108,7 +1109,7 @@ describe('point editor actions', () => {
     const defaults = store.draft
     expect(defaults?.kind).toBe('navigation')
     if (defaults?.kind !== 'navigation') throw new Error('需要定位点草稿')
-    expect(defaults.name).toBe(pointType ? navigationPointTypes[pointType].names[0] ?? navigationPointTypes[pointType].name : '')
+    expect(defaults.name).toBe(pointType ? getNavigationPointType(pointType).names[0] ?? getNavigationPointType(pointType).name : '')
     {
       const icon = navigationTypeIcons(pointType ?? undefined).at(-1)
       if (!icon) throw new Error('需要候选图标')
@@ -1403,14 +1404,29 @@ describe('point editor actions', () => {
   it('previews complete imports and rejects foreign references without writing', async () => {
     const store = usePointEditorStore()
     await store.load('echo')
+    const savedLibrary = store.library
+    const savedRows = store.managedPoints
     store.previewImport(JSON.stringify({ version: 1, points: [mixedPoint()] }))
+    expect(store.library).toBe(savedLibrary)
+    expect(store.managedPoints).toBe(savedRows)
     expect(saveEditorLibrary).not.toHaveBeenCalled()
+    store.cancelImport()
+    expect(store.library).toBe(savedLibrary)
+    expect(store.managedPoints).toBe(savedRows)
+    expect(store.importPreview).toBeNull()
+    store.previewImport(JSON.stringify({ version: 1, points: [mixedPoint()] }))
     await store.applyImport()
     expect(disk.points).toEqual([mixedPoint()])
     expect(store.editing).toBe(true)
     store.previewImport(JSON.stringify({ version: 1, points: [{ ...mixedPoint(), stateId: -500 }] }))
     expect(store.error).toContain('未知地图')
     expect(disk.points).toEqual([mixedPoint()])
+    store.cancelImport()
+    store.previewImport(JSON.stringify({ version: 1, points: [] }))
+    expect(store.error).toBe('')
+    expect(store.notice).toBe('')
+    expect(store.importPreview?.points).toEqual([])
+    expect(store.importLabel).toBe('替换全部人工点位')
   })
   it('keeps both form values, coordinates, members and invalid input across repeated tab switches', async () => {
     const store = usePointEditorStore()
@@ -1604,7 +1620,35 @@ it('clears missing-arrival errors when the optional arrival is emptied after a f
 })
 
 
-it('keeps point names independent when selecting and switching icons', async () => {
+it.each([false, true])('updates icon names only in the form until saved (existing point: %s)', async existing => {
+  const [first, second] = navigationTypeIcons('echo-settlement')
+  if (!first || !second) throw new Error('需要两个聚落图标')
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  store.setPointType('echo-settlement')
+  store.setIcon(first.id)
+  store.setName('手动名称')
+  store.setCoordinateText('1, 2, 3')
+  store.applyCoordinateText()
+  if (existing) {
+    store.setContinueAdding(false)
+    expect(await store.savePoint()).toBe(true)
+    const id = disk.points[0]?.id
+    if (!id) throw new Error('需要已保存点位')
+    store.newPoint('navigation')
+    store.selectPoint(id)
+  }
+  const saved = store.library
+  const rows = store.managedPoints
+  store.setIcon(second.id)
+  expect(store.draft).toMatchObject({ iconId: second.id, name: second.name })
+  expect(store.library).toBe(saved)
+  expect(store.managedPoints).toBe(rows)
+  expect(await store.savePoint()).toBe(true)
+  expect(disk.points[0]).toMatchObject({ iconId: second.id, name: second.name })
+})
+
+it('uses the selected icon name and allows manual names after selection', async () => {
   const [first, second] = navigationTypeIcons('service').filter(({ name }) => !name.includes(' / '))
   if (!first || !second) throw new Error('需要图标目录')
   const store = usePointEditorStore()
@@ -1617,13 +1661,14 @@ it('keeps point names independent when selecting and switching icons', async () 
   await store.savePoint()
   expect(store.inputErrors.name).toBeTruthy()
   store.setIcon(first.id)
-  expect(store.draft).toMatchObject({ name: '', iconId: first.id })
-  expect(store.inputErrors.name).toBeTruthy()
+  expect(store.draft).toMatchObject({ name: first.name, iconId: first.id })
+  expect(store.inputErrors.name).toBeUndefined()
   store.setName('手动名称')
   store.setIcon(second.id)
-  expect(store.draft).toMatchObject({ name: '手动名称' })
+  expect(store.draft).toMatchObject({ name: second.name })
   store.setIcon(first.id)
-  expect(store.draft).toMatchObject({ name: '手动名称' })
+  expect(store.draft).toMatchObject({ name: first.name })
+  store.setName('手动名称')
   store.setCoordinateText('1, 2, 3')
   store.applyCoordinateText()
   expect(await store.savePoint()).toBe(true)
@@ -1632,7 +1677,7 @@ it('keeps point names independent when selecting and switching icons', async () 
   expect(store.draft).toMatchObject({ name: '手动名称' })
 })
 
-it.each([null, 'service'] as const)('preserves the entered name and name errors when selecting an icon with multiple names for %s', async (pointType) => {
+it.each(['unclassified', 'service'] as const)('uses the complete icon name for %s and preserves edits when reselecting it', async (pointType) => {
   const shared = navigationTypeIcons(pointType ?? undefined).find(({ name }) => name.includes(' / '))
   if (!shared) throw new Error('需要多名称图标')
   const store = usePointEditorStore()
@@ -1640,7 +1685,7 @@ it.each([null, 'service'] as const)('preserves the entered name and name errors 
   store.setPointType(pointType)
   store.setName('我记录的服务点')
   store.setIcon(shared.id)
-  expect(store.draft).toMatchObject({ name: '我记录的服务点', iconId: shared.id })
+  expect(store.draft).toMatchObject({ name: shared.name, iconId: shared.id })
   store.setName('')
   await store.savePoint()
   expect(store.inputErrors.name).toBeTruthy()
@@ -1653,7 +1698,7 @@ it.each(['central-beacon', 'small-beacon', 'material-domain'] as const)('keeps b
   const store = usePointEditorStore()
   await store.load('navigation')
   store.setPointType(pointType)
-  const rule = navigationPointTypes[pointType]
+  const rule = getNavigationPointType(pointType)
   store.setIcon('unpack-map-3-3-4')
   store.setMode('landmark')
   store.setName('自定义名称')
@@ -1664,15 +1709,15 @@ it.each(['central-beacon', 'small-beacon', 'material-domain'] as const)('keeps b
   expect(store.draft).toMatchObject({ iconId: 'unpack-map-3-3-4', mode: 'landmark' })
 })
 
-it('fixes tacet field name and icon while preserving editable travel mode', async () => {
+it('fixes tacet field icon while allowing custom names and travel mode', async () => {
   const store = usePointEditorStore()
   await store.load('navigation')
   store.setPointType('tacet-field')
   store.setName('其他名称')
   store.setIcon('unpack-map-3-3-4')
-  expect(store.draft).toMatchObject({ name: '无音区', iconId: 'unpack-map-4-6-3', mode: 'fast-travel' })
+  expect(store.draft).toMatchObject({ name: '其他名称', iconId: 'unpack-map-4-6-3', mode: 'landmark' })
   store.setMode('landmark')
-  expect(store.draft).toMatchObject({ name: '无音区', iconId: 'unpack-map-4-6-3', mode: 'landmark' })
+  expect(store.draft).toMatchObject({ name: '其他名称', iconId: 'unpack-map-4-6-3', mode: 'landmark' })
   store.setMode('fast-travel')
   expect(store.draft).toMatchObject({ mode: 'fast-travel' })
 })
@@ -1689,9 +1734,9 @@ it('selects any known enabled artwork independently of non-built-in point type',
   expect(store.draft).not.toHaveProperty('pointType')
   expect(store.draft).toMatchObject({ iconId: boss.id })
   store.setIcon(untyped.id)
-  expect(store.draft).toMatchObject({ iconId: untyped.id, name: '' })
+  expect(store.draft).toMatchObject({ iconId: untyped.id, name: untyped.name })
   expect(store.inputErrors.icon).toBeUndefined()
-  expect(store.inputErrors.name).toBeTruthy()
+  expect(store.inputErrors.name).toBeUndefined()
   store.setIcon('unknown-icon')
   expect(store.draft).toMatchObject({ iconId: untyped.id })
   store.setPointType('weekly-boss')
@@ -1743,7 +1788,7 @@ it('locks weekly boss travel independently of the selected artwork', async () =>
   store.setTeleportCoordinateText('4, 5, 6')
   store.applyTeleportCoordinateText()
   store.setPointType(null)
-  expect(store.draft).toMatchObject({ name: '自定义周本名称', mode: 'fast-travel', teleportCoordinate: { x: 4, y: 5, z: 6 } })
+  expect(store.draft).toMatchObject({ name: boss.name, mode: 'fast-travel', teleportCoordinate: { x: 4, y: 5, z: 6 } })
   expect(store.draft).not.toHaveProperty('iconId')
   expect(await store.savePoint()).toBe(false)
   const untyped = navigationTypeIcons(undefined)[0]
@@ -1822,11 +1867,12 @@ it('applies every type rule and automatically supplies fixed or candidate artwor
   store.setCoordinateText('1, 2, 3')
   store.applyCoordinateText()
   for (const pointType of navigationPointTypeIds) {
-    const rule = navigationPointTypes[pointType]
+    const rule = getNavigationPointType(pointType)
     store.setPointType(null)
     store.setName('保留的自定义名称')
+    store.setMode('fast-travel')
     store.setPointType(pointType)
-    expect(store.draft).toMatchObject({ pointType, navigationKind: rule.kind, mode: rule.defaultMode, name: rule.names[0] ?? rule.name, coordinate: { x: 1, y: 2, z: 3 } })
+    expect(store.draft).toMatchObject({ pointType, navigationKind: rule.kind, mode: 'fast-travel', name: rule.names[0] ?? rule.name, coordinate: { x: 1, y: 2, z: 3 } })
     if (rule.icons.length === 1) {
       const iconId = store.draft?.kind === 'navigation' ? store.draft.iconId : undefined
       expect(navigationTypeIcons(pointType).some(({ id }) => id === iconId)).toBe(true)
@@ -1845,7 +1891,7 @@ it('saves, reloads, imports and renders every type without official navigation d
   const store = usePointEditorStore()
   await store.load('echo')
   for (const pointType of navigationPointTypeIds) {
-    const rule = navigationPointTypes[pointType]
+    const rule = getNavigationPointType(pointType)
     const icon = navigationTypeIcons(pointType)[0]
     if (!icon) throw new Error(`${rule.name}缺少图标选项`)
     store.newPoint('navigation')
@@ -1914,16 +1960,16 @@ it.each(['central-beacon', 'small-beacon'] as const)('locks the %s name across t
 })
 
 it('supports a type configured as non-teleportable and locked without treating the lock as forced teleport', async () => {
-  const original = navigationPointTypes.hologram
-  navigationPointTypes.hologram = { ...original, defaultMode: 'landmark', teleportLocked: true }
+  const original = navigationPointTypes.unclassified
+  navigationPointTypes.unclassified = { ...original, defaultMode: 'landmark', teleportLocked: true }
   try {
     const store = usePointEditorStore()
     await store.load('navigation')
-    store.setPointType('hologram')
+    store.setPointType('unclassified')
     expect(store.draft).toMatchObject({ mode: 'landmark' })
     store.setMode('fast-travel')
     expect(store.draft).toMatchObject({ mode: 'landmark' })
-    const icon = navigationTypeIcons('hologram')[0]
+    const icon = navigationTypeIcons('unclassified')[0]
     if (!icon) throw new Error('需要全息图标')
     store.setIcon(icon.id)
     store.setCoordinateText('1, 2, 3')
@@ -1931,21 +1977,21 @@ it('supports a type configured as non-teleportable and locked without treating t
     expect(await store.savePoint()).toBe(true)
     const saved = disk.points[0]
     if (!saved) throw new Error('需要已保存的点位')
-    expect(saved).toMatchObject({ pointType: 'hologram', mode: 'landmark' })
+    expect(saved).toMatchObject({ pointType: 'unclassified', mode: 'landmark' })
     expect(() => parsePointLibrary({ version: 1, points: [{ ...saved, mode: 'fast-travel' }] }, referenceDataset)).toThrow('应标记为不可直接传送')
     const locations = libraryLocations(disk, referenceDataset)
     expect(mapDatasetSchema.safeParse({ ...referenceDataset, ...locations }).success).toBe(true)
     const invalid = locations.navigationPoints.map((point) => ({ ...point, mode: 'fast-travel' }))
     expect(mapDatasetSchema.safeParse({ ...referenceDataset, navigationPoints: invalid }).success).toBe(false)
   } finally {
-    navigationPointTypes.hologram = original
+    navigationPointTypes.unclassified = original
   }
 })
 
-it.each(navigationTypeIcons('hologram'))('allows toggling teleport for $name without changing its icon', async (icon) => {
+it.each(navigationTypeIcons('unclassified'))('allows toggling teleport for $name without changing its icon', async (icon) => {
   const store = usePointEditorStore()
   await store.load('navigation')
-  store.setPointType('hologram')
+  store.setPointType('unclassified')
   expect(store.draft).toMatchObject({ mode: 'landmark' })
   store.setName(icon.name)
   store.setIcon(icon.id)
@@ -1953,7 +1999,7 @@ it.each(navigationTypeIcons('hologram'))('allows toggling teleport for $name wit
   store.setCoordinateText('1, 2, 3')
   store.applyCoordinateText()
   expect(await store.savePoint()).toBe(true)
-  expect(disk.points[0]).toMatchObject({ pointType: 'hologram', iconId: icon.id, mode: 'landmark' })
+  expect(disk.points[0]).toMatchObject({ pointType: 'unclassified', iconId: icon.id, mode: 'landmark' })
   store.setMode('fast-travel')
   store.setTeleportCoordinateText('4, 5, 6')
   store.applyTeleportCoordinateText()
@@ -1962,7 +2008,7 @@ it.each(navigationTypeIcons('hologram'))('allows toggling teleport for $name wit
   if (!savedId) throw new Error('需要已保存的全息点位')
   store.closeEditor()
   store.selectPoint(savedId)
-  expect(store.draft).toMatchObject({ pointType: 'hologram', iconId: icon.id, mode: 'fast-travel', teleportCoordinate: { x: 4, y: 5, z: 6 } })
+  expect(store.draft).toMatchObject({ pointType: 'unclassified', iconId: icon.id, mode: 'fast-travel', teleportCoordinate: { x: 4, y: 5, z: 6 } })
   store.setMode('landmark')
   expect(store.draft).not.toHaveProperty('teleportCoordinate')
   expect(await store.savePoint()).toBe(true)
@@ -1971,15 +2017,16 @@ it.each(navigationTypeIcons('hologram'))('allows toggling teleport for $name wit
   expect(disk.points[0]).not.toHaveProperty('teleportCoordinate')
 })
 
-it.each(['normal-boss', 'tacet-field'] as const)('defaults %s to teleport but preserves a saved opt-out when reopening', async (pointType) => {
+it.each(['normal-boss', 'tacet-field'] as const)('preserves manual teleport settings for %s when reopening', async (pointType) => {
   const store = usePointEditorStore()
   await store.load('navigation')
   store.setPointType(pointType)
-  expect(store.draft).toMatchObject({ mode: 'fast-travel' })
+  expect(store.draft).toMatchObject({ mode: 'landmark' })
+  store.setMode('fast-travel')
   const icon = navigationTypeIcons(pointType)[0]
   if (!icon) throw new Error('需要定位点图标')
   store.setIcon(icon.id)
-  const name = navigationPointTypes[pointType].names[0] ?? '自定义 BOSS'
+  const name = pointType === 'tacet-field' ? '自定义无音区' : '自定义 BOSS'
   store.setName(name)
   store.setCoordinateText('1, 2, 3')
   store.applyCoordinateText()
@@ -2012,7 +2059,7 @@ it.each(['normal-boss', 'tacet-field'] as const)('defaults %s to teleport but pr
   expect(disk.points[0]).toMatchObject({ mode: 'fast-travel' })
 })
 
-it('clears arrival coordinates, pending edits and errors when switching to an entrance', async () => {
+it('preserves arrival coordinates and pending input on type changes until teleport is manually disabled', async () => {
   const { editCoordinateInput } = await import('../src/components/base/coordinate-input.ts')
   const store = usePointEditorStore()
   await store.load('echo')
@@ -2022,8 +2069,14 @@ it('clears arrival coordinates, pending edits and errors when switching to an en
   store.applyTeleportCoordinateText()
   store.setTeleportCoordinate('x', 'bad')
   store.updateCoordinateInput(true, editCoordinateInput(store.arrivalInput, { x: 4, y: 5, z: 6 }, '-'))
+  const arrival = store.arrivalInput
+  const errors = store.inputErrors
+  const point = store.draft
   store.setPointType('entrance')
-  expect(store.draft).toMatchObject({ name: '入口', mode: 'entrance' })
+  expect(store.draft).toMatchObject({ name: '入口', mode: 'fast-travel', teleportCoordinate: point?.kind === 'navigation' ? point.teleportCoordinate : undefined })
+  expect(store.arrivalInput).toBe(arrival)
+  expect(store.inputErrors['teleport:x']).toBe(errors['teleport:x'])
+  store.setMode('landmark')
   expect(store.draft).not.toHaveProperty('teleportCoordinate')
   expect(store.inputErrors['teleport:x']).toBeUndefined()
   expect(store.arrivalInput.text).toBeNull()
@@ -2049,12 +2102,12 @@ it('switches ordinary and nightmare boss icons within one type and saves the sel
   if (!ordinary[0] || !ordinary[1] || !nightmare) throw new Error('需要普通和梦魇首领')
   store.setName('无冠者')
   store.setIcon(ordinary[0].id)
-  expect(store.draft).toMatchObject({ name: '无冠者' })
+  expect(store.draft).toMatchObject({ name: ordinary[0].name })
   store.setIcon(ordinary[1].id)
-  expect(store.draft).toMatchObject({ name: '无冠者' })
+  expect(store.draft).toMatchObject({ name: ordinary[1].name })
   store.setName('无冠者')
   store.setIcon(nightmare.id)
-  expect(store.draft).toMatchObject({ pointType: 'normal-boss', name: '无冠者', mode: 'fast-travel' })
+  expect(store.draft).toMatchObject({ pointType: 'normal-boss', name: nightmare.name, mode: 'landmark' })
   expect(store.draft).not.toHaveProperty('variant')
   expect(store.draft).toMatchObject({ iconId: nightmare.id })
   store.setMode('landmark')
@@ -2074,10 +2127,10 @@ it('switches ordinary and nightmare boss icons within one type and saves the sel
   store.setPointType('service')
   store.setName('独立名称')
   expect(store.draft).not.toHaveProperty('variant')
-  expect(store.draft).toMatchObject({ name: '独立名称', mode: 'fast-travel' })
+  expect(store.draft).toMatchObject({ name: '独立名称', mode: 'landmark' })
 })
 
-it('defaults exploration quests to non-teleport with their shared icon and preserves custom names on reload', async () => {
+it('preserves teleport when switching to exploration quests and custom names on reload', async () => {
   const store = usePointEditorStore()
   await store.load('echo')
   store.switchEditorTab('navigation')
@@ -2086,7 +2139,7 @@ it('defaults exploration quests to non-teleport with their shared icon and prese
   store.applyCoordinateText()
   store.setPointType('exploration-quest')
   expect(store.draft).toMatchObject({
-    pointType: 'exploration-quest', navigationKind: 'landmark', mode: 'landmark',
+    pointType: 'exploration-quest', navigationKind: 'landmark', mode: 'fast-travel',
     name: '危行任务', iconId: 'unpack-map-1-1-9',
   })
   expect(navigationTypeIcons('exploration-quest')).toHaveLength(1)
@@ -2098,12 +2151,12 @@ it('defaults exploration quests to non-teleport with their shared icon and prese
     store.newPoint('navigation')
     store.selectPoint(saved.id)
     expect(store.draft).toMatchObject({
-      pointType: 'exploration-quest', mode: 'landmark', name, iconId: 'unpack-map-1-1-9',
+      pointType: 'exploration-quest', mode: 'fast-travel', name, iconId: 'unpack-map-1-1-9',
     })
   }
 })
 
-it('defaults services to fast travel and preserves a manual opt-out when selecting an icon', async () => {
+it('preserves non-teleport for services until manually enabled', async () => {
   const store = usePointEditorStore()
   await store.load('echo')
   const service = navigationTypeIcons('service')[0]
@@ -2111,7 +2164,7 @@ it('defaults services to fast travel and preserves a manual opt-out when selecti
   store.setReferenceData({ ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }, { version: 1, points: [] })
   store.switchEditorTab('navigation')
   store.setPointType('service')
-  expect(store.draft).toMatchObject({ pointType: 'service', mode: 'fast-travel' })
+  expect(store.draft).toMatchObject({ pointType: 'service', mode: 'landmark' })
   store.setMode('landmark')
   store.setIcon(service.id)
   expect(store.draft).toMatchObject({ pointType: 'service', navigationKind: 'service', mode: 'landmark', iconId: service.id })
@@ -2144,9 +2197,9 @@ it('allows free names with fixed and selectable icons, including settlements abs
   if (!options[0] || !options[1]) throw new Error('需要两个不同的聚落图标')
   store.setName('山脚聚落')
   store.setIcon(options[0].id)
-  expect(store.draft).toMatchObject({ name: '山脚聚落', iconId: options[0].id })
+  expect(store.draft).toMatchObject({ name: options[0].name, iconId: options[0].id })
   store.setIcon(options[1].id)
-  expect(store.draft).toMatchObject({ name: '山脚聚落', iconId: options[1].id })
+  expect(store.draft).toMatchObject({ name: options[1].name, iconId: options[1].id })
   store.setName('我记录的山脚聚落')
   expect(store.draft).toMatchObject({ name: '我记录的山脚聚落', iconId: options[1].id })
   if (fixedIcon) store.setIcon(fixedIcon)
@@ -2215,7 +2268,7 @@ it('updates the name with fixed artwork on type changes but preserves edits when
   store.setPointType('service')
   store.setName('旧服务名称')
   store.setPointType('material-domain')
-  expect(store.draft).toMatchObject({ name: '材料副本', iconId: navigationPointTypes['material-domain'].icons[0] })
+  expect(store.draft).toMatchObject({ name: '材料副本', iconId: getNavigationPointType('material-domain').icons[0] })
   store.setName('自定义材料本')
   store.setPointType('material-domain')
   expect(store.draft).toMatchObject({ name: '自定义材料本' })
@@ -2253,4 +2306,91 @@ it('keeps icon selection usable when local storage is unavailable', async () => 
   await store.load('navigation')
   expect(store.recentIconIds).toEqual([icon.id])
   expect(store.error).toBe('')
+})
+
+
+it.each(['unclassified', 'entrance', 'exploration-quest', 'service', 'normal-boss'] as const)('preserves saved teleport settings when changing type to %s', async pointType => {
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  store.setPointType('small-beacon')
+  store.setCoordinateText('1, 2, 3')
+  store.applyCoordinateText()
+  store.setTeleportCoordinateText('4, 5, 6')
+  store.applyTeleportCoordinateText()
+  store.setContinueAdding(false)
+  expect(await store.savePoint()).toBe(true)
+  const id = disk.points[0]?.id
+  if (!id) throw new Error('需要已保存点位')
+  store.newPoint('navigation')
+  store.selectPoint(id)
+  const saved = store.library
+  store.setPointType(pointType)
+  expect(store.draft).toMatchObject({ pointType, mode: 'fast-travel', teleportCoordinate: { x: 4, y: 5, z: 6 } })
+  expect(store.library).toBe(saved)
+  store.setPointType('small-beacon')
+  store.setPointType(pointType)
+  expect(store.draft).toMatchObject({ mode: 'fast-travel', teleportCoordinate: { x: 4, y: 5, z: 6 } })
+})
+
+it('preserves non-teleport settings on existing points unless the target type locks teleport', async () => {
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  store.setPointType('exploration-quest')
+  store.setCoordinateText('1, 2, 3')
+  store.applyCoordinateText()
+  store.setContinueAdding(false)
+  expect(await store.savePoint()).toBe(true)
+  store.setPointType('service')
+  expect(store.draft).toMatchObject({ mode: 'landmark' })
+  store.setPointType('entrance')
+  expect(store.draft).toMatchObject({ mode: 'entrance' })
+  store.setPointType('small-beacon')
+  expect(store.draft).toMatchObject({ mode: 'fast-travel' })
+})
+
+
+it.each(['unclassified', 'entrance', 'exploration-quest', 'service', 'normal-boss', 'tacet-field'] as const)('keeps manual teleport and arrival coordinates on a new point when switching to %s', async pointType => {
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  store.setMode('fast-travel')
+  store.setTeleportCoordinateText('4, 5, 6')
+  store.applyTeleportCoordinateText()
+  store.setPointType(pointType)
+  expect(store.draft).toMatchObject({ pointType, mode: 'fast-travel', teleportCoordinate: { x: 4, y: 5, z: 6 } })
+  expect(store.library.points).toEqual([])
+  store.setMode('landmark')
+  store.setPointType('service')
+  expect(store.draft).toMatchObject({ mode: 'landmark' })
+  store.setPointType('small-beacon')
+  expect(store.draft).toMatchObject({ mode: 'fast-travel' })
+})
+
+
+it.each(['原有点位名称', '', '   '])('preserves a nonempty name when choosing missing artwork: %j', async name => {
+  const store = usePointEditorStore()
+  await store.load('navigation')
+  store.setPointType('unclassified')
+  store.setName(name)
+  store.setIcon('icon-not-found')
+  expect(store.draft).toMatchObject({ pointType: 'unclassified', iconId: 'icon-not-found', name: name.trim() ? name : '图标未找到' })
+  store.setName('')
+  await store.savePoint()
+  expect(store.inputErrors.name).toBeTruthy()
+  store.setIcon('icon-not-found')
+  expect(store.draft).toMatchObject({ name: '图标未找到' })
+  expect(store.inputErrors.name).toBeUndefined()
+  store.setName('已有点位名称')
+  store.setCoordinateText('1, 2, 3')
+  store.applyCoordinateText()
+  store.setContinueAdding(false)
+  expect(await store.savePoint()).toBe(true)
+  const saved = store.library
+  const other = navigationTypeIcons('unclassified').find(icon => icon.id !== 'icon-not-found')
+  if (!other) throw new Error('需要其它图标')
+  store.setIcon(other.id)
+  expect(store.draft).toMatchObject({ name: other.name })
+  store.setName('保留已有名称')
+  store.setIcon('icon-not-found')
+  expect(store.draft).toMatchObject({ name: '保留已有名称' })
+  expect(store.library).toBe(saved)
 })

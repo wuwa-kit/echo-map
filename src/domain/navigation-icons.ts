@@ -1,5 +1,5 @@
 import type { AuthoredNavigationPoint, NavigationIconDefinition, NavigationPointType, NavigationIconLibrary } from './types.ts'
-import { navigationPointTypes } from './navigation-point-types.ts'
+import { navigationPointTypes, categoryPointType } from './navigation-point-types.ts'
 import { navigationIconCatalog } from './navigation-icon-catalog.ts'
 import { orderedIconCategories } from './navigation-icon-library.ts'
 
@@ -20,7 +20,7 @@ export function navigationTypeIcons(pointType: NavigationPointType | undefined, 
 
 export function navigationPickerIcons(pointType: NavigationPointType | undefined, search = '', recentIds: readonly string[] = [], catalog = navigationIconCatalog): readonly NavigationIconDefinition[] {
   const rule = pointType ? navigationPointTypes[pointType] : undefined
-  const available = catalog
+  const available = pointType === 'category-special-boss' ? catalog.filter(icon => icon.source === 'echo-catalog') : catalog
   const preferred = new Set(rule?.icons ?? [])
   const icons = [...available.filter(icon => preferred.has(icon.id)), ...available.filter(icon => !preferred.has(icon.id))]
   const query = search.trim().toLocaleLowerCase()
@@ -41,11 +41,10 @@ export function navigationPickerGroups(library: NavigationIconLibrary, catalog: 
   const rule = pointType ? navigationPointTypes[pointType] : undefined
   if (rule?.builtIn) return [{ id: pointType, name: rule.name, icons: navigationTypeIcons(pointType, search, recentIds, catalog) }]
   const groups = [
-    ...orderedIconCategories(library.categories).map(category => ({ id: category.id, name: category.name, icons: category.icons.flatMap(member => {
+    ...orderedIconCategories(library.categories).filter(category => !pointType || categoryPointType(category.id) === pointType).map(category => ({ id: category.id, name: category.name, icons: category.icons.flatMap(member => {
       const icon = byId.get(member.iconId)
       return icon ? [icon] : []
     }) })),
-    { id: 'placeholder', name: '其他', icons: catalog.filter(icon => icon.source === 'placeholder') },
   ]
   const query = search.trim().toLocaleLowerCase()
   return groups.map(group => ({ ...group, icons: navigationPickerIcons(pointType, '', recentIds, group.icons).filter(icon =>

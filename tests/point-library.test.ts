@@ -1,3 +1,4 @@
+import { echoCatalogIconPool } from '../src/domain/navigation-icon-pool.ts'
 import { describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { editorLibraryLocations, parsePointLibrary, libraryLocations, parseCoordinateInput } from '../src/domain/point-library.ts'
@@ -8,7 +9,7 @@ import { createExplorerQueryValues, parseExplorerQueryValues } from '../src/url/
 import { referenceDataset, mixedPoint, smallEcho, eliteEcho } from './fixtures/point-library.ts'
 import type { AuthoredNavigationPoint, PointLibrary } from '../src/domain/types.ts'
 import { convertOfficialPoints } from '../scripts/lib/official-point-library.ts'
-import { navigationPointTypeIds, navigationPointTypes } from '../src/domain/navigation-point-types.ts'
+import { getNavigationPointType, navigationPointTypeIds, navigationPointTypes } from '../src/domain/navigation-point-types.ts'
 import { navigationTypeIcons } from '../src/domain/navigation-icons.ts'
 
 describe('authored point library', () => {
@@ -84,7 +85,7 @@ describe('authored point library', () => {
     const navigation = {
       gravityType: null, id: 'beacon', kind: 'navigation' as const,
       stateId: 8, levelId: null, coordinate: { x: 0, y: 0, z: 0 },
-      name: '小型信标', pointType: 'small-beacon' as const, navigationKind: 'beacon' as const, mode: 'fast-travel' as const, note: '', iconId: navigationPointTypes['small-beacon'].icons[0],
+      name: '小型信标', pointType: 'small-beacon' as const, navigationKind: 'beacon' as const, mode: 'fast-travel' as const, note: '', iconId: getNavigationPointType('small-beacon').icons[0],
     }
     expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, teleportCoordinate: { x: 1, y: 2, z: null } }] }, referenceDataset)).toThrow('传送落点')
     expect(() => parsePointLibrary({ version: 1, points: [{ ...navigation, mode: 'landmark', teleportCoordinate: { x: 1, y: 2, z: 3 } }] }, referenceDataset)).toThrow('只有可直接传送')
@@ -173,11 +174,11 @@ it('accepts an unset navigation type on saved points and validates rules when a 
   const navigation = {
     gravityType: null, id: 'typed-navigation', kind: 'navigation',
     stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
-    name: '测试', navigationKind: 'landmark', mode: 'landmark', note: '', iconId: navigationPointTypes['small-beacon'].icons[0],
+    name: '测试', navigationKind: 'landmark', mode: 'landmark', note: '', iconId: getNavigationPointType('small-beacon').icons[0],
   }
   for (const pointType of navigationPointTypeIds) {
-    const rule = navigationPointTypes[pointType]
-    const point = { ...navigation, name: rule.names[0] ?? navigation.name, pointType, navigationKind: rule.kind, mode: rule.defaultMode, iconId: rule.icons[0] ?? navigation.iconId }
+    const rule = getNavigationPointType(pointType)
+    const point = { ...navigation, name: rule.names[0] ?? navigation.name, pointType, navigationKind: rule.kind, mode: rule.defaultMode, iconId: pointType === 'category-special-boss' ? echoCatalogIconPool[0]?.id : rule.icons[0] ?? navigation.iconId }
     expect(parsePointLibrary({ version: 1, points: [point] }, referenceDataset).points[0]).toHaveProperty('pointType', pointType)
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, navigationKind: 'unknown' }] }, referenceDataset)).toThrow()
     if (rule.teleportLocked) expect(() => parsePointLibrary({ version: 1, points: [{ ...point, mode: 'landmark' }] }, referenceDataset)).toThrow('可直接传送')

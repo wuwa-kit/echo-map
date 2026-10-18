@@ -1,4 +1,4 @@
-import { builtInIconType } from '../domain/navigation-point-types.ts'
+import { builtInIconType, buildNavigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import type { Draft } from 'immer'
@@ -16,7 +16,10 @@ export const useNavigationIconLibraryStore = defineStore('navigation-icon-librar
   const dirty = computed(() => JSON.stringify(draft.value) !== JSON.stringify(saved.value))
   const pool = computed(() => navigationIconPool(draft.value))
 
+  const savedPool = computed(() => navigationIconPool(saved.value))
+  const savedCategories = computed(() => orderedIconCategories(saved.value.categories))
   const categories = computed(() => orderedIconCategories(draft.value.categories))
+  const pointTypes = computed(() => buildNavigationPointTypes(savedCategories.value))
   function acknowledgeOrder(value: unknown, id: string, order: number): void {
     saved.value = freeze(validateIconLibraryUpdate(value, saved.value), true)
     draft.value = produce(draft.value, next => {
@@ -88,7 +91,7 @@ export const useNavigationIconLibraryStore = defineStore('navigation-icon-librar
     draft.value = produce(draft.value, next => { next.categories = next.categories.filter(category => category.id !== id) })
   }
   function addToCategory(id: string, iconIds: readonly string[]): void {
-    const validIds = new Set(pool.value.filter(icon => icon.source !== 'placeholder' && (builtInIconType(icon.id)?.icons.length ?? 0) <= 1).map(icon => icon.id))
+    const validIds = new Set(pool.value.filter(icon => icon.source !== 'placeholder' && (id !== 'category-special-boss' || icon.source === 'echo-catalog') && (builtInIconType(icon.id)?.icons.length ?? 0) <= 1).map(icon => icon.id))
     draft.value = produce(draft.value, next => {
       const category = next.categories.find(category => category.id === id)
       if (!category) return
@@ -106,5 +109,5 @@ export const useNavigationIconLibraryStore = defineStore('navigation-icon-librar
       if (snapshot && !dirty.value) accept(snapshot.library)
     } catch { /* Offline pages continue using their bundled icon library. */ }
   }
-  return { acknowledgeOperation, saved: shallowReadonly(saved), draft: shallowReadonly(draft), catalog, pool, categories, dirty, acknowledgeOrder, acknowledge, accept, importDraft, rename, discard, discardIconNames, refresh, createCategory, renameCategory, deleteCategory, addToCategory, removeFromCategory }
+  return { savedPool, savedCategories, pointTypes, acknowledgeOperation, saved: shallowReadonly(saved), draft: shallowReadonly(draft), catalog, pool, categories, dirty, acknowledgeOrder, acknowledge, accept, importDraft, rename, discard, discardIconNames, refresh, createCategory, renameCategory, deleteCategory, addToCategory, removeFromCategory }
 })

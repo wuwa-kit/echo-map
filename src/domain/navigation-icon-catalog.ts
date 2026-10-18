@@ -1,13 +1,13 @@
 import libraryJson from '../../data/manual/navigation-icons.json' with { type: 'json' }
 import mapBossJson from '../../data/generated/map-boss-icons.json' with { type: 'json' }
-import wikiBossJson from '../../data/generated/wiki-boss-icons.json' with { type: 'json' }
+import { normalBossIcons } from './normal-boss-icons.ts'
 import { navigationIconLibrarySchema, iconDisplayName } from './navigation-icon-library.ts'
 import type { NavigationIconDefinition, NavigationIconLibrary } from './types.ts'
 import { navigationIconPool } from './navigation-icon-pool.ts'
 
 export const initialNavigationIconLibrary = navigationIconLibrarySchema.parse(libraryJson)
 export const builtinBossGroups: readonly { id: string; name: string; icons: (NavigationIconDefinition & { source: 'map' | 'wiki' })[] }[] = [
-  { id: 'normal-boss', name: '普通 BOSS', icons: wikiBossJson.map(icon => ({ ...icon, source: 'wiki' as const })) },
+  { id: 'normal-boss', name: '普通 BOSS', icons: normalBossIcons },
   { id: 'weekly-boss', name: '周本 BOSS', icons: mapBossJson.map(icon => ({ ...icon, source: 'map' as const })) },
 ]
 

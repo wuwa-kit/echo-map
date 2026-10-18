@@ -4,9 +4,11 @@ import { createNavigationIconRepository } from './lib/navigation-icon-repository
 import { isLocalEditorRequest } from './editor-plugin.ts'
 import { projectPath } from './lib/files.ts'
 import { PointRepositoryError } from './lib/point-repository.ts'
+import { readMapDataset } from './lib/map-data.ts'
+import { iconRemovalResolutionSchema } from '../src/domain/icon-removal.ts'
 
 export function navigationIconPlugin(): Plugin {
-  const repository = createNavigationIconRepository(projectPath('data/manual/navigation-icons.json'))
+  const repository = createNavigationIconRepository(projectPath('data/manual/navigation-icons.json'), readMapDataset)
   const isEditableData = (file: string) => /\/data\/manual\/navigation-icons\.json$/u.test(file.replaceAll('\\', '/'))
   return {
     name: 'navigation-icon-library',
@@ -40,8 +42,8 @@ export function navigationIconPlugin(): Plugin {
             if (size > 2 * 1024 * 1024) throw new PointRepositoryError('请求超过 2 MB', 413)
             chunks.push(data)
           }
-          const body = z.object({ library: z.unknown(), revision: z.string() }).strict().parse(JSON.parse(Buffer.concat(chunks).toString('utf8')))
-          return repository.save(body.library, body.revision)
+          const body = z.object({ library: z.unknown(), revision: z.string(), resolutions: z.array(iconRemovalResolutionSchema).optional() }).strict().parse(JSON.parse(Buffer.concat(chunks).toString('utf8')))
+          return repository.save(body.library, body.revision, body.resolutions)
         }
         void run().then(body => response.end(JSON.stringify(body))).catch((error: unknown) => {
           response.statusCode = error instanceof PointRepositoryError ? error.status : 400

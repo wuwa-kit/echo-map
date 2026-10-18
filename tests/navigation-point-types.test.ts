@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { navigationPointTypeIds, navigationPointTypes } from '../src/domain/navigation-point-types.ts'
+import { getNavigationPointType, navigationPointTypeIds, navigationPointTypes, buildNavigationPointTypes, categoryPointType } from '../src/domain/navigation-point-types.ts'
 import { officialNavigationTypeIds, officialNavigationPointType, unclassifiedNavigationTypeIds, isOfficialNavigationType } from '../scripts/lib/map/navigation-types.ts'
 import { navigationTypeIcons } from '../src/domain/navigation-icons.ts'
 import { authoredPointSchema, mapDatasetSchema } from '../src/domain/schema.ts'
@@ -7,8 +7,20 @@ import { libraryLocations, parsePointLibrary } from '../src/domain/point-library
 import { navigationTestDataset as referenceDataset } from './fixtures/navigation-points.ts'
 
 describe('navigation classification', () => {
-  it.each(['exploration-quest', 'entrance'] as const)('fixes %s artwork while retaining custom names and teleport choices', pointType => {
-    const rule = navigationPointTypes[pointType]
+  it('derives editable type names and icons from the same categories used by icon management', () => {
+    const categories = [
+      { id: 'category-service', name: '服务分类新名称', icons: [{ iconId: 'unpack-map-3-5-12' }] },
+      { id: 'unclassified', name: '其它', icons: [{ iconId: 'unpack-map-4-3-15' }] },
+    ]
+    const types = buildNavigationPointTypes(categories)
+    for (const category of categories) {
+      expect(getNavigationPointType(categoryPointType(category.id), types)).toMatchObject({ name: category.name, icons: category.icons.map(icon => icon.iconId) })
+    }
+    expect(types).not.toHaveProperty('hologram')
+    expect(navigationPointTypes).not.toHaveProperty('hologram')
+  })
+  it.each(['exploration-quest', 'entrance', 'tacet-field'] as const)('fixes %s artwork while retaining custom names and teleport choices', pointType => {
+    const rule = getNavigationPointType(pointType)
     expect(rule).toMatchObject({ builtIn: true, names: [], teleportLocked: false })
     for (const mode of [rule.defaultMode, 'fast-travel'] as const) {
       const point = {
@@ -17,7 +29,7 @@ describe('navigation classification', () => {
         navigationKind: rule.kind, mode, note: '', iconId: rule.icons[0],
       }
       expect(authoredPointSchema.safeParse(point).success).toBe(true)
-      expect(authoredPointSchema.safeParse({ ...point, iconId: 'unpack-map-4-6-3' }).success).toBe(false)
+      expect(authoredPointSchema.safeParse({ ...point, iconId: 'unpack-map-3-3-2' }).success).toBe(false)
     }
   })
 
@@ -38,9 +50,9 @@ describe('navigation classification', () => {
   })
 
   it('groups entrances and service facilities while leaving challenges and other landmarks unclassified', () => {
-    expect(navigationPointTypeIds.map((id) => navigationPointTypes[id].name)).toEqual([
+    expect(navigationPointTypeIds.map((id) => getNavigationPointType(id).name)).toEqual([
       '中枢信标', '小型信标', '材料副本', '无音区', '声骸聚落', '周本 BOSS',
-      '普通 BOSS', '全息战略', '危行任务', '入口', '服务设施',
+      '普通 BOSS', '危行任务', '入口', '服务设施', '特殊 BOSS', '其它',
     ])
     for (const id of ['Play_06', 'Activity_02', 'Activity_02_1', 'Play_04', 'Play_04+1', 'SP_IconActDreamB', 'SP_IconMap_Activity_17_UI', 'SP_IconMap_Activity_21_UI', 'SP_IconMap_Activity_23_UI', 'SP_IconMap_Activity_18_UI']) {
       expect(officialNavigationPointType(id)).toBeUndefined()
@@ -64,8 +76,8 @@ describe('navigation classification', () => {
     const ordinary = navigationTypeIcons('normal-boss')
     const nightmares = ordinary.filter(({ name }) => name.startsWith('梦魇'))
     expect(ordinary).toHaveLength(33)
-    expect(navigationPointTypes['normal-boss'].name).toBe('普通 BOSS')
-    expect(navigationPointTypeIds.filter((type) => navigationPointTypes[type].kind === 'boss')).toEqual(['weekly-boss', 'normal-boss'])
+    expect(getNavigationPointType('normal-boss').name).toBe('普通 BOSS')
+    expect(navigationPointTypeIds.filter((type) => getNavigationPointType(type).kind === 'boss')).toEqual(['weekly-boss', 'normal-boss', 'category-special-boss'])
     expect(nightmares.length).toBeGreaterThan(0)
     expect(nightmares.every(({ name }) => name.startsWith('梦魇'))).toBe(true)
     expect(ordinary.some(({ name }) => name === '共鸣回响·梦魇亚当·重锤')).toBe(true)
@@ -73,11 +85,11 @@ describe('navigation classification', () => {
       .flatMap((type) => navigationTypeIcons(type))
     expect(allBossIcons).toHaveLength(44)
     expect(new Set(allBossIcons.map(({ id }) => id)).size).toBe(44)
-    expect(navigationPointTypes['normal-boss']).toMatchObject({ names: [], teleportLocked: false, defaultMode: 'fast-travel' })
+    expect(getNavigationPointType('normal-boss')).toMatchObject({ names: [], teleportLocked: false, defaultMode: 'fast-travel' })
   })
 
   it('groups remnant and nightmare settlements under echo settlements with selectable artwork', () => {
-    expect(navigationPointTypes['echo-settlement']).toMatchObject({ builtIn: true, name: '声骸聚落', names: [], teleportLocked: true, defaultMode: 'fast-travel' })
+    expect(getNavigationPointType('echo-settlement')).toMatchObject({ builtIn: true, name: '声骸聚落', names: [], teleportLocked: true, defaultMode: 'fast-travel' })
     expect(navigationTypeIcons('echo-settlement', '残象聚落')).toHaveLength(2)
     expect(navigationTypeIcons('echo-settlement', '梦魇聚落')).toHaveLength(1)
     const points = navigationTypeIcons('echo-settlement').map((icon) => ({
@@ -101,20 +113,20 @@ describe('navigation classification', () => {
       coordinate: { x: 1, y: 2, z: 3 }, name, pointType: 'material-domain', navigationKind: 'domain', mode: 'fast-travel', note: '', iconId: icon.id,
     }))
     expect(parsePointLibrary({ version: 1, points }, referenceDataset).points).toEqual(points)
-    expect(navigationPointTypes['material-domain'].names).toEqual([])
+    expect(getNavigationPointType('material-domain').names).toEqual([])
   })
 
   it('groups all hologram artwork under one type with optional teleport', () => {
-    expect(navigationPointTypeIds.filter((type) => navigationPointTypes[type].kind === 'hologram')).toEqual(['hologram'])
-    expect(navigationTypeIcons('hologram').map(({ name }) => name)).toEqual(['全息战略', '全息战略·同步', '全息战略·演武', '全息战略·刀伶之舞'])
-    expect(navigationPointTypes.hologram).toMatchObject({ defaultMode: 'landmark', teleportLocked: false, names: [] })
-    for (const id of ['Play_10', '4027', '4028', 'qxzl·dlzw']) expect(officialNavigationPointType(id)).toBe('hologram')
+    expect(navigationPointTypes.unclassified.name).toBe('其它')
+    expect(navigationTypeIcons('unclassified').filter(icon => ['unpack-map-4-3-15', 'unpack-map-4-6-6', 'unpack-map-4-6-7', 'unpack-map-1-1-10'].includes(icon.id)).map(({ name }) => name)).toEqual(['全息战略', '全息战略·同步', '全息战略·演武', '全息战略·刀伶之舞'])
+    expect(navigationPointTypes.unclassified).toMatchObject({ defaultMode: 'landmark', teleportLocked: false, names: [] })
+    for (const id of ['Play_10', '4027', '4028', 'qxzl·dlzw']) expect(officialNavigationPointType(id)).toBe('unclassified')
   })
 
   it.each(['landmark', 'fast-travel'] as const)('accepts each hologram icon in %s mode when saving, importing and rendering', (mode) => {
-    const points = navigationTypeIcons('hologram').map((icon) => ({
+    const points = navigationTypeIcons('unclassified').map((icon) => ({
       id: `hologram:${icon.id}`, kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
-      coordinate: { x: 1, y: 2, z: 3 }, name: icon.name, pointType: 'hologram', navigationKind: 'hologram', mode, note: '', iconId: icon.id,
+      coordinate: { x: 1, y: 2, z: 3 }, name: icon.name, pointType: 'unclassified', navigationKind: 'landmark', mode, note: '', iconId: icon.id,
     }))
     const library = parsePointLibrary({ version: 1, points }, referenceDataset)
     expect(library.points).toEqual(points)
@@ -154,7 +166,7 @@ describe('navigation classification', () => {
   })
 
   it.each(['normal-boss', 'tacet-field'] as const)('allows %s to save, import and render with teleport enabled or disabled', (pointType) => {
-    const rule = navigationPointTypes[pointType]
+    const rule = getNavigationPointType(pointType)
     expect(rule).toMatchObject({ defaultMode: 'fast-travel', teleportLocked: false })
     for (const mode of ['landmark', 'fast-travel'] as const) {
       const points = navigationTypeIcons(pointType).map((icon) => ({
@@ -172,7 +184,7 @@ describe('navigation classification', () => {
   })
 
   it.each(['central-beacon', 'small-beacon', 'material-domain', 'echo-settlement', 'weekly-boss'] as const)('still requires teleport for %s', (pointType) => {
-    const rule = navigationPointTypes[pointType]
+    const rule = getNavigationPointType(pointType)
     const point = {
       id: 'locked-test', kind: 'navigation', gravityType: null, stateId: 8, levelId: null,
       coordinate: { x: 1, y: 2, z: 3 }, name: rule.name, pointType, navigationKind: rule.kind, mode: 'fast-travel', note: '', iconId: rule.icons[0],
@@ -182,7 +194,7 @@ describe('navigation classification', () => {
   })
 
   it.each(['central-beacon', 'small-beacon'] as const)('rejects custom %s names while editing and saving', (pointType) => {
-    const rule = navigationPointTypes[pointType]
+    const rule = getNavigationPointType(pointType)
     const source = referenceDataset.navigationPoints.find((point) => point.pointType === pointType)
     if (!source) throw new Error('需要信标数据')
     const point = {
@@ -196,7 +208,7 @@ describe('navigation classification', () => {
   })
 
   it.each(navigationPointTypeIds)('rejects custom icon URLs for %s even when the URL matches its catalogue', (pointType) => {
-    const rule = navigationPointTypes[pointType]
+    const rule = getNavigationPointType(pointType)
     const icon = navigationTypeIcons(pointType)[0]
     if (!icon) throw new Error('需要图标')
     const point = {
@@ -220,7 +232,7 @@ describe('navigation classification', () => {
     expect(() => parsePointLibrary({ version: 1, points: [{ ...point, iconId: undefined, iconUrl: 'https://example.com/custom.png' }] }, referenceDataset)).toThrow()
     const custom = { ...point, name: '自定义地标', pointType: undefined, navigationKind: 'service', mode: 'landmark', iconUrl: 'https://example.com/custom.png', iconId: undefined }
     expect(() => parsePointLibrary({ version: 1, points: [custom] }, referenceDataset)).toThrow()
-    expect(navigationTypeIcons('service')).toHaveLength(20)
+    expect(navigationTypeIcons('service')).toHaveLength(navigationPointTypes.service.icons.length)
     expect(navigationPointTypes.entrance.icons).toHaveLength(1)
     expect(navigationPointTypes.service.names).toEqual([])
   })

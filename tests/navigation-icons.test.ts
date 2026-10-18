@@ -9,15 +9,16 @@ import { officialNavigationPointType } from '../scripts/lib/map/navigation-types
 const emptyNavigationDataset = { ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }
 
 describe('local navigation icon picker', () => {
-  it('offers the CDN missing icon for unset points and preserves it through saving and map display', async () => {
-    const icon = navigationTypeIcons(undefined, '图标未找到')[0]
+  it('offers the CDN missing icon under the other type and preserves it through saving and map display', async () => {
+    const icon = navigationTypeIcons('unclassified', '图标未找到')[0]
     if (!icon) throw new Error('缺少图标未找到选项')
-    expect(navigationTypeIcons(undefined)[0]).toBe(icon)
+    expect(navigationTypeIcons('unclassified')).toContainEqual(icon)
+    expect(navigationPointTypes).not.toHaveProperty('icon-not-found')
     expect(new URL(icon.url).hostname).toBe('prod-alicdn-community.kurobbs.com')
     const point = {
       gravityType: null, id: 'missing-artwork', kind: 'navigation' as const,
       stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
-      name: '待补充图标的地标', navigationKind: 'service' as const,
+      name: '待补充图标的地标', pointType: 'unclassified' as const, navigationKind: 'landmark' as const,
       mode: 'landmark' as const, iconId: icon.id,
     }
     const library = parsePointLibrary({ version: 1, points: [point] }, emptyNavigationDataset, 'manual')
@@ -30,7 +31,7 @@ describe('local navigation icon picker', () => {
 
   it('resolves configured and custom choices without any official point data', () => {
     expect(navigationTypeIcons(undefined).length).toBeGreaterThan(0)
-    expect(navigationTypeIcons('service')).toHaveLength(20)
+    expect(navigationTypeIcons('service')).toHaveLength(navigationPointTypes.service.icons.length)
     expect(navigationTypeIcons('small-beacon')).toHaveLength(1)
     expect(navigationTypeIcons('echo-settlement')).toHaveLength(3)
     expect(new Set(navigationIconCatalog.map(({ id }) => id)).size).toBe(navigationIconCatalog.length)
@@ -44,7 +45,7 @@ describe('local navigation icon picker', () => {
     expect(icons.length + typedIds.size).toBe(navigationIconCatalog.length)
     expect(navigationTypeIcons(undefined, '信标', [...typedIds])).toEqual([])
     expect(navigationTypeIcons(undefined, '', [...typedIds])).toEqual(icons)
-    expect(navigationTypeIcons(undefined, '贡多拉站台').map(({ name }) => name)).toEqual(['贡多拉站台'])
+    expect(navigationTypeIcons('unclassified', '贡多拉站台').map(({ name }) => name)).toEqual(['贡多拉站台'])
   })
 
   it.each([
@@ -77,7 +78,7 @@ describe('local navigation icon picker', () => {
     expect(authoredPointMapDisplay(saved, emptyNavigationDataset)?.location.iconUrl).toBe(icon.url)
   })
 
-  it.each([undefined, 'service'] as const)('searches every name of a shared icon for %s without changing its stored label', (pointType) => {
+  it.each(['unclassified', 'service'] as const)('searches every name of a shared icon for %s without changing its stored label', (pointType) => {
     const icon = navigationTypeIcons(pointType).find(({ name }) => name.split(' / ').length > 1)
     if (!icon) throw new Error('需要多名称图标')
     const original = icon.name
@@ -124,4 +125,13 @@ it('only moves recent eligible icons to the front and preserves the remaining ca
   expect(reordered.map(({ id }) => id)).toEqual([...recent, ...icons.slice(0, -3).map(({ id }) => id)])
   const query = icons[0]?.name.split(' / ')[0] ?? ''
   expect(navigationTypeIcons('service', query, recent)).toEqual(reordered.filter(({ name }) => name.includes(query)))
+})
+
+
+it('uses official map artwork and name for Fenrico instead of the Wiki echo portrait', () => {
+  const icons = navigationTypeIcons('normal-boss')
+  const icon = icons.find(icon => icon.id === 'map-boss-340000150')
+  expect(icon).toMatchObject({ name: '芬莱克', source: 'map', url: 'https://web-static.kurobbs.com/adminConfig/50/props_namephoto/1762500608229.png' })
+  expect(navigationIconById('wiki-echo-17409')).toBeUndefined()
+  expect(icons.filter(icon => icon.name.includes('芬莱克'))).toHaveLength(1)
 })

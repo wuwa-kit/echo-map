@@ -12,7 +12,7 @@ import WuButton from './base/WuButton.vue'
 import WuScrollArea from './base/WuScrollArea.vue'
 import WuEllipsis from './base/WuEllipsis.vue'
 import NavigationAddIconsDialog from './NavigationAddIconsDialog.vue'
-import { builtInNavigationIconCategories, builtInIconType } from '../domain/navigation-point-types.ts'
+import { builtInNavigationIconCategories, builtInIconType, categoryPointType, getNavigationPointType } from '../domain/navigation-point-types.ts'
 
 const development = import.meta.env.DEV
 const library = useNavigationIconLibraryStore()
@@ -21,7 +21,7 @@ const allCategories = computed(() => {
   const icons = new Map(library.pool.map(icon => [icon.id, icon]))
   const groups = [
     ...builtInNavigationIconCategories,
-    ...library.categories.map(category => ({ ...category, icons: category.icons.map(member => member.iconId) })),
+    ...library.categories.map(category => ({ id: category.id, ...getNavigationPointType(categoryPointType(category.id), library.pointTypes) })),
   ]
   return groups.toSorted((a, b) => Number(a.id === 'unclassified') - Number(b.id === 'unclassified')).map(category => ({ ...category, members: category.icons.flatMap(id => {
     const icon = icons.get(id)

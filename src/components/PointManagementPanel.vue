@@ -9,7 +9,7 @@ import type { PointManagementAction } from '../stores/point-management.ts'
 import type { AuthoredPoint, LocalPointOperation, LocalPointStatus, PointManagementRow } from '../domain/types.ts'
 import { localPointOperationSchema, localPointStatusSchema } from '../domain/schema.ts'
 import { pointTitle, MODE_NAMES, NAVIGATION_NAMES } from '../domain/point-library.ts'
-import { navigationPointTypes } from '../domain/navigation-point-types.ts'
+import { getNavigationPointType, navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { pointRegionPath, pointRegionResolver } from '../domain/point-region.ts'
 import type { PointRegion } from '../domain/point-region.ts'
 import { gameToMapCoordinate } from '../map/projection.ts'
@@ -122,7 +122,7 @@ const actionNotes: Record<PointManagementAction, string> = {
 const comparison = computed(() => {
   if (!detail.value) return []
   const values = (point: AuthoredPoint | null): Record<string, string> => point ? {
-    '点位': title(point), '类型': point.kind === 'navigation' ? point.pointType ? navigationPointTypes[point.pointType].name : NAVIGATION_NAMES[point.navigationKind] : '声骸点位',
+    '点位': title(point), '类型': point.kind === 'navigation' ? point.pointType ? getNavigationPointType(point.pointType).name : NAVIGATION_NAMES[point.navigationKind] : '声骸点位',
     '地图': stateNames.value.get(point.stateId) ?? String(point.stateId), '楼层': floor(point),
     '坐标 XYZ': coordinates(point), '重力': point.gravityType === 2 ? '反重力' : point.gravityType === 1 ? '正常重力' : '未标记',
     '传送模式': point.kind === 'navigation' ? MODE_NAMES[point.mode] : '—',

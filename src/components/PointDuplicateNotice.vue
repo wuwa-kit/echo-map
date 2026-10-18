@@ -34,7 +34,6 @@ onBeforeUnmount(() => store.confirmDuplicate(false))
   <WuDialog title="疑似重复，仍要保存？" :open="store.duplicateConfirmation" @keydown.capture="confirmWithEnter" @dismiss-requested="store.confirmDuplicate(false)">
       <PointDuplicateList :candidates="store.duplicateCandidates" />
       <template #footer>
-        <WuButton @click="store.confirmDuplicate(false)">返回修改</WuButton>
         <WuButton tone="accent" variant="solid" @click="store.confirmDuplicate(true)">仍然保存</WuButton>
       </template>
   </WuDialog>

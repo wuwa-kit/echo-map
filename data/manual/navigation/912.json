@@ -164,7 +164,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "landmark"
     },
     {
@@ -241,7 +242,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "landmark"
     },
     {
@@ -271,7 +273,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "landmark"
     },
     {
@@ -440,7 +443,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "landmark"
     },
     {
@@ -780,7 +784,8 @@
       "kind": "navigation",
       "name": "相心域",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-3-5-4",
       "mode": "fast-travel"
     },
     {
@@ -936,7 +941,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "landmark"
     },
     {
@@ -1154,7 +1160,8 @@
       "kind": "navigation",
       "name": "御剑飞行点",
       "navigationKind": "landmark",
-      "iconId": "icon-not-found",
+      "pointType": "unclassified",
+      "iconId": "unpack-map-2-5-14",
       "mode": "landmark"
     },
     {
