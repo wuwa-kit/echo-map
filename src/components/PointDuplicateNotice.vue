@@ -29,16 +29,13 @@ onBeforeUnmount(() => store.confirmDuplicate(false))
     <span class="truncate">{{ summary }}</span><span v-if="store.duplicateCandidates.length" class="shrink-0">›</span>
   </button>
   <WuPopover ref="popoverRef" :anchor="anchor" placement="top-start" width="trigger" :max-height="280" :disabled="!store.duplicateCandidates.length || store.duplicateConfirmation" class="rounded-[8px] outline -outline-offset-1 outline-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
-    <PointDuplicateList />
+    <PointDuplicateList :candidates="store.duplicateCandidates" />
   </WuPopover>
-  <WuDialog :open="store.duplicateConfirmation" @keydown.capture="confirmWithEnter" @dismiss-requested="store.confirmDuplicate(false)">
-    <div class="flex min-h-0 flex-col p-[16px]">
-      <div class="mb-[8px] text-[16px] font-semibold">疑似重复，仍要保存？</div>
-      <PointDuplicateList />
-      <div class="mt-[12px] flex flex-wrap justify-end gap-[8px]">
+  <WuDialog title="疑似重复，仍要保存？" :open="store.duplicateConfirmation" @keydown.capture="confirmWithEnter" @dismiss-requested="store.confirmDuplicate(false)">
+      <PointDuplicateList :candidates="store.duplicateCandidates" />
+      <template #footer>
         <WuButton @click="store.confirmDuplicate(false)">返回修改</WuButton>
         <WuButton tone="accent" variant="solid" @click="store.confirmDuplicate(true)">仍然保存</WuButton>
-      </div>
-    </div>
+      </template>
   </WuDialog>
 </template>

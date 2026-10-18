@@ -1,4 +1,5 @@
 import type { GravityType, RoutePlanResult, RoutePoint, RouteResult } from '../domain/types.ts'
+import { walkingSegments } from './boundary-path.ts'
 
 // Keep crop geometry and page breaks in reference pixels, independent of the
 // output density. A smaller download must not split routes or change map views.
@@ -33,6 +34,8 @@ export interface ExportNode {
 }
 
 export interface ExportCard {
+  exportAreaId?: string
+  panels?: ExportCard[]
   number: number
   section: number
   part: number
@@ -78,6 +81,10 @@ export interface ExportLayout {
   sections: number
 }
 
+export function exportBannerId(card: ExportCard): string {
+  return card.exportAreaId ?? card.routeGroupId
+}
+
 function bounds(nodes: readonly ExportNode[]): [number, number, number, number] {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
   for (const { point: { mapCoordinate: [x, y] } } of nodes) {
@@ -89,11 +96,11 @@ function bounds(nodes: readonly ExportNode[]): [number, number, number, number] 
   return [minX, minY, maxX, maxY]
 }
 
-function fitCard(nodes: readonly ExportNode[], width: number): Pick<ExportCard, 'width' | 'height' | 'mapHeight' | 'mapSize' | 'center' | 'resolution'> {
+function fitCard(nodes: readonly ExportNode[], width: number, sharedResolution?: number): Pick<ExportCard, 'width' | 'height' | 'mapHeight' | 'mapSize' | 'center' | 'resolution'> {
   const [left, bottom, right, top] = bounds(nodes)
   const usableWidth = width / LAYOUT_RATIO - MAP_PADDING * 2
   const usableHeight = MAX_MAP_HEIGHT / LAYOUT_RATIO - MAP_PADDING * 2 - PLACE_NAME_SPACE
-  const resolution = Math.max(0.75, Math.min(3, Math.max((right - left) / usableWidth, (top - bottom) / usableHeight)))
+  const resolution = sharedResolution ?? Math.max(0.75, Math.min(3, Math.max((right - left) / usableWidth, (top - bottom) / usableHeight)))
   const mapHeight = Math.ceil(((top - bottom) / resolution + MAP_PADDING * 2 + PLACE_NAME_SPACE) * LAYOUT_RATIO)
   return {
     width, height: mapHeight, mapHeight, resolution,
@@ -117,12 +124,15 @@ function intermediate(from: RoutePoint, to: RoutePoint, t: number): ExportNode {
 
 export function createExportLayout(routeSource: RouteResult | RoutePlanResult, gravityType: GravityType = 1): ExportLayout {
   const groups = 'groups' in routeSource ? routeSource.groups : [{
+    exportAreaId: undefined,
     id: 'current', stateId: routeSource.points[0]?.stateId ?? 0, levelId: routeSource.points[0]?.levelId ?? null,
     gravityType, label: '', mapName: '', echoCount: 0,
     matchingLocationCount: routeSource.points.length, incompleteLocationCount: 0, route: routeSource,
   }]
   if (!groups.some(({ route }) => route.points.length > 0)) throw new Error('请先生成路线')
   const sections: {
+    exportAreaId?: string
+    routeSection: number
     nodes: ExportNode[]
     start: RoutePoint | null
     floorTransition: boolean
@@ -134,25 +144,42 @@ export function createExportLayout(routeSource: RouteResult | RoutePlanResult, g
     mapName: string
     gravityType: GravityType
   }[] = []
+  let routeSection = 0
   for (const [groupIndex, group] of groups.entries()) {
     let previous: RoutePoint | undefined
-    for (const point of group.route.points) {
+    for (const [pointIndex, point] of group.route.points.entries()) {
       const floorTransition = Boolean(previous && (previous.levelId !== point.levelId || previous.stateId !== point.stateId))
       const previousSection = sections.at(-1)
       if (point.teleportFrom || floorTransition || previousSection?.routeGroupId !== group.id) {
+        routeSection += 1
         sections.push({
+          exportAreaId: group.exportAreaId,
+          routeSection,
           nodes: point.teleportFrom ? [{ point: point.teleportFrom, targetId: null }] : [], start: point.teleportFrom ?? null,
           floorTransition: floorTransition && !point.teleportFrom, stateId: point.stateId, levelId: point.levelId,
           routeGroupId: group.id, groupNumber: groupIndex + 1, groupLabel: group.label,
           mapName: group.mapName, gravityType: group.gravityType,
         })
       }
+      const from = point.teleportFrom ?? previous
+      const walking = from ? walkingSegments(from, point, Boolean(point.teleportFrom)) : []
+      if (walking.length > 1) {
+        for (const [index, segment] of walking.entries()) {
+          const start = segment[0]
+          const end = segment[1]
+          const section = sections.at(-1)
+          if (!start || !end || !section) continue
+          const named = (endpoint: RoutePoint): RoutePoint => ({ ...endpoint, name: `${pointIndex + 1} · ${endpoint.name}` })
+          if (index > 0) sections.push({ ...section, nodes: [{ point: named(start), targetId: null }], start: named(start), floorTransition: false })
+          if (index < walking.length - 1) sections.at(-1)?.nodes.push({ point: named(end), targetId: null })
+        }
+      }
       sections.at(-1)?.nodes.push({ point, targetId: point.id })
       previous = point
     }
   }
-  const cards: ExportCard[] = []
-  for (const [sectionIndex, section] of sections.entries()) {
+  const rawCards: ExportCard[] = []
+  for (const section of sections) {
     const [minX, minY, maxX, maxY] = bounds(section.nodes)
     const wide = maxX - minX > (HALF_WIDTH / LAYOUT_RATIO - MAP_PADDING * 2) * 3
       && maxX - minX > (maxY - minY) * 2.2
@@ -178,7 +205,7 @@ export function createExportLayout(routeSource: RouteResult | RoutePlanResult, g
     const chunks: ExportNode[][] = []
     let chunk: ExportNode[] = []
     function finishChunk(): void {
-      if (cards.length + chunks.length >= MAX_EXPORT_CARDS) throw new Error(EXPORT_SIZE_ERROR)
+      if (rawCards.length + chunks.length >= MAX_EXPORT_CARDS) throw new Error(EXPORT_SIZE_ERROR)
       chunks.push(chunk)
     }
     for (const node of denseNodes()) {
@@ -199,13 +226,61 @@ export function createExportLayout(routeSource: RouteResult | RoutePlanResult, g
       // Section geometry determines continuity; each finished crop only needs
       // two columns if its own route cannot fit one at the maximum resolution.
       const cardWidth = right - left > (HALF_WIDTH / LAYOUT_RATIO - MAP_PADDING * 2) * 3 ? FULL_WIDTH : HALF_WIDTH
-      cards.push({ number: cards.length + 1, section: sectionIndex + 1, part: index + 1, parts: chunks.length, start: section.start, floorTransition: section.floorTransition,
+      rawCards.push({ number: rawCards.length + 1, section: section.routeSection, part: index + 1, parts: chunks.length, start: section.start, floorTransition: section.floorTransition,
+        exportAreaId: section.exportAreaId,
         routeGroupId: section.routeGroupId, groupNumber: section.groupNumber, groupCount: groups.length,
         groupLabel: section.groupLabel, mapName: section.mapName, gravityType: section.gravityType,
         stateId: section.stateId, levelId: section.levelId,
         nodes, targetIds: nodes.flatMap(({ targetId }) => targetId ? [targetId] : []),
         ...fitCard(nodes, cardWidth), x: LAYOUT_MARGIN, y: 0,
       })
+    }
+  }
+  // Join only matching boundary endpoints, never ordinary crop continuations,
+  // new beacons or scene changes. Keep each local map in its own viewport.
+  const cards: ExportCard[] = []
+  const panelGap = 120
+  for (const card of rawCards) {
+    const previous = cards.at(-1)
+    const exit = previous?.nodes.at(-1)?.point.id
+    const arrival = card.nodes[0]?.point.id
+    if (previous && previous.section === card.section && exit?.startsWith('boundary:')
+      && exit.endsWith(':out') && arrival === `${exit.slice(0, -4)}:in`
+      && previous.targetIds.length + card.targetIds.length <= 12) {
+      const sources = [...(previous.panels ?? [previous]), card]
+      const width = Math.max(...sources.map((panel) => panel.width))
+      const resolution = Math.max(...sources.map((panel) => fitCard(panel.nodes, width).resolution))
+      let y = 0
+      const panels = sources.map((panel) => {
+        const fitted = { ...panel, panels: undefined, ...fitCard(panel.nodes, width, resolution), x: 0, y }
+        y += fitted.height + panelGap
+        return fitted
+      })
+      const height = y - panelGap
+      if (height <= 3800) {
+        cards[cards.length - 1] = {
+          ...previous, panels, nodes: panels.flatMap((panel) => panel.nodes),
+          targetIds: panels.flatMap((panel) => panel.targetIds),
+          width, height, mapHeight: height, resolution,
+          mapSize: [Math.ceil(width / LAYOUT_RATIO), Math.ceil(height / LAYOUT_RATIO)],
+        }
+        continue
+      }
+    }
+    cards.push(card)
+  }
+  const sectionCounts = new Map<number, number>()
+  const sectionParts = new Map<number, number>()
+  for (const card of cards) sectionCounts.set(card.section, (sectionCounts.get(card.section) ?? 0) + 1)
+  for (const [index, card] of cards.entries()) {
+    card.number = index + 1
+    card.part = (sectionParts.get(card.section) ?? 0) + 1
+    card.parts = sectionCounts.get(card.section) ?? 1
+    sectionParts.set(card.section, card.part)
+    for (const panel of card.panels ?? []) {
+      panel.number = card.number
+      panel.part = card.part
+      panel.parts = card.parts
     }
   }
   const pages: ExportLayout['pages'] = []
@@ -217,7 +292,7 @@ export function createExportLayout(routeSource: RouteResult | RoutePlanResult, g
   function finishPage(): void {
     if (!pageCards.length) return
     const only = pageCards.length === 1 ? pageCards[0] : undefined
-    if (only) {
+    if (only && !only.panels) {
       Object.assign(only, fitCard(only.nodes, FULL_WIDTH))
       const bottom = only.y - height + only.height + LAYOUT_GAP
       columns = [bottom, bottom]
@@ -231,12 +306,12 @@ export function createExportLayout(routeSource: RouteResult | RoutePlanResult, g
   }
   let activeGroupId: string | null = null
   function addPageBanner(card: ExportCard): void {
-    activeGroupId = card.routeGroupId
+    activeGroupId = exportBannerId(card)
     const label = card.groupLabel || card.mapName
     if (!label) return
     const top = pageCards.length ? Math.max(...columns) : 0
     const banner: ExportBanner = {
-      routeGroupId: card.routeGroupId, label,
+      routeGroupId: exportBannerId(card), label,
       x: 0, y: height + top, width: LAYOUT_WIDTH, height: LAYOUT_BANNER_HEIGHT,
     }
     banners.push(banner)
@@ -245,7 +320,7 @@ export function createExportLayout(routeSource: RouteResult | RoutePlanResult, g
   }
   for (const card of cards) {
     if (!pageCards.length) addPageBanner(card)
-    else if (card.routeGroupId !== activeGroupId) {
+    else if (exportBannerId(card) !== activeGroupId) {
       const bannerHeight = card.groupLabel || card.mapName ? LAYOUT_BANNER_HEIGHT + LAYOUT_GAP : 0
       if (Math.max(...columns) + bannerHeight + card.height + LAYOUT_MARGIN > 4000) finishPage()
       addPageBanner(card)
@@ -271,6 +346,13 @@ export function createExportLayout(routeSource: RouteResult | RoutePlanResult, g
   // Round shared rectangle edges, so cards and page boundaries stay aligned
   // without fractional canvas sizes, clipping or accumulated rounding drift.
   for (const card of cards) {
+    for (const panel of card.panels ?? []) {
+      panel.width = outputPixel(card.x + panel.x + panel.width) - outputPixel(card.x + panel.x)
+      panel.height = outputPixel(card.y + panel.y + panel.height) - outputPixel(card.y + panel.y)
+      panel.mapHeight = panel.height
+      panel.x = outputPixel(card.x + panel.x) - outputPixel(card.x)
+      panel.y = outputPixel(card.y + panel.y) - outputPixel(card.y)
+    }
     card.width = outputPixel(card.x + card.width) - outputPixel(card.x)
     card.height = outputPixel(card.y + card.height) - outputPixel(card.y)
     card.mapHeight = card.height
@@ -287,5 +369,5 @@ export function createExportLayout(routeSource: RouteResult | RoutePlanResult, g
     page.height = outputPixel(page.y + page.height) - outputPixel(page.y)
     page.y = outputPixel(page.y)
   }
-  return { width: EXPORT_WIDTH, height: outputPixel(height), cards, banners, pages, pageHeights: pages.map(({ height }) => height), sections: sections.length }
+  return { width: EXPORT_WIDTH, height: outputPixel(height), cards, banners, pages, pageHeights: pages.map(({ height }) => height), sections: routeSection }
 }

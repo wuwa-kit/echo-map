@@ -11,11 +11,13 @@ import { mapFeaturePointIds } from './point-layers.ts'
 import { bossMarkerShape, portraitMarkerOutline, PORTRAIT_MARKER_CANVAS_SIZE } from './boss-marker.ts'
 import { createIconOutlineCache } from './icon-outline.ts'
 import type { MapDisplayPoint, RoutePoint, RouteResult } from '../domain/types.ts'
+import { walkingDistance, walkingSegments } from '../route/boundary-path.ts'
 
 const ICON_GAP = 4
 const LINE_WIDTH = 2
 const ROUTE_OPACITY = 0.95
 const ROUTE_COLOR = '#65f1c2'
+const BOUNDARY_COLOR = '#c49bff'
 const ROUTE_OUTLINE_COLOR = '#07110f'
 const ROUTE_OUTLINE_WIDTH = 1
 const ARROW_LENGTH = 9
@@ -29,7 +31,7 @@ type RouteVisit = RouteResult['points'][number]
 
 export interface RouteLegDetails {
   debugId: string
-  type: 'walk' | 'teleport'
+  type: 'walk' | 'teleport' | 'boundary'
   pointIndex: number
   pointCount: number
   routeAlgorithm: RouteResult['algorithm']
@@ -48,11 +50,7 @@ interface VisibleIcon {
 }
 
 function coordinateDistance(left: RoutePoint, right: RoutePoint): number {
-  return Math.hypot(
-    left.coordinate.x - right.coordinate.x,
-    left.coordinate.y - right.coordinate.y,
-    left.coordinate.z - right.coordinate.z,
-  )
+  return walkingDistance(left, right)
 }
 
 function squaredSegmentDistance(coordinate: number[], from: RoutePoint, to: RoutePoint): number {
@@ -207,6 +205,7 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
   const layer = new VectorLayer({ source: routeSource, style: null, zIndex: 60, className: 'route-lines', updateWhileAnimating: true, updateWhileInteracting: true })
   let routeExtent = createEmpty()
   let legs: RouteLegDetails[] = []
+  let boundaryLegs: RouteLegDetails[] = []
   let teleportArrivals: RoutePoint[] = []
 
   function renderRoute({ context, frameState, inversePixelTransform }: RenderEvent): void {
@@ -278,6 +277,32 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
       context.lineWidth = lineWidth
       context.stroke()
     }
+    // Boundary jumps are visual links only; render them below walking legs.
+    for (const { from, to } of boundaryLegs) {
+      const start = pixel([...from.mapCoordinate])
+      const end = pixel([...to.mapCoordinate])
+      const dx = end[0] - start[0], dy = end[1] - start[1]
+      const length = Math.hypot(dx, dy)
+      if (length === 0) continue
+      const x = (start[0] + end[0]) / 2, y = (start[1] + end[1]) / 2
+      context.globalAlpha = 0.55
+      context.strokeStyle = BOUNDARY_COLOR
+      context.lineWidth = 1.5 * scale
+      context.setLineDash([1 * scale, 7 * scale])
+      context.beginPath()
+      context.moveTo(...start)
+      context.lineTo(...end)
+      context.stroke()
+      context.setLineDash([])
+      context.globalAlpha = 0.85
+      const ux = dx / length, uy = dy / length
+      context.beginPath()
+      context.moveTo(x - (ux * 5 + uy * 5) * scale, y + (-uy * 5 + ux * 5) * scale)
+      context.lineTo(x + ux * 5 * scale, y + uy * 5 * scale)
+      context.lineTo(x + (-ux * 5 + uy * 5) * scale, y - (uy * 5 + ux * 5) * scale)
+      context.stroke()
+    }
+    context.globalAlpha = 1
     context.setLineDash([9 * scale, 7 * scale])
     context.beginPath()
     const arrows: [Pixel, Pixel, Pixel][] = []
@@ -307,7 +332,7 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
       context.strokeStyle = ROUTE_OUTLINE_COLOR
       context.lineWidth = arrivalLineWidth + outlineWidth * 2
       context.stroke()
-      context.strokeStyle = ROUTE_COLOR
+      context.strokeStyle = arrival.id.startsWith('boundary:') ? BOUNDARY_COLOR : ROUTE_COLOR
       context.lineWidth = arrivalLineWidth
       context.stroke()
     }
@@ -341,6 +366,7 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     routeSource.clear(true)
     routeExtent = createEmpty()
     legs = []
+    boundaryLegs = []
     teleportArrivals = []
     const routes = Array.isArray(value) ? value : value ? [value] : []
     const segments: [number, number][][] = []
@@ -350,21 +376,49 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
       for (const [index, point] of route.points.entries()) {
         const previous = route.points[index - 1] ?? null
         const from = point.teleportFrom ?? previous
-        if (from) legs.push({
-          debugId: `route-leg:${point.teleportFrom ? 'teleport' : 'walk'}:${from.id}->${point.id}`,
-          type: point.teleportFrom ? 'teleport' : 'walk',
-          pointIndex: index,
-          pointCount: route.points.length,
-          routeAlgorithm: route.algorithm,
-          routeTotalCost: route.totalCost,
-          from,
-          to: point,
-          previous,
-          distance: coordinateDistance(from, point),
-          previousDistance: point.teleportFrom && previous ? coordinateDistance(previous, point) : null,
-        })
+        const walking = from ? walkingSegments(from, point, Boolean(point.teleportFrom)) : []
+        for (const segment of walking) {
+          const segmentFrom = segment[0]
+          const segmentTo = segment[1]
+          if (!from || !segmentFrom || !segmentTo) continue
+          legs.push({
+            debugId: `route-leg:${point.teleportFrom ? 'teleport' : 'walk'}:${segmentFrom.id}->${segmentTo.id}`,
+            type: point.teleportFrom ? 'teleport' : 'walk',
+            pointIndex: index,
+            pointCount: route.points.length,
+            routeAlgorithm: route.algorithm,
+            routeTotalCost: route.totalCost,
+            from: segmentFrom,
+            to: segmentTo,
+            previous,
+            distance: coordinateDistance(segmentFrom, segmentTo),
+            previousDistance: point.teleportFrom && previous ? coordinateDistance(previous, point) : null,
+          })
+        }
+        if (walking.length > 1) {
+          for (let step = 1; step < walking.length; step += 1) {
+            const exit = walking[step - 1]?.[1]
+            const arrival = walking[step]?.[0]
+            if (!exit || !arrival) continue
+            boundaryLegs.push({
+              debugId: `route-leg:boundary:${exit.id}->${arrival.id}`, type: 'boundary',
+              pointIndex: index, pointCount: route.points.length,
+              routeAlgorithm: route.algorithm, routeTotalCost: route.totalCost,
+              from: exit, to: arrival, previous, distance: 0, previousDistance: null,
+            })
+          }
+          for (const segment of walking) {
+            for (const endpoint of segment) {
+              if (endpoint.id.startsWith('boundary:')) {
+                arrivalIds.add(endpoint.id)
+                teleportArrivals.push({ ...endpoint, name: `${index + 1} · ${endpoint.name}` })
+                extendCoordinate(routeExtent, endpoint.mapCoordinate)
+              }
+            }
+          }
+        }
         for (const candidate of [point, point.teleportFrom]) {
-          if (candidate?.isTeleportArrival && !arrivalIds.has(candidate.id)) {
+          if (candidate && (candidate.isTeleportArrival || candidate.id.startsWith('boundary:')) && !arrivalIds.has(candidate.id)) {
             arrivalIds.add(candidate.id)
             teleportArrivals.push(candidate)
           }
@@ -375,7 +429,11 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
           if (coordinates.length > 1) segments.push(coordinates)
           coordinates = [point.teleportFrom.mapCoordinate]
         }
-        coordinates.push(point.mapCoordinate)
+        if (walking.length > 1) {
+          if (coordinates.length > 1) segments.push(coordinates)
+          segments.push(...walking.map((segment) => segment.map((endpoint) => endpoint.mapCoordinate)))
+          coordinates = [point.mapCoordinate]
+        } else coordinates.push(point.mapCoordinate)
       }
       if (coordinates.length > 1) segments.push(coordinates)
     }
@@ -390,7 +448,7 @@ export function createRouteLayer(pointLayers: readonly VectorLayer[] = []) {
     const maximumSquaredDistance = (resolution * hitTolerance) ** 2
     let nearestSquaredDistance = maximumSquaredDistance
     let nearest: RouteLegDetails | null = null
-    for (const leg of legs) {
+    for (const leg of [...boundaryLegs, ...legs]) {
       const distance = squaredSegmentDistance(coordinate, leg.from, leg.to)
       if (distance <= nearestSquaredDistance) {
         nearestSquaredDistance = distance

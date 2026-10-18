@@ -13,7 +13,7 @@
       "kind": "navigation",
       "name": "约兰的战术测试",
       "navigationKind": "landmark",
-      "iconId": "icon-0d152396b24b32ed",
+      "iconId": "unpack-map-4-6-4",
       "mode": "landmark"
     },
     {
@@ -29,7 +29,7 @@
       "name": "库默尼商行",
       "navigationKind": "service",
       "pointType": "service",
-      "iconId": "icon-b0b95e3398fcc02c",
+      "iconId": "unpack-map-4-5-7",
       "mode": "fast-travel"
     },
     {
@@ -74,7 +74,7 @@
       "kind": "navigation",
       "name": "约兰的战术测试",
       "navigationKind": "landmark",
-      "iconId": "icon-0d152396b24b32ed",
+      "iconId": "unpack-map-4-6-4",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": 3124,
@@ -95,7 +95,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -110,7 +110,7 @@
       "kind": "navigation",
       "name": "约兰的战术测试",
       "navigationKind": "landmark",
-      "iconId": "icon-0d152396b24b32ed",
+      "iconId": "unpack-map-4-6-4",
       "mode": "landmark"
     },
     {
@@ -126,7 +126,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -142,7 +142,7 @@
       "name": "库卡斯",
       "navigationKind": "service",
       "pointType": "service",
-      "iconId": "icon-07be844f01f9bc26",
+      "iconId": "unpack-map-4-3-10",
       "mode": "fast-travel"
     },
     {
@@ -158,7 +158,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -174,7 +174,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -190,7 +190,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -206,7 +206,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -222,7 +222,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -238,7 +238,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     }
   ]

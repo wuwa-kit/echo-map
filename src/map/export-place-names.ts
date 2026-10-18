@@ -98,7 +98,7 @@ export function placeExportNames(places: readonly ExportPlaceName[], card: Expor
   return result
 }
 
-export function drawExportAnnotations(context: CanvasRenderingContext2D, places: readonly ExportPlaceName[], card: ExportCard): void {
+export function drawExportAnnotations(context: CanvasRenderingContext2D, places: readonly ExportPlaceName[], card: ExportCard, showNumber = true): void {
   context.save()
   context.scale(card.width / card.mapSize[0], card.mapHeight / card.mapSize[1])
   context.textBaseline = 'middle'
@@ -120,6 +120,6 @@ export function drawExportAnnotations(context: CanvasRenderingContext2D, places:
     drawText(box)
   }
   context.font = '600 11px sans-serif'
-  drawText(exportCardNumberBox(card))
+  if (showNumber) drawText(exportCardNumberBox(card))
   context.restore()
 }

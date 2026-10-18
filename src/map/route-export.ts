@@ -71,8 +71,49 @@ export function createRouteExportRenderer(snapshot: RouteExportSnapshot) {
     if (tileError) throw new Error('底图瓦片加载失败，请重试')
   }
 
-  return {
-    async render(card: ExportCard, signal: AbortSignal): Promise<HTMLCanvasElement> {
+  async function renderCard(card: ExportCard, signal: AbortSignal, showNumber = true): Promise<HTMLCanvasElement> {
+      if (card.panels?.length) {
+        const canvas = document.createElement('canvas')
+        canvas.width = card.width
+        canvas.height = card.mapHeight
+        const context = canvas.getContext('2d')
+        if (!context) throw new Error('无法创建地图图片')
+        context.fillStyle = '#10231f'
+        context.fillRect(0, 0, canvas.width, canvas.height)
+        try {
+          for (const [index, panel] of card.panels.entries()) {
+            signal.throwIfAborted()
+            const image = await renderCard(panel, signal, false)
+            try { context.drawImage(image, panel.x, panel.y) }
+            finally { image.width = image.height = 0 }
+            const previous = card.panels[index - 1]
+            if (previous) {
+              const top = previous.y + previous.height
+              const center = (top + panel.y) / 2
+              const x = card.width / 2
+              context.strokeStyle = '#c49bff'
+              context.fillStyle = '#c49bff'
+              context.lineWidth = 2 * EXPORT_RATIO
+              context.setLineDash([EXPORT_RATIO, 3 * EXPORT_RATIO])
+              context.beginPath()
+              context.moveTo(x, top + 2 * EXPORT_RATIO)
+              context.lineTo(x, panel.y - 2 * EXPORT_RATIO)
+              context.stroke()
+              context.setLineDash([])
+              context.beginPath()
+              context.moveTo(x - 4 * EXPORT_RATIO, center - 3 * EXPORT_RATIO)
+              context.lineTo(x, center + 3 * EXPORT_RATIO)
+              context.lineTo(x + 4 * EXPORT_RATIO, center - 3 * EXPORT_RATIO)
+              context.stroke()
+            }
+          }
+          drawExportAnnotations(context, [], card)
+          return canvas
+        } catch (error) {
+          canvas.width = canvas.height = 0
+          throw error
+        }
+      }
       const loading = AbortSignal.any([signal, AbortSignal.timeout(30000)])
       const state = snapshot.dataset.states.find(({ id }) => id === card.stateId)
       if (!state) throw new Error('路线底图不存在')
@@ -124,11 +165,13 @@ export function createRouteExportRenderer(snapshot: RouteExportSnapshot) {
       }
       context.resetTransform()
       context.globalAlpha = 1
-      drawExportAnnotations(context, places, card)
+      drawExportAnnotations(context, places, card, showNumber)
       // Fail here with a useful route label if a resource tainted the canvas.
       context.getImageData(0, 0, 1, 1)
       return canvas
-    },
+  }
+  return {
+    render: renderCard,
     dispose(): void {
       map.setTarget(undefined)
       floors.dispose()

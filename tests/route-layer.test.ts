@@ -10,6 +10,7 @@ import Icon from 'ol/style/Icon.js'
 import Style from 'ol/style/Style.js'
 import { createRouteLayer, routeLegDebugData } from '../src/map/route-layer.ts'
 import type { RoutePoint } from '../src/domain/types.ts'
+import { gameToMapCoordinate } from '../src/map/projection.ts'
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -26,7 +27,7 @@ function drawingContext() {
     lineWidth: 1,
     save: vi.fn(), restore: vi.fn(), setTransform: vi.fn(), resetTransform: vi.fn(), clearRect: vi.fn(),
     beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(), arc: vi.fn(),
-    setLineDash: vi.fn(), stroke: vi.fn(), fill: vi.fn(), fillRect: vi.fn(),
+    setLineDash: vi.fn(), stroke: vi.fn(), fill: vi.fn(), fillRect: vi.fn(), fillText: vi.fn(),
   }
 }
 
@@ -44,6 +45,30 @@ function render(layer: VectorLayer, context: ReturnType<typeof drawingContext>, 
 }
 
 describe('route map lines', () => {
+  it('draws purple dotted jumps and a solid midpoint arrow below green walking lines', () => {
+    const routeLayer = createRouteLayer()
+    const context = drawingContext()
+    const strokes: { color: string; alpha: number; dash: number[] }[] = []
+    let dash: number[] = []
+    context.setLineDash.mockImplementation((value: number[]) => { dash = value })
+    context.stroke.mockImplementation(() => strokes.push({ color: context.strokeStyle, alpha: context.globalAlpha, dash }))
+    const at = (x: number): RoutePoint => ({ ...point(`${x}`, x), stateId: 912, mapCoordinate: gameToMapCoordinate(x, 0) })
+    try {
+      routeLayer.update({ points: [at(690), at(-700)], totalCost: 20, startPointId: null, algorithm: 'exact' })
+      render(routeLayer.layer, context)
+      expect(strokes[0]).toEqual({ color: '#c49bff', alpha: 0.55, dash: [1, 7] })
+      expect(strokes[1]).toEqual({ color: '#c49bff', alpha: 0.85, dash: [] })
+      expect(strokes.slice(2).some(({ color }) => color === '#65f1c2')).toBe(true)
+      expect(strokes.filter(({ color, alpha }) => color === '#c49bff' && alpha === 1)).toHaveLength(2)
+      expect(context.fillText).not.toHaveBeenCalled()
+      expect(context.lineTo).toHaveBeenCalledWith(850, 200)
+      routeLayer.update({ points: [at(690), at(700)], totalCost: 10, startPointId: null, algorithm: 'exact' })
+      expect(routeLayer.hitTest(gameToMapCoordinate(0, 0), 1, 1)).toBeNull()
+    } finally {
+      routeLayer.dispose()
+    }
+  })
+
   it('outlines lines and arrows and applies opacity once after drawing', () => {
     const routeLayer = createRouteLayer()
     const context = drawingContext()

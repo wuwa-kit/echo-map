@@ -1,6 +1,7 @@
 import { z } from 'zod'
+export { navigationIconLibrarySchema, navigationIconCategorySchema } from './navigation-icon-library.ts'
 import { navigationPointTypeIds, navigationPointTypes, navigationTypeErrors } from './navigation-point-types.ts'
-import { navigationIconById, navigationTypeIcons } from './navigation-icons.ts'
+import { navigationIconById } from './navigation-icons.ts'
 import type { RefinementCtx } from 'zod'
 import type { EchoNotes, MapDataset, NavigationKind, NavigationMode, NavigationPointType } from './types.ts'
 
@@ -16,7 +17,8 @@ export const navigationIconUrlSchema = z.url({ protocol: /^https$/u })
 export const navigationIconDefinitionSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
-  url: navigationIconUrlSchema.or(z.literal('/icons/icon-not-found.png')),
+  url: navigationIconUrlSchema.or(z.string().regex(/^\/icons\/(?:icon-not-found\.png|navigation\/[1-4]-\d+-\d+\.png)$/u)),
+  source: z.enum(['unpacked', 'wiki', 'map', 'placeholder']).optional(),
 }).strict()
 export const officialAssetSchema = z.object({
   id: z.string().min(1),
@@ -103,12 +105,9 @@ export const authoredPointSchema = z.discriminatedUnion('kind', [
     for (const message of navigationTypeErrors({ ...point, kind: point.navigationKind })) issue(message)
     const rule = point.pointType ? navigationPointTypes[point.pointType] : undefined
     const fixedName = rule?.names[0]
+    if (rule?.builtIn && !rule.icons.includes(point.iconId ?? '')) issue(`${rule.name}必须使用内置图标`)
     if (fixedName !== undefined && point.name !== fixedName) issue(`名称固定为“${fixedName}”，不允许自定义`)
     if (point.iconId && !navigationIconById(point.iconId)) issue('定位点引用了未知图标')
-    if (point.pointType && rule?.icons.length) {
-      const icons = navigationTypeIcons(point.pointType)
-      if (point.iconId && !icons.some(({ id }) => id === point.iconId)) issue('图标与类型不符')
-    }
   }
   if (point.kind === 'navigation' && point.teleportCoordinate && point.mode !== 'fast-travel') {
     issue('只有可直接传送的定位点可以填写传送落点')

@@ -14,7 +14,7 @@
       "name": "无音区",
       "navigationKind": "tacet-field",
       "pointType": "tacet-field",
-      "iconId": "icon-b73ecba5c4c73be0",
+      "iconId": "unpack-map-4-6-3",
       "mode": "fast-travel"
     },
     {
@@ -29,7 +29,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -44,7 +44,7 @@
       "kind": "navigation",
       "name": "梦构狐像",
       "navigationKind": "landmark",
-      "iconId": "icon-28ec6001afa627d0",
+      "iconId": "unpack-map-3-5-8",
       "mode": "entrance"
     },
     {
@@ -59,7 +59,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -74,7 +74,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -89,7 +89,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -104,7 +104,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "landmark"
     },
     {
@@ -119,7 +119,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "landmark"
     },
     {
@@ -134,7 +134,7 @@
       "kind": "navigation",
       "name": "梦构狐像",
       "navigationKind": "landmark",
-      "iconId": "icon-28ec6001afa627d0",
+      "iconId": "unpack-map-3-5-8",
       "mode": "entrance"
     },
     {
@@ -149,7 +149,7 @@
       "kind": "navigation",
       "name": "复合异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-a6e9ddd63f6d94b1",
+      "iconId": "unpack-map-3-5-5",
       "mode": "entrance"
     },
     {
@@ -179,7 +179,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "landmark"
     },
     {
@@ -194,7 +194,7 @@
       "kind": "navigation",
       "name": "梦构玉桩",
       "navigationKind": "landmark",
-      "iconId": "icon-c474d6b38ed95681",
+      "iconId": "unpack-map-3-5-7",
       "mode": "entrance"
     },
     {
@@ -209,7 +209,7 @@
       "kind": "navigation",
       "name": "梦构心傀",
       "navigationKind": "landmark",
-      "iconId": "icon-7b90d35fb7adfe21",
+      "iconId": "unpack-map-3-5-6",
       "mode": "entrance"
     },
     {
@@ -226,7 +226,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -256,7 +256,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "landmark"
     },
     {
@@ -287,7 +287,7 @@
       "name": "无音区",
       "navigationKind": "tacet-field",
       "pointType": "tacet-field",
-      "iconId": "icon-b73ecba5c4c73be0",
+      "iconId": "unpack-map-4-6-3",
       "mode": "fast-travel"
     },
     {
@@ -303,7 +303,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -319,7 +319,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -334,7 +334,7 @@
       "kind": "navigation",
       "name": "梦构狐像",
       "navigationKind": "landmark",
-      "iconId": "icon-28ec6001afa627d0",
+      "iconId": "unpack-map-3-5-8",
       "mode": "entrance"
     },
     {
@@ -350,7 +350,7 @@
       "name": "危行任务",
       "navigationKind": "landmark",
       "pointType": "exploration-quest",
-      "iconId": "icon-05f43f9613d478b8",
+      "iconId": "unpack-map-1-1-9",
       "mode": "landmark"
     },
     {
@@ -365,7 +365,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -380,7 +380,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -395,7 +395,7 @@
       "kind": "navigation",
       "name": "梦构心傀",
       "navigationKind": "landmark",
-      "iconId": "icon-7b90d35fb7adfe21",
+      "iconId": "unpack-map-3-5-6",
       "mode": "entrance"
     },
     {
@@ -410,7 +410,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "landmark"
     },
     {
@@ -425,7 +425,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -456,7 +456,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -472,7 +472,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -487,7 +487,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "landmark"
     },
     {
@@ -504,7 +504,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -519,7 +519,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -535,7 +535,7 @@
       "name": "危行任务",
       "navigationKind": "landmark",
       "pointType": "exploration-quest",
-      "iconId": "icon-05f43f9613d478b8",
+      "iconId": "unpack-map-1-1-9",
       "mode": "landmark"
     },
     {
@@ -550,7 +550,7 @@
       "kind": "navigation",
       "name": "梦构玉桩",
       "navigationKind": "landmark",
-      "iconId": "icon-c474d6b38ed95681",
+      "iconId": "unpack-map-3-5-7",
       "mode": "entrance"
     },
     {
@@ -565,7 +565,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -581,7 +581,7 @@
       "kind": "navigation",
       "name": "遗患清剿",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -596,7 +596,7 @@
       "kind": "navigation",
       "name": "复合异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-a6e9ddd63f6d94b1",
+      "iconId": "unpack-map-3-5-5",
       "mode": "entrance"
     },
     {
@@ -612,7 +612,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -627,7 +627,7 @@
       "kind": "navigation",
       "name": "梦构心傀",
       "navigationKind": "landmark",
-      "iconId": "icon-7b90d35fb7adfe21",
+      "iconId": "unpack-map-3-5-6",
       "mode": "entrance"
     },
     {
@@ -643,7 +643,7 @@
       "name": "危行任务",
       "navigationKind": "landmark",
       "pointType": "exploration-quest",
-      "iconId": "icon-05f43f9613d478b8",
+      "iconId": "unpack-map-1-1-9",
       "mode": "landmark"
     },
     {
@@ -658,7 +658,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "landmark"
     },
     {
@@ -673,7 +673,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -688,7 +688,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "landmark"
     },
     {
@@ -703,7 +703,7 @@
       "kind": "navigation",
       "name": "梦构狐像",
       "navigationKind": "landmark",
-      "iconId": "icon-28ec6001afa627d0",
+      "iconId": "unpack-map-3-5-8",
       "mode": "entrance"
     },
     {
@@ -718,7 +718,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -733,7 +733,7 @@
       "kind": "navigation",
       "name": "梦构心傀",
       "navigationKind": "landmark",
-      "iconId": "icon-7b90d35fb7adfe21",
+      "iconId": "unpack-map-3-5-6",
       "mode": "entrance"
     },
     {
@@ -748,7 +748,7 @@
       "kind": "navigation",
       "name": "遗患清剿",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -765,7 +765,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -795,7 +795,7 @@
       "kind": "navigation",
       "name": "复合异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-a6e9ddd63f6d94b1",
+      "iconId": "unpack-map-3-5-5",
       "mode": "entrance"
     },
     {
@@ -812,7 +812,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -828,7 +828,7 @@
       "kind": "navigation",
       "name": "遗患清剿",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -844,7 +844,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -860,7 +860,7 @@
       "name": "声骸聚落",
       "navigationKind": "challenge",
       "pointType": "echo-settlement",
-      "iconId": "icon-4324b10e72143f72",
+      "iconId": "unpack-map-4-4-2",
       "mode": "fast-travel"
     },
     {
@@ -875,7 +875,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -890,7 +890,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "landmark"
     },
     {
@@ -905,7 +905,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -921,7 +921,7 @@
       "name": "定序诸理之律",
       "navigationKind": "boss",
       "pointType": "weekly-boss",
-      "iconId": "icon-7d301670467079e4",
+      "iconId": "map-boss-24196",
       "mode": "fast-travel"
     },
     {
@@ -952,7 +952,7 @@
       "name": "中枢信标",
       "navigationKind": "nexus",
       "pointType": "central-beacon",
-      "iconId": "icon-5d4afaadc4b4274c",
+      "iconId": "unpack-map-2-3-13",
       "mode": "fast-travel"
     },
     {
@@ -969,7 +969,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -985,7 +985,7 @@
       "kind": "navigation",
       "name": "遗患清剿",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -1000,7 +1000,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -1015,7 +1015,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -1030,7 +1030,7 @@
       "kind": "navigation",
       "name": "梦构心傀",
       "navigationKind": "landmark",
-      "iconId": "icon-7b90d35fb7adfe21",
+      "iconId": "unpack-map-3-5-6",
       "mode": "entrance"
     },
     {
@@ -1045,7 +1045,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -1062,7 +1062,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -1077,7 +1077,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -1092,7 +1092,7 @@
       "kind": "navigation",
       "name": "受控异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-074b98c743b15b00",
+      "iconId": "unpack-map-2-5-15",
       "mode": "entrance"
     },
     {
@@ -1108,7 +1108,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1123,7 +1123,7 @@
       "kind": "navigation",
       "name": "复合异象区",
       "navigationKind": "landmark",
-      "iconId": "icon-a6e9ddd63f6d94b1",
+      "iconId": "unpack-map-3-5-5",
       "mode": "entrance"
     },
     {
@@ -1139,7 +1139,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1170,7 +1170,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     }
   ]

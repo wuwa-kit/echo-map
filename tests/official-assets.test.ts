@@ -1,3 +1,4 @@
+import { shallowRef } from 'vue'
 import { deduplicateMapAssets, normalizeMapAssets } from '../scripts/lib/map/asset-catalog.ts'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
@@ -19,7 +20,9 @@ const assets = buildOfficialAssets(referenceDataset)
 const { map, catalog, locations } = splitMapDataset(referenceDataset)
 const officialEchoData = { locations: locations.echoLocations, library: { version: 1, points: [] } }
 
-beforeEach(() => { setActivePinia(createPinia()) })
+const query = shallowRef<Record<string, unknown>>({})
+function setQuery(value: Record<string, unknown>): void { query.value = value }
+beforeEach(() => { setActivePinia(createPinia()); query.value = {}; useAssetsStore().bindQuery({ read: () => query.value, write: setQuery }) })
 
 describe('official asset catalogue', () => {
   it('covers every icon URL and tile path in the snapshot without duplicate category/URL pairs', () => {
@@ -88,7 +91,6 @@ describe('asset browser state', () => {
     const store = useAssetsStore()
     store.setDataset(referenceDataset)
     store.selectCategory('echo')
-    store.selectMap(8)
     store.setSearch('C1')
     const results = store.filteredAssets
     const categories = store.categories
@@ -115,7 +117,7 @@ describe('asset browser state', () => {
     expect(store.selectedAsset).toBeNull()
     expect(store.filteredAssets).toBe(results)
     expect(store.categories).toBe(categories)
-    expect(store.filters).toEqual({ category: 'echo', stateId: 8, selectedId: null })
+    expect(store.filters).toEqual({ category: 'echo', selectedId: null })
     expect(store.search).toBe('C1')
   })
 
@@ -143,28 +145,28 @@ describe('asset browser state', () => {
   it('restores a detail link only when the asset belongs to the restored scope', () => {
     const store = useAssetsStore()
     store.setDataset(referenceDataset)
-    const tile = assets.find(({ category, stateIds }) => category === 'tile' && stateIds.includes(8))
+    const tile = assets.find(({ category, stateIds }) => ['tile', 'floor', 'gravity'].includes(category) && stateIds.includes(8))
     if (!tile) throw new Error('测试数据缺少地图 8 瓦片')
-    store.restoreQuery({ category: 'tile', map: '8', asset: tile.id })
+    setQuery({ category: 'tiles', map: '8', asset: tile.id })
     expect(store.selectedAsset?.id).toBe(tile.id)
     expect(store.selectedIndex).toBeGreaterThanOrEqual(0)
-    store.restoreQuery({ category: 'echo', map: '8', asset: tile.id })
+    setQuery({ category: 'echo', map: '8', asset: tile.id })
     expect(store.filters.selectedId).toBeNull()
-    store.restoreQuery({ category: 'tile', map: '903', asset: tile.id })
-    expect(store.filters.selectedId).toBeNull()
+    setQuery({ category: 'tiles', map: '903', asset: tile.id })
+    expect(store.selectedAsset?.id).toBe(tile.id)
   })
 
   it('validates URL state against the current dataset', () => {
     const store = useAssetsStore()
     store.setDataset(referenceDataset)
-    store.restoreQuery({ category: ['echo'], map: '999999', page: 'Infinity', asset: 'missing' })
-    expect(store.filters).toEqual({ category: 'all', stateId: null, selectedId: null })
-    store.restoreQuery({ category: 'tile', map: '8', page: '999999' })
-    expect(store.filters.category).toBe('tile')
-    expect(store.filteredAssets.every(({ category, stateIds }) => category === 'tile' && stateIds.includes(8))).toBe(true)
-    store.restoreQuery({ category: 'echo', page: '0', asset: assets[0]!.id })
+    setQuery({ category: ['echo'], map: '999999', page: 'Infinity', asset: 'missing' })
+    expect(store.filters).toEqual({ category: 'all', selectedId: null })
+    setQuery({ category: 'tiles', map: '8', page: '999999' })
+    expect(store.filters.category).toBe('tiles')
+    expect(store.filteredAssets.every(({ category }) => ['tile', 'floor', 'gravity'].includes(category))).toBe(true)
+    setQuery({ category: 'echo', page: '0', asset: assets[0]!.id })
     expect(store.selectedAsset?.id).toBe(assets[0]!.id)
-    store.restoreQuery({ category: 'map-echo', asset: 'map-echo:old-icon' })
+    setQuery({ category: 'map-echo', asset: 'map-echo:old-icon' })
     expect(store.filters.category).toBe('all')
     expect(store.selectedAsset).toBeNull()
   })
@@ -175,7 +177,7 @@ describe('asset browser state', () => {
     const snapshot = store.filters
     store.selectAsset(assets[0]!.id)
     store.selectCategory('sonata')
-    expect(store.filters).toEqual({ category: 'sonata', stateId: null, selectedId: null })
+    expect(store.filters).toEqual({ category: 'sonata', selectedId: null })
     expect(snapshot.selectedId).toBeNull()
     expect(Object.isFrozen(store.dataset?.echoes)).toBe(true)
     expect(Object.isFrozen(store.assets[0])).toBe(true)
@@ -184,10 +186,8 @@ describe('asset browser state', () => {
     store.resetFilters()
     expect(store.search).toBe('')
     expect(store.filteredAssets).toHaveLength(assets.length)
-    store.selectMap(8)
-    expect(store.filteredAssets.every(({ stateIds }) => stateIds.includes(8))).toBe(true)
-    store.selectMap(999999)
-    expect(store.filters.stateId).toBeNull()
+    setQuery({ map: '8' })
+    expect(store.filteredAssets).toHaveLength(assets.length)
   })
 
   it('reports data load errors and can retry successfully', async () => {

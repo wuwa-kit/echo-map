@@ -269,20 +269,17 @@ onBeforeRouteLeave(() => {
         </div>
     </div>
     <div v-else class="flex flex-1 flex-col items-center justify-center gap-[12px] text-[13px] text-[#91ae9e]"><span>{{ busy ? '正在加载…' : '加载失败' }}</span><WuButton v-if="!busy" @click="loadEditor">重试</WuButton></div>
-    <WuDialog :open="managerQuery === 'open' && !!dataset" :dismissible="!busy" class="!w-[min(1100px,calc(100vw-32px))] max-sm:!m-0 max-sm:!h-dvh max-sm:!max-h-dvh max-sm:!max-w-none max-sm:!w-screen max-sm:!rounded-none" @dismiss-requested="managerQuery = ''">
+    <WuDialog :open="managerQuery === 'open' && !!dataset" :dismissible="!busy" :title="store.storage === 'browser' ? '本地点位管理' : '项目点位管理'" size="lg" layout="panel" mobile-fullscreen :padded="false" @dismiss-requested="managerQuery = ''">
       <PointManagementPanel v-if="managerQuery === 'open' && dataset" @close-requested="managerQuery = ''" @changed="syncLibrary" @edit-requested="editManagedPoint" @locate-requested="locateManagedPoint" />
     </WuDialog>
-    <WuDialog :open="exportOpen" @dismiss-requested="exportOpen = false"><div class="p-[20px]">
-      <div class="text-[16px] font-semibold">导出{{ editorMode === 'navigation' ? '定位点' : '声骸点位' }}</div>
+    <WuDialog :open="exportOpen" :title="'导出' + (editorMode === 'navigation' ? '定位点' : '声骸点位')" @dismiss-requested="exportOpen = false">
       <div class="my-[12px] text-[13px] leading-6 text-[#91ae9e]">{{ store.storage === 'browser' ? '导出当前类别的本地修改，供维护方合并。完整备份包含两类点位的全部本地记录。' : '导出当前类别的已保存点位，或备份全部人工点位。' }}</div>
       <div v-if="hasUnsavedChanges" class="mb-[12px] text-[12px] text-[#dec594]">尚未保存的编辑不会导出。</div>
       <div v-if="error" class="mb-[12px] text-[12px] text-[#ffad9f]">{{ error }}</div>
-      <div class="flex flex-wrap gap-[8px]"><WuButton tone="accent" variant="solid" @click="exportJson">{{ store.storage === 'browser' ? '导出修改' : '导出点位' }}</WuButton><WuButton @click="downloadJson(store.createPointExport(editorMode, undefined, true)); exportOpen = false">完整备份</WuButton><WuButton variant="ghost" @click="exportOpen = false">取消</WuButton></div>
-    </div></WuDialog>
-    <WuDialog :open="importPreview !== null" :dismissible="!busy" @dismiss-requested="closeDataManagement">
-      <PointEditorDataPanel @close-requested="closeDataManagement" />
+      <template #footer><WuButton tone="accent" variant="solid" @click="exportJson">{{ store.storage === 'browser' ? '导出修改' : '导出点位' }}</WuButton><WuButton @click="downloadJson(store.createPointExport(editorMode, undefined, true)); exportOpen = false">完整备份</WuButton><WuButton variant="ghost" @click="exportOpen = false">取消</WuButton></template>
     </WuDialog>
-    <WuDialog :open="pending !== null" :dismissible="!busy" @dismiss-requested="cancelPending"><div class="p-[20px]"><div class="mb-[16px] text-[14px]">当前修改尚未保存</div><div class="flex flex-wrap justify-end gap-[8px]"><WuButton :disabled="busy" @click="cancelPending">继续编辑</WuButton><WuButton :disabled="busy" @click="continuePending(false)">不保存</WuButton><WuButton variant="solid" tone="accent" :disabled="busy" :loading="operation === 'save'" @click="continuePending(true)">保存并继续</WuButton></div></div></WuDialog>
-    <WuDialog :open="candidates.length > 1" @dismiss-requested="candidates = []"><div class="p-[16px]"><div class="mb-[12px] text-[14px]">选择此处点位</div><WuScrollArea class="max-h-[320px]"><button v-for="point in candidatePoints" :key="point.id" type="button" class="mb-[6px] min-h-[40px] w-full cursor-pointer rounded-[7px] outline -outline-offset-1 outline-[var(--line)] bg-[#142a22] px-[12px] text-left text-[12px] text-[#c7dfd2] hover:bg-[#1c3b2d]" @click="selectPoint(point.id)">{{ dataset ? pointTitle(point, dataset) : '' }}{{ isOfficialPoint(point) ? ' · 官方只读' : '' }}</button></WuScrollArea></div></WuDialog>
+    <PointEditorDataPanel @close-requested="closeDataManagement" />
+    <WuDialog title="当前修改尚未保存" :open="pending !== null" :dismissible="!busy" @dismiss-requested="cancelPending"><div class="text-[13px] text-[var(--muted)]">是否保存修改后继续？</div><template #footer><WuButton :disabled="busy" @click="cancelPending">继续编辑</WuButton><WuButton :disabled="busy" @click="continuePending(false)">不保存</WuButton><WuButton variant="solid" tone="accent" :disabled="busy" :loading="operation === 'save'" @click="continuePending(true)">保存并继续</WuButton></template></WuDialog>
+    <WuDialog title="选择此处点位" :open="candidates.length > 1" @dismiss-requested="candidates = []"><WuScrollArea class="max-h-[320px]"><button v-for="point in candidatePoints" :key="point.id" type="button" class="mb-[6px] min-h-[40px] w-full cursor-pointer rounded-[7px] outline -outline-offset-1 outline-[var(--line)] bg-[#142a22] px-[12px] text-left text-[12px] text-[#c7dfd2] hover:bg-[#1c3b2d]" @click="selectPoint(point.id)">{{ dataset ? pointTitle(point, dataset) : '' }}{{ isOfficialPoint(point) ? ' · 官方只读' : '' }}</button></WuScrollArea></WuDialog>
   </div>
 </template>

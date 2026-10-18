@@ -13,7 +13,7 @@
       "kind": "navigation",
       "name": "乐曲调律",
       "navigationKind": "landmark",
-      "iconId": "icon-abd9e917ae1a1b00",
+      "iconId": "unpack-map-3-4-6",
       "mode": "landmark"
     },
     {
@@ -28,7 +28,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -43,7 +43,7 @@
       "kind": "navigation",
       "name": "乐曲调律",
       "navigationKind": "landmark",
-      "iconId": "icon-abd9e917ae1a1b00",
+      "iconId": "unpack-map-3-4-6",
       "mode": "landmark"
     },
     {
@@ -58,7 +58,7 @@
       "kind": "navigation",
       "name": "乐曲调律",
       "navigationKind": "landmark",
-      "iconId": "icon-abd9e917ae1a1b00",
+      "iconId": "unpack-map-3-4-6",
       "mode": "landmark"
     },
     {
@@ -74,7 +74,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -89,7 +89,7 @@
       "kind": "navigation",
       "name": "运能维护",
       "navigationKind": "landmark",
-      "iconId": "icon-39ead57e1c6cf6cb",
+      "iconId": "unpack-map-3-4-5",
       "mode": "landmark"
     },
     {
@@ -104,7 +104,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -120,7 +120,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -135,7 +135,7 @@
       "kind": "navigation",
       "name": "乐曲调律",
       "navigationKind": "landmark",
-      "iconId": "icon-abd9e917ae1a1b00",
+      "iconId": "unpack-map-3-4-6",
       "mode": "landmark"
     },
     {
@@ -150,7 +150,7 @@
       "kind": "navigation",
       "name": "运能维护",
       "navigationKind": "landmark",
-      "iconId": "icon-39ead57e1c6cf6cb",
+      "iconId": "unpack-map-3-4-5",
       "mode": "landmark"
     },
     {
@@ -166,7 +166,7 @@
       "name": "梦魇·赫卡忒",
       "navigationKind": "boss",
       "pointType": "normal-boss",
-      "iconId": "icon-297227e62170479c",
+      "iconId": "wiki-echo-17408",
       "mode": "fast-travel"
     },
     {
@@ -181,7 +181,7 @@
       "kind": "navigation",
       "name": "乐曲调律",
       "navigationKind": "landmark",
-      "iconId": "icon-abd9e917ae1a1b00",
+      "iconId": "unpack-map-3-4-6",
       "mode": "landmark"
     },
     {
@@ -196,7 +196,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -211,7 +211,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -226,7 +226,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -241,7 +241,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -257,7 +257,7 @@
       "name": "梦魇聚落",
       "navigationKind": "challenge",
       "pointType": "echo-settlement",
-      "iconId": "icon-fbd442ad82816fef",
+      "iconId": "unpack-map-3-8-11",
       "mode": "fast-travel"
     },
     {
@@ -273,7 +273,7 @@
       "name": "服务设施",
       "navigationKind": "service",
       "pointType": "service",
-      "iconId": "icon-a760dfcbafaa746d",
+      "iconId": "unpack-map-4-5-5",
       "mode": "fast-travel"
     },
     {
@@ -288,7 +288,7 @@
       "kind": "navigation",
       "name": "乐曲调律",
       "navigationKind": "landmark",
-      "iconId": "icon-abd9e917ae1a1b00",
+      "iconId": "unpack-map-3-4-6",
       "mode": "landmark"
     },
     {
@@ -303,7 +303,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -319,7 +319,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -334,7 +334,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -349,7 +349,7 @@
       "kind": "navigation",
       "name": "运能维护",
       "navigationKind": "landmark",
-      "iconId": "icon-39ead57e1c6cf6cb",
+      "iconId": "unpack-map-3-4-5",
       "mode": "landmark"
     },
     {
@@ -364,7 +364,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -380,7 +380,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -397,7 +397,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -412,7 +412,7 @@
       "kind": "navigation",
       "name": "乐曲调律",
       "navigationKind": "landmark",
-      "iconId": "icon-abd9e917ae1a1b00",
+      "iconId": "unpack-map-3-4-6",
       "mode": "landmark"
     },
     {
@@ -427,7 +427,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -443,7 +443,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -459,7 +459,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -474,7 +474,7 @@
       "kind": "navigation",
       "name": "乐曲调律",
       "navigationKind": "landmark",
-      "iconId": "icon-abd9e917ae1a1b00",
+      "iconId": "unpack-map-3-4-6",
       "mode": "landmark"
     },
     {
@@ -489,7 +489,7 @@
       "kind": "navigation",
       "name": "圣箱寻物",
       "navigationKind": "landmark",
-      "iconId": "icon-7d1ca55ece071431",
+      "iconId": "unpack-map-3-4-7",
       "mode": "landmark"
     },
     {
@@ -505,7 +505,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -521,7 +521,7 @@
       "name": "芬莱克",
       "navigationKind": "boss",
       "pointType": "normal-boss",
-      "iconId": "icon-5afd5e6a9a84c32d",
+      "iconId": "wiki-echo-17409",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -3674,
@@ -541,7 +541,7 @@
       "kind": "navigation",
       "name": "彼岸之镜",
       "navigationKind": "landmark",
-      "iconId": "icon-f6f7a26538b8e2e7",
+      "iconId": "unpack-map-3-4-8",
       "mode": "fast-travel"
     }
   ]

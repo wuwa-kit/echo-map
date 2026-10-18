@@ -6,7 +6,8 @@ import { echoNotesSchema, officialMapAssetCatalogSchema } from '../src/domain/sc
 import { mapDisplayPolicySchema, officialAssetSchema, officialEchoPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { MAP_DISPLAY_TIERS } from '../src/domain/map-display-tier.ts'
 import { navigationIconById } from '../src/domain/navigation-icons.ts'
-import { navigationIconCatalog } from '../src/domain/navigation-icon-catalog.ts'
+import { navigationIconCatalog, builtinBossGroups } from '../src/domain/navigation-icon-catalog.ts'
+import { navigationIconLibrarySchema } from '../src/domain/navigation-icon-library.ts'
 import { mapDisplayTierSchema, navigationIconDefinitionSchema } from '../src/domain/schema.ts'
 import { navigationPointTypeIds, navigationPointTypes, navigationPointDisplayTier } from '../src/domain/navigation-point-types.ts'
 import { officialNavigationTypeIds, unclassifiedNavigationTypeIds } from './lib/map/navigation-types.ts'
@@ -53,14 +54,22 @@ for (const name of Object.keys(echoNotes)) {
 const classifiedTypeIds = [...Object.values(officialNavigationTypeIds).flat(), ...unclassifiedNavigationTypeIds]
 if (new Set(classifiedTypeIds).size !== classifiedTypeIds.length) errors.push('同一官方类型 ID 不能属于多个定位点类型')
 const localIconIds = new Set<string>()
+navigationIconLibrarySchema.parse(await readJson<unknown>(projectPath('data', 'manual', 'navigation-icons.json')))
 for (const icon of navigationIconCatalog) {
   navigationIconDefinitionSchema.parse(icon)
   if (icon.url.startsWith('/')) await access(projectPath('public', icon.url.slice(1)))
   if (localIconIds.has(icon.id)) errors.push(`重复定位点图标 ID：${icon.id}`)
   localIconIds.add(icon.id)
+  if (icon.url.includes('web-static.kurobbs.com') && icon.source !== 'map') errors.push(`非地图来源图标引用了地图图片：${icon.id}`)
+}
+const unpackedIconIds = new Set(navigationIconCatalog.filter(icon => icon.source === 'unpacked').map(icon => icon.id))
+for (const group of builtinBossGroups) {
+  if (group.icons.some(icon => !icon.url.startsWith('https://'))) errors.push(`BOSS 分类需要远程图片：${group.name}`)
+  if (group.icons.some(icon => unpackedIconIds.has(icon.id))) errors.push(`BOSS 图标不能混入解包图标池：${group.name}`)
 }
 for (const type of navigationPointTypeIds) {
   const rule = navigationPointTypes[type]
+  if (rule.builtIn && !rule.icons.length) errors.push(`${rule.name} 的内置类型必须包含图标`)
   mapDisplayTierSchema.parse(navigationPointDisplayTier({ pointType: type, mode: rule.defaultMode }))
   if (new Set(rule.icons).size !== rule.icons.length) errors.push(`${rule.name} 的图标列表有重复项`)
   if (rule.names.length > 1 || rule.names.some((name) => !name.trim())) errors.push(`${rule.name} 的名称只能为空列表或单个固定名称`)

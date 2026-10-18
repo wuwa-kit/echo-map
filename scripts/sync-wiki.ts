@@ -6,6 +6,7 @@ import type { WikiSnapshot } from './lib/wiki.ts'
 import { withSonataEchoIds } from './lib/wiki.ts'
 import { parseSonataMembers, validateWikiTitle, wikiEntryId } from './lib/wiki-membership.ts'
 import { wikiCatalogueSchema } from '../src/domain/schema.ts'
+import bossIcons from '../data/generated/wiki-boss-icons.json' with { type: 'json' }
 import type { EchoDefinition, NonEmptyArray, SonataEffect } from '../src/domain/types.ts'
 
 const WIKI_PAGE_API = 'https://api.kurobbs.com/wiki/core/catalogue/item/getPage'
@@ -173,6 +174,14 @@ export async function syncWiki(): Promise<WikiSnapshot> {
 
   wikiCatalogueSchema.parse(snapshot)
   await writeJson(projectPath('data', 'generated', 'wiki.json'), snapshot)
+  // Only dedicated bosses belong to the navigation icon pool.
+  const navigationIcons = echoCatalogue.records.filter(record =>
+    tagIdsOf(record).some(tag => costByTagId.get(tag) === 4),
+  ).map(record => ({
+    id: `wiki-echo-${asString(record.id)}`, name: asString(record.name).trim(), url: contentIcon(record), source: 'wiki',
+  }))
+  const bosses = bossIcons.map(icon => navigationIcons.find(current => current.id === icon.id) ?? icon)
+  await writeJson(projectPath('data', 'generated', 'wiki-boss-icons.json'), bosses)
   console.log(`Wiki 同步完成：${snapshot.echoes.length}/${snapshot.totalEchoCount} 个声骸保留，${snapshot.sonatas.length} 个合鸣效果`)
   return snapshot
 }

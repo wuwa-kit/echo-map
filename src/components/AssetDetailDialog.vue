@@ -41,23 +41,16 @@ const fetchedAt = computed(() => {
 <template>
   <WuDialog
     :open="!!props.asset"
-    class="!h-[min(720px,calc(100dvh-48px))] !max-h-none !w-[min(1080px,calc(100vw-48px))] !max-w-none !rounded-[12px] !outline-[var(--line)] !bg-[#0d1e18] !text-[#eaf4ef] max-sm:!m-0 max-sm:!h-dvh max-sm:!w-screen max-sm:!rounded-none"
+    title="资产详情" size="lg" layout="panel" mobile-fullscreen :padded="false"
     @dismiss-requested="emit('close')"
   >
-    <div v-if="frame" class="h-full flex flex-col overflow-hidden">
-      <div class="shrink-0 flex items-center justify-between gap-[12px] relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[16px] py-[12px] sm:px-[24px]">
-        <div class="flex items-center gap-[12px]">
-          <span class="text-[15px] font-medium">资产详情</span>
-          <span class="text-[12px] text-[var(--muted)] tabular-nums">{{ frame.selectedIndex + 1 }} / {{ frame.assets.length }}</span>
-        </div>
-        <WuButton variant="ghost" icon="close" @click="emit('close')">关闭</WuButton>
-      </div>
-
-      <div class="min-h-0 flex flex-1 items-center gap-[16px] p-[12px] sm:p-[20px]">
+    <template #heading-extra><span v-if="frame" class="text-[12px] text-[var(--muted)] tabular-nums">{{ frame.selectedIndex + 1 }} / {{ frame.assets.length }}</span></template>
+    <template v-if="frame">
+      <div class="min-h-0 flex flex-1 items-center gap-[16px] p-[16px] sm:p-[24px]">
         <div v-if="frame.assets.length > 1" class="hidden shrink-0 sm:block">
           <WuButton icon="chevron-left" icon-only size="lg" tooltip="上一项" :disabled="frame.selectedIndex <= 0" @click="emit('navigate', -1)" />
         </div>
-        <WuScrollArea :key="frame.asset.id" class="h-full min-w-0 flex-1 rounded-[9px] outline -outline-offset-1 outline-[var(--line)] bg-[#10251c]" content-class="p-[16px] sm:p-[24px]">
+        <WuScrollArea :key="frame.asset.id" class="isolate h-full min-w-0 flex-1 rounded-[9px] bg-[#10251c] after:pointer-events-none after:absolute after:inset-0 after:z-20 after:rounded-[inherit] after:outline after:-outline-offset-1 after:outline-[var(--line)]" content-class="p-[16px] sm:p-[24px]">
           <div class="grid min-w-0 gap-[20px] sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] sm:gap-[24px]">
             <div class="min-w-0 sm:sticky sm:top-0 sm:self-start">
               <AssetImage :key="frame.asset.url" :src="frame.asset.url" large eager class="mx-auto aspect-square w-full max-w-[220px] rounded-[8px] sm:max-w-[320px]" />
@@ -83,14 +76,16 @@ const fetchedAt = computed(() => {
         </div>
       </div>
 
-      <div class="shrink-0 relative after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-[var(--line)] p-[12px] pb-[max(12px,env(safe-area-inset-bottom))] sm:px-[24px] sm:py-[16px]">
+    </template>
+    <template v-if="frame" #strip>
+      <div class="p-[16px] sm:px-[24px]">
         <div v-if="frame.assets.length > 1" class="mb-[12px] flex justify-between gap-[12px] sm:hidden">
           <WuButton icon="chevron-left" :disabled="frame.selectedIndex <= 0" @click="emit('navigate', -1)">上一项</WuButton>
           <WuButton icon="chevron-right" icon-position="end" :disabled="frame.selectedIndex >= frame.assets.length - 1" @click="emit('navigate', 1)">下一项</WuButton>
         </div>
         <AssetThumbnailStrip :assets="frame.assets" :selected-index="frame.selectedIndex" @select="emit('select', $event)" />
       </div>
-    </div>
+    </template>
     <img v-for="adjacent in adjacentAssets" :key="adjacent.url" :src="adjacent.url" referrerpolicy="no-referrer" decoding="async" class="hidden" />
   </WuDialog>
 </template>

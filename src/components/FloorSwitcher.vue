@@ -42,7 +42,7 @@ function toggleLayout(): void {
 <template>
   <div
     v-if="floorSwitcherVisible && (nearbyFloorGroups.length || floorRequest)"
-    class="pointer-events-auto relative min-h-0 max-w-full flex flex-col outline -outline-offset-1 outline-[var(--line)] bg-[#07110fed] text-[13px] shadow-lg"
+    class="pointer-events-auto relative isolate min-h-0 max-w-full flex flex-col bg-[#07110fed] text-[13px] shadow-lg after:pointer-events-none after:absolute after:inset-0 after:z-20 after:rounded-[inherit] after:outline after:-outline-offset-1 after:outline-[var(--line)]"
     :class="compactFloors ? 'w-[44px] rounded-bl-[9px] rounded-br-[9px] rounded-tl-[9px]' : 'w-max rounded-[9px]'"
   >
     <div class="relative shrink-0" :class="compactFloors ? 'h-[36px]' : 'h-[40px]'">

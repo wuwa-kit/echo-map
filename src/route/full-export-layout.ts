@@ -1,4 +1,4 @@
-import { EXPORT_BANNER_HEIGHT, EXPORT_GAP, EXPORT_MARGIN, EXPORT_MAX_PIXELS, EXPORT_WIDTH, EXPORT_SIZE_ERROR } from './export-layout.ts'
+import { EXPORT_BANNER_HEIGHT, EXPORT_GAP, EXPORT_MARGIN, EXPORT_MAX_PIXELS, EXPORT_WIDTH, EXPORT_SIZE_ERROR, exportBannerId } from './export-layout.ts'
 import type { ExportCard, ExportLayout } from './export-layout.ts'
 
 export const JPEG_MAX_SIDE = 65535
@@ -37,12 +37,12 @@ function addCard(source: LayoutBuilder, card: ExportCard): LayoutBuilder {
     banners: [...source.banners],
     bottoms: [...source.bottoms],
   }
-  if (card.routeGroupId !== layout.activeGroupId) {
-    layout.activeGroupId = card.routeGroupId
+  if (exportBannerId(card) !== layout.activeGroupId) {
+    layout.activeGroupId = exportBannerId(card)
     const label = card.groupLabel || card.mapName
     if (label) {
       const y = layout.positions.length ? Math.max(...layout.bottoms) : 0
-      layout.banners.push({ routeGroupId: card.routeGroupId, label, x: 0, y, width: EXPORT_WIDTH, height: EXPORT_BANNER_HEIGHT })
+      layout.banners.push({ routeGroupId: exportBannerId(card), label, x: 0, y, width: EXPORT_WIDTH, height: EXPORT_BANNER_HEIGHT })
       layout.bottoms = [y + EXPORT_BANNER_HEIGHT + EXPORT_GAP, y + EXPORT_BANNER_HEIGHT + EXPORT_GAP]
     }
   }

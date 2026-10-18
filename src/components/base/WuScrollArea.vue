@@ -166,7 +166,7 @@ onMounted(() => {
     <div
       v-show="canScroll"
       ref="trackRef"
-      class="absolute z-10 cursor-pointer rounded-full transition-opacity duration-180"
+      class="absolute z-10 cursor-default rounded-full transition-opacity duration-180"
       :class="[
         trackSizeClass,
         scrollbarActive ? 'opacity-100' : 'opacity-35 hover:opacity-100',
@@ -174,7 +174,7 @@ onMounted(() => {
       @pointerdown="onTrackPointerDown"
     >
       <div
-        class="mx-auto cursor-grab touch-none select-none rounded-full bg-[rgba(139,247,211,0.58)] shadow-[0_0_8px_rgba(101,241,194,0.16)] hover:bg-[rgba(139,247,211,0.82)] active:cursor-grabbing active:bg-[rgba(139,247,211,0.94)]"
+        class="mx-auto touch-none select-none rounded-full bg-[rgba(139,247,211,0.58)] shadow-[0_0_8px_rgba(101,241,194,0.16)] hover:bg-[rgba(139,247,211,0.82)] active:bg-[rgba(139,247,211,0.94)]"
         :class="thumbSizeClass"
         :style="thumbStyle"
         @pointercancel.stop="finishThumbDrag"

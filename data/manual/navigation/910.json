@@ -14,7 +14,7 @@
       "name": "梦魇聚落",
       "navigationKind": "challenge",
       "pointType": "echo-settlement",
-      "iconId": "icon-fbd442ad82816fef",
+      "iconId": "unpack-map-3-8-11",
       "mode": "fast-travel"
     },
     {
@@ -29,7 +29,7 @@
       "kind": "navigation",
       "name": "作战准备",
       "navigationKind": "landmark",
-      "iconId": "icon-4208140538da7f73",
+      "iconId": "unpack-map-1-13-2",
       "mode": "fast-travel"
     },
     {
@@ -45,7 +45,7 @@
       "name": "中枢信标",
       "navigationKind": "nexus",
       "pointType": "central-beacon",
-      "iconId": "icon-5d4afaadc4b4274c",
+      "iconId": "unpack-map-2-3-13",
       "mode": "fast-travel"
     }
   ]

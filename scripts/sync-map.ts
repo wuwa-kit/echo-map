@@ -1,4 +1,5 @@
 import { writePointLibrary } from './lib/point-files.ts'
+import bossIcons from '../data/generated/map-boss-icons.json' with { type: 'json' }
 import { selectOfficialEchoLocations } from '../src/domain/official-echo-scope.ts'
 import { deduplicateMapAssets, normalizeMapAssets } from './lib/map/asset-catalog.ts'
 import { mapDatasetSchema } from '../src/domain/schema.ts'
@@ -90,6 +91,11 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
   }
 
   const assetCatalog = await deduplicateMapAssets(normalizeMapAssets(statePayloads, configuration.resourceHash, mapFetchedAt, navigationConfig))
+  const bosses = bossIcons.map(icon => {
+    const asset = assetCatalog.assets.find(asset => asset.name === icon.name)
+    if (!asset) return icon
+    return { ...icon, url: asset.url }
+  })
   mapDatasetSchema.parse(dataset)
   // Rebuild before publishing: Wiki membership changes can remove old echo IDs.
   await writePointLibrary(projectPath('data', 'generated', 'official-echo'), convertOfficialPoints(dataset), dataset, 'official')
@@ -97,6 +103,7 @@ export async function syncMap(wikiInput?: WikiSnapshot): Promise<MapDataset> {
     writeMapDataset(dataset),
     writeJson(projectPath('public', 'data', 'map-asset-catalog.json'), assetCatalog, { compact: true }),
     writeJson(projectPath('data', 'generated', 'sync-report.json'), report),
+    writeJson(projectPath('data', 'generated', 'map-boss-icons.json'), bosses),
   ])
   console.log(`地图同步完成：${dataset.states.length} 张地图，${dataset.echoLocations.length} 个声骸点`)
   console.log(`可参与路线的示例/实测点：${report.routeEligibleEchoLocationCount}；待补 XYZ：${report.provisionalEchoLocationCount}`)

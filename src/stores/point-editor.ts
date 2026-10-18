@@ -1,6 +1,6 @@
 import { emptyCoordinateInput, coordinateInputPending, coordinateInputXY, coordinateInputPartialXY, commitCoordinateInput, coordinateAxes } from '../components/base/coordinate-input.ts'
 import type { CoordinateInputState, CoordinateInputChange } from '../components/base/coordinate-input.ts'
-import { navigationIconById, navigationTypeIcons } from '../domain/navigation-icons.ts'
+import { navigationIconById, navigationTypeIcons, navigationPickerIcons } from '../domain/navigation-icons.ts'
 import { navigationPointTypes } from '../domain/navigation-point-types.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
@@ -18,6 +18,7 @@ import { hasGravityMap } from '../domain/gravity.ts'
 import { useExplorerStore } from './explorer.ts'
 import { hitsMapTile } from '../map/tile-coverage.ts'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
+import { useNavigationIconLibraryStore } from './navigation-icon-library.ts'
 
 const CONTINUE_ADDING_KEY = 'echo-map:point-editor:continue-adding:v1'
 const RECENT_ICONS_KEY = 'echo-map:point-editor:recent-icons:v1'
@@ -712,9 +713,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     if (value !== null && !parsed.success) return
     if (draft.value.pointType === (parsed.success ? parsed.data : undefined)) return
     const rule = parsed.success ? navigationPointTypes[parsed.data] : undefined
-    const icons = navigationTypeIcons(parsed.success ? parsed.data : undefined)
+    const icons = navigationTypeIcons(parsed.success ? parsed.data : undefined, '', [], useNavigationIconLibraryStore().catalog)
     const selectedIconId = draft.value.iconId
-    const icon = rule?.icons.length && icons.length === 1 ? icons[0] : icons.find(({ id }) => id === selectedIconId)
+    const icon = rule?.icons.length === 1 ? icons[0] : icons.find(({ id }) => id === selectedIconId)
     const mode = rule?.defaultMode ?? draft.value.mode
     clearInputError('pointType')
     clearInputError('icon')
@@ -735,7 +736,9 @@ export const usePointEditorStore = defineStore('point-editor', () => {
 
   function setIcon(id: string): void {
     if (busy.value || draft.value?.kind !== 'navigation') return
-    const icon = navigationTypeIcons(draft.value.pointType).find((icon) => icon.id === id)
+    const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
+    if (rule?.builtIn && (rule.icons.length === 1 || !rule.icons.includes(id))) return
+    const icon = navigationPickerIcons(draft.value.pointType, '', [], useNavigationIconLibraryStore().catalog).find((icon) => icon.id === id)
     if (!icon) return
     recentIconIds.value = produce(recentIconIds.value, (ids) => {
       const index = ids.indexOf(id)
@@ -745,15 +748,10 @@ export const usePointEditorStore = defineStore('point-editor', () => {
     })
     try { localStorage.setItem(RECENT_ICONS_KEY, JSON.stringify(recentIconIds.value)) }
     catch { /* Recent icons remain available for this session. */ }
-    const names = icon.name.split(' / ')
-    const rule = draft.value.pointType ? navigationPointTypes[draft.value.pointType] : undefined
-    const name = rule?.names[0] ?? (names.length === 1 ? names[0] : undefined)
     clearInputError('icon')
-    if (name !== undefined) clearInputError('name')
     edit((point) => {
       if (point.kind !== 'navigation') return
       point.iconId = icon.id
-      if (name !== undefined) point.name = name
     })
   }
 

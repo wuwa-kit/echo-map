@@ -14,7 +14,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -30,7 +30,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -47,7 +47,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -79,7 +79,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -94,7 +94,7 @@
       "kind": "navigation",
       "name": "约兰的战术测试",
       "navigationKind": "landmark",
-      "iconId": "icon-0d152396b24b32ed",
+      "iconId": "unpack-map-4-6-4",
       "mode": "landmark"
     },
     {
@@ -110,7 +110,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -141,7 +141,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -157,7 +157,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -173,7 +173,7 @@
       "name": "无归的谬误",
       "navigationKind": "boss",
       "pointType": "normal-boss",
-      "iconId": "icon-c5ede23ba73dad81",
+      "iconId": "wiki-echo-15129",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -32,
@@ -193,7 +193,7 @@
       "kind": "navigation",
       "name": "约兰的战术测试",
       "navigationKind": "landmark",
-      "iconId": "icon-0d152396b24b32ed",
+      "iconId": "unpack-map-4-6-4",
       "mode": "landmark"
     },
     {
@@ -209,7 +209,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -224,7 +224,7 @@
       "kind": "navigation",
       "name": "约兰的战术测试",
       "navigationKind": "landmark",
-      "iconId": "icon-0d152396b24b32ed",
+      "iconId": "unpack-map-4-6-4",
       "mode": "landmark"
     },
     {
@@ -255,7 +255,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -272,7 +272,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -287,7 +287,7 @@
       "kind": "navigation",
       "name": "约兰的战术测试",
       "navigationKind": "landmark",
-      "iconId": "icon-0d152396b24b32ed",
+      "iconId": "unpack-map-4-6-4",
       "mode": "landmark"
     },
     {
@@ -304,7 +304,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -320,7 +320,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     }
   ]

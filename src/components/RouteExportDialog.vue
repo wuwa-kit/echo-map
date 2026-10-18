@@ -1,36 +1,21 @@
 <script setup lang="ts">
 import { buttonClasses } from './base/button-styles.ts'
 import WuButton from './base/WuButton.vue'
-import { onBeforeUnmount, useTemplateRef, watch } from 'vue'
+import WuDialog from './base/WuDialog.vue'
+import { onBeforeUnmount } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouteExportStore } from '../stores/route-export.ts'
 
 const store = useRouteExportStore()
 const { open, status, progress, error, artifacts } = storeToRefs(store)
-const panel = useTemplateRef<HTMLDivElement>('panelRef')
-
-watch(open, (visible) => {
-  const element = panel.value
-  if (!element) return
-  if (visible) {
-    element.showPopover()
-  } else if (element.matches(':popover-open')) {
-    element.hidePopover()
-  }
-}, { flush: 'post' })
-
 onBeforeUnmount(() => {
   store.dispose()
 })
 </script>
 
 <template>
-  <div ref="panelRef" popover="manual" class="fixed inset-0 m-0 h-[100dvh] max-h-none w-full max-w-none bg-[#07110ff5] p-0 text-[#e7f5ee]">
-    <div class="mx-auto h-full max-w-[900px] flex flex-col">
-      <div class="shrink-0 flex items-center justify-between gap-[12px] relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[#294539] p-[16px]">
-        <div class="text-[18px] font-semibold">路线长图</div>
-        <WuButton size="lg" @click="store.close">{{ status === 'running' ? '取消并关闭' : '关闭' }}</WuButton>
-      </div>
+  <WuDialog :open="open" title="路线长图" size="fullscreen" layout="panel" :padded="false" :close-text="status === 'running' ? '取消并关闭' : '关闭'" @dismiss-requested="store.close">
+    <div class="mx-auto min-h-0 w-full max-w-[900px] flex flex-1 flex-col">
       <div v-if="status === 'running'" class="flex flex-1 flex-col items-center justify-center gap-[16px] p-[24px]">
         <div class="text-[16px]">{{ progress.message }}</div>
         <div class="text-[14px] text-[#afc6bb]">{{ progress.completed }} / {{ progress.total || '…' }} 张子图</div>
@@ -56,5 +41,5 @@ onBeforeUnmount(() => {
         </div>
       </template>
     </div>
-  </div>
+  </WuDialog>
 </template>

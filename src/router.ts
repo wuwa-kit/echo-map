@@ -5,6 +5,11 @@ export const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: '/navigation-icons',
+      name: 'navigation-icons',
+      component: () => import('./views/NavigationIconsView.vue'),
+    },
+    {
       path: '/assets',
       name: 'official-assets',
       component: () => import('./views/AssetsView.vue'),

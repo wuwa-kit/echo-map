@@ -13,7 +13,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -29,7 +29,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -45,7 +45,7 @@
       "name": "危行任务",
       "navigationKind": "landmark",
       "pointType": "exploration-quest",
-      "iconId": "icon-05f43f9613d478b8",
+      "iconId": "unpack-map-1-1-9",
       "mode": "landmark"
     },
     {
@@ -60,7 +60,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -76,7 +76,7 @@
       "name": "失坠困咎之庭",
       "navigationKind": "boss",
       "pointType": "weekly-boss",
-      "iconId": "icon-87025d6758395362",
+      "iconId": "map-boss-22794",
       "mode": "fast-travel"
     },
     {
@@ -91,7 +91,7 @@
       "kind": "navigation",
       "name": "引歧帘",
       "navigationKind": "landmark",
-      "iconId": "icon-d759d9018b8464e8",
+      "iconId": "unpack-map-2-5-1",
       "mode": "fast-travel"
     },
     {
@@ -107,7 +107,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -122,7 +122,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -137,7 +137,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel"
     },
     {
@@ -167,7 +167,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -182,7 +182,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -197,7 +197,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel"
     },
     {
@@ -212,7 +212,7 @@
       "kind": "navigation",
       "name": "引歧帘",
       "navigationKind": "landmark",
-      "iconId": "icon-d759d9018b8464e8",
+      "iconId": "unpack-map-2-5-1",
       "mode": "fast-travel"
     },
     {
@@ -227,7 +227,7 @@
       "kind": "navigation",
       "name": "四鸣井",
       "navigationKind": "landmark",
-      "iconId": "icon-b0fbd154ee3a940f",
+      "iconId": "unpack-map-2-5-7",
       "mode": "fast-travel"
     },
     {
@@ -242,7 +242,7 @@
       "kind": "navigation",
       "name": "咎锁遗患",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -257,7 +257,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel"
     },
     {
@@ -272,7 +272,7 @@
       "kind": "navigation",
       "name": "超级云帛机骑挑战",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -303,7 +303,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -318,7 +318,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -349,7 +349,7 @@
       "name": "服务设施",
       "navigationKind": "service",
       "pointType": "service",
-      "iconId": "icon-50b338ec14e96d80",
+      "iconId": "unpack-map-3-5-13",
       "mode": "fast-travel"
     },
     {
@@ -380,7 +380,7 @@
       "kind": "navigation",
       "name": "咎锁遗患",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -396,7 +396,7 @@
       "name": "声骸聚落",
       "navigationKind": "challenge",
       "pointType": "echo-settlement",
-      "iconId": "icon-4324b10e72143f72",
+      "iconId": "unpack-map-4-4-2",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -6686,
@@ -416,7 +416,7 @@
       "kind": "navigation",
       "name": "引歧帘",
       "navigationKind": "landmark",
-      "iconId": "icon-d759d9018b8464e8",
+      "iconId": "unpack-map-2-5-1",
       "mode": "fast-travel"
     },
     {
@@ -431,7 +431,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -462,7 +462,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -477,7 +477,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel"
     },
     {
@@ -508,7 +508,7 @@
       "name": "危行任务",
       "navigationKind": "landmark",
       "pointType": "exploration-quest",
-      "iconId": "icon-05f43f9613d478b8",
+      "iconId": "unpack-map-1-1-9",
       "mode": "landmark"
     },
     {
@@ -524,7 +524,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel"
     },
     {
@@ -539,7 +539,7 @@
       "kind": "navigation",
       "name": "超级云帛机骑挑战",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -555,7 +555,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -570,7 +570,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -586,7 +586,7 @@
       "kind": "navigation",
       "name": "咎锁遗患",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -602,7 +602,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -617,7 +617,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -633,7 +633,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -649,7 +649,7 @@
       "name": "危行任务",
       "navigationKind": "landmark",
       "pointType": "exploration-quest",
-      "iconId": "icon-05f43f9613d478b8",
+      "iconId": "unpack-map-1-1-9",
       "mode": "landmark"
     },
     {
@@ -680,7 +680,7 @@
       "name": "无音区",
       "navigationKind": "tacet-field",
       "pointType": "tacet-field",
-      "iconId": "icon-b73ecba5c4c73be0",
+      "iconId": "unpack-map-4-6-3",
       "mode": "fast-travel"
     },
     {
@@ -696,7 +696,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -711,7 +711,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -742,7 +742,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -758,7 +758,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -774,7 +774,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -789,7 +789,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -804,7 +804,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -820,7 +820,7 @@
       "name": "材料副本",
       "navigationKind": "domain",
       "pointType": "material-domain",
-      "iconId": "icon-458b1db12b603d42",
+      "iconId": "unpack-map-4-3-1",
       "mode": "fast-travel"
     },
     {
@@ -836,7 +836,7 @@
       "name": "服务设施",
       "navigationKind": "service",
       "pointType": "service",
-      "iconId": "icon-d46d97ebff06af5f",
+      "iconId": "unpack-map-4-5-1",
       "mode": "fast-travel"
     },
     {
@@ -867,7 +867,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -883,7 +883,7 @@
       "name": "无音区",
       "navigationKind": "tacet-field",
       "pointType": "tacet-field",
-      "iconId": "icon-b73ecba5c4c73be0",
+      "iconId": "unpack-map-4-6-3",
       "mode": "fast-travel"
     },
     {
@@ -899,7 +899,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -914,7 +914,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -929,7 +929,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -944,7 +944,7 @@
       "kind": "navigation",
       "name": "超级云帛机骑挑战",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -990,7 +990,7 @@
       "name": "中枢信标",
       "navigationKind": "nexus",
       "pointType": "central-beacon",
-      "iconId": "icon-5d4afaadc4b4274c",
+      "iconId": "unpack-map-2-3-13",
       "mode": "fast-travel"
     },
     {
@@ -1005,7 +1005,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -1020,7 +1020,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -1035,7 +1035,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel"
     },
     {
@@ -1050,7 +1050,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -1065,7 +1065,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -1080,7 +1080,7 @@
       "kind": "navigation",
       "name": "星火艺术",
       "navigationKind": "landmark",
-      "iconId": "icon-d69b56e2c72c3088",
+      "iconId": "unpack-map-1-1-13",
       "mode": "landmark"
     },
     {
@@ -1095,7 +1095,7 @@
       "kind": "navigation",
       "name": "引歧帘",
       "navigationKind": "landmark",
-      "iconId": "icon-d759d9018b8464e8",
+      "iconId": "unpack-map-2-5-1",
       "mode": "fast-travel"
     },
     {
@@ -1112,7 +1112,7 @@
       "name": "万囮牢·朽躯",
       "navigationKind": "boss",
       "pointType": "normal-boss",
-      "iconId": "icon-77bf05e5fde1ccef",
+      "iconId": "wiki-echo-22799",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -8056,
@@ -1132,7 +1132,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -1147,7 +1147,7 @@
       "kind": "navigation",
       "name": "咎锁遗患",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -1162,7 +1162,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -1177,7 +1177,7 @@
       "kind": "navigation",
       "name": "咎锁遗患",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -1192,7 +1192,7 @@
       "kind": "navigation",
       "name": "星火艺术",
       "navigationKind": "landmark",
-      "iconId": "icon-d69b56e2c72c3088",
+      "iconId": "unpack-map-1-1-13",
       "mode": "landmark"
     },
     {
@@ -1207,7 +1207,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -6697,
@@ -1227,7 +1227,7 @@
       "kind": "navigation",
       "name": "超级云帛机骑挑战",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -1242,7 +1242,7 @@
       "kind": "navigation",
       "name": "静心座",
       "navigationKind": "landmark",
-      "iconId": "icon-cee74ba74013f762",
+      "iconId": "unpack-map-1-2-9",
       "mode": "fast-travel"
     },
     {
@@ -1257,7 +1257,7 @@
       "kind": "navigation",
       "name": "星火艺术",
       "navigationKind": "landmark",
-      "iconId": "icon-d69b56e2c72c3088",
+      "iconId": "unpack-map-1-1-13",
       "mode": "landmark"
     },
     {
@@ -1272,7 +1272,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -1288,7 +1288,7 @@
       "kind": "navigation",
       "name": "星火艺术",
       "navigationKind": "landmark",
-      "iconId": "icon-d69b56e2c72c3088",
+      "iconId": "unpack-map-1-1-13",
       "mode": "landmark"
     },
     {
@@ -1304,7 +1304,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1319,7 +1319,7 @@
       "kind": "navigation",
       "name": "咎锁遗患",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -1334,7 +1334,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -1349,7 +1349,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -1380,7 +1380,7 @@
       "name": "天傀劫煞",
       "navigationKind": "boss",
       "pointType": "normal-boss",
-      "iconId": "icon-c2a9ff1fb45b32f5",
+      "iconId": "wiki-echo-23530",
       "mode": "fast-travel"
     },
     {
@@ -1395,7 +1395,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -1425,7 +1425,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -1440,7 +1440,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel"
     },
     {
@@ -1456,7 +1456,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1471,7 +1471,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -1487,7 +1487,7 @@
       "name": "服务设施",
       "navigationKind": "service",
       "pointType": "service",
-      "iconId": "icon-c58c3aea6d69dcbc",
+      "iconId": "unpack-map-4-5-3",
       "mode": "fast-travel"
     },
     {
@@ -1533,7 +1533,7 @@
       "kind": "navigation",
       "name": "星火艺术",
       "navigationKind": "landmark",
-      "iconId": "icon-d69b56e2c72c3088",
+      "iconId": "unpack-map-1-1-13",
       "mode": "landmark"
     },
     {
@@ -1548,7 +1548,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel"
     },
     {
@@ -1563,7 +1563,7 @@
       "kind": "navigation",
       "name": "星火艺术",
       "navigationKind": "landmark",
-      "iconId": "icon-d69b56e2c72c3088",
+      "iconId": "unpack-map-1-1-13",
       "mode": "landmark"
     },
     {
@@ -1578,7 +1578,7 @@
       "kind": "navigation",
       "name": "危锁奇藏",
       "navigationKind": "landmark",
-      "iconId": "icon-91190f4a8db6640e",
+      "iconId": "unpack-map-2-5-6",
       "mode": "entrance"
     },
     {
@@ -1593,7 +1593,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -1610,7 +1610,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -1626,7 +1626,7 @@
       "name": "全息战略·演武",
       "navigationKind": "hologram",
       "pointType": "hologram",
-      "iconId": "icon-d47d4bc656459591",
+      "iconId": "unpack-map-4-6-7",
       "mode": "fast-travel"
     },
     {
@@ -1642,7 +1642,7 @@
       "name": "中枢信标",
       "navigationKind": "nexus",
       "pointType": "central-beacon",
-      "iconId": "icon-5d4afaadc4b4274c",
+      "iconId": "unpack-map-2-3-13",
       "mode": "fast-travel"
     },
     {
@@ -1658,7 +1658,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1674,7 +1674,7 @@
       "name": "服务设施",
       "navigationKind": "service",
       "pointType": "service",
-      "iconId": "icon-0fd966a2cfa0aa40",
+      "iconId": "unpack-map-3-5-11",
       "mode": "fast-travel"
     },
     {
@@ -1690,7 +1690,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1705,7 +1705,7 @@
       "kind": "navigation",
       "name": "玄元境",
       "navigationKind": "landmark",
-      "iconId": "icon-e7d44efaa6407ff6",
+      "iconId": "unpack-map-4-3-3",
       "mode": "fast-travel"
     },
     {
@@ -1720,7 +1720,7 @@
       "kind": "navigation",
       "name": "引歧帘",
       "navigationKind": "landmark",
-      "iconId": "icon-d759d9018b8464e8",
+      "iconId": "unpack-map-2-5-1",
       "mode": "fast-travel"
     },
     {
@@ -1737,7 +1737,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -1754,7 +1754,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1769,7 +1769,7 @@
       "kind": "navigation",
       "name": "超级云帛机骑挑战",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -1785,7 +1785,7 @@
       "name": "中枢信标",
       "navigationKind": "nexus",
       "pointType": "central-beacon",
-      "iconId": "icon-5d4afaadc4b4274c",
+      "iconId": "unpack-map-2-3-13",
       "mode": "fast-travel"
     },
     {
@@ -1800,7 +1800,7 @@
       "kind": "navigation",
       "name": "取偶匣",
       "navigationKind": "landmark",
-      "iconId": "icon-ef50dbcaf8e90434",
+      "iconId": "unpack-map-2-5-12",
       "mode": "fast-travel"
     },
     {
@@ -1816,7 +1816,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1832,7 +1832,7 @@
       "name": "材料副本",
       "navigationKind": "domain",
       "pointType": "material-domain",
-      "iconId": "icon-458b1db12b603d42",
+      "iconId": "unpack-map-4-3-1",
       "mode": "fast-travel"
     },
     {
@@ -1847,7 +1847,7 @@
       "kind": "navigation",
       "name": "咎锁遗患",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "entrance"
     },
     {
@@ -1862,7 +1862,7 @@
       "kind": "navigation",
       "name": "方庭演武",
       "navigationKind": "landmark",
-      "iconId": "icon-81332ca11c69049f",
+      "iconId": "unpack-map-2-5-11",
       "mode": "fast-travel"
     },
     {
@@ -1877,7 +1877,7 @@
       "kind": "navigation",
       "name": "星火艺术",
       "navigationKind": "landmark",
-      "iconId": "icon-d69b56e2c72c3088",
+      "iconId": "unpack-map-1-1-13",
       "mode": "landmark"
     },
     {
@@ -1893,7 +1893,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1930,7 +1930,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1945,7 +1945,7 @@
       "kind": "navigation",
       "name": "隐秘入口",
       "navigationKind": "landmark",
-      "iconId": "icon-a20604c385ae8e59",
+      "iconId": "unpack-map-2-2-1",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -6636,

@@ -1,4 +1,5 @@
 import type { RouteConnector, RoutePoint, RouteResult } from '../domain/types.ts'
+import { BOUNDARY_MAP_ID, walkingDistance } from './boundary-path.ts'
 
 export interface RoutePlanInput {
   points: RoutePoint[]
@@ -54,7 +55,7 @@ export function movementCost(left: RoutePoint, right: RoutePoint, context: Dista
     return Number.POSITIVE_INFINITY
   }
   if (left.levelId === right.levelId) {
-    return coordinateDistance(left.coordinate, right.coordinate)
+    return walkingDistance(left, right)
   }
 
   let best = Number.POSITIVE_INFINITY
@@ -110,7 +111,7 @@ function bestStart(point: RoutePoint, startPoints: RoutePoint[], context: Distan
   startPoints.forEach((startPoint, candidateIndex) => {
     let candidateCost = movementCost(startPoint, point, context)
     if (!Number.isFinite(candidateCost) && useBaseMap && startPoint.stateId === point.stateId && startPoint.levelId === null) {
-      candidateCost = coordinateDistance(startPoint.coordinate, point.coordinate)
+      candidateCost = walkingDistance({ ...startPoint, levelId: point.levelId }, point)
     }
     if (candidateCost < cost) {
       cost = candidateCost
@@ -593,7 +594,8 @@ function largeRouteStarts(input: RoutePlanInput, context: RouteContext): (RouteP
 }
 
 function largeHeuristicRoute(input: RoutePlanInput, context: RouteContext): RouteResult {
-  const spatial = uniformRouteContext(input.points)
+  // Euclidean pruning can discard the closest target across a boundary.
+  const spatial = uniformRouteContext(input.points) && input.points[0]?.stateId !== BOUNDARY_MAP_ID
   let bestOrder: number[] = []
   let bestCost = Number.POSITIVE_INFINITY
   const seenOrders = new Set<string>()

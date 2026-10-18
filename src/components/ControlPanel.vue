@@ -54,6 +54,7 @@ const lastCommitTime = __LAST_COMMIT_TIME__
         <div class="min-w-0 flex items-center gap-[4px] whitespace-nowrap">
           <WuButton variant="ghost" tone="accent" :size="compact ? 'lg' : 'xs'" @click="$emit('editRequested')">点位录入</WuButton>
           <RouterLink to="/assets" target="_blank" rel="noopener" :class="buttonClasses({ variant: 'ghost', tone: 'accent', size: compact ? 'lg' : 'xs' })">资产浏览</RouterLink>
+          <RouterLink to="/navigation-icons" target="_blank" rel="noopener" :class="buttonClasses({ variant: 'ghost', tone: 'accent', size: compact ? 'lg' : 'xs' })">图标管理</RouterLink>
         </div>
       </div>
       <div class="relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[18px] py-[8px]">

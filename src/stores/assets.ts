@@ -2,13 +2,13 @@ import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
 import { loadMapAssetCatalog, loadMapDataset } from '../data/load.ts'
-import { assetCategories, buildOfficialAssets, filterOfficialAssets } from '../domain/official-assets.ts'
-import { officialAssetCategorySchema } from '../domain/schema.ts'
-import type { MapDataset, OfficialAsset, OfficialAssetCategory } from '../domain/types.ts'
+import { buildOfficialAssets, filterOfficialAssets } from '../domain/official-assets.ts'
+import { assetBrowserCategories, matchesAssetCategory, groupBrowserAssets } from '../domain/asset-browser.ts'
+import type { AssetBrowserCategory } from '../domain/asset-browser.ts'
+import type { MapDataset, OfficialAsset } from '../domain/types.ts'
 
 interface AssetBrowserState {
-  category: OfficialAssetCategory | 'all'
-  stateId: number | null
+  category: AssetBrowserCategory | 'all'
   selectedId: string | null
 }
 
@@ -19,18 +19,24 @@ export const useAssetsStore = defineStore('assets', () => {
   const error = shallowRef('')
   const search = shallowRef('')
   let pendingLoad: Promise<void> | null = null
-  const filters = shallowRef<AssetBrowserState>(freeze({ category: 'all', stateId: null, selectedId: null }))
+  const queryBinding = shallowRef<{ read: () => Record<string, unknown>; write: (query: Record<string, unknown>) => void } | null>(null)
+  function bindQuery(binding: NonNullable<typeof queryBinding.value>): void { queryBinding.value = binding }
+  function unbindQuery(binding: NonNullable<typeof queryBinding.value>): void { if (queryBinding.value === binding) queryBinding.value = null }
+  const filters = computed<AssetBrowserState>({
+    get: () => parseQuery(queryBinding.value?.read() ?? {}),
+    set: state => queryBinding.value?.write({ category: state.category, asset: state.selectedId ?? undefined }),
+  })
   const category = computed(() => filters.value.category)
-  const stateId = computed(() => filters.value.stateId)
   const assets = computed(() => freeze(dataset.value ? buildOfficialAssets(dataset.value, mapAssets.value) : [], true))
-  const filteredAssets = computed(() => freeze(filterOfficialAssets(assets.value, category.value, stateId.value, search.value), true))
+  const filteredAssets = computed(() => freeze(filterOfficialAssets(assets.value, 'all', null, search.value).filter(asset => matchesAssetCategory(asset, category.value)), true))
+  const groups = computed(() => dataset.value ? groupBrowserAssets(filteredAssets.value, dataset.value, category.value) : [])
   const selectedIndex = computed(() => filteredAssets.value.findIndex(({ id }) => id === filters.value.selectedId))
   const selectedAsset = computed(() => filteredAssets.value[selectedIndex.value] ?? null)
   const categories = computed(() => {
-    const scoped = filterOfficialAssets(assets.value, 'all', stateId.value, search.value)
+    const scoped = filterOfficialAssets(assets.value, 'all', null, search.value)
     return freeze([
       { id: 'all' as const, name: '全部资产', description: '浏览所有已收录资源', count: scoped.length },
-      ...assetCategories.map((category) => ({ ...category, count: scoped.filter((asset) => asset.categories.includes(category.id)).length })),
+      ...assetBrowserCategories.map((category) => ({ ...category, count: scoped.filter(asset => matchesAssetCategory(asset, category.id)).length })),
     ], true)
   })
 
@@ -55,28 +61,18 @@ export const useAssetsStore = defineStore('assets', () => {
     return pendingLoad
   }
 
-  function restoreQuery(query: Record<string, unknown>): void {
-    const parsedCategory = officialAssetCategorySchema.safeParse(query.category)
-    const category = parsedCategory.success ? parsedCategory.data : 'all'
-    const requestedMap = typeof query.map === 'string' && /^\d+$/u.test(query.map) ? Number(query.map) : null
-    const stateId = dataset.value?.states.some(({ id }) => id === requestedMap) ? requestedMap : null
-    const scoped = filterOfficialAssets(assets.value, category, stateId, search.value)
-    filters.value = freeze({
-      category, stateId,
+  function parseQuery(query: Record<string, unknown>): AssetBrowserState {
+    const category = assetBrowserCategories.find(category => category.id === query.category)?.id ?? 'all'
+    const scoped = filterOfficialAssets(assets.value, 'all', null, search.value).filter(asset => matchesAssetCategory(asset, category))
+    return {
+      category,
       selectedId: typeof query.asset === 'string' && scoped.some(({ id }) => id === query.asset) ? query.asset : null,
-    })
+    }
   }
 
-  function selectCategory(category: OfficialAssetCategory | 'all'): void {
+  function selectCategory(category: AssetBrowserCategory | 'all'): void {
     filters.value = produce(filters.value, (draft) => {
       draft.category = category
-      draft.selectedId = null
-    })
-  }
-
-  function selectMap(value: string | number | null): void {
-    filters.value = produce(filters.value, (draft) => {
-      draft.stateId = dataset.value?.states.some(({ id }) => id === value) && typeof value === 'number' ? value : null
       draft.selectedId = null
     })
   }
@@ -100,13 +96,13 @@ export const useAssetsStore = defineStore('assets', () => {
 
   function resetFilters(): void {
     search.value = ''
-    filters.value = freeze({ category: 'all', stateId: null, selectedId: null })
+    filters.value = freeze({ category: 'all', selectedId: null })
   }
 
   return {
     dataset: shallowReadonly(dataset), loading: shallowReadonly(loading), error: shallowReadonly(error),
     search: shallowReadonly(search), filters: shallowReadonly(filters),
-    assets, filteredAssets, selectedAsset, selectedIndex, categories,
-    setDataset, load, restoreQuery, selectCategory, selectMap, setSearch, selectAsset, selectAdjacentAsset, resetFilters,
+    assets, filteredAssets, groups, selectedAsset, selectedIndex, categories,
+    setDataset, load, bindQuery, unbindQuery, selectCategory, setSearch, selectAsset, selectAdjacentAsset, resetFilters,
   }
 })

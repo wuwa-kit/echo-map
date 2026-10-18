@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NavigationArtwork from './NavigationArtwork.vue'
 import WuEllipsis from './base/WuEllipsis.vue'
 import WuButton from './base/WuButton.vue'
 import { computed, onBeforeUnmount, shallowRef, useTemplateRef } from 'vue'
@@ -11,13 +12,16 @@ import { navigationPointTypeIds, navigationPointTypes } from '../domain/navigati
 import WuInput from './base/WuInput.vue'
 import WuCheckBox from './base/WuCheckBox.vue'
 import WuPopover from './base/WuPopover.vue'
-import { navigationTypeIcons, navigationPointIconUrl } from '../domain/navigation-icons.ts'
+import { navigationTypeIcons, navigationPickerGroups, navigationPointIconUrl } from '../domain/navigation-icons.ts'
 import WuScrollArea from './base/WuScrollArea.vue'
 import PointCoordinateFields from './PointCoordinateFields.vue'
+import { RouterLink } from 'vue-router'
+import { useNavigationIconLibraryStore } from '../stores/navigation-icon-library.ts'
 
 defineProps<{ arrivalConfirmationHint?: string }>()
 const emit = defineEmits<{ arrivalConfirmed: [coordinate: [number, number]] }>()
 const store = usePointEditorStore()
+const iconLibrary = useNavigationIconLibraryStore()
 const typeOptions = navigationPointTypeIds.map((value) => ({
   value,
   name: navigationPointTypes[value].name,
@@ -78,10 +82,8 @@ function removeName(name: string): void {
 onBeforeUnmount(finishManualName)
 const selectedType = computed(() => draft.value?.kind === 'navigation' ? draft.value.pointType : undefined)
 const rule = computed(() => selectedType.value ? navigationPointTypes[selectedType.value] : undefined)
-const icons = computed(() => navigationTypeIcons(selectedType.value))
-const filteredIcons = computed(() => navigationTypeIcons(selectedType.value, iconSearch.value, recentIconIds.value))
+const iconGroups = computed(() => navigationPickerGroups(iconLibrary.saved, iconLibrary.catalog, selectedType.value, iconSearch.value, recentIconIds.value))
 const iconUrl = computed(() => draft.value?.kind === 'navigation' ? navigationPointIconUrl(draft.value) : '')
-const fixedIcon = computed(() => Boolean(rule.value?.icons.length) && icons.value.length === 1)
 const nameAndIconHint = computed(() => {
   const point = draft.value
   if (point?.kind !== 'navigation') return ''
@@ -106,23 +108,27 @@ function selectIcon(id: string): void {
       <div class="grid grid-cols-2 gap-[4px]">
         <WuOption v-for="option in typeOptions" :key="option.value" :value="option.value" class="min-w-0">
           <span class="flex min-w-0 items-center gap-[6px]">
-            <img v-if="option.iconUrl" :src="option.iconUrl" class="h-[24px] w-[24px] shrink-0 object-contain" loading="lazy" />
+            <NavigationArtwork v-if="option.iconUrl" :url="option.iconUrl" class="h-[24px] w-[24px] shrink-0 object-contain" />
             <span class="truncate">{{ option.name }}</span>
           </span>
         </WuOption>
       </div>
     </WuSelect>
     <div v-if="inputErrors.pointType" class="mt-[4px] text-[11px] text-[#ffad9f]">{{ inputErrors.pointType }}</div>
-    <div class="mb-[6px] mt-[18px] text-[13px] font-semibold">名称与图标</div>
-    <div class="flex items-start gap-[8px]">
-      <WuButton ref="iconAnchorRef" icon-only :tone="inputErrors.icon ? 'danger' : 'neutral'" :tooltip="fixedIcon ? '图标由类型决定' : iconUrl ? '更换图标' : '选择图标'" :disabled="busy || fixedIcon" :popovertarget="iconPopover?.id">
-        <template #icon><img v-if="iconUrl" :src="iconUrl" class="h-[30px] w-[30px] shrink-0 object-contain" /><span v-else class="shrink-0 text-[10px]">图标</span></template>
+    <div v-if="rule?.builtIn" class="mt-[12px] flex items-center gap-[8px] text-[12px] text-[#91ae9e]">
+      <NavigationArtwork :url="iconUrl" class="h-[30px] w-[30px] shrink-0 object-contain" />
+      <span>内置图标 · {{ draft.mode === 'fast-travel' ? '可直接传送' : '不可直接传送' }} · {{ selectedType === 'central-beacon' ? '始终显示' : draft.mode === 'fast-travel' ? '按传送点层级显示' : '按非传送点层级显示' }}</span>
+    </div>
+    <div v-if="!rule?.builtIn || !rule.names.length" class="mb-[6px] mt-[18px] text-[13px] font-semibold">{{ rule?.builtIn && rule.icons.length === 1 ? '名称' : '名称与图标' }}</div>
+    <div v-if="!rule?.builtIn || !rule.names.length" class="flex items-start gap-[8px]">
+      <WuButton v-if="!rule?.builtIn || rule.icons.length > 1" ref="iconAnchorRef" icon-only :tone="inputErrors.icon ? 'danger' : 'neutral'" :tooltip="iconUrl ? '更换图标' : '选择图标'" :disabled="busy" :popovertarget="iconPopover?.id">
+        <template #icon><NavigationArtwork v-if="iconUrl" :url="iconUrl" class="h-[30px] w-[30px] shrink-0 object-contain" /><span v-else class="shrink-0 text-[10px]">图标</span></template>
       </WuButton>
       <div ref="nameAnchorRef" class="min-w-0 flex-1">
         <WuInput :model-value="draft.name" :invalid="Boolean(inputErrors.name)" :disabled="busy || rule?.names.length === 1" :tooltip="rule?.names.length === 1 ? '名称由类型决定' : undefined" placeholder="输入定位点名称" @update:model-value="inputName" @pointerdown="startNamePointer" @focus="focusNameHistory" @click="openNameHistory" @blur="finishManualName" @confirm="finishManualName" />
       </div>
     </div>
-    <div class="mt-[4px] h-[18px] text-[12px] leading-[18px]" :class="inputErrors.name || inputErrors.icon ? 'text-[#ffad9f]' : 'text-[#91ae9e]'">{{ nameAndIconHint }}</div>
+    <div v-if="!rule?.builtIn || nameAndIconHint || inputErrors.name || inputErrors.icon" class="mt-[4px] h-[18px] text-[12px] leading-[18px]" :class="inputErrors.name || inputErrors.icon ? 'text-[#ffad9f]' : 'text-[#91ae9e]'">{{ inputErrors.name || inputErrors.icon || nameAndIconHint }}</div>
     <WuPopover ref="namePopoverRef" :anchor="nameAnchor" :disabled="busy || rule?.names.length === 1" width="trigger" :max-height="320" class="outline -outline-offset-1 outline-[var(--line)] rounded-[9px] bg-[#102019] text-[#c7dfd2] shadow-xl">
       <WuScrollArea class="min-h-0 flex-1" content-class="p-[4px]">
         <div v-for="name in displayedNames" :key="name" class="flex items-center gap-[4px] rounded-[6px] hover:bg-[#1c3b2d]">
@@ -131,16 +137,19 @@ function selectIcon(id: string): void {
         </div>
       </WuScrollArea>
     </WuPopover>
-    <WuPopover ref="iconPopoverRef" :anchor="iconAnchor?.element ?? null" :disabled="busy" :width="360" :max-height="280" class="outline -outline-offset-1 outline-[var(--line)] rounded-[9px] bg-[#102019] text-[#c7dfd2] shadow-xl">
-      <div class="shrink-0 p-[10px]"><WuInput v-model="iconSearch" :placeholder="!selectedType ? '搜索未设置类型的图标' : rule?.icons.length ? '搜索当前类型的图标' : '搜索图标库'" /></div>
+    <WuPopover v-if="!rule?.builtIn || rule.icons.length > 1" ref="iconPopoverRef" :anchor="iconAnchor?.element ?? null" :disabled="busy" :width="360" :max-height="280" class="outline -outline-offset-1 outline-[var(--line)] rounded-[9px] bg-[#102019] text-[#c7dfd2] shadow-xl">
+      <div class="shrink-0 p-[10px]"><WuInput v-model="iconSearch" placeholder="搜索图标名称或编号" /><RouterLink to="/navigation-icons" target="_blank" rel="noopener" class="mt-[6px] block text-[12px] text-[#8ed4b0]">管理自建图标</RouterLink></div>
       <WuScrollArea class="min-h-0 flex-1" content-class="grid grid-cols-2 gap-[6px] p-[10px] pt-0">
-        <button v-for="icon in filteredIcons" :key="icon.id" type="button" class="min-w-0 flex items-center gap-[8px] outline -outline-offset-1 outline-[var(--line)] rounded-[6px] bg-[#12271f] p-[8px] text-left text-[11px] hover:bg-[#1c3b2d]" :disabled="busy" @click="selectIcon(icon.id)">
-          <img :src="icon.url" class="h-[32px] w-[32px] shrink-0 object-contain" loading="lazy" /><WuEllipsis :text="icon.name" class="min-w-0 flex-1" />
-        </button>
-        <div v-if="!filteredIcons.length" class="col-span-2 p-[12px] text-center text-[12px] text-[#91ae9e]">没有匹配的图标</div>
+        <template v-for="group in iconGroups" :key="group.id">
+          <div v-if="group.icons.length" class="col-span-2 text-[11px] text-[#91ae9e]">{{ group.name }}</div>
+          <button v-for="icon in group.icons" :key="icon.id" type="button" class="min-w-0 flex items-center gap-[8px] outline -outline-offset-1 outline-[var(--line)] rounded-[6px] bg-[#12271f] p-[8px] text-left text-[11px] hover:bg-[#1c3b2d]" :disabled="busy" @click="selectIcon(icon.id)">
+            <NavigationArtwork :url="icon.url" class="h-[32px] w-[32px] shrink-0 object-contain" /><div class="min-w-0 flex-1"><WuEllipsis :text="icon.name" /><div class="mt-[3px] truncate text-[10px] text-[#91ae9e]">{{ icon.id }}</div></div>
+          </button>
+        </template>
+        <div v-if="!iconGroups.length" class="col-span-2 p-[12px] text-center text-[12px] text-[#91ae9e]">没有匹配的图标</div>
       </WuScrollArea>
     </WuPopover>
-    <WuCheckBox class="mt-[20px] flex min-h-[40px] items-center gap-[8px] text-[13px]" :model-value="draft.mode === 'fast-travel'" :disabled="busy || rule?.teleportLocked" @update:model-value="store.setMode($event ? 'fast-travel' : 'landmark')">可传送<span v-if="rule?.teleportLocked" class="text-[11px] text-[#789788]">· 由类型决定</span></WuCheckBox>
+    <WuCheckBox v-if="!rule?.builtIn || !rule.teleportLocked" class="mt-[20px] flex min-h-[40px] items-center gap-[8px] text-[13px]" :model-value="draft.mode === 'fast-travel'" :disabled="busy || rule?.teleportLocked" @update:model-value="store.setMode($event ? 'fast-travel' : 'landmark')">可传送<span v-if="rule?.teleportLocked" class="text-[11px] text-[#789788]">· 由类型决定</span></WuCheckBox>
     <template v-if="draft.mode === 'fast-travel'">
       <div class="mt-[16px]">
         <div class="mb-[8px] flex items-center justify-between"><span class="text-[13px]">实际传送位置(可不填)</span><WuButton variant="ghost" size="sm" :disabled="busy" @click="store.clearTeleportCoordinate">清除</WuButton></div>

@@ -2,9 +2,9 @@ node_modules/
 dist/
 .vite/
 coverage/
-public/vendor/kuro-map/
 public/data/official-echo-points.json
 public/data/custom-echo-points.json
 public/data/custom-navigation-points.json
-data/cache/
 *.log
+.local/
+.env

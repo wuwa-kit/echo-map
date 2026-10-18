@@ -34,7 +34,7 @@ function copyDebug(): void {
     <div class="flex items-start gap-[8px]">
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-[6px]">
-          <span class="rounded-[4px] bg-[#174332] px-[6px] py-[2px] text-[11px] text-[#75efc3]">{{ details.type === 'teleport' ? '传送线路' : '步行线路' }}</span>
+          <span class="rounded-[4px] px-[6px] py-[2px] text-[11px]" :class="details.type === 'boundary' ? 'bg-[#302044] text-[#c49bff]' : 'bg-[#174332] text-[#75efc3]'">{{ details.type === 'boundary' ? '边界传送' : details.type === 'teleport' ? '传送线路' : '步行线路' }}</span>
           <span class="text-[12px] text-[#9db8aa]">{{ routePosition }}</span>
         </div>
         <div class="mt-[5px] font-mono text-[11px] text-[#73988a] break-all">{{ details.debugId }}</div>
@@ -49,6 +49,8 @@ function copyDebug(): void {
       <span class="text-[#789789]">计算 XYZ</span><span class="font-mono text-[#a9cbb9]">{{ coordinateText(details.to) }}</span>
       <span class="text-[#789789]">距离</span><span class="font-mono text-[#75efc3]">{{ details.distance.toFixed(2) }}</span>
     </div>
+
+    <div v-if="details.type === 'boundary'" class="mt-[10px] text-[12px] text-[#c49bff]">入口与出口之间为瞬间传送，不计步行距离。</div>
 
     <div v-if="details.type === 'teleport' && details.previous" class="mt-[10px] rounded-[7px] bg-[#152b23] p-[9px] text-[11px] text-[#9fb8ac]">
       <div>传送前目标：{{ details.previous.name }}</div>

@@ -74,13 +74,14 @@ export function createPointMarkerStyles(onChange: () => void, options: {
     const key = `${location.typeId}:${location.kind}:${location.mode}:${location.iconUrl}`
     const cached = navigationStyleCache.get(key)
     if (cached) return cached
-    if (options.exportMode && location.iconUrl && iconImageCache.get(location.iconUrl, null)?.getImageState() === ImageState.ERROR) {
-      iconImageCache.set(location.iconUrl, null, null)
+    const iconUrl = location.iconUrl ?? ''
+    if (options.exportMode && iconUrl && iconImageCache.get(iconUrl, null)?.getImageState() === ImageState.ERROR) {
+      iconImageCache.set(iconUrl, null, null)
     }
     const styles = [new Style({
       text: !location.iconUrl ? new Text({ text: NAVIGATION_NAMES[location.kind], offsetY: 18, font: '11px sans-serif', fill: new Fill({ color: isFastTravel ? '#cde8dc' : `rgba(74, 74, 74, ${NON_TELEPORT_OPACITY})` }), stroke: new Stroke({ color: '#07120e', width: 3 }) }) : undefined,
       image: location.iconUrl
-        ? new Icon({ src: location.iconUrl, crossOrigin: 'anonymous', scale: 0.28, opacity: isFastTravel ? 1 : NON_TELEPORT_OPACITY })
+        ? new Icon({ src: iconUrl, crossOrigin: 'anonymous', scale: 0.28, opacity: isFastTravel ? 1 : NON_TELEPORT_OPACITY })
         : new CircleStyle({ radius: 6, fill: new Fill({ color: isFastTravel ? '#65f1c2' : `rgba(74, 74, 74, ${NON_TELEPORT_OPACITY})` }) }),
     })]
     navigationStyleCache.set(key, styles)
@@ -111,7 +112,8 @@ export function createPointMarkerStyles(onChange: () => void, options: {
       if (!context) return
       // Reducing brightness adds a black overlay without filling transparent pixels.
       context.filter = `grayscale(1) brightness(${NON_TELEPORT_BRIGHTNESS})`
-      context.drawImage(icon.getImage(1), 0, 0)
+      const origin = icon.getOrigin() ?? [0, 0]
+      context.drawImage(icon.getImage(1), origin[0] ?? 0, origin[1] ?? 0, width, height, 0, 0, width, height)
       style.setImage(new Icon({ img: canvas, scale, opacity: NON_TELEPORT_OPACITY }))
       onChange()
     }

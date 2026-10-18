@@ -245,8 +245,9 @@ describe('echo marker appearance', () => {
   })
 
   it('preserves the requested width of navigation artwork while its resource is still loading', () => {
-    const navigation = referenceDataset.navigationPoints.find(({ kind, iconUrl }) => kind === 'beacon' && iconUrl)
-    if (!navigation) throw new Error('Missing beacon fixture')
+    const fixture = referenceDataset.navigationPoints.find(({ kind, iconUrl }) => kind === 'beacon' && iconUrl)
+    if (!fixture) throw new Error('Missing beacon fixture')
+    const navigation = { ...fixture, iconUrl: 'https://test.invalid/pending-navigation.png' }
     const points = createPointLayers(() => false, { exportMode: true, pixelRatio: 5 })
     const scale = vi.spyOn(Icon.prototype, 'setScale')
     try {
@@ -301,7 +302,7 @@ describe('echo marker appearance', () => {
     markers.dispose()
   })
 
-  it('uses the corresponding official icon for editor navigation points', () => {
+  it('resolves editor navigation artwork to the published atlas crop', () => {
     const navigation = referenceDataset.navigationPoints.find(({ kind, iconUrl }) => kind !== 'boss' && iconUrl)
     if (!navigation) throw new Error('Missing navigation fixture')
     const display = authoredPointMapDisplay({
@@ -328,6 +329,7 @@ describe('echo marker appearance', () => {
     expect(image instanceof Icon ? image.getSrc() : null).toBe(navigation.iconUrl)
     markers.dispose()
   })
+
 
   it.each([false, true])('uses boss classifications for editor portrait frames with custom names (export=%s)', (exportMode) => {
     const bosses = [

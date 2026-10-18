@@ -159,9 +159,32 @@ export interface NavigationIconDefinition {
   id: string
   name: string
   url: string
+  source?: 'unpacked' | 'wiki' | 'map' | 'placeholder'
+}
+
+export interface ManagedNavigationIcon {
+  url: string
+  id: string
+  name: string
+}
+
+export interface NavigationIconLibrary {
+  version: 1
+  placeholderUrl: string
+  icons: ManagedNavigationIcon[]
+  categories: NavigationIconCategory[]
+  overrides: { id: string; name?: string }[]
+}
+
+export interface NavigationIconCategory {
+  order?: number
+  id: string
+  name: string
+  icons: { iconId: string }[]
 }
 
 export interface NavigationTypeDefinition {
+  builtIn?: boolean
   name: string
   kind: NavigationKind
   defaultMode: NavigationMode
@@ -392,6 +415,7 @@ export interface RouteResult {
 
 export interface RoutePlanGroup {
   id: string
+  exportAreaId?: string
   stateId: number
   levelId: string | null
   gravityType: GravityType

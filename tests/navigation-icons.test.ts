@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { readFile } from 'node:fs/promises'
-import { PNG } from 'pngjs'
 import { navigationIconCatalog } from '../src/domain/navigation-icon-catalog.ts'
 import { navigationIconById, navigationPointIconUrl, navigationTypeIcons } from '../src/domain/navigation-icons.ts'
 import { navigationPointTypes } from '../src/domain/navigation-point-types.ts'
@@ -11,12 +9,11 @@ import { officialNavigationPointType } from '../scripts/lib/map/navigation-types
 const emptyNavigationDataset = { ...referenceDataset, navigationPoints: [], navigationPointGroups: [] }
 
 describe('local navigation icon picker', () => {
-  it('offers the local missing icon for unset points and preserves it through saving and map display', async () => {
+  it('offers the CDN missing icon for unset points and preserves it through saving and map display', async () => {
     const icon = navigationTypeIcons(undefined, '图标未找到')[0]
     if (!icon) throw new Error('缺少图标未找到选项')
     expect(navigationTypeIcons(undefined)[0]).toBe(icon)
-    const image = PNG.sync.read(await readFile(new URL(`../public${icon.url}`, import.meta.url)))
-    expect([image.width, image.height]).toEqual([128, 128])
+    expect(new URL(icon.url).hostname).toBe('prod-alicdn-community.kurobbs.com')
     const point = {
       gravityType: null, id: 'missing-artwork', kind: 'navigation' as const,
       stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },
@@ -57,11 +54,17 @@ describe('local navigation icon picker', () => {
     ['留声珍藏', ['SP_IconMap_Play_25_UI']],
     ['载具系泊场', ['381038']],
     ['深空文献中心', ['381031']],
-  ] as const)('offers %s as a searchable, saveable service icon', (name, officialIds) => {
-    const [icon] = navigationTypeIcons('service', name)
-    if (!icon) throw new Error(`缺少服务设施图标：${name}`)
-    expect(navigationTypeIcons(undefined, name, [icon.id])).toEqual([])
+  ] as const)('maps official %s types to services independently of editable icon names', (_name, officialIds) => {
     for (const id of officialIds) expect(officialNavigationPointType(id)).toBe('service')
+  })
+
+  it.each(navigationPointTypes.service.icons)('offers service icon %s by its current name and fixed ID', iconId => {
+    const icon = navigationIconById(iconId)
+    if (!icon) throw new Error(`缺少服务设施图标：${iconId}`)
+    const name = icon.name
+    expect(navigationTypeIcons('service', name).some(item => item.id === iconId)).toBe(true)
+    expect(navigationTypeIcons('service', iconId).some(item => item.id === iconId)).toBe(true)
+    expect(navigationTypeIcons(undefined, name, [iconId]).some(item => item.id === iconId)).toBe(false)
     const point = {
       gravityType: null, id: 'service-icon', kind: 'navigation' as const,
       stateId: 8, levelId: null, coordinate: { x: 1, y: 2, z: 3 },

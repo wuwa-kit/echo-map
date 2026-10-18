@@ -44,6 +44,7 @@ export function createRegionalExportPlan(
   const groups = [...areas.entries()].flatMap(([areaId, area]) => [...area.groups].map(([contextId, bucket]) => ({
     ...bucket.source,
     id: `export:${areaId}:${contextId}`,
+    exportAreaId: areaId,
     label: area.label,
     matchingLocationCount: bucket.points.length,
     route: { ...bucket.source.route, points: bucket.points },

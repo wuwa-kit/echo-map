@@ -13,7 +13,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -28,7 +28,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -58,7 +58,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -73,7 +73,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -88,7 +88,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -105,7 +105,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -120,7 +120,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -135,7 +135,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -150,7 +150,7 @@
       "kind": "navigation",
       "name": "摩托赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -166,7 +166,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -181,7 +181,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -196,7 +196,7 @@
       "kind": "navigation",
       "name": "摩托-固定赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-ca1ab721490ea1b8",
+      "iconId": "unpack-map-1-5-4",
       "mode": "fast-travel"
     },
     {
@@ -212,7 +212,7 @@
       "name": "无音区",
       "navigationKind": "tacet-field",
       "pointType": "tacet-field",
-      "iconId": "icon-b73ecba5c4c73be0",
+      "iconId": "unpack-map-4-6-3",
       "mode": "fast-travel"
     },
     {
@@ -227,7 +227,7 @@
       "kind": "navigation",
       "name": "摩托-飞行赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-01b3902be10c2d93",
+      "iconId": "unpack-map-1-6-4",
       "mode": "fast-travel"
     },
     {
@@ -242,7 +242,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -258,7 +258,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -273,7 +273,7 @@
       "kind": "navigation",
       "name": "虚质磁暴区",
       "navigationKind": "landmark",
-      "iconId": "icon-b54ccad24f9ef4ca",
+      "iconId": "unpack-map-3-4-11",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": 996,
@@ -294,7 +294,7 @@
       "name": "危行任务",
       "navigationKind": "landmark",
       "pointType": "exploration-quest",
-      "iconId": "icon-05f43f9613d478b8",
+      "iconId": "unpack-map-1-1-9",
       "mode": "landmark"
     },
     {
@@ -310,7 +310,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -325,7 +325,7 @@
       "kind": "navigation",
       "name": "摩托-特技赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-2a975ae3911edd5d",
+      "iconId": "unpack-map-1-11-4",
       "mode": "fast-travel"
     },
     {
@@ -340,7 +340,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -355,7 +355,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -370,7 +370,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -385,7 +385,7 @@
       "kind": "navigation",
       "name": "摩托-飞行赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-01b3902be10c2d93",
+      "iconId": "unpack-map-1-6-4",
       "mode": "fast-travel"
     },
     {
@@ -400,7 +400,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -415,7 +415,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -430,7 +430,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -445,7 +445,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -460,7 +460,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -491,7 +491,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -506,7 +506,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "icon-d96108026cedc4e7",
+      "iconId": "unpack-map-1-2-8",
       "mode": "landmark"
     },
     {
@@ -521,7 +521,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -536,7 +536,7 @@
       "kind": "navigation",
       "name": "虚质磁暴区",
       "navigationKind": "landmark",
-      "iconId": "icon-b54ccad24f9ef4ca",
+      "iconId": "unpack-map-3-4-11",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": 972,
@@ -557,7 +557,7 @@
       "name": "危行任务",
       "navigationKind": "landmark",
       "pointType": "exploration-quest",
-      "iconId": "icon-05f43f9613d478b8",
+      "iconId": "unpack-map-1-1-9",
       "mode": "landmark"
     },
     {
@@ -572,7 +572,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -587,7 +587,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "icon-d96108026cedc4e7",
+      "iconId": "unpack-map-1-2-8",
       "mode": "landmark"
     },
     {
@@ -602,7 +602,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -617,7 +617,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -632,7 +632,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "entrance"
     },
     {
@@ -663,7 +663,7 @@
       "name": "青实归还之碑",
       "navigationKind": "service",
       "pointType": "service",
-      "iconId": "icon-13dffc1da5f5c309",
+      "iconId": "unpack-map-3-4-13",
       "mode": "fast-travel"
     },
     {
@@ -679,7 +679,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -694,7 +694,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -709,7 +709,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -725,7 +725,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -740,7 +740,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -756,7 +756,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -773,7 +773,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -789,7 +789,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -805,7 +805,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -820,7 +820,7 @@
       "kind": "navigation",
       "name": "摩托赛道挑战",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -836,7 +836,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -851,7 +851,7 @@
       "kind": "navigation",
       "name": "遗患清剿",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "landmark"
     },
     {
@@ -866,7 +866,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "icon-d96108026cedc4e7",
+      "iconId": "unpack-map-1-2-8",
       "mode": "landmark"
     },
     {
@@ -881,7 +881,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -896,7 +896,7 @@
       "kind": "navigation",
       "name": "摩托-飞行赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-01b3902be10c2d93",
+      "iconId": "unpack-map-1-6-4",
       "mode": "fast-travel"
     },
     {
@@ -911,7 +911,7 @@
       "kind": "navigation",
       "name": "摩托赛道挑战",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -926,7 +926,7 @@
       "kind": "navigation",
       "name": "隧锚",
       "navigationKind": "landmark",
-      "iconId": "icon-1f0577e56b005baf",
+      "iconId": "unpack-map-1-4-4",
       "mode": "fast-travel"
     },
     {
@@ -941,7 +941,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -956,7 +956,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "icon-d96108026cedc4e7",
+      "iconId": "unpack-map-1-2-8",
       "mode": "landmark"
     },
     {
@@ -972,7 +972,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -987,7 +987,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -1002,7 +1002,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "icon-d96108026cedc4e7",
+      "iconId": "unpack-map-1-2-8",
       "mode": "landmark"
     },
     {
@@ -1017,7 +1017,7 @@
       "kind": "navigation",
       "name": "遗患清剿",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "landmark"
     },
     {
@@ -1032,7 +1032,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -1048,7 +1048,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1063,7 +1063,7 @@
       "kind": "navigation",
       "name": "摩托-飞行赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-01b3902be10c2d93",
+      "iconId": "unpack-map-1-6-4",
       "mode": "fast-travel"
     },
     {
@@ -1078,7 +1078,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -1093,7 +1093,7 @@
       "kind": "navigation",
       "name": "摩托-固定赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-ca1ab721490ea1b8",
+      "iconId": "unpack-map-1-5-4",
       "mode": "fast-travel"
     },
     {
@@ -1109,7 +1109,7 @@
       "name": "虚妄诞生之种",
       "navigationKind": "boss",
       "pointType": "weekly-boss",
-      "iconId": "icon-93d2328a365f0abb",
+      "iconId": "map-boss-21259",
       "mode": "fast-travel"
     },
     {
@@ -1124,7 +1124,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -1140,7 +1140,7 @@
       "name": "中枢信标",
       "navigationKind": "nexus",
       "pointType": "central-beacon",
-      "iconId": "icon-5d4afaadc4b4274c",
+      "iconId": "unpack-map-2-3-13",
       "mode": "fast-travel"
     },
     {
@@ -1156,7 +1156,7 @@
       "name": "中枢信标",
       "navigationKind": "nexus",
       "pointType": "central-beacon",
-      "iconId": "icon-5d4afaadc4b4274c",
+      "iconId": "unpack-map-2-3-13",
       "mode": "fast-travel"
     },
     {
@@ -1172,7 +1172,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1187,7 +1187,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -1202,7 +1202,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -1217,7 +1217,7 @@
       "kind": "navigation",
       "name": "虚质磁暴区",
       "navigationKind": "landmark",
-      "iconId": "icon-b54ccad24f9ef4ca",
+      "iconId": "unpack-map-3-4-11",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -15,
@@ -1237,7 +1237,7 @@
       "kind": "navigation",
       "name": "摩托-固定赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-ca1ab721490ea1b8",
+      "iconId": "unpack-map-1-5-4",
       "mode": "fast-travel"
     },
     {
@@ -1252,7 +1252,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -1267,7 +1267,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "icon-d96108026cedc4e7",
+      "iconId": "unpack-map-1-2-8",
       "mode": "landmark"
     },
     {
@@ -1282,7 +1282,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "icon-d96108026cedc4e7",
+      "iconId": "unpack-map-1-2-8",
       "mode": "landmark"
     },
     {
@@ -1298,7 +1298,7 @@
       "name": "中枢信标",
       "navigationKind": "nexus",
       "pointType": "central-beacon",
-      "iconId": "icon-5d4afaadc4b4274c",
+      "iconId": "unpack-map-2-3-13",
       "mode": "fast-travel"
     },
     {
@@ -1314,7 +1314,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1329,7 +1329,7 @@
       "kind": "navigation",
       "name": "摩托赛道挑战",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -1345,7 +1345,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -1360,7 +1360,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "entrance"
     },
     {
@@ -1375,7 +1375,7 @@
       "kind": "navigation",
       "name": "虚质方块",
       "navigationKind": "landmark",
-      "iconId": "icon-d96108026cedc4e7",
+      "iconId": "unpack-map-1-2-8",
       "mode": "landmark"
     },
     {
@@ -1390,7 +1390,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -1405,7 +1405,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -1421,7 +1421,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -1436,7 +1436,7 @@
       "kind": "navigation",
       "name": "摩托-飞行赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-01b3902be10c2d93",
+      "iconId": "unpack-map-1-6-4",
       "mode": "fast-travel"
     },
     {
@@ -1451,7 +1451,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -1466,7 +1466,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -1481,7 +1481,7 @@
       "kind": "navigation",
       "name": "虚质磁暴区",
       "navigationKind": "landmark",
-      "iconId": "icon-b54ccad24f9ef4ca",
+      "iconId": "unpack-map-3-4-11",
       "mode": "fast-travel",
       "teleportCoordinate": {
         "x": -406,
@@ -1501,7 +1501,7 @@
       "kind": "navigation",
       "name": "摩托-固定赛道",
       "navigationKind": "landmark",
-      "iconId": "icon-76f235a4403589a1",
+      "iconId": "unpack-map-4-4-11",
       "mode": "fast-travel"
     },
     {
@@ -1516,7 +1516,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -1531,7 +1531,7 @@
       "kind": "navigation",
       "name": "日灵",
       "navigationKind": "landmark",
-      "iconId": "icon-b7e86be8786232fa",
+      "iconId": "unpack-map-4-4-6",
       "mode": "landmark"
     },
     {
@@ -1561,7 +1561,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -1576,7 +1576,7 @@
       "kind": "navigation",
       "name": "遗患清剿",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "landmark"
     },
     {
@@ -1591,7 +1591,7 @@
       "kind": "navigation",
       "name": "遗患清剿",
       "navigationKind": "landmark",
-      "iconId": "icon-a41b4153ffd53379",
+      "iconId": "unpack-map-1-10-4",
       "mode": "landmark"
     },
     {
@@ -1622,7 +1622,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -1637,7 +1637,7 @@
       "kind": "navigation",
       "name": "铸光仪",
       "navigationKind": "landmark",
-      "iconId": "icon-b9b78a360776f791",
+      "iconId": "unpack-map-1-12-4",
       "mode": "landmark"
     },
     {
@@ -1652,7 +1652,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -1668,7 +1668,7 @@
       "name": "中枢信标",
       "navigationKind": "nexus",
       "pointType": "central-beacon",
-      "iconId": "icon-5d4afaadc4b4274c",
+      "iconId": "unpack-map-2-3-13",
       "mode": "fast-travel"
     }
   ]

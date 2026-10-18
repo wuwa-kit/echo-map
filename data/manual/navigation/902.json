@@ -14,7 +14,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -30,7 +30,7 @@
       "kind": "navigation",
       "name": "入口",
       "navigationKind": "landmark",
-      "iconId": "icon-d69b56e2c72c3088",
+      "iconId": "unpack-map-1-1-13",
       "mode": "fast-travel"
     },
     {
@@ -46,7 +46,7 @@
       "kind": "navigation",
       "name": "挑战",
       "navigationKind": "landmark",
-      "iconId": "icon-d69b56e2c72c3088",
+      "iconId": "unpack-map-1-1-13",
       "mode": "fast-travel"
     },
     {
@@ -63,7 +63,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -80,7 +80,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -96,7 +96,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -112,7 +112,7 @@
       "kind": "navigation",
       "name": "声骸挑战·刀伶操控",
       "navigationKind": "landmark",
-      "iconId": "icon-c5e90965dd115169",
+      "iconId": "unpack-map-2-4-8",
       "mode": "landmark"
     },
     {
@@ -128,7 +128,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -144,7 +144,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -160,7 +160,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -176,7 +176,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     },
     {
@@ -192,7 +192,7 @@
       "kind": "navigation",
       "name": "藏宝地",
       "navigationKind": "landmark",
-      "iconId": "icon-a6c56bcc941cffb5",
+      "iconId": "unpack-map-1-1-8",
       "mode": "landmark"
     },
     {
@@ -208,7 +208,7 @@
       "name": "入口",
       "navigationKind": "entrance",
       "pointType": "entrance",
-      "iconId": "icon-f9e566c56ab2c4e4",
+      "iconId": "unpack-map-3-3-4",
       "mode": "entrance"
     },
     {
@@ -224,7 +224,7 @@
       "kind": "navigation",
       "name": "声骸挑战·刀伶操控",
       "navigationKind": "landmark",
-      "iconId": "icon-c5e90965dd115169",
+      "iconId": "unpack-map-2-4-8",
       "mode": "landmark"
     },
     {
@@ -240,7 +240,7 @@
       "name": "小型信标",
       "navigationKind": "beacon",
       "pointType": "small-beacon",
-      "iconId": "icon-b396dbca18b10761",
+      "iconId": "unpack-map-3-3-2",
       "mode": "fast-travel"
     }
   ]

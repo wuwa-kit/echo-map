@@ -1,6 +1,6 @@
 import { abortable, createRouteExportRenderer } from '../map/route-export.ts'
 import type { RouteExportSnapshot } from '../map/route-export.ts'
-import { EXPORT_WIDTH, createExportLayout } from './export-layout.ts'
+import { EXPORT_WIDTH, createExportLayout, exportBannerId } from './export-layout.ts'
 import type { ExportLayout } from './export-layout.ts'
 import { encodeJpeg } from './jpeg-encoder.ts'
 import { createFullExportLayouts, EXPORT_SIZE_ERROR, JPEG_MAX_SIDE } from './full-export-layout.ts'
@@ -98,7 +98,7 @@ async function prepareRouteLayouts(layout: ExportLayout, signal: AbortSignal, ma
 }
 
 function layoutForCards(layout: ExportLayout, cards: ExportLayout['cards']): ExportLayout {
-  const groupIds = new Set(cards.map(({ routeGroupId }) => routeGroupId))
+  const groupIds = new Set(cards.map(exportBannerId))
   return { ...layout, cards, banners: layout.banners.filter(({ routeGroupId }) => groupIds.has(routeGroupId)), pages: [], pageHeights: [], height: 0, sections: new Set(cards.map(({ section }) => section)).size }
 }
 

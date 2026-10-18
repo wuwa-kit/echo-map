@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { floatingExitSize } from './floating-exit-size.ts'
 import { computed, onScopeDispose, shallowRef, useId, useTemplateRef, watch } from 'vue'
 import { useEventListener, useMutationObserver, useResizeObserver, useSupported } from '@vueuse/core'
 import { popoverPosition, popoverWidth } from './popover-position.ts'
@@ -30,6 +31,7 @@ const panel = useTemplateRef<HTMLDivElement>('panelRef')
 const openState = shallowRef(false)
 const isOpen = computed(() => openState.value)
 const isSupported = useSupported(() => typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype)
+const exitSize = floatingExitSize()
 let resizeFrame: number | null = null
 
 function updatePosition(): void {
@@ -91,7 +93,10 @@ function toggle(): void {
 }
 
 function onBeforeToggle(event: ToggleEvent): void {
-  if (event.newState === 'open' && props.disabled) event.preventDefault()
+  if (event.newState === 'open') {
+    if (props.disabled) { event.preventDefault(); return }
+    exitSize.restore()
+  } else exitSize.capture(panel.value)
 }
 
 function onToggle(): void {
@@ -111,6 +116,7 @@ useEventListener(window.visualViewport, ['resize', 'scroll'], updatePosition, { 
 useResizeObserver([() => props.anchor, panel], schedulePositionUpdate)
 useMutationObserver(panel, updatePosition, { childList: true, subtree: true, characterData: true })
 onScopeDispose(() => {
+  exitSize.restore()
   if (resizeFrame !== null) cancelAnimationFrame(resizeFrame)
 })
 

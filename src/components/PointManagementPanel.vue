@@ -162,11 +162,8 @@ function exportChanges(): void {
 </script>
 
 <template>
-  <div class="flex h-[min(820px,calc(100dvh-48px))] flex-col max-sm:h-dvh">
-    <div class="flex shrink-0 items-center justify-between relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[var(--line)] px-[20px] py-[14px]">
-      <div><div class="text-[18px] font-semibold">{{ storage === 'browser' ? '本地点位管理' : '项目点位管理' }}</div><div class="mt-[4px] text-[12px] text-[#91ae9e]">{{ storage === 'browser' ? '仅显示本地新增、修改和删除记录' : '管理当前项目已保存的人工点位' }}</div></div>
-      <WuButton variant="ghost" :disabled="busy" @click="emit('closeRequested')">关闭</WuButton>
-    </div>
+  <div class="flex min-h-0 flex-1 flex-col">
+    <div class="shrink-0 px-[16px] pt-[16px] text-[12px] text-[#91ae9e] sm:px-[24px]">{{ storage === 'browser' ? '仅显示本地新增、修改和删除记录' : '管理当前项目已保存的人工点位' }}</div>
     <div class="flex shrink-0 flex-wrap gap-[8px] p-[14px]">
       <WuSelect class="!w-[130px]" :model-value="kind" @update:model-value="filter('kind', $event)"><WuOption value="navigation">定位点</WuOption><WuOption value="echo">声骸点位</WuOption></WuSelect>
       <div class="min-w-0 w-[180px] grow sm:w-[220px]">

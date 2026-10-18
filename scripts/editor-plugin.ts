@@ -39,7 +39,7 @@ async function requestBody(request: IncomingMessage): Promise<unknown> {
 
 export function pointEditorPlugin(): Plugin {
   const getDataset = readMapDataset
-  const repository = createPointRepository(projectPath('data', 'manual'), projectPath('data', 'cache', 'point-history'), getDataset)
+  const repository = createPointRepository(projectPath('data', 'manual'), projectPath('.local', 'point-history'), getDataset)
   let build = false
   return {
     name: 'point-editor',
