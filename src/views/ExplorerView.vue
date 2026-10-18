@@ -204,6 +204,13 @@ const loadError = computed(() => {
       class="relative h-full w-full min-h-0 min-w-0 overflow-hidden bg-[#101c1a] [--control-panel-width:340px] [--mobile-bar-height:calc(72px+env(safe-area-inset-bottom))] [--safe-top:env(safe-area-inset-top)] [--safe-right:env(safe-area-inset-right)] [--safe-bottom:env(safe-area-inset-bottom)] [--safe-left:env(safe-area-inset-left)]"
     >
       <MapCanvas ref="mapCanvasRef" :padding="mapPadding" :dock-bottom="mapDockBottom" :editing="editingMode" @editor-points-selected="selectEditorPoints" @point-add-requested="addEditorPoint" />
+      <div
+        v-if="!compact && controlPanelCollapsed"
+        class="pointer-events-none absolute bottom-[max(16px,var(--safe-bottom))] right-[max(16px,var(--safe-right))] z-70 flex select-none items-center gap-[8px] drop-shadow-[0_2px_4px_#07100f]"
+      >
+        <WuSvg name="brand" class="shrink-0 text-[var(--accent)] [--wu-svg-h:26px]" />
+        <span class="font-serif text-[16px] font-medium leading-none tracking-[0.12em] text-[#f1faf5]">声巡</span>
+      </div>
       <div v-if="!compact || mobileSheet === null" class="absolute left-[max(8px,var(--safe-left))] top-[max(8px,var(--safe-top))] z-90 flex items-start gap-[4px]">
         <MapNavigationCascader
           id="map-navigation-trigger" :dataset="dataset" :state-id="store.selectedStateId" :center="store.mapViewport?.center ?? null"
