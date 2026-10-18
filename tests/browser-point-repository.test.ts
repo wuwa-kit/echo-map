@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { IDBFactory, IDBObjectStore as FakeObjectStore } from 'fake-indexeddb'
-import { initializeBrowserPointLibrary, readBrowserPointSnapshot, readBrowserPointVersion, readBrowserPointVersions, saveBrowserPointLibrary, synchronizeBrowserPoints } from '../src/data/browser-point-repository.ts'
+import { initializeBrowserPointLibrary, readBrowserPointSnapshot, refreshBrowserPointSnapshot, readBrowserPointVersion, readBrowserPointVersions, saveBrowserPointLibrary, synchronizeBrowserPoints } from '../src/data/browser-point-repository.ts'
 import { mixedPoint } from './fixtures/point-library.ts'
 import type { PointLibrary } from '../src/domain/types.ts'
 import { navigationPointTypes } from '../src/domain/navigation-point-types.ts'
@@ -35,6 +35,44 @@ beforeEach(() => vi.stubGlobal('indexedDB', new IDBFactory()))
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 describe('IndexedDB point repository', () => {
+  it('refreshes an obsolete published baseline while retaining all local changes and revision protection', async () => {
+    const changes = Array.from({ length: 123 }, (_, index) => {
+      const before = mixedPoint(`local:${index}`)
+      return { id: before.id, before, after: { ...before, note: '保留修改' }, needsReview: false }
+    })
+    const old = { revision: 'old', workspace: {
+      version: 1, published: { version: 1, points: [{ ...oldNavigationPoint, iconId: 'retired-icon' }] }, changes,
+    } }
+    await storeOldSnapshot(old)
+    await expect(readBrowserPointSnapshot()).rejects.toThrow('未知图标')
+    const refreshed = await refreshBrowserPointSnapshot(library('latest'))
+    expect(refreshed?.workspace?.published).toEqual(library('latest'))
+    expect(refreshed?.workspace?.changes).toEqual(changes)
+    expect(refreshed?.library.points).toHaveLength(124)
+    expect(refreshed?.revision).not.toBe('old')
+    expect(await readBrowserPointSnapshot()).toEqual(refreshed)
+    expect(await refreshBrowserPointSnapshot(library('latest'))).toEqual(refreshed)
+    expect(await readBrowserPointVersions()).toEqual([{ revision: 'old', savedAt: expect.any(String) }])
+    await expect(saveBrowserPointLibrary(library(), 'old', refreshed?.workspace)).rejects.toThrow('其他页面更新')
+    // The original baseline is retained in history, rather than silently rewritten there.
+    await expect(readBrowserPointVersion('old')).rejects.toThrow()
+  })
+
+  it('does not overwrite invalid local changes or mask their error with a legacy library error', async () => {
+    const point = { ...oldNavigationPoint, iconId: 'retired-icon' }
+    await storeOldSnapshot({ revision: 'old', workspace: {
+      version: 1, published: library(), changes: [{ id: point.id, before: null, after: point, needsReview: false }],
+    } })
+    await expect(refreshBrowserPointSnapshot(library('latest'))).rejects.toThrow('未知图标')
+    await expect(readBrowserPointSnapshot()).rejects.toThrow('未知图标')
+    expect(await readBrowserPointVersions()).toEqual([])
+  })
+
+  it('does not create a browser library when refreshing an empty database', async () => {
+    expect(await refreshBrowserPointSnapshot(library())).toBeNull()
+    expect(await readBrowserPointSnapshot()).toBeNull()
+  })
+
   it.each(['nightmare-boss', 'future-type'])('unsets %s in published points, local changes and history without losing edits', async (pointType) => {
     const before = { ...oldNavigationPoint, pointType }
     const after = { ...before, note: '本地修改' }

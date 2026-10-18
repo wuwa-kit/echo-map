@@ -61,7 +61,10 @@ describe('point editor client', () => {
 
   it('reports browser database failures without pretending that the point library was saved', async () => {
     vi.stubGlobal('indexedDB', undefined)
-    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ error: '不存在的录入接口' }, 404)))
+    vi.stubGlobal('fetch', vi.fn(async (input: string | URL | Request) => {
+      if (String(input) === '/api/editor/library') return jsonResponse({ error: '不存在的录入接口' }, 404)
+      return jsonResponse({ version: 1, points: [] })
+    }))
     const client = await import('../src/data/editor-client.ts')
     await expect(client.readEditorLibrary()).rejects.toThrow('IndexedDB')
     await expect(client.saveEditorLibrary({ version: 1, points: [] }, 'missing', { version: 1, points: [] })).rejects.toThrow('IndexedDB')

@@ -3,7 +3,7 @@ import { echoPointLibrarySchema, mapCatalogDataSchema, mapDataSchema, navigation
 import { assembleMapDataset } from '../domain/map-data.ts'
 import type { MapDataset, OfficialEchoPointData, PointLibrary } from '../domain/types.ts'
 import { combinePointLibraryKinds, emptyPointLibrary, parsePointLibrary } from '../domain/point-library.ts'
-import { readBrowserPointSnapshot, synchronizeBrowserPoints } from './browser-point-repository.ts'
+import { refreshBrowserPointSnapshot } from './browser-point-repository.ts'
 import { parsePointWorkspace, workspaceLibrary } from '../domain/local-points.ts'
 
 async function loadMapData() {
@@ -51,9 +51,8 @@ export async function loadPointLibrary(dataset: MapDataset) {
   )
   const published = parsePointLibrary(library, dataset, 'manual')
   if (import.meta.env.PROD && typeof indexedDB !== 'undefined') {
-    const current = await readBrowserPointSnapshot()
-    if (current) {
-      const snapshot = await synchronizeBrowserPoints(published, current)
+    const snapshot = await refreshBrowserPointSnapshot(published)
+    if (snapshot) {
       return snapshot.workspace ? workspaceLibrary(parsePointWorkspace(snapshot.workspace, dataset)) : snapshot.library
     }
   }

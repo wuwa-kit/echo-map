@@ -17,10 +17,16 @@ function clearUnknownPointTypes(value: unknown): unknown {
     .map(([key, field]) => [key, clearUnknownPointTypes(field)]))
 }
 
-function parseSnapshot(storedValue: unknown): Snapshot {
+function parseSnapshot(storedValue: unknown, published?: PointLibrary): Snapshot {
   const value = clearUnknownPointTypes(storedValue)
-  const stored = workspaceSnapshotSchema.safeParse(value)
-  if (stored.success) return { ...stored.data, library: workspaceLibrary(stored.data.workspace) }
+  if (typeof value === 'object' && value !== null && 'workspace' in value) {
+    const envelope = z.object({ workspace: z.object({}).passthrough(), revision: z.string() }).parse(value)
+    const stored = workspaceSnapshotSchema.parse({
+      ...envelope,
+      workspace: published ? { ...envelope.workspace, published } : envelope.workspace,
+    })
+    return { ...stored, library: workspaceLibrary(stored.workspace) }
+  }
   return editorSnapshotSchema.parse(value)
 }
 
@@ -88,6 +94,19 @@ export function readBrowserPointSnapshot(): Promise<Snapshot | null> {
   })
 }
 
+export async function refreshBrowserPointSnapshot(published: PointLibrary): Promise<Snapshot | null> {
+  const baseline = pointLibrarySchema.parse(published)
+  const stored = await transaction(['library'], 'readonly', transaction =>
+    requestResult<unknown>(transaction.objectStore('library').get('current')))
+  if (stored === undefined) return null
+  // The published baseline is replaceable; local changes must still pass full validation.
+  const current = parseSnapshot(stored, baseline)
+  if (!current.workspace) return synchronizeBrowserPoints(baseline, current)
+  const previous = workspaceSnapshotSchema.safeParse(clearUnknownPointTypes(stored))
+  if (previous.success && samePointLibrary(previous.data.workspace.published, baseline)) return current
+  return saveBrowserPointLibrary(current.library, current.revision, current.workspace)
+}
+
 export function initializeBrowserPointLibrary(library: PointLibrary): Promise<Snapshot> {
   const workspace: PointWorkspace = { version: 1, published: pointLibrarySchema.parse(library), changes: [] }
   const snapshot: Snapshot = { library: workspaceLibrary(workspace), workspace, revision: crypto.randomUUID() }
@@ -104,7 +123,7 @@ export function saveBrowserPointLibrary(library: PointLibrary, revision: string,
   return transaction(['library', 'history', 'versions'], 'readwrite', async (transaction) => {
     const store = transaction.objectStore('library')
     const stored = await requestResult<unknown>(store.get('current'))
-    const current = stored === undefined ? null : parseSnapshot(stored)
+    const current = stored === undefined ? null : parseSnapshot(stored, replacement?.published)
     if (!current || current.revision !== revision) throw new Error('点位库已在其他页面更新，请刷新后核对记录再保存。')
     const workspace = pointWorkspaceSchema.parse(replacement ?? editWorkspace(current.workspace ?? reviewLegacyLibrary(current.library, current.library), pointLibrarySchema.parse(library)))
     const snapshot: Snapshot = { library: workspaceLibrary(workspace), workspace, revision: crypto.randomUUID() }

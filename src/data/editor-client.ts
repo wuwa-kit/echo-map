@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { combinePointLibraryKinds } from '../domain/point-library.ts'
 import { echoPointLibrarySchema, navigationPointLibrarySchema, pointLibrarySchema } from '../domain/schema.ts'
 import type { PointLibrary, PointLibraryRevision, PointWorkspace } from '../domain/types.ts'
-import { initializeBrowserPointLibrary, readBrowserPointSnapshot, readBrowserPointVersion, readBrowserPointVersions, saveBrowserPointLibrary, synchronizeBrowserPoints } from './browser-point-repository.ts'
+import { initializeBrowserPointLibrary, refreshBrowserPointSnapshot, readBrowserPointVersion, readBrowserPointVersions, saveBrowserPointLibrary } from './browser-point-repository.ts'
 import { serializeJson } from '../utils/json.ts'
 
 const versionsSchema = z.array(z.object({ revision: z.string().regex(/^[a-f0-9]{64}$/u), savedAt: z.string() }))
@@ -40,9 +40,8 @@ async function publishedLibrary(): Promise<PointLibrary> {
 }
 
 async function readBrowserLibrary(): Promise<EditorSnapshot> {
-  const current = await readBrowserPointSnapshot()
   const published = await publishedLibrary()
-  const snapshot = current ? await synchronizeBrowserPoints(published, current) : await initializeBrowserPointLibrary(published)
+  const snapshot = await refreshBrowserPointSnapshot(published) ?? await initializeBrowserPointLibrary(published)
   return { ...snapshot, storage: 'browser' }
 }
 
