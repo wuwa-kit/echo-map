@@ -19,6 +19,7 @@ export interface ExplorerUrlState {
   stateId?: number
   countryId?: number
   levelId?: string
+  canvasScale?: number
   compactFloors?: boolean
   echoIds?: string[]
   sonataFilterIds?: string[]
@@ -35,6 +36,7 @@ export interface ExplorerUrlSnapshot {
   stateId: number
   countryId: number | null
   levelId: string | null
+  canvasScale?: number
   compactFloors?: boolean
   echoIds: readonly string[]
   sonataFilterIds: readonly string[]
@@ -53,6 +55,7 @@ export interface ExplorerQueryValues {
   map?: ExplorerQueryValue
   region?: ExplorerQueryValue
   floor?: ExplorerQueryValue
+  canvasScale?: ExplorerQueryValue
   floorStyle?: ExplorerQueryValue
   echoes?: ExplorerQueryValue
   sonatas?: ExplorerQueryValue
@@ -139,6 +142,11 @@ function compactNumber(value: number, fractionDigits: number): string {
   return String(Number(value.toFixed(fractionDigits)))
 }
 
+export function normalizeCanvasScale(value: number | undefined): number {
+  return value !== undefined && Number.isFinite(value) && value >= 50 && value <= 150
+    ? Math.round(value) : 100
+}
+
 export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerUrlState {
   const x = finiteNumber(values.x)
   const y = finiteNumber(values.y)
@@ -149,6 +157,7 @@ export function parseExplorerQueryValues(values: ExplorerQueryValues): ExplorerU
     gravityType: single(values.gravity) === '2' ? 2 : 1,
     countryId: integer(values.region),
     levelId: single(values.floor),
+    canvasScale: normalizeCanvasScale(finiteNumber(values.canvasScale)),
     compactFloors: single(values.floorStyle) !== 'list',
     echoIds: echoIdList(values.echoes),
     sonataFilterIds: sonataIdList(values.sonatas),
@@ -169,6 +178,7 @@ export function createExplorerQueryValues(state: ExplorerUrlSnapshot): ExplorerS
     gravity: state.gravityType === 2 ? '2' : undefined,
     region: state.countryId === null ? undefined : String(state.countryId),
     floor: state.levelId ?? undefined,
+    canvasScale: normalizeCanvasScale(state.canvasScale) === 100 ? undefined : String(normalizeCanvasScale(state.canvasScale)),
     floorStyle: state.compactFloors === false ? 'list' : undefined,
     echoes: compactEchoIdList(state.echoIds),
     sonatas: compactSonataIdList(state.sonataFilterIds),

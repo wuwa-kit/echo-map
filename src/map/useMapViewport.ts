@@ -67,8 +67,9 @@ export function useMapViewport(options: MapViewportOptions) {
     return x === undefined || y === undefined || zoom === undefined ? null : { center: [x, y], zoom }
   }
 
-  function publish(): void {
+  function publish(preserve = false): void {
     if (pendingInitialState) return
+    if (preserve) defaultViewport = null
     const viewport = current()
     if (viewport) {
       options.onViewportChanged(matchesViewport(viewport, defaultViewport) ? null : viewport)

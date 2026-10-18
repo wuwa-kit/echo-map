@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { restoreLastExplorerQuery } from './url/explorer-history.ts'
+import { createExplorerEntryGuard } from './url/explorer-history.ts'
+import { useExplorerSessionStore } from './stores/explorer-session.ts'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -22,4 +23,4 @@ export const router = createRouter({
   ],
 })
 
-router.beforeEach(restoreLastExplorerQuery)
+router.beforeResolve(to => createExplorerEntryGuard(useExplorerSessionStore())(to))

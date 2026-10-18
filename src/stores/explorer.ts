@@ -4,7 +4,7 @@ import { computed, onScopeDispose, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { freeze, produce } from 'immer'
 import type { Extent } from 'ol/extent.js'
-import { DEFAULT_STATE_ID } from '../url/explorer-url.ts'
+import { DEFAULT_STATE_ID, normalizeCanvasScale } from '../url/explorer-url.ts'
 import type { EchoCostFilter, ExplorerUrlState, MapViewportState, MobileSheet } from '../url/explorer-url.ts'
 import { planRouteInWorker } from '../route/worker-client.ts'
 import type { EchoMapLocation, MapDataset, MapFloorDefinition, MapStateDefinition, PointLibrary, RoutePlanResult, RouteResult } from '../domain/types.ts'
@@ -53,6 +53,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   const selectedStateId = shallowRef<number>(DEFAULT_STATE_ID)
   const selectedCountryId = shallowRef<number | null>(null)
   const selectedLevelId = shallowRef<string | null>(null)
+  const canvasScale = shallowRef(100)
   const compactFloors = shallowRef(true)
   const floorViewport = shallowRef<{ extent: [number, number, number, number]; resolution: number } | null>(null)
   const floorRequest = shallowRef<{ token: number; levelId: string; status: 'loading' | 'error' } | null>(null)
@@ -221,6 +222,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectedCountryId.value = resolved.countryId
     selectedLevelId.value = resolved.levelId
     compactFloors.value = resolved.compactFloors ?? true
+    setCanvasScale(resolved.canvasScale ?? 100)
     selectedGravity.value = resolved.gravityType ?? 1
     baseTileError.value = false
     selectedEchoIds.value = immutableSnapshot([...resolved.echoIds])
@@ -233,6 +235,10 @@ export const useExplorerStore = defineStore('explorer', () => {
     mapViewport.value = immutableSnapshot(resolved.viewport)
     echoSearch.value = ''
     clearRoute()
+  }
+
+  function setCanvasScale(value: number): void {
+    canvasScale.value = normalizeCanvasScale(value)
   }
 
   function selectState(id: number): void {
@@ -557,6 +563,8 @@ export const useExplorerStore = defineStore('explorer', () => {
     selectedStateId: shallowReadonly(selectedStateId),
     selectedCountryId: shallowReadonly(selectedCountryId),
     selectedLevelId: shallowReadonly(selectedLevelId),
+    canvasScale: shallowReadonly(canvasScale),
+    setCanvasScale,
     compactFloors: shallowReadonly(compactFloors),
     toggleFloorLayout: () => { compactFloors.value = !compactFloors.value },
     floorRequest: shallowReadonly(floorRequest),

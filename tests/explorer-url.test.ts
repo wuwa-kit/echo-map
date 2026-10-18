@@ -6,6 +6,23 @@ import {
 } from '../src/url/explorer-url.ts'
 
 describe('explorer query state', () => {
+  it('round-trips canvas scale independently of map zoom and rejects invalid scales', () => {
+    const snapshot = {
+      stateId: DEFAULT_STATE_ID, countryId: null, levelId: null,
+      echoIds: [], sonataFilterIds: [], echoCostFilters: [], showProvisional: true,
+      hideNonTeleportPoints: false, controlPanelCollapsed: false, mobileSheet: null, viewport: null,
+    }
+    for (const canvasScale of [50, 75, 100, 150]) {
+      const query = createExplorerQueryValues({ ...snapshot, canvasScale })
+      expect(parseExplorerQueryValues(query).canvasScale).toBe(canvasScale)
+      expect(query.zoom).toBeUndefined()
+      if (canvasScale === 100) expect(query.canvasScale).toBeUndefined()
+    }
+    for (const canvasScale of ['0', '-1', '49', '151', 'Infinity', 'NaN', '', undefined]) {
+      expect(parseExplorerQueryValues({ canvasScale }).canvasScale).toBe(100)
+    }
+  })
+
   it('accepts negative fractional zoom and rejects values without a finite positive resolution', () => {
     expect(parseExplorerQueryValues({ x: '10', y: '20', zoom: '-1.5' }).viewport).toEqual({ center: [10, 20], zoom: -1.5 })
     for (const zoom of ['10000', '-10000', 'Infinity', 'NaN']) {

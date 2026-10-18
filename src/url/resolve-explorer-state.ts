@@ -1,6 +1,6 @@
 import type { MapDataset } from '../domain/types.ts'
 import { hasGravityMap } from '../domain/gravity.ts'
-import { DEFAULT_STATE_ID } from './explorer-url.ts'
+import { DEFAULT_STATE_ID, normalizeCanvasScale } from './explorer-url.ts'
 import type { ExplorerUrlSnapshot, ExplorerUrlState } from './explorer-url.ts'
 
 export function resolveExplorerState(
@@ -27,6 +27,7 @@ export function resolveExplorerState(
     gravityType: hasGravityMap(nextState) && state.gravityType === 2 ? 2 : 1,
     countryId: state.countryId !== undefined && countryIds.has(state.countryId) ? state.countryId : null,
     levelId: state.levelId !== undefined && floorIds.has(state.levelId) ? state.levelId : null,
+    canvasScale: normalizeCanvasScale(state.canvasScale),
     compactFloors: state.compactFloors !== false,
     echoIds: (state.echoIds ?? []).filter((id) => echoIds.has(id)),
     sonataFilterIds: (state.sonataFilterIds ?? []).filter((id) => sonataIds.has(id)),

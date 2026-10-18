@@ -2,7 +2,7 @@
 import { computed, nextTick, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useEventListener, useMediaQuery, useResizeObserver } from '@vueuse/core'
-import { useRouteQuery } from '@vueuse/router'
+import { useExplorerSessionStore } from '../stores/explorer-session.ts'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { usePointManagementStore } from '../stores/point-management.ts'
 import type { PointManagementAction } from '../stores/point-management.ts'
@@ -28,6 +28,7 @@ import WuCascader from './base/WuCascader.vue'
 const emit = defineEmits<{ closeRequested: []; editRequested: [id: string]; locateRequested: [point: AuthoredPoint]; changed: [] }>()
 const editor = usePointEditorStore()
 const manager = usePointManagementStore()
+const session = useExplorerSessionStore()
 const { managedPoints, workspace, dataset, storage, busy, hasUnsavedChanges, error, notice, operation } = storeToRefs(editor)
 const { search, selected, detailId, pending } = storeToRefs(manager)
 const details = useTemplateRef<HTMLElement>('detailsRef')
@@ -37,11 +38,11 @@ const viewport = computed(() => scrollArea.value?.viewport ?? null)
 const desktop = useMediaQuery('(min-width: 768px)')
 const rowHeight = computed(() => desktop.value ? 72 : storage.value === 'browser' ? 192 : 168)
 const metrics = shallowRef({ top: 0, height: 0 })
-const kindQuery = useRouteQuery<string>('pointsKind', 'navigation', { mode: 'replace' })
-const mapQuery = useRouteQuery<string>('pointsMap', '', { mode: 'replace' })
-const statusQuery = useRouteQuery<string>('pointsStatus', 'all', { mode: 'replace' })
-const operationQuery = useRouteQuery<string>('pointsOperation', 'all', { mode: 'replace' })
-const duplicateQuery = useRouteQuery<string>('pointsDuplicate', '0', { mode: 'replace' })
+const kindQuery = computed(() => session.settings.pointsKind)
+const mapQuery = computed(() => session.settings.pointsMap)
+const statusQuery = computed(() => session.settings.pointsStatus)
+const operationQuery = computed(() => session.settings.pointsOperation)
+const duplicateQuery = computed(() => session.settings.pointsDuplicate)
 const kind = computed(() => kindQuery.value === 'echo' ? 'echo' : 'navigation')
 const regions = computed(() => {
   const reference = dataset.value
@@ -136,11 +137,11 @@ const comparison = computed(() => {
   return [...new Set(versions.flatMap(value => Object.keys(value)))].map(label => ({ label, values: versions.map(value => value[label] ?? '—') }))
 })
 function filter(field: 'kind' | 'map' | 'status' | 'operation' | 'duplicate', value: string | number | null): void {
-  if (field === 'kind') kindQuery.value = value === 'echo' ? 'echo' : 'navigation'
-  else if (field === 'map') mapQuery.value = String(value ?? '')
-  else if (field === 'operation') operationQuery.value = String(value ?? 'all')
-  else if (field === 'duplicate') duplicateQuery.value = value === '1' ? '1' : '0'
-  else statusQuery.value = String(value ?? 'all')
+  if (field === 'kind') session.setSetting('pointsKind', value === 'echo' ? 'echo' : 'navigation')
+  else if (field === 'map') session.setSetting('pointsMap', String(value ?? ''))
+  else if (field === 'operation') session.setSetting('pointsOperation', localPointOperationSchema.safeParse(value).data ?? 'all')
+  else if (field === 'duplicate') session.setSetting('pointsDuplicate', value === '1' ? '1' : '0')
+  else session.setSetting('pointsStatus', localPointStatusSchema.safeParse(value).data ?? 'all')
   manager.resetSelection()
 }
 function request(action: PointManagementAction, ids = selectedRows.value.map(row => row.id)): void {

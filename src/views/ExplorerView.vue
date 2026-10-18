@@ -2,9 +2,10 @@
 import WuButton from '../components/base/WuButton.vue'
 import { computed, nextTick, onBeforeUnmount, shallowRef, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAsyncState, useEventListener, useMediaQuery, useResizeObserver, useWindowSize } from '@vueuse/core'
-import { useRouteQuery } from '@vueuse/router'
-import { useRouter } from 'vue-router'
+import { useAsyncState, useClipboard, useEventListener, useMediaQuery, useResizeObserver, useWindowSize } from '@vueuse/core'
+import { useExplorerSessionStore } from '../stores/explorer-session.ts'
+import { useMessageStore } from '../stores/message.ts'
+import { isNavigationFailure, NavigationFailureType, useRouter } from 'vue-router'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import PointEditorPanel from '../components/PointEditorPanel.vue'
 import ControlPanel from '../components/ControlPanel.vue'
@@ -14,29 +15,30 @@ import MapNavigationCascader from '../components/MapNavigationCascader.vue'
 import RouteExportDialog from '../components/RouteExportDialog.vue'
 import WuSvg from '../components/base/WuSvg.vue'
 import { useEqualComputed } from '../composables/useEqualComputed.ts'
-import { useExplorerRouteQuery } from '../composables/useExplorerRouteQuery.ts'
 import { loadMapDataset, loadPointLibrary } from '../data/load.ts'
 import { useExplorerStore } from '../stores/explorer.ts'
 import type { AuthoredPoint, MapDataset } from '../domain/types.ts'
 import type { MapPadding } from '../map/viewport-padding.ts'
 import type { ExplorerUrlSnapshot, MobileSheet } from '../url/explorer-url.ts'
-import { createExplorerQueryValues } from '../url/explorer-url.ts'
+import { parseExplorerQueryValues } from '../url/explorer-url.ts'
 import { pointRegionResolver } from '../domain/point-region.ts'
 import { gameToMapCoordinate } from '../map/projection.ts'
 
 const store = useExplorerStore()
 const editor = usePointEditorStore()
 const router = useRouter()
-const modeQuery = useRouteQuery<string>('mode', 'use', { mode: 'replace' })
-const editingMode = computed(() => modeQuery.value === 'edit')
+const session = useExplorerSessionStore()
+const messages = useMessageStore()
+const { copy, copied } = useClipboard({ legacy: true })
+const editingMode = computed(() => session.settings.mode === 'edit')
 const editorPanel = useTemplateRef<InstanceType<typeof PointEditorPanel>>('editorPanelRef')
 const mapCanvas = useTemplateRef<InstanceType<typeof MapCanvas>>('mapCanvasRef')
 function enterEditor(): void {
   store.selectPoint(null)
-  modeQuery.value = 'edit'
+  session.setSetting('mode', 'edit')
 }
 function leaveEditor(): void {
-  modeQuery.value = 'use'
+  session.setSetting('mode', 'use')
   store.setPointLibrary(editor.library)
 }
 function addEditorPoint(request: { kind: AuthoredPoint['kind'], coordinate: [number, number] }): void {
@@ -62,8 +64,6 @@ async function locateManagedPoint(point: AuthoredPoint): Promise<void> {
   if (point.gravityType) store.selectGravity(point.gravityType)
   store.selectLevel(point.levelId)
   await nextTick()
-  // Finish the context navigation before publishing the new viewport query.
-  await router.replace({ query: { ...router.currentRoute.value.query, ...createExplorerQueryValues(urlSnapshot.value) } })
   mapCanvas.value?.locateManagedPoint(point)
 }
 onBeforeUnmount(store.clearRoute)
@@ -133,13 +133,15 @@ function closeSheet(): void {
   store.setMobileSheet(null)
 }
 
-const routeQuery = useExplorerRouteQuery()
-let urlSyncEnabled = false
+let persistenceEnabled = false
+let restoredRevision = session.revision
+const renderedRevision = shallowRef(session.revision)
 const urlSnapshot = useEqualComputed<ExplorerUrlSnapshot>(() => ({
   stateId: store.selectedStateId,
   countryId: store.selectedCountryId,
   levelId: store.selectedLevelId,
   compactFloors: store.compactFloors,
+  canvasScale: store.canvasScale,
   gravityType: store.selectedGravity,
   echoIds: store.selectedEchoIds,
   sonataFilterIds: store.sonataFilterIds,
@@ -150,11 +152,38 @@ const urlSnapshot = useEqualComputed<ExplorerUrlSnapshot>(() => ({
   mobileSheet: store.mobileSheet,
   viewport: store.mapViewport,
 }))
-watch(urlSnapshot, (snapshot) => {
-  if (urlSyncEnabled) {
-    routeQuery.write(snapshot)
-  }
+store.$onAction(({ after }) => {
+  after(() => {
+    if (persistenceEnabled && restoredRevision === session.revision) session.saveMap(urlSnapshot.value)
+  })
 })
+
+function restoreSession(): void {
+  if (!store.dataset) return
+  persistenceEnabled = false
+  session.validateSettings(store.dataset)
+  store.restoreUrlState(parseExplorerQueryValues(session.query))
+  restoredRevision = session.revision
+  session.saveMap(urlSnapshot.value)
+  renderedRevision.value = session.revision
+  persistenceEnabled = true
+}
+
+const removeRouteListener = router.afterEach((to, _from, failure) => {
+  if ((!failure || isNavigationFailure(failure, NavigationFailureType.duplicated))
+    && to.path === '/' && restoredRevision !== session.revision) restoreSession()
+})
+onBeforeUnmount(removeRouteListener)
+
+async function copyPageLink(): Promise<void> {
+  const href = router.resolve({ path: '/', query: session.shareQuery(urlSnapshot.value) }).href
+  try {
+    await copy(new URL(href, window.location.href).href)
+    messages.showSuccess('链接已复制')
+  } catch {
+    messages.showError('复制失败，请重试或检查剪贴板权限')
+  }
+}
 const { error: loadFailure, isLoading: loading, execute: reloadDataset } = useAsyncState<MapDataset | null>(
   async () => {
     const { dataset: value, officialLibrary: official } = await loadMapDataset()
@@ -168,10 +197,9 @@ const { error: loadFailure, isLoading: loading, execute: reloadDataset } = useAs
   {
     onSuccess(value) {
       if (value) {
+        persistenceEnabled = false
         store.setDataset(value)
-        store.restoreUrlState(routeQuery.read())
-        urlSyncEnabled = true
-        routeQuery.write(urlSnapshot.value)
+        restoreSession()
       }
     },
   },
@@ -203,7 +231,7 @@ const loadError = computed(() => {
       ref="stageRef"
       class="relative h-full w-full min-h-0 min-w-0 overflow-hidden bg-[#101c1a] [--control-panel-width:340px] [--mobile-bar-height:calc(72px+env(safe-area-inset-bottom))] [--safe-top:env(safe-area-inset-top)] [--safe-right:env(safe-area-inset-right)] [--safe-bottom:env(safe-area-inset-bottom)] [--safe-left:env(safe-area-inset-left)]"
     >
-      <MapCanvas ref="mapCanvasRef" :padding="mapPadding" :dock-bottom="mapDockBottom" :editing="editingMode" @editor-points-selected="selectEditorPoints" @point-add-requested="addEditorPoint" />
+      <MapCanvas :key="renderedRevision" ref="mapCanvasRef" :padding="mapPadding" :dock-bottom="mapDockBottom" :editing="editingMode" @editor-points-selected="selectEditorPoints" @point-add-requested="addEditorPoint" />
       <div
         v-if="!compact && controlPanelCollapsed"
         class="pointer-events-none absolute bottom-[max(16px,var(--safe-bottom))] right-[max(16px,var(--safe-right))] z-70 flex select-none items-center gap-[8px] drop-shadow-[0_2px_4px_#07100f]"
@@ -212,11 +240,14 @@ const loadError = computed(() => {
         <span class="font-serif text-[16px] font-medium leading-none tracking-[0.12em] text-[#f1faf5]">声巡</span>
       </div>
       <div v-if="!compact || mobileSheet === null" class="absolute left-[max(8px,var(--safe-left))] top-[max(8px,var(--safe-top))] z-90 flex items-start gap-[4px]">
-        <MapNavigationCascader
-          id="map-navigation-trigger" :dataset="dataset" :state-id="store.selectedStateId" :center="store.mapViewport?.center ?? null"
-          :class="compact ? '[--wu-cascader-height:44px] [--wu-cascader-gap:4px] [--wu-cascader-padding:9px]' : '[--wu-cascader-height:40px] [--wu-cascader-gap:6px] [--wu-cascader-padding:11px]'"
-          @region-selected="navigateToRegion"
-        />
+        <div class="flex flex-col items-start gap-[4px]">
+          <MapNavigationCascader
+            id="map-navigation-trigger" :dataset="dataset" :state-id="store.selectedStateId" :center="store.mapViewport?.center ?? null"
+            :class="compact ? '[--wu-cascader-height:44px] [--wu-cascader-gap:4px] [--wu-cascader-padding:9px]' : '[--wu-cascader-height:40px] [--wu-cascader-gap:6px] [--wu-cascader-padding:11px]'"
+            @region-selected="navigateToRegion"
+          />
+          <WuButton variant="solid" :size="compact ? 'lg' : 'md'" icon-only :icon="copied ? 'check' : 'link'" :tooltip="copied ? '链接已复制' : '复制当前页面链接'" @click="copyPageLink" />
+        </div>
         <GravitySwitcher :compact="compact" :selected-gravity="store.selectedGravity" :supports-gravity="store.supportsGravity" @gravity-selected="store.selectGravity" />
       </div>
       <div
@@ -229,7 +260,7 @@ const loadError = computed(() => {
           <span v-if="!editingMode" class="text-[16px] font-semibold">筛选与路线</span>
           <WuButton size="lg" variant="ghost" tone="accent" @click="closeSheet">查看地图</WuButton>
         </div>
-        <PointEditorPanel v-if="editingMode" ref="editorPanelRef" :position-in-view="mapCanvas?.draftInView ?? false" :arrival-in-view="mapCanvas?.arrivalInView ?? false" :locate-position="coordinate => mapCanvas?.locateDraft(coordinate) ?? false" :is-position-in-view="coordinate => mapCanvas?.isDraftInView(coordinate) ?? false" @returned="leaveEditor" @locate-requested="mapCanvas?.locateDraft($event)" @managed-locate-requested="locateManagedPoint" />
+        <PointEditorPanel v-if="editingMode" :key="renderedRevision" ref="editorPanelRef" :position-in-view="mapCanvas?.draftInView ?? false" :arrival-in-view="mapCanvas?.arrivalInView ?? false" :locate-position="coordinate => mapCanvas?.locateDraft(coordinate) ?? false" :is-position-in-view="coordinate => mapCanvas?.isDraftInView(coordinate) ?? false" @returned="leaveEditor" @locate-requested="mapCanvas?.locateDraft($event)" @managed-locate-requested="locateManagedPoint" />
         <ControlPanel v-else :compact="compact" @edit-requested="enterEditor" />
       </div>
       <div

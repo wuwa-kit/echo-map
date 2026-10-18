@@ -47,6 +47,23 @@ function setup(savedViewport: MapViewportState | null = null, initialSize = [100
 }
 
 describe('map viewport coordination', () => {
+  it('persists the logical zoom when a default canvas is scaled and reloaded', () => {
+    const app = setup()
+    const center = app.view().getCenter()
+    const zoom = app.view().getZoom()
+    app.viewport.publish(true)
+    app.setSize([2000, 1600])
+    app.viewport.initializeViewport()
+    app.viewport.publish()
+    expect(app.view().getZoom()).toBe(zoom)
+    expect(app.onViewportChanged).toHaveBeenLastCalledWith({ center, zoom })
+    const saved = app.onViewportChanged.mock.lastCall?.[0]
+    expect(saved).not.toBeNull()
+    const restored = setup(saved, [2000, 1600], [32, 32, 32, 32])
+    expect(restored.view().getZoom()).toBe(zoom)
+    expect(restored.view().getCenter()).toEqual(center)
+  })
+
   it('uses the same zoom and limits across differently sized base maps', () => {
     for (const edge of [2000, 10000, 60000]) {
       const view = createMapView({ ...state, tileExtent: { ...state.tileExtent, extent: [0, 0, edge, edge] } }, projection)

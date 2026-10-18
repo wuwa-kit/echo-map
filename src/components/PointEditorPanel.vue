@@ -3,8 +3,8 @@ import WuButton from './base/WuButton.vue'
 import { commitCoordinateInput, coordinateAxes, coordinateInputXY } from './base/coordinate-input.ts'
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRouteQuery } from '@vueuse/router'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
+import { useExplorerSessionStore } from '../stores/explorer-session.ts'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { usePointEditorStore } from '../stores/point-editor.ts'
 import { isOfficialPoint, pointTitle } from '../domain/point-library.ts'
 import type { AuthoredPoint } from '../domain/types.ts'
@@ -35,11 +35,11 @@ const emit = defineEmits<{ returned: [], locateRequested: [coordinate?: [number,
 const explorer = useExplorerStore()
 const store = usePointEditorStore()
 const manager = usePointManagementStore()
-const router = useRouter()
-const managerQuery = useRouteQuery<string>('pointsManager', '', { mode: 'replace' })
-const managerKind = useRouteQuery<string>('pointsKind', 'navigation', { mode: 'replace' })
+const session = useExplorerSessionStore()
+const managerQuery = computed(() => session.settings.pointsManager)
+
 const exportOpen = shallowRef(false)
-const tabQuery = useRouteQuery<string>('editorTab', 'navigation', { mode: 'replace' })
+const tabQuery = computed(() => session.settings.editorTab)
 let active = true
 onBeforeUnmount(() => { active = false; store.resetPositionConfirmation() })
 const { dataset, draft, library, importPreview, allPoints, editorMode, hasUnsavedChanges, editing, dirty, busy, operation, error, notice, continueAdding, canContinueAdding, availableFloors, pointLevelId } = storeToRefs(store)
@@ -74,7 +74,7 @@ const existing = computed(() => library.value.points.some(({ id }) => id === dra
 const candidatePoints = computed(() => allPoints.value.filter(({ id }) => candidates.value.includes(id)))
 function returnToExplorer(): void {
   if (busy.value) return
-  managerQuery.value = ''
+  session.setSetting('pointsManager', '')
   store.resetSession()
   emit('returned')
 }
@@ -87,15 +87,16 @@ function exportJson(): void {
   if (file) exportOpen.value = false
 }
 function openManagement(): void {
-  managerKind.value = editorMode.value
-  managerQuery.value = 'open'
+  session.setSetting('pointsKind', editorMode.value)
+  session.setSetting('pointsManager', 'open')
 }
 function editManagedPoint(id: string): void {
-  managerQuery.value = ''
+  session.setSetting('pointsManager', '')
   selectPoint(id)
 }
 async function locateManagedPoint(point: AuthoredPoint): Promise<void> {
-  await router.replace({ query: { ...router.currentRoute.value.query, pointsManager: undefined } })
+  session.setSetting('pointsManager', '')
+  await nextTick()
   emit('managedLocateRequested', point)
 }
 async function importJson(event: Event): Promise<void> {
@@ -127,7 +128,7 @@ function cancelPending(): void {
 }
 async function continuePending(save: boolean): Promise<void> {
   if (save && !await (resolveLeave ? store.saveAllForms() : store.savePoint({ continueAdding: false }))) {
-    tabQuery.value = editorMode.value
+    session.setSetting('editorTab', editorMode.value)
     cancelPending()
     return
   }
@@ -160,7 +161,7 @@ function selectMapPoints(ids: string[]): void {
 }
 function switchTab(kind: AuthoredPoint['kind']): void {
   store.switchEditorTab(kind)
-  tabQuery.value = editorMode.value
+  session.setSetting('editorTab', editorMode.value)
 }
 async function save(): Promise<void> {
   if (await store.savePoint()) {
@@ -212,20 +213,20 @@ defineExpose({ selectMapPoints, addPointAt })
 async function loadEditor(): Promise<void> {
   await store.load(tabQuery.value === 'echo' ? 'echo' : 'navigation')
   if (!active || store.error) return
-  tabQuery.value = editorMode.value
+  session.setSetting('editorTab', editorMode.value)
 }
 onMounted(loadEditor)
-onBeforeRouteUpdate((to) => {
-  if (to.query.editorTab === tabQuery.value || !store.dataset || store.busy) return
-  store.switchEditorTab(to.query.editorTab === 'echo' ? 'echo' : 'navigation')
-})
-onBeforeRouteLeave(() => {
+function confirmRouteChange(): boolean | Promise<boolean> {
   if (busy.value) return false
   if (!hasUnsavedChanges.value) return true
   return new Promise<boolean>((resolve) => {
     resolveLeave = resolve
     pending.value = () => { resolveLeave = null; resolve(true) }
   })
+}
+onBeforeRouteLeave(confirmRouteChange)
+onBeforeRouteUpdate((to) => {
+  if (Object.keys(to.query).length > 0) return confirmRouteChange()
 })
 </script>
 
@@ -268,8 +269,8 @@ onBeforeRouteLeave(() => {
         </div>
     </div>
     <div v-else class="flex flex-1 flex-col items-center justify-center gap-[12px] text-[13px] text-[#91ae9e]"><span>{{ busy ? '正在加载…' : '加载失败' }}</span><WuButton v-if="!busy" @click="loadEditor">重试</WuButton></div>
-    <WuDialog :open="managerQuery === 'open' && !!dataset" :dismissible="!busy" :title="store.storage === 'browser' ? '本地点位管理' : '项目点位管理'" size="lg" layout="panel" mobile-fullscreen :padded="false" @before-open="manager.reset" @dismiss-requested="managerQuery = ''">
-      <PointManagementPanel v-if="managerQuery === 'open' && dataset" @close-requested="managerQuery = ''" @changed="syncLibrary" @edit-requested="editManagedPoint" @locate-requested="locateManagedPoint" />
+    <WuDialog :open="managerQuery === 'open' && !!dataset" :dismissible="!busy" :title="store.storage === 'browser' ? '本地点位管理' : '项目点位管理'" size="lg" layout="panel" mobile-fullscreen :padded="false" @before-open="manager.reset" @dismiss-requested="session.setSetting('pointsManager', '')">
+      <PointManagementPanel v-if="managerQuery === 'open' && dataset" @close-requested="session.setSetting('pointsManager', '')" @changed="syncLibrary" @edit-requested="editManagedPoint" @locate-requested="locateManagedPoint" />
     </WuDialog>
     <WuDialog :open="exportOpen" @before-open="store.dismissMessage" :title="'导出' + (editorMode === 'navigation' ? '定位点' : '声骸点位')" @dismiss-requested="exportOpen = false">
       <div class="my-[12px] text-[13px] leading-6 text-[#91ae9e]">{{ store.storage === 'browser' ? '导出当前类别的本地修改，供维护方合并。完整备份包含两类点位的全部本地记录。' : '导出当前类别的已保存点位，或备份全部人工点位。' }}</div>

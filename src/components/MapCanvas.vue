@@ -96,6 +96,7 @@ const {
   nearbyFloorGroups,
   floorSwitcherVisible,
   compactFloors,
+  canvasScale,
   selectedGravity,
   baseTileError,
   baseTileRetry,
@@ -103,6 +104,14 @@ const {
   mapNavigationPoints,
   visibleRegionLabels,
 } = storeToRefs(store)
+const mapFrame = useTemplateRef<HTMLElement>('mapFrameRef')
+const canvasRatio = computed(() => canvasScale.value / 100)
+// Enlarge the logical viewport before scaling it down; leave all UI siblings unscaled.
+const canvasStyle = computed(() => ({
+  width: `${100 / canvasRatio.value}%`,
+  height: `${100 / canvasRatio.value}%`,
+  transform: `scale(${canvasRatio.value})`,
+}))
 const mapTarget = useTemplateRef<HTMLElement>('mapTargetRef')
 const contextAnchor = useTemplateRef<HTMLElement>('contextAnchorRef')
 const contextMenu = useTemplateRef<InstanceType<typeof WuPopover>>('contextMenuRef')
@@ -160,16 +169,29 @@ const floors = createFloorLayers(projection, { dimBase: true, onError: store.rep
 const routeLayer = createRouteLayer(points.layers)
 const viewport = useMapViewport({
   getMap: () => map,
-  getPadding: () => props.padding,
+  getPadding: () => {
+    const [top, right, bottom, left] = props.padding
+    const ratio = canvasRatio.value
+    return [top / ratio, right / ratio, bottom / ratio, left / ratio]
+  },
   getSavedViewport: () => mapViewport.value,
   onViewportChanged: store.setMapViewport,
 })
 
+useResizeObserver(mapFrame, ([entry]) => {
+  if (entry) mapSize.value = [entry.contentRect.width, entry.contentRect.height]
+})
+
+function changeCanvasScale(value: number): void {
+  // A default fit must become explicit, otherwise reloading would fit at a different logical zoom.
+  viewport.publish(true)
+  closeContextMenu()
+  store.setCanvasScale(value)
+}
+
 useResizeObserver(mapTarget, () => {
   map?.updateSize()
   viewport.initializeViewport()
-  const [width = 0, height = 0] = map?.getSize() ?? []
-  mapSize.value = [width, height]
   updateFloorViewport()
 })
 
@@ -386,7 +408,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="relative h-full w-full min-h-0 min-w-0">
+  <div ref="mapFrameRef" class="relative h-full w-full min-h-0 min-w-0 overflow-hidden">
     <span ref="contextAnchorRef" class="pointer-events-none fixed h-0 w-0" :style="{ left: `${contextPosition.x}px`, top: `${contextPosition.y}px` }" />
     <WuPopover ref="contextMenuRef" :anchor="contextAnchor" :disabled="!editing || editor.busy" width="content" :gap="0" class="rounded-[8px] outline -outline-offset-1 outline-[var(--line)] bg-[#102019] text-[#c7dfd2] shadow-xl">
       <WuButton variant="ghost" :disabled="!editor.draft" @click="syncPosition">同步位置</WuButton>
@@ -401,8 +423,9 @@ onBeforeUnmount(() => {
     </div>
     <div
       ref="mapTargetRef"
+      :style="canvasStyle"
       @contextmenu="openContextMenu"
-      class="absolute inset-0 [background:linear-gradient(rgba(101,241,194,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(101,241,194,0.025)_1px,transparent_1px),#0c1715] [background-size:32px_32px]"
+      class="absolute left-0 top-0 origin-top-left [background:linear-gradient(rgba(101,241,194,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(101,241,194,0.025)_1px,transparent_1px),#0c1715] [background-size:32px_32px]"
     />
     <div :style="floorDockStyle" class="pointer-events-none absolute bottom-[var(--floor-dock-bottom)] right-[var(--floor-dock-right)] z-70 max-h-[var(--floor-dock-height)] flex flex-col items-start gap-[4px]" :class="shortFloorDock ? 'left-[max(60px,env(safe-area-inset-left))]' : 'left-[max(8px,env(safe-area-inset-left))]'">
       <FloorSwitcher
@@ -411,6 +434,11 @@ onBeforeUnmount(() => {
         @level-requested="store.requestLevel" @layout-toggled="store.toggleFloorLayout"
       />
       <MapCoordinateDisplay :text="pointerCoordinateText" />
+      <div class="pointer-events-auto flex items-center gap-[4px] rounded-[6px] bg-[#102019ed] p-[4px] text-[12px]">
+        <WuButton size="xs" icon="minus" icon-only :disabled="canvasScale <= 50" tooltip="缩小画布，展示更多地图" @click="changeCanvasScale(Math.max(50, canvasScale - 5))" />
+        <WuButton size="xs" class="w-[48px] tabular-nums" tooltip="重置为 100%" @click="changeCanvasScale(100)">{{ canvasScale }}%</WuButton>
+        <WuButton size="xs" icon="plus" icon-only :disabled="canvasScale >= 150" tooltip="放大画布" @click="changeCanvasScale(Math.min(150, canvasScale + 5))" />
+      </div>
     </div>
   </div>
 </template>

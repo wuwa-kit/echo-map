@@ -27,10 +27,10 @@ describe('inline point editor', () => {
   })
   it('persists the editor tab independently from map state', async () => {
     const panel = await readFile(new URL('../src/components/PointEditorPanel.vue', import.meta.url), 'utf8')
-    expect(panel).toContain("useRouteQuery<string>('editorTab', 'navigation', { mode: 'replace' })")
-    expect(panel).toContain('tabQuery.value = editorMode.value')
+    expect(panel).toContain('session.settings.editorTab')
+    expect(panel).toContain("session.setSetting('editorTab', editorMode.value)")
     expect(panel).toContain("store.load(tabQuery.value === 'echo' ? 'echo' : 'navigation')")
-    expect(panel).not.toContain('tabQuery.value = undefined')
+    expect(panel).not.toContain('useRouteQuery')
   })
 
 })
