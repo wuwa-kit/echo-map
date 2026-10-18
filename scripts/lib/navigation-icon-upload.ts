@@ -50,6 +50,11 @@ export async function verifyUploadedIcon(url: string, expected: Buffer, request:
 export async function uploadNavigationIcon(bytes: Buffer, credentials: { token: string; devcode: string }, cache: string, request: typeof fetch = fetch): Promise<string> {
   const image = PNG.sync.read(bytes)
   if (image.width !== 128 || image.height !== 128) throw new Error('定位图标需要 128×128 像素 PNG')
+  return uploadPngImage(bytes, credentials, cache, request)
+}
+
+export async function uploadPngImage(bytes: Buffer, credentials: { token: string; devcode: string }, cache: string, request: typeof fetch = fetch): Promise<string> {
+  PNG.sync.read(bytes)
   const hash = createHash('sha256').update(bytes).digest('hex')
   await mkdir(cache, { recursive: true })
   const path = join(cache, `${hash}.json`)
@@ -57,7 +62,7 @@ export async function uploadNavigationIcon(bytes: Buffer, credentials: { token: 
   try { url = kuroImageUrlSchema.parse(JSON.parse(await readFile(path, 'utf8')).url) } catch { /* 尚未上传。 */ }
   if (!url) {
     const form = new FormData()
-    form.append('files', new File([new Uint8Array(bytes)], `navigation-${hash}.png`, { type: 'image/png' }))
+    form.append('files', new File([new Uint8Array(bytes)], `image-${hash}.png`, { type: 'image/png' }))
     let response: Response
     try {
       response = await request(UPLOAD_ENDPOINT, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(60_000), headers: { accept: 'application/json, text/plain, */*', source: 'h5', state_id: '8', wiki_type: '10', token: credentials.token, devcode: credentials.devcode, Referer: 'https://www.kurobbs.com/', Origin: 'https://www.kurobbs.com' }, body: form })

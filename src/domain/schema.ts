@@ -539,3 +539,10 @@ export const officialEchoPointDataSchema = z.object({
   locations: mapEchoLocationsSchema,
   library: echoPointLibrarySchema,
 }).strict()
+export const mapTileOverridesSchema = z.record(z.string().regex(/^\d+_-?\d+_-?\d+$/u), z.object({
+  url: z.url().refine(value => {
+    const url = new URL(value)
+    return url.protocol === 'https:' && !url.username && !url.password
+  }),
+  source: z.url().refine(value => value.startsWith('https://')),
+}).strict())

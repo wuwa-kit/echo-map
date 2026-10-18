@@ -1,4 +1,4 @@
-import { officialFloorTileUrl, officialTileUrl, tilePreviewUrl } from '../data/official-asset-urls.ts'
+import { mapTileOverrides, officialFloorTileUrl, officialTileUrl, tilePreviewUrl } from '../data/official-asset-urls.ts'
 import type { MapDataset, OfficialAsset, OfficialAssetCategory } from './types.ts'
 
 export const assetCategories: { id: OfficialAssetCategory; name: string; description: string }[] = [
@@ -41,7 +41,7 @@ export function buildOfficialAssets(dataset: MapDataset, mapAssets: readonly Off
     assets.set(id, {
       id, category, categories: [category], name, url,
       previewUrl: category === 'tile' || category === 'floor' || category === 'gravity' ? tilePreviewUrl(url, 320) : url,
-      sourceUrl: category === 'echo' ? source.sourceUrls.echoCatalogue
+      sourceUrl: category === 'tile' && mapTileOverrides[referenceId] ? mapTileOverrides[referenceId].source : category === 'echo' ? source.sourceUrls.echoCatalogue
         : category === 'sonata' ? source.sourceUrls.sonataCatalogue : source.sourceUrls.officialMap,
       fetchedAt: isWiki ? source.wikiFetchedAt : source.mapFetchedAt,
       stateIds: [...new Set(stateIds)],

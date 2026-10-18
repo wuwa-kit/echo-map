@@ -2,7 +2,7 @@ import { access } from 'node:fs/promises'
 import { calculateTileExtent, officialToMapCoordinate } from '../src/map/projection.ts'
 import { readPointLibrary } from './lib/point-files.ts'
 import { isOfficialEchoMapIncluded } from '../src/domain/official-echo-scope.ts'
-import { echoNotesSchema, officialMapAssetCatalogSchema } from '../src/domain/schema.ts'
+import { echoNotesSchema, officialMapAssetCatalogSchema, mapTileOverridesSchema } from '../src/domain/schema.ts'
 import { mapDisplayPolicySchema, officialAssetSchema, officialEchoPointDataSchema, wikiCatalogueSchema } from '../src/domain/schema.ts'
 import { MAP_DISPLAY_TIERS } from '../src/domain/map-display-tier.ts'
 import { navigationIconById } from '../src/domain/navigation-icons.ts'
@@ -21,6 +21,10 @@ import { readMapDataset, readOfficialPointData } from './lib/map-data.ts'
 import { inferOfficialEchoCountryId, OFFICIAL_ECHO_MERGE_DIAMETER } from './lib/official-point-library.ts'
 
 const dataset = await readMapDataset()
+const overrides = mapTileOverridesSchema.parse(await readJson<unknown>(projectPath('data', 'config', 'map-tile-overrides.json')))
+for (const tileId of Object.keys(overrides)) {
+  if (!dataset.states.some(state => state.tileIds.includes(tileId))) throw new Error(`替换分片不存在：${tileId}`)
+}
 wikiCatalogueSchema.parse(await readJson<unknown>(projectPath('data', 'generated', 'wiki.json')))
 const mapAssets = officialMapAssetCatalogSchema.parse(await readJson<unknown>(projectPath('public', 'data', 'map-asset-catalog.json')))
 const assets = buildOfficialAssets(dataset, mapAssets.assets)

@@ -440,3 +440,5 @@ export interface OfficialMapAssetCatalog {
 }
 export type EchoNotes = Readonly<Record<string, string>>
 
+export type MapTileOverrides = Record<string, { url: string; source: string }>
+
