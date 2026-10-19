@@ -36,10 +36,23 @@ jobs:
 
       - run: pnpm build
 
-      - name: Deploy website
+      - name: deploy pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: >-
           pnpm dlx --allow-build=sharp --allow-build=workerd wrangler@4
           pages deploy dist --project-name=wuwa-echo-map
+
+      - name: deploy netlify
+        uses: nwtgck/actions-netlify@v4
+        with:
+          publish-dir: ./gkd-inspect/dist
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: 'Deploy from GitHub Actions'
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

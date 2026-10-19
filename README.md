@@ -2,7 +2,10 @@
 
 声巡是一张面向《鸣潮》声骸刷取的交互地图，支持按声骸、合鸣套装、定位点和楼层筛选，并使用 XYZ 坐标规划三维刷取路线。
 
-在线访问：[wuwa-echo-map.pages.dev](https://wuwa-echo-map.pages.dev)
+在线访问
+
+- [wuwa-echo-map.pages.dev](https://wuwa-echo-map.pages.dev)
+- [wuwa-echo-map.netlify.app](https://wuwa-echo-map.netlify.app)
 
 ## 主要功能
 
