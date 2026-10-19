@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useExplorerStore } from '../stores/explorer.ts'
 import { MODE_NAMES } from '../domain/point-library.ts'
 import { describeEchoPoint } from '../domain/point-details.ts'
-import type { EchoDefinition, GameCoordinate } from '../domain/types.ts'
+import type { GameCoordinate } from '../domain/types.ts'
 import { gravityName } from '../domain/gravity.ts'
 import EchoPointMember from './EchoPointMember.vue'
 import MapPointPopup from './MapPointPopup.vue'
@@ -35,14 +35,15 @@ const candidates = computed(() => [
 ])
 const candidateCount = computed(() => candidates.value.length)
 const echoesById = computed(() => new Map(dataset.value?.echoes.map((echo) => [echo.id, echo]) ?? []))
+const echoGroups = computed(() => ([3, 1] as const).map(cost => ({
+  cost,
+  members: (details.value?.members ?? []).filter(member => echoesById.value.get(member.echoId)?.cost === cost),
+})).filter(group => group.members.length > 0))
 
 function coordinateTitle(coordinate: GameCoordinate | null): string {
   return coordinate ? `XYZ ${coordinate.x}, ${coordinate.y}, ${coordinate.z}` : 'XYZ 未录入'
 }
 
-function echoCost(echoId: string): EchoDefinition['cost'] | null {
-  return echoesById.value.get(echoId)?.cost ?? null
-}
 </script>
 
 <template>
@@ -63,17 +64,20 @@ function echoCost(echoId: string): EchoDefinition['cost'] | null {
     <template #title>
       <span class="font-mono text-[13px]">{{ coordinateTitle(selectedEchoLocation.gameCoordinate) }}</span>
     </template>
-    <WuScrollArea class="min-h-0 max-h-[320px] flex-1" content-class="grid gap-[8px] p-[12px]">
-      <EchoPointMember
-        v-for="member in details?.members ?? []"
-        :key="member.echoId"
-        :active="activeEchoIds.has(member.echoId)"
-        :cost="echoCost(member.echoId)"
-        :count="member.count"
-        :icon-url="member.iconUrl"
-        :name="member.name"
-      />
-      <div v-if="details?.members.length === 0" class="py-[12px] text-center text-[12px] text-[#8ea99c]">此处暂无声骸记录</div>
+    <WuScrollArea class="min-h-0 max-h-[320px] flex-1" content-class="grid gap-[12px] p-[12px]">
+      <div v-for="group in echoGroups" :key="group.cost" class="min-w-0">
+        <div class="grid grid-cols-2 gap-[8px]">
+          <EchoPointMember
+            v-for="member in group.members"
+            :key="member.echoId"
+            :active="activeEchoIds.has(member.echoId)"
+            :count="member.count"
+            :icon-url="member.iconUrl"
+            :name="member.name"
+          />
+        </div>
+      </div>
+      <div v-if="echoGroups.length === 0" class="py-[12px] text-center text-[12px] text-[#8ea99c]">此处暂无声骸记录</div>
     </WuScrollArea>
   </MapPointPopup>
 

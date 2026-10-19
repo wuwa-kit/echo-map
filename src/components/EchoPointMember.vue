@@ -1,26 +1,25 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { EchoDefinition } from '../domain/types.ts'
 
 const props = defineProps<{
   active: boolean
-  cost: EchoDefinition['cost'] | null
   count: number | null
   iconUrl: string
   name: string
 }>()
 
-const costLabel = computed(() => props.cost === null ? 'C?' : `C${props.cost}`)
-const countLabel = computed(() => props.count === null ? '数量未知' : `${props.count}只`)
+const countLabel = computed(() => props.count === null ? '数量未知' : `× ${props.count}`)
 </script>
 
 <template>
-  <div class="flex items-center gap-[10px] rounded-[8px] outline -outline-offset-1 bg-[#10241c] p-[8px]" :class="active ? 'outline-[#3c866c] text-[#71ecc0]' : 'outline-[var(--line)] text-[#c9e1d6]'">
-    <div class="h-[42px] w-[42px] shrink-0 flex items-center justify-center overflow-hidden rounded-[8px] bg-[#0a1712]">
-      <img v-if="iconUrl" :src="iconUrl" class="h-[38px] w-[38px] object-contain" loading="lazy" />
+  <div class="min-w-0 flex items-center gap-[6px] rounded-[8px] bg-[#10241c] p-[6px]" :class="active ? 'text-[#71ecc0]' : 'text-[#c9e1d6]'">
+    <div class="h-[32px] w-[32px] shrink-0 flex items-center justify-center overflow-hidden rounded-[6px] bg-[#0a1712]">
+      <img v-if="iconUrl" :src="iconUrl" class="h-[30px] w-[30px] object-contain" loading="lazy" />
       <span v-else class="text-[18px] text-[#688679]">?</span>
     </div>
-    <span class="min-w-0 flex-1 truncate">{{ name }}</span>
-    <span class="shrink-0 font-mono text-[12px] tabular-nums text-[#9fc2b2]">{{ costLabel }} · {{ countLabel }}</span>
+    <div class="min-w-0 flex-1">
+      <div class="text-[12px] leading-[18px] wrap-anywhere">{{ name }}</div>
+      <div class="font-mono text-[10px] leading-[16px] tabular-nums text-[#9fc2b2]">{{ countLabel }}</div>
+    </div>
   </div>
 </template>

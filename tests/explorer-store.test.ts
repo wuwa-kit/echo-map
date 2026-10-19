@@ -57,6 +57,21 @@ describe('explorer point group visibility', () => {
 
     store.setHideNonTeleportPoints(false)
     expect(store.mapNavigationPoints).toHaveLength(3)
+    expect(store.selectedNavigationPoint).toBeNull()
+
+    store.selectPointCandidates(['boss', 'service'])
+    store.selectPointCandidate('boss')
+    store.setCanvasScale(75)
+    expect(store.selectedNavigationPoint).toBeNull()
+    expect(store.navigationPointCandidates).toEqual([])
+    store.setCanvasScale(100)
+    expect(store.selectedNavigationPoint).toBeNull()
+    expect(store.navigationPointCandidates).toEqual([])
+
+    store.selectPointCandidates(['boss', 'service'])
+    store.setHideNonTeleportPoints(true)
+    store.setHideNonTeleportPoints(false)
+    expect(store.navigationPointCandidates).toEqual([])
     store.restoreUrlState({ hideNonTeleportPoints: true })
     expect(store.hideNonTeleportPoints).toBe(true)
     store.restoreUrlState({})

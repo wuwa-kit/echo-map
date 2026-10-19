@@ -24,7 +24,7 @@ import Projection from 'ol/proj/Projection.js'
 import { useExplorerStore } from '../stores/explorer.ts'
 import { gameToMapCoordinate, mapToGameCoordinate } from '../map/projection.ts'
 import { createOfficialBaseLayers } from '../map/official-base-layers.ts'
-import { createPointLayers, mapFeaturesPointIds } from '../map/point-layers.ts'
+import { createPointLayers, mapFeaturePointIds, mapFeaturesPointIds } from '../map/point-layers.ts'
 import { mapResolutionForScale } from '../map/map-scale.ts'
 import { createFloorLayers } from '../map/floor-layers.ts'
 import { createRouteLayer } from '../map/route-layer.ts'
@@ -115,6 +115,85 @@ const canvasStyle = computed(() => ({
 const mapTarget = useTemplateRef<HTMLElement>('mapTargetRef')
 const contextAnchor = useTemplateRef<HTMLElement>('contextAnchorRef')
 const contextMenu = useTemplateRef<InstanceType<typeof WuPopover>>('contextMenuRef')
+const pointAnchor = useTemplateRef<HTMLElement>('pointAnchorRef')
+const pointPopover = useTemplateRef<InstanceType<typeof WuPopover>>('pointPopoverRef')
+let pointClickCoordinate: number[] | null = null
+let pointPopupView: { center: number[], resolution: number | undefined } | null = null
+const pointPopupVisible = computed(() => Boolean(!props.editing && (
+  store.selectedEchoLocation || store.selectedNavigationPoint
+  || store.pointCandidates.length || store.navigationPointCandidates.length
+)))
+
+function closePointPopup(): void {
+  pointPopover.value?.hide()
+  store.selectPoint(null)
+  pointClickCoordinate = null
+  pointPopupView = null
+}
+
+function onPointPopupRender(): void {
+  if (!pointPopupVisible.value || !map) return
+  const selected = store.selectedEchoLocation ?? store.selectedNavigationPoint
+  const ids = new Set(selected ? [selected.id] : [
+    ...store.pointCandidates.map(point => point.id),
+    ...store.navigationPointCandidates.map(point => point.id),
+  ])
+  // Hit-test rendered feature centers, including cluster centers and floor masks.
+  const visible = points.layers.some(layer => layer.getSource()?.getFeatures().some(feature => {
+    if (!mapFeaturePointIds(feature)?.some(id => ids.has(id))) return false
+    const geometry = feature.getGeometry()
+    if (!(geometry instanceof Point)) return false
+    const pixel = map?.getPixelFromCoordinate(geometry.getCoordinates())
+    return pixel && mapFeaturesPointIds(map?.getFeaturesAtPixel(pixel) ?? []).some(id => ids.has(id))
+  }))
+  if (!visible) { closePointPopup(); return }
+  updatePointPopupPosition()
+}
+
+function updatePointPopupPosition(): void {
+  if (!pointPopupVisible.value || !map || !pointAnchor.value || !mapTarget.value) return
+  const point = store.selectedEchoLocation ?? store.selectedNavigationPoint
+  const coordinate = point ? [point.coordinate.mapX, point.coordinate.mapY] : pointClickCoordinate
+  if (!coordinate) return
+  const pixel = map.getPixelFromCoordinate(coordinate)
+  const size = map.getSize()
+  if (!pixel || !size) return
+  const [x = -1, y = -1] = pixel
+  const [width = 0, height = 0] = size
+  if (x < 0 || y < 0 || x > width || y > height) {
+    closePointPopup()
+    return
+  }
+  const rect = mapTarget.value.getBoundingClientRect()
+  pointAnchor.value.style.left = `${rect.left + x * canvasRatio.value}px`
+  pointAnchor.value.style.top = `${rect.top + y * canvasRatio.value}px`
+  pointPopover.value?.updatePosition()
+}
+
+watch([pointPopupVisible, () => store.selectedEchoLocation, () => store.selectedNavigationPoint], () => {
+  if (!pointPopupVisible.value) { pointPopover.value?.hide(); return }
+  updatePointPopupPosition()
+  if (pointPopupVisible.value) {
+    const view = map?.getView()
+    pointPopupView = { center: [...(view?.getCenter() ?? [])], resolution: view?.getResolution() }
+    pointPopover.value?.show()
+  }
+}, { flush: 'post' })
+
+function onPointPopoverClosed(): void {
+  // A delayed close event from the previous click must not clear a newly opened selection.
+  if (!pointPopover.value?.isOpen) closePointPopup()
+}
+
+function onMapMoveStart(): void {
+  closeContextMenu()
+  const view = map?.getView()
+  const center = view?.getCenter()
+  if (pointPopupView && view?.getResolution() === pointPopupView.resolution
+    && center?.every((value, index) => value === pointPopupView?.center[index])
+    && !isMapMoving()) return
+  closePointPopup()
+}
 const contextPosition = shallowRef({ x: 0, y: 0 })
 const contextCoordinate = shallowRef<[number, number]>([0, 0])
 async function openContextMenu(event: MouseEvent): Promise<void> {
@@ -326,6 +405,7 @@ function selectMapPoint(event: MapBrowserEvent): void {
     return
   }
   if (found.length > 0) {
+    pointClickCoordinate = [...event.coordinate]
     selectedRouteLeg.value = null
     if (found.length > 1) store.selectPointCandidates(found)
     else store.selectPoint(found[0] ?? null)
@@ -347,7 +427,8 @@ onMounted(() => {
     layers: [...points.layers, ...editorPoints.layers, editorGrid, routeLayer.layer, selectionLayer],
     view: new View({ projection, enableRotation: false, center: [0, 0], resolution: 4 }),
   })
-  map.on('movestart', closeContextMenu)
+  map.on('movestart', onMapMoveStart)
+  map.on('postrender', onPointPopupRender)
   map.on('moveend', onMoveEnd)
   map.on('postrender', updateDraftInView)
   map.on('pointermove', updatePointerCoordinate)
@@ -389,7 +470,8 @@ watch([() => props.editing, mapRoutes], rebuildRoute, { flush: 'post' })
 watch(mapNavigationRequest, applyMapNavigation, { flush: 'post' })
 
 onBeforeUnmount(() => {
-  map?.un('movestart', closeContextMenu)
+  map?.un('movestart', onMapMoveStart)
+  map?.un('postrender', onPointPopupRender)
   map?.un('moveend', onMoveEnd)
   map?.un('postrender', updateDraftInView)
   map?.un('pointermove', updatePointerCoordinate)
@@ -415,7 +497,10 @@ onBeforeUnmount(() => {
       <WuButton variant="ghost" @click="requestPoint('navigation')">添加定位</WuButton>
       <WuButton variant="ghost" @click="requestPoint('echo')">添加声骸</WuButton>
     </WuPopover>
-    <PointDetails v-if="!editing" />
+    <div ref="pointAnchorRef" class="pointer-events-none fixed h-0 w-0" />
+    <WuPopover ref="pointPopoverRef" :anchor="pointAnchor" placement="top" :width="340" :max-height="420" :gap="24" class="rounded-[12px] outline -outline-offset-1 outline-[var(--line)] bg-[#0b1b16f5] shadow-xl" @closed="onPointPopoverClosed">
+      <PointDetails v-if="pointPopupVisible" />
+    </WuPopover>
     <RouteLegDetailsPopup v-if="!editing && selectedRouteLeg" :details="selectedRouteLeg" @close="selectedRouteLeg = null" />
     <div v-if="baseTileError" class="absolute left-1/2 top-[12px] z-70 flex max-w-[90%] -translate-x-1/2 items-center gap-[10px] rounded-[8px] bg-[#35261eed] px-[12px] py-[8px] text-[12px] text-[#f1d7b4]">
       <span>{{ selectedGravity === 2 ? '反重力' : '' }}底图部分加载失败</span>

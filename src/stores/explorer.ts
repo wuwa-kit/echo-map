@@ -238,6 +238,7 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   function setCanvasScale(value: number): void {
+    if (canvasScale.value !== normalizeCanvasScale(value)) dismissPointSelection()
     canvasScale.value = normalizeCanvasScale(value)
   }
 
@@ -369,10 +370,12 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   function setSonataFilters(ids: readonly string[]): void {
+    dismissPointSelection()
     sonataFilterIds.value = immutableSnapshot([...new Set(ids)])
   }
 
   function setEchoCostFilters(values: readonly EchoCostFilter[]): void {
+    dismissPointSelection()
     echoCostFilters.value = immutableSnapshot(([1, 3] as const).filter((cost) => values.includes(cost)))
   }
 
@@ -386,7 +389,13 @@ export const useExplorerStore = defineStore('explorer', () => {
   }
 
   function setHideNonTeleportPoints(value: boolean): void {
+    dismissPointSelection()
     hideNonTeleportPoints.value = value
+  }
+
+  function dismissPointSelection(): void {
+    selectedPointId.value = null
+    candidateIds.value = immutableSnapshot([])
   }
 
   function toggleControlPanel(): void {
