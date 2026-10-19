@@ -47,7 +47,7 @@ jobs:
       - name: deploy netlify
         uses: nwtgck/actions-netlify@v4
         with:
-          publish-dir: ./gkd-inspect/dist
+          publish-dir: dist
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: 'Deploy from GitHub Actions'
