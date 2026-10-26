@@ -15,7 +15,10 @@ async function request(options?: RequestInit) {
   }
   return snapshotSchema.parse(body)
 }
-export function readNavigationIconLibrary() { return request() }
+export function readNavigationIconLibrary() {
+  if (!import.meta.env.DEV) return Promise.resolve(null)
+  return request()
+}
 export async function saveNavigationIconLibrary(library: NavigationIconLibrary, revision: string, resolutions?: IconRemovalResolution[]) {
   const result = await request({ method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ library, revision, resolutions }) })
   if (!result) throw new Error('本机写入接口不可用，修改尚未同步')
