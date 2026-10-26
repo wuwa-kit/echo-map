@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
 import { pointEditorPlugin } from './scripts/editor-plugin.ts'
 import { navigationIconPlugin } from './scripts/navigation-icon-plugin.ts'
+import { notFoundPagePlugin } from './scripts/not-found-page-plugin.ts'
 
 export default defineConfig({
   define: {
@@ -12,7 +13,7 @@ export default defineConfig({
       encoding: 'utf8',
     }).trim()),
   },
-  plugins: [tailwindcss(), vue(), navigationIconPlugin(), pointEditorPlugin()],
+  plugins: [tailwindcss(), vue(), navigationIconPlugin(), pointEditorPlugin(), notFoundPagePlugin()],
   worker: {
     format: 'es',
   },
