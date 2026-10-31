@@ -1309,6 +1309,25 @@
       "compositionStatus": "partial"
     },
     {
+      "id": "e43f37c1-4bce-4812-a224-83dc9c20b4ae",
+      "stateId": 912,
+      "levelId": "-2/64",
+      "coordinate": {
+        "x": 427,
+        "y": -40,
+        "z": -56
+      },
+      "note": "",
+      "kind": "echo",
+      "members": [
+        {
+          "echoId": "wiki-echo-24201",
+          "count": 1
+        }
+      ],
+      "compositionStatus": "partial"
+    },
+    {
       "id": "e4a03310-0ff4-4c29-a665-987b674c4d7c",
       "stateId": 912,
       "coordinate": {
