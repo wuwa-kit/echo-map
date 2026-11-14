@@ -1,3 +1,4 @@
+import { fetchPublishedData } from './fetch-published-data.ts'
 import { officialMapAssetCatalogSchema } from '../domain/schema.ts'
 import { echoPointLibrarySchema, mapCatalogDataSchema, mapDataSchema, navigationPointLibrarySchema, officialEchoPointDataSchema } from '../domain/schema.ts'
 import { assembleMapDataset } from '../domain/map-data.ts'
@@ -7,7 +8,7 @@ import { refreshBrowserPointSnapshot } from './browser-point-repository.ts'
 import { parsePointWorkspace, workspaceLibrary } from '../domain/local-points.ts'
 
 async function loadMapData() {
-  const response = await fetch('/data/map-data.json')
+  const response = await fetchPublishedData('map-data.json')
   if (!response.ok) {
     throw new Error(`地图数据加载失败：${response.status} ${response.statusText}`)
   }
@@ -16,13 +17,13 @@ async function loadMapData() {
 }
 
 async function loadMapCatalogData() {
-  const response = await fetch('/data/catalog-data.json')
+  const response = await fetchPublishedData('catalog-data.json')
   if (!response.ok) throw new Error(`图鉴与图标数据加载失败：${response.status}`)
   return mapCatalogDataSchema.parse(await response.json())
 }
 
 async function loadOfficialEchoPointData(): Promise<OfficialEchoPointData> {
-  const response = await fetch('/data/official-echo-points.json', { cache: 'no-store' })
+  const response = await fetchPublishedData('official-echo-points.json')
   if (response.status === 404) return { locations: [], library: emptyPointLibrary() }
   if (!response.ok) throw new Error(`官方声骸点位加载失败：${response.status}`)
   return officialEchoPointDataSchema.parse(await response.json())
@@ -40,8 +41,8 @@ export async function loadMapDataset(): Promise<{ dataset: MapDataset, officialL
 
 export async function loadPointLibrary(dataset: MapDataset) {
   const [echoResponse, navigationResponse] = await Promise.all([
-    fetch('/data/custom-echo-points.json', { cache: 'no-store' }),
-    fetch('/data/custom-navigation-points.json', { cache: 'no-store' }),
+    fetchPublishedData('custom-echo-points.json'),
+    fetchPublishedData('custom-navigation-points.json'),
   ])
   if (!echoResponse.ok) throw new Error(`人工声骸点位加载失败：${echoResponse.status}`)
   if (!navigationResponse.ok) throw new Error(`人工定位点加载失败：${navigationResponse.status}`)
@@ -60,7 +61,7 @@ export async function loadPointLibrary(dataset: MapDataset) {
 }
 
 export async function loadMapAssetCatalog() {
-  const response = await fetch('/data/map-asset-catalog.json')
+  const response = await fetchPublishedData('map-asset-catalog.json')
   if (!response.ok) throw new Error(`地图资产目录加载失败：${response.status}`)
   return officialMapAssetCatalogSchema.parse(await response.json())
 }

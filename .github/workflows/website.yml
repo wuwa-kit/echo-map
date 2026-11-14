@@ -24,6 +24,9 @@ concurrency:
   group: cloudflare-pages
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -34,7 +37,13 @@ jobs:
 
       - uses: pnpm/setup@v3
 
+      - name: Initialize deployment timestamp
+        run: node scripts/deploy.ts init
+
       - run: pnpm build
+
+      - name: Publish CDN build
+        run: node scripts/deploy.ts publish
 
       - name: deploy pages
         env:
@@ -56,3 +65,6 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Keep current build and two previous builds
+        run: node scripts/deploy.ts cleanup

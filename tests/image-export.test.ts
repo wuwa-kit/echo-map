@@ -56,7 +56,7 @@ beforeEach(() => {
     canvas.height = card.mapHeight
     return canvas
   })
-  vi.stubGlobal('document', { createElement: () => new TestCanvas(), fonts: { ready: Promise.resolve() } })
+  vi.stubGlobal('document', { createElement: () => new TestCanvas(), fonts: { load: async () => [], ready: Promise.resolve() } })
 })
 afterEach(() => vi.unstubAllGlobals())
 

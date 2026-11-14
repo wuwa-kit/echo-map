@@ -1,3 +1,4 @@
+import { fetchPublishedData } from '../data/fetch-published-data.ts'
 import { useMessageStore } from './message.ts'
 import { computed, shallowReadonly, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
@@ -322,7 +323,7 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
       if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
         data = z.object({ library: usageSchema }).parse(await response.json()).library
       } else {
-        response = await fetch('/data/custom-navigation-points.json', { cache: 'no-store' })
+        response = await fetchPublishedData('custom-navigation-points.json')
         if (!response.ok) throw new Error('定位点引用读取失败')
         data = await response.json()
       }

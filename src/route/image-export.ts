@@ -230,6 +230,7 @@ export async function exportRouteImages(snapshot: RouteExportSnapshot, signal: A
   }
   try {
     renderer = createRouteExportRenderer(snapshot)
+    await abortable(document.fonts.load('900 22px "Map FangXinShu"'), signal)
     await abortable(document.fonts.ready, signal)
     for (const page of layout.pages) {
       signal.throwIfAborted()

@@ -1,3 +1,4 @@
+import { fetchPublishedData } from './fetch-published-data.ts'
 import { pointLibraryChanges, projectPointSnapshotSchema } from '../domain/point-changes.ts'
 import { z } from 'zod'
 import { combinePointLibraryKinds } from '../domain/point-library.ts'
@@ -29,8 +30,8 @@ async function request(path: string, options?: RequestInit): Promise<unknown> {
 
 async function publishedLibrary(): Promise<PointLibrary> {
   const [echoResponse, navigationResponse] = await Promise.all([
-    fetch('/data/custom-echo-points.json', { cache: 'no-store' }),
-    fetch('/data/custom-navigation-points.json', { cache: 'no-store' }),
+    fetchPublishedData('custom-echo-points.json'),
+    fetchPublishedData('custom-navigation-points.json'),
   ])
   if (!echoResponse.ok || !navigationResponse.ok) throw new Error('线上点位库加载失败')
   return combinePointLibraryKinds(

@@ -3,7 +3,7 @@
 
 @font-face {
   font-family: 'Map FangXinShu';
-  src: url('./assets/fonts/ar-fangxinshu-heavy.ttf') format('truetype');
+  src: url('https://media-cdn-mingchao.kurogame.com/font/H7GBK-Heavy.ttf') format('truetype');
   font-style: normal;
   font-weight: 900;
   font-display: swap;

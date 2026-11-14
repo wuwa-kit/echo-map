@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process'
+import process from 'node:process'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
@@ -7,7 +8,13 @@ import { navigationIconPlugin } from './scripts/navigation-icon-plugin.ts'
 import { notFoundPagePlugin } from './scripts/not-found-page-plugin.ts'
 
 export default defineConfig({
+  experimental: process.env.CDN_BASE ? {
+    renderBuiltUrl(filename) {
+      return process.env.CDN_BASE + filename
+    },
+  } : undefined,
   define: {
+    'import.meta.env.VITE_CDN_BASE': JSON.stringify(process.env.CDN_BASE ?? ''),
     __LAST_COMMIT_TIME__: JSON.stringify(execFileSync('git', ['log', '-1', '--format=%cI'], {
       cwd: import.meta.dirname,
       encoding: 'utf8',

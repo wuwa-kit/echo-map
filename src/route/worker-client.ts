@@ -1,5 +1,17 @@
 import type { RouteResult } from '../domain/types.ts'
 import type { RoutePlanInput } from './optimizer.ts'
+import workerUrl from './route.worker.ts?worker&url'
+
+function createRouteWorker(): Worker {
+  const url = new URL(workerUrl, location.href)
+  if (url.origin === location.origin) return new Worker(url, { type: 'module' })
+  const entry = URL.createObjectURL(new Blob([`import ${JSON.stringify(url.href)}`], { type: 'text/javascript' }))
+  try {
+    return new Worker(entry, { type: 'module' })
+  } finally {
+    URL.revokeObjectURL(entry)
+  }
+}
 
 interface WorkerResponse {
   id: number
@@ -11,7 +23,7 @@ let requestId = 0
 
 export function planRouteInWorker(input: RoutePlanInput, signal?: AbortSignal): Promise<RouteResult> {
   signal?.throwIfAborted()
-  const worker = new Worker(new URL('./route.worker.ts', import.meta.url), { type: 'module' })
+  const worker = createRouteWorker()
   const id = requestId += 1
 
   return new Promise((resolve, reject) => {
