@@ -9,10 +9,10 @@ import EchoFilterControls from './filters/EchoFilterControls.vue'
 import { useEditorEchoFiltersStore } from '../stores/editor-echo-filters.ts'
 import { selectEchoDefinitions } from '../domain/explorer-selectors.ts'
 import WuScrollArea from './base/WuScrollArea.vue'
-import echoNotesJson from '../../data/config/echo-notes.json?raw'
+import { echoNotesJson } from '../data/static-data.ts'
 import { echoNotesSchema } from '../domain/schema.ts'
 
-const echoNotes = echoNotesSchema.parse(JSON.parse(echoNotesJson))
+const echoNotes = echoNotesSchema.parse(echoNotesJson)
 const emit = defineEmits<{ saveRequested: [] }>()
 const filterControls = useTemplateRef<InstanceType<typeof EchoFilterControls>>('filterControlsRef')
 defineExpose({ focusSearch: () => filterControls.value?.focusSearch() })

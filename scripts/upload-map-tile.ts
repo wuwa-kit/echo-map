@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { mapTileOverridesSchema } from '../src/domain/schema.ts'
 import { projectPath, readJson, writeJson } from './lib/files.ts'
@@ -15,8 +15,6 @@ const configPath = projectPath('data', 'config', 'map-tile-overrides.json')
 mapTileOverridesSchema.parse(await readJson<unknown>(configPath))
 const bytes = optimizeMapTile(await readFile(resolve(input)))
 const cache = projectPath('.local', 'map-tile-upload')
-await mkdir(cache, { recursive: true })
-await writeFile(resolve(cache, `${tileId}-1024.png`), bytes)
 const url = await uploadPngImage(bytes, await readUploadCredentials(), cache)
 const config = mapTileOverridesSchema.parse(await readJson<unknown>(configPath))
 await writeJson(configPath, mapTileOverridesSchema.parse({ ...config, [tileId]: { url, source } }))

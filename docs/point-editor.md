@@ -26,7 +26,7 @@
 
 运行 `pnpm dev` 并通过本机 localhost 访问时，人工定位点保存在 `data/manual/navigation/`，人工声骸保存在 `data/manual/echo/`。两类数据均按地图拆分，主地图再按二级地区拆分，详见 [数据目录与归区](./data.md#点位分片与归区)。文件只保存完整点位，没有 `draft`、`verified` 等状态。地区根据地图与 XY 自动判断，录入时无需填写或保存。
 
-开发服务直接读取源文件提供地图点位数据。生产构建会自动生成 `public/data/custom-echo-points.json`、`public/data/custom-navigation-points.json` 和 `public/data/official-echo-points.json`；这些发布文件已被 Git 忽略，日常录入只会产生人工源文件的 Git 改动。
+开发服务直接读取源文件提供地图点位数据，日常录入只会更新人工源文件。需要发布点位时，在本地运行 `pnpm data:publish` 更新数据包 CDN 链接，并随点位源文件提交。生产构建读取该链接。
 
 在线上页面录入时，浏览器保存网站已发布的点位基准和本地新增、修改、删除记录。刷新页面或在管理界面点击“检查更新”时，会读取新版已发布数据；本地修改继续保留，双方修改不一致的点位会标记为冲突。未保存的表单内容不会进入导出文件。
 

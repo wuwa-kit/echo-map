@@ -6,6 +6,9 @@ import { defineConfig } from 'vite'
 import { pointEditorPlugin } from './scripts/editor-plugin.ts'
 import { navigationIconPlugin } from './scripts/navigation-icon-plugin.ts'
 import { notFoundPagePlugin } from './scripts/not-found-page-plugin.ts'
+import { publishedDataPlugin } from './scripts/published-data-plugin.ts'
+import { kuroImageUrlSchema } from './scripts/lib/navigation-icon-upload.ts'
+import publishedData from './data/config/published-data-url.json' with { type: 'json' }
 
 export default defineConfig({
   experimental: process.env.CDN_BASE ? {
@@ -14,13 +17,13 @@ export default defineConfig({
     },
   } : undefined,
   define: {
-    'import.meta.env.VITE_CDN_BASE': JSON.stringify(process.env.CDN_BASE ?? ''),
+    'import.meta.env.VITE_PUBLISHED_DATA_URL': JSON.stringify(kuroImageUrlSchema.parse(publishedData.url)),
     __LAST_COMMIT_TIME__: JSON.stringify(execFileSync('git', ['log', '-1', '--format=%cI'], {
       cwd: import.meta.dirname,
       encoding: 'utf8',
     }).trim()),
   },
-  plugins: [tailwindcss(), vue(), navigationIconPlugin(), pointEditorPlugin(), notFoundPagePlugin()],
+  plugins: [tailwindcss(), vue(), navigationIconPlugin(), pointEditorPlugin(), publishedDataPlugin(), notFoundPagePlugin()],
   worker: {
     format: 'es',
   },

@@ -15,6 +15,7 @@
     "data:sync:assets": "node scripts/sync-map-assets.ts",
     "data:sync:map": "node scripts/sync-map.ts",
     "data:validate": "node scripts/validate-data.ts",
+    "data:publish": "pnpm data:validate && node scripts/upload-published-data.ts",
     "data:check-assets": "node scripts/check-assets.ts",
     "data:convert-official": "node scripts/convert-official-points.ts"
   },

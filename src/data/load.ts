@@ -8,25 +8,16 @@ import { refreshBrowserPointSnapshot } from './browser-point-repository.ts'
 import { parsePointWorkspace, workspaceLibrary } from '../domain/local-points.ts'
 
 async function loadMapData() {
-  const response = await fetchPublishedData('map-data.json')
-  if (!response.ok) {
-    throw new Error(`地图数据加载失败：${response.status} ${response.statusText}`)
-  }
-
-  return mapDataSchema.parse(await response.json())
+  return mapDataSchema.parse(await fetchPublishedData('map-data.json'))
 }
 
 async function loadMapCatalogData() {
-  const response = await fetchPublishedData('catalog-data.json')
-  if (!response.ok) throw new Error(`图鉴与图标数据加载失败：${response.status}`)
-  return mapCatalogDataSchema.parse(await response.json())
+  return mapCatalogDataSchema.parse(await fetchPublishedData('catalog-data.json'))
 }
 
 async function loadOfficialEchoPointData(): Promise<OfficialEchoPointData> {
-  const response = await fetchPublishedData('official-echo-points.json')
-  if (response.status === 404) return { locations: [], library: emptyPointLibrary() }
-  if (!response.ok) throw new Error(`官方声骸点位加载失败：${response.status}`)
-  return officialEchoPointDataSchema.parse(await response.json())
+  const data = await fetchPublishedData('official-echo-points.json', () => ({ locations: [], library: emptyPointLibrary() }))
+  return officialEchoPointDataSchema.parse(data)
 }
 
 export async function loadMapDataset(): Promise<{ dataset: MapDataset, officialLibrary: PointLibrary }> {
@@ -40,15 +31,13 @@ export async function loadMapDataset(): Promise<{ dataset: MapDataset, officialL
 }
 
 export async function loadPointLibrary(dataset: MapDataset) {
-  const [echoResponse, navigationResponse] = await Promise.all([
+  const [echo, navigation] = await Promise.all([
     fetchPublishedData('custom-echo-points.json'),
     fetchPublishedData('custom-navigation-points.json'),
   ])
-  if (!echoResponse.ok) throw new Error(`人工声骸点位加载失败：${echoResponse.status}`)
-  if (!navigationResponse.ok) throw new Error(`人工定位点加载失败：${navigationResponse.status}`)
   const library = combinePointLibraryKinds(
-    echoPointLibrarySchema.parse(await echoResponse.json()),
-    navigationPointLibrarySchema.parse(await navigationResponse.json()),
+    echoPointLibrarySchema.parse(echo),
+    navigationPointLibrarySchema.parse(navigation),
   )
   const published = parsePointLibrary(library, dataset, 'manual')
   if (import.meta.env.PROD && typeof indexedDB !== 'undefined') {
@@ -61,7 +50,5 @@ export async function loadPointLibrary(dataset: MapDataset) {
 }
 
 export async function loadMapAssetCatalog() {
-  const response = await fetchPublishedData('map-asset-catalog.json')
-  if (!response.ok) throw new Error(`地图资产目录加载失败：${response.status}`)
-  return officialMapAssetCatalogSchema.parse(await response.json())
+  return officialMapAssetCatalogSchema.parse(await fetchPublishedData('map-asset-catalog.json'))
 }

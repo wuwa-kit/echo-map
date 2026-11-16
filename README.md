@@ -4,8 +4,7 @@
 
 在线访问
 
-- [wuwa-echo-map.pages.dev](https://wuwa-echo-map.pages.dev)
-- [wuwa-echo-map.netlify.app](https://wuwa-echo-map.netlify.app)
+- [wa.songe.li](https://wa.songe.li)
 
 ## 主要功能
 

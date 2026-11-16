@@ -1,15 +1,21 @@
 import { readPointLibrary, writePointLibrary } from '../scripts/lib/point-files.ts'
 import { pointLibraryChanges, projectPointSnapshotSchema } from '../src/domain/point-changes.ts'
 import type { PointLibrary } from '../src/domain/types.ts'
-import { mkdtemp, readFile, readdir, rm, stat, utimes, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { build, createServer } from 'vite'
+import { PNG } from 'pngjs'
 import * as files from '../scripts/lib/files.ts'
 import { writeMapDataset, writePublicPointData } from '../scripts/lib/map-data.ts'
 import { convertOfficialPoints } from '../scripts/lib/official-point-library.ts'
 import { pointEditorPlugin } from '../scripts/editor-plugin.ts'
+import { publishedDataPlugin } from '../scripts/published-data-plugin.ts'
+import { readPublishedDataPng, staticDataSources } from '../src/data/published-data-png.ts'
+import { createPublishedDataPng, encodePublishedDataPng } from '../scripts/lib/published-data-png.ts'
+import { UPLOAD_ENDPOINT } from '../scripts/lib/navigation-icon-upload.ts'
+import { uploadPublishedData } from '../scripts/upload-published-data.ts'
 import { referenceDataset, mixedPoint } from './fixtures/point-library.ts'
 import { pointLibrarySchema, officialEchoPointDataSchema } from '../src/domain/schema.ts'
 import { serializeJson } from '../src/utils/json.ts'
@@ -106,13 +112,59 @@ describe('public data generation', () => {
     }
   })
 
-  it('generates publishable point files during a build with no existing public snapshots', async () => {
+  it('publishes a verified CDN link locally and leaves the data package out of the build', async () => {
     await writeMapDataset(referenceDataset)
+    await writeFile(files.projectPath('public', 'data', 'map-asset-catalog.json'), '{"assets":[]}')
+    await Promise.all(staticDataSources.map(async ([, path]) => {
+      const destination = join(root, path)
+      await mkdir(dirname(destination), { recursive: true })
+      await copyFile(new URL(`../${path}`, import.meta.url), destination)
+    }))
     for (const name of publicFiles.filter((name) => name.includes('points'))) await rm(files.projectPath('public', 'data', name))
+    const png = await createPublishedDataPng()
+    const image = PNG.sync.read(png)
+    expect([image.width, image.height]).toEqual([1920, 1080])
+    expect(image.data.every((byte, index) => byte === (index % 4 === 3 ? 255 : 0))).toBe(true)
+    const archive = await readPublishedDataPng(Uint8Array.from(png).buffer)
+    for (const name of ['map-data.json', 'catalog-data.json', 'map-asset-catalog.json'] as const) {
+      expect(archive[name]).toEqual(await files.readJson(files.projectPath('public', 'data', name)))
+    }
+    for (const [name, path] of staticDataSources) {
+      expect(archive[name]).toEqual(await files.readJson(files.projectPath(path)))
+    }
+    expect(pointLibrarySchema.parse(archive['custom-echo-points.json'])).toEqual(manual)
+    expect(officialEchoPointDataSchema.parse(archive['official-echo-points.json'])).toMatchObject({ library: official })
+
+    const url = 'https://prod-alicdn-community.kurobbs.com/forum/published-data-test.png'
+    const linkPath = files.projectPath('data', 'config', 'published-data-url.json')
+    const previous = { url: url.replace('-test', '-previous') }
+    await files.writeJson(linkPath, previous)
+    let uploads = 0
+    let downloaded = encodePublishedDataPng('{}')
+    const request: typeof fetch = async (input, init) => {
+      if (input === UPLOAD_ENDPOINT) {
+        uploads++
+        const form = init?.body
+        const file = form instanceof FormData ? form.get('files') : null
+        if (!(file instanceof File)) throw new Error('缺少上传文件')
+        expect(Buffer.from(await file.arrayBuffer())).toEqual(png)
+        return Response.json({ code: 200, data: { url } })
+      }
+      expect(input).toBe(url)
+      expect(new Headers(init?.headers).get('origin')).toBe('https://wa.songe.li')
+      return new Response(Uint8Array.from(downloaded), { headers: { 'access-control-allow-origin': '*' } })
+    }
+    const credentials = { token: 'test-token', devcode: 'test-device' }
+    await expect(uploadPublishedData(credentials, request)).rejects.toThrow('与上传原件不一致')
+    expect(await files.readJson(linkPath)).toEqual(previous)
+    downloaded = png
+    await expect(uploadPublishedData(credentials, request)).resolves.toEqual({ url, size: png.length })
+    expect(await files.readJson(linkPath)).toEqual({ url })
+    expect(uploads).toBe(1)
+
     await writeFile(join(root, 'index.html'), '<html><body>地图</body></html>')
-    await build({ configFile: false, root, publicDir: join(root, 'public'), logLevel: 'silent', plugins: [pointEditorPlugin()] })
-    expect((await readdir(files.projectPath('dist', 'data'))).sort()).toEqual(publicFiles)
-    expect(pointLibrarySchema.parse(await files.readJson(files.projectPath('dist', 'data', 'custom-echo-points.json')))).toEqual(manual)
-    expect(officialEchoPointDataSchema.parse(await files.readJson(files.projectPath('dist', 'data', 'official-echo-points.json')))).toMatchObject({ library: official })
+    await build({ configFile: false, root, publicDir: join(root, 'public'), logLevel: 'silent', plugins: [pointEditorPlugin(), publishedDataPlugin()] })
+    expect(await readdir(files.projectPath('dist', 'data'))).toEqual([])
+    expect((await readdir(files.projectPath('public', 'data'))).sort()).toEqual(['catalog-data.json', 'map-asset-catalog.json', 'map-data.json'])
   })
 })

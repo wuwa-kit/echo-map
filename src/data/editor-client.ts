@@ -29,14 +29,13 @@ async function request(path: string, options?: RequestInit): Promise<unknown> {
 }
 
 async function publishedLibrary(): Promise<PointLibrary> {
-  const [echoResponse, navigationResponse] = await Promise.all([
+  const [echo, navigation] = await Promise.all([
     fetchPublishedData('custom-echo-points.json'),
     fetchPublishedData('custom-navigation-points.json'),
   ])
-  if (!echoResponse.ok || !navigationResponse.ok) throw new Error('线上点位库加载失败')
   return combinePointLibraryKinds(
-    echoPointLibrarySchema.parse(await echoResponse.json()),
-    navigationPointLibrarySchema.parse(await navigationResponse.json()),
+    echoPointLibrarySchema.parse(echo),
+    navigationPointLibrarySchema.parse(navigation),
   )
 }
 

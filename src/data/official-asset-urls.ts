@@ -1,4 +1,4 @@
-import overridesData from '../../data/config/map-tile-overrides.json' with { type: 'json' }
+import { mapTileOverrides as overridesData } from './static-data.ts'
 import type { MapTileOverrides } from '../domain/types.ts'
 
 export const mapTileOverrides: MapTileOverrides = overridesData

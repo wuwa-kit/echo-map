@@ -318,15 +318,14 @@ export const useNavigationIconManagerStore = defineStore('navigation-icon-manage
     usageLoaded.value = false
     usageError.value = ''
     try {
-      let response = await fetch('/api/editor/library', { cache: 'no-store' })
       let data: unknown
-      if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
-        data = z.object({ library: usageSchema }).parse(await response.json()).library
-      } else {
-        response = await fetchPublishedData('custom-navigation-points.json')
-        if (!response.ok) throw new Error('定位点引用读取失败')
-        data = await response.json()
+      if (import.meta.env.DEV) {
+        const response = await fetch('/api/editor/library', { cache: 'no-store' })
+        if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
+          data = z.object({ library: usageSchema }).parse(await response.json()).library
+        }
       }
+      data ??= await fetchPublishedData('custom-navigation-points.json')
       usage.value = freeze(usageSchema.parse(data).points, true)
       usageLoaded.value = true
     } catch (failure) { usageError.value = failure instanceof Error ? failure.message : '定位点引用读取失败'; messageStore.showError(usageError.value) }

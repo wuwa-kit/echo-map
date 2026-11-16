@@ -4,7 +4,7 @@ import { z } from 'zod'
 import type { Plugin } from 'vite'
 import { createPointRepository, PointRepositoryError } from './lib/point-repository.ts'
 import { projectPath } from './lib/files.ts'
-import { readMapDataset, readPublicPointData, writePublicPointData } from './lib/map-data.ts'
+import { readMapDataset, readPublicPointData } from './lib/map-data.ts'
 import { serializeJson } from '../src/utils/json.ts'
 
 const publicPointPaths = [
@@ -40,15 +40,8 @@ async function requestBody(request: IncomingMessage): Promise<unknown> {
 export function pointEditorPlugin(): Plugin {
   const getDataset = readMapDataset
   const repository = createPointRepository(projectPath('data', 'manual'), projectPath('.local', 'point-history'), getDataset)
-  let build = false
   return {
     name: 'point-editor',
-    configResolved(config) {
-      build = config.command === 'build'
-    },
-    async buildStart() {
-      if (build) await writePublicPointData()
-    },
     configureServer(server) {
       server.middlewares.use((request, response, next) => {
         const path = request.url?.split('?')[0] ?? ''

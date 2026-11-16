@@ -34,17 +34,20 @@ JSON 文件、点位导出和开发服务响应在序列化时省略对象中值
 
 ## 公开数据文件
 
-`public/data/` 中与地图加载相关的五个 JSON 文件均为紧凑格式：
+`public/data/` 中的六个 JSON 文件均为紧凑格式：
 
 - `map-data.json`：地图结构、地表与分层瓦片、地区导航、文字标签、楼层连接及地图来源信息。
 - `catalog-data.json`：声骸、合鸣套装、定位点图标分组、定位点类型、图标定义、目录来源和同步统计。声骸按中文名称匹配完整 Wiki 图鉴并兼容已配置别名。点位通过 `echoId` 直接复用图鉴头像，不保存官方地图的声骸图标。传送点、BOSS 等定位点通过 `iconId` 引用 `pointIcons`。
 - `official-echo-points.json`：官方声骸的 `locations` 原始位置和 `library` 转换点位。
 - `custom-echo-points.json`：已保存的人工声骸点位。
 - `custom-navigation-points.json`：已保存的人工定位点。
+- `map-asset-catalog.json`：资产浏览使用的官方素材目录。
 
-`official-echo-points.json`、`custom-echo-points.json` 和 `custom-navigation-points.json` 是自动生成的发布文件，不纳入 Git 跟踪。地图同步、官方转换和生产构建会生成这些文件，内容未变化时不重写；`pnpm build` 将公开数据复制到 `dist/data/`。本地开发直接从源文件提供相同的 JSON 请求，录入保存只更新受影响的人工点位分片，不会重写发布文件或其他分片。
+`official-echo-points.json`、`custom-echo-points.json` 和 `custom-navigation-points.json` 可由地图同步和官方转换生成，不纳入 Git 跟踪。本地开发直接从点位源文件提供 JSON，录入保存只更新受影响的人工点位分片。
 
-开发服务与发布站点使用相同的请求路径和结构。地图、图鉴与官方声骸数据并行读取；人工声骸与定位点数据按类别读取。录入接口和导入导出处理完整人工点位库，保存前会检查坐标完整性、声骸数量、定位点信息及地图引用。前端继续复用底图、楼层与声骸图鉴素材。
+数据更新后，在本地用配置了 `KURO_TOKEN` 和 `KURO_DEVCODE` 的项目 `.env` 运行 `pnpm data:publish`。命令从当前源文件读取 13 份 JSON，在内存生成 1920×1080 的 1 位灰度纯黑 PNG，并将压缩数据写入 `iTXt`。上传库街区后，命令核验 CDN 文件与原件逐字节一致及跨域响应，再更新 `data/config/published-data-url.json`。将源数据和更新后的链接一起提交。
+
+生产构建读取已提交的 CDN 链接。发布站点启动时下载并解压一次，地图、资产浏览、图标管理和浏览器录入共用同一份数据。构建部署无需库街区凭证，也不生成数据 PNG。本地开发和 Node 脚本从源文件动态导入图标等静态配置。
 
 ## 官方点与人工点
 

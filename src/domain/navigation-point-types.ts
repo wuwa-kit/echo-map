@@ -1,6 +1,5 @@
 import { normalBossIcons } from './normal-boss-icons.ts'
-import weeklyBossIcons from '../../data/generated/map-boss-icons.json' with { type: 'json' }
-import iconLibraryJson from '../../data/manual/navigation-icons.json' with { type: 'json' }
+import { iconLibraryJson, weeklyBossIcons } from '../data/static-data.ts'
 import type { NavigationIconLibrary } from './types.ts'
 import type { MapDisplayTier, NavigationKind, NavigationMode, NavigationPoint, NavigationPointType, NavigationTypeDefinition } from './types.ts'
 

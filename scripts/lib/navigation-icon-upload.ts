@@ -53,7 +53,11 @@ export async function uploadNavigationIcon(bytes: Buffer, credentials: { token: 
   return uploadPngImage(bytes, credentials, cache, request)
 }
 
-export async function uploadPngImage(bytes: Buffer, credentials: { token: string; devcode: string }, cache: string, request: typeof fetch = fetch): Promise<string> {
+export async function uploadPngImage(
+  bytes: Buffer, credentials: { token: string; devcode: string }, cache: string,
+  request: typeof fetch = fetch,
+  verify: (url: string, expected: Buffer, request: typeof fetch) => Promise<void> = verifyUploadedIcon,
+): Promise<string> {
   PNG.sync.read(bytes)
   const hash = createHash('sha256').update(bytes).digest('hex')
   await mkdir(cache, { recursive: true })
@@ -71,6 +75,6 @@ export async function uploadPngImage(bytes: Buffer, credentials: { token: string
     url = parseUploadImageUrl(await response.json())
     await writeJson(path, { url })
   }
-  await verifyUploadedIcon(url, bytes, request)
+  await verify(url, bytes, request)
   return url
 }
