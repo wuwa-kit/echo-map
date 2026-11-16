@@ -38,6 +38,8 @@ pnpm check             # 完整检查
 
 部署时需要将前端路由回退到 `index.html`，以便直接访问 `/assets` 等页面。
 
+GitHub Actions 为每次部署创建一个 `0.0.0-page.<毫秒时间戳>` tag，jsDelivr 资源 URL 引用完整版本。发布后保留当前版本和最近两个旧版本，迁移期间原有的 `page-*` 发布分支也计入这两个旧版本。
+
 官方 CDN 的旧版本瓦片可能被清理；本地结构校验无法发现远程 404。遇到部分地图缺图时，运行 `pnpm data:check-assets` 检查资源。如果版本过期，运行 `pnpm data:sync:map`、`pnpm data:convert-official`、`pnpm check` 和 `pnpm data:check-assets`，然后重新部署。同步会一起更新资源版本、瓦片清单和楼层覆盖范围，不应只手改资源 hash。远程检查独立运行，保持普通构建不依赖网络。
 
 项目中的相对 TypeScript 与 Vue 导入都显式包含 `.ts` 或 `.vue` 后缀。第三方包继续使用其公开的包导入路径，例如 OpenLayers 的 `.js` 子路径。

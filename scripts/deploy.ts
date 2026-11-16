@@ -20,13 +20,13 @@ function git(args: string[], env = process.env): string {
 }
 
 async function initialize(): Promise<void> {
-  const branch = `page-${Date.now()}`
-  const base = `https://cdn.jsdelivr.net/gh/${requiredEnv('GITHUB_REPOSITORY')}@${branch}/`
-  await appendFile(requiredEnv('GITHUB_ENV'), `PAGES_BRANCH=${branch}\nCDN_BASE=${base}\n`)
+  const tag = `0.0.0-page.${Date.now()}`
+  const base = `https://cdn.jsdelivr.net/gh/${requiredEnv('GITHUB_REPOSITORY')}@${tag}/`
+  await appendFile(requiredEnv('GITHUB_ENV'), `PAGES_TAG=${tag}\nCDN_BASE=${base}\n`)
 }
 
 function publish(): void {
-  const branch = requiredEnv('PAGES_BRANCH')
+  const tag = requiredEnv('PAGES_TAG')
   const env = {
     ...process.env,
     GIT_INDEX_FILE: resolve(requiredEnv('RUNNER_TEMP'), 'pages-index'),
@@ -38,17 +38,22 @@ function publish(): void {
   git(['read-tree', '--empty'], env)
   git([`--work-tree=${dist}`, 'add', '--all'], env)
   const tree = git(['write-tree'], env)
-  const commit = git(['commit-tree', tree, '-m', `Build ${branch}`], env)
-  git(['push', 'origin', `${commit}:refs/heads/${branch}`])
+  const commit = git(['commit-tree', tree, '-m', `Build ${tag}`], env)
+  git(['push', 'origin', `${commit}:refs/tags/${tag}`])
 }
 
 function cleanup(): void {
-  const current = requiredEnv('PAGES_BRANCH')
-  const refs = git(['ls-remote', '--heads', 'origin', 'refs/heads/page-*'])
-  const branches = Array.from(refs.matchAll(/\trefs\/heads\/(page-\d+)$/gm), match => match[1])
-    .filter((branch): branch is string => branch !== undefined && branch !== current)
-    .sort((a, b) => Number(b.slice(5)) - Number(a.slice(5)))
-  for (const branch of branches.slice(2)) git(['push', 'origin', '--delete', branch])
+  const current = `refs/tags/${requiredEnv('PAGES_TAG')}`
+  const refs = git(['ls-remote', '--refs', 'origin', 'refs/tags/0.0.0-page.*', 'refs/heads/page-*'])
+  const builds = Array.from(
+    refs.matchAll(/\t(refs\/(?:tags\/0\.0\.0-page\.|heads\/page-)(\d+))$/gm),
+    ([, ref = '', timestamp]) => ({ ref, timestamp: Number(timestamp) }),
+  )
+  const oldRefs = builds.filter(({ ref }) => ref !== current)
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(2)
+    .map(({ ref }) => ref)
+  if (oldRefs.length) git(['push', 'origin', '--delete', ...oldRefs])
 }
 
 switch (process.argv[2]) {

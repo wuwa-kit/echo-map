@@ -37,12 +37,12 @@ jobs:
 
       - uses: pnpm/setup@v3
 
-      - name: Initialize deployment timestamp
+      - name: Initialize deployment tag
         run: node scripts/deploy.ts init
 
       - run: pnpm build
 
-      - name: Publish CDN build
+      - name: Publish CDN build tag
         run: node scripts/deploy.ts publish
 
       - name: deploy pages

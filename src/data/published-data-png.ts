@@ -25,7 +25,8 @@ export const publishedDataFilenames = [...publicDataFilenames, ...staticDataSour
 
 export const publishedDataTextHeader = 'JSON\0\x01\0\0\0'
 
-const archiveSchema = z.record(z.enum(publishedDataFilenames), z.unknown())
+export const publishedDataArchiveSchema = z.record(z.enum(publishedDataFilenames), z.unknown())
+export type PublishedDataArchive = z.infer<typeof publishedDataArchiveSchema>
 const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10]
 const textHeader = new TextEncoder().encode(publishedDataTextHeader)
 
@@ -45,7 +46,7 @@ export async function readPublishedDataPng(buffer: ArrayBuffer) {
     if (type === 'iTXt' && size >= textHeader.length && textHeader.every((byte, index) => bytes[dataStart + index] === byte)) {
       const compressed = bytes.slice(dataStart + textHeader.length, dataEnd)
       const json = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate'))
-      return archiveSchema.parse(await new Response(json).json())
+      return publishedDataArchiveSchema.parse(await new Response(json).json())
     }
     offset = end
   }

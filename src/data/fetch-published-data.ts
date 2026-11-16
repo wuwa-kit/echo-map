@@ -1,5 +1,6 @@
 import { readPublishedDataPng } from './published-data-png.ts'
 import type { PublicDataFilename } from './published-data-png.ts'
+import { readPublishedDataCache, writePublishedDataCache } from './published-data-cache.ts'
 
 let pendingArchive: ReturnType<typeof readPublishedDataPng> | undefined
 
@@ -15,9 +16,14 @@ const dataLabels: Record<PublicDataFilename, string> = {
 async function fetchPublishedArchive() {
   const url = import.meta.env.VITE_PUBLISHED_DATA_URL
   if (!url) throw new Error('缺少发布数据 CDN 链接')
+  const cached = await readPublishedDataCache(url).catch(() => undefined)
+  if (cached) return cached
+
   const response = await fetch(url)
   if (!response.ok) throw new Error(`发布数据加载失败：${response.status}`)
-  return readPublishedDataPng(await response.arrayBuffer())
+  const archive = await readPublishedDataPng(await response.arrayBuffer())
+  await writePublishedDataCache(url, archive).catch(() => undefined)
+  return archive
 }
 
 export function loadPublishedArchive() {
